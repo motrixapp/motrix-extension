@@ -1,0 +1,438 @@
+{
+  "badge": {
+    "tooltip": {
+      "connected": "Motrix: connected",
+      "disconnected": "Motrix: not connected",
+      "connecting": "Motrix: connecting…",
+      "downloading": "Motrix: downloading",
+      "denied": "Motrix: pairing refused — open to re-pair",
+      "error": "Motrix: handoff failed — click for details"
+    }
+  },
+  "contextMenu": {
+    "downloadWithMotrix": "Download with Motrix",
+    "pairThenDownload": "Pair Motrix, then download"
+  },
+  "notify": {
+    "browserFallbackBody": "Motrix is unavailable, so the browser will download it instead.",
+    "browserFallbackTitle": "Downloading in browser",
+    "downloadComplete": "Download complete",
+    "downloadFailed": "Download failed",
+    "handedToMotrix": "Handed to Motrix",
+    "notConnectedBody": "Pair Motrix to take over downloads.",
+    "notConnectedTitle": "Motrix not connected",
+    "notReachableBody": "Pair Motrix, then try the download again.",
+    "notReachableTitle": "Motrix not reachable",
+    "pairNudgeBody": "Open Motrix to finish pairing.",
+    "pairNudgeTitle": "Pair Motrix",
+    "pairRevokedBody": "Motrix revoked this browser's pairing.",
+    "pairRevokedTitle": "Pairing revoked",
+    "sensitiveSkippedBody": "Sensitive site left to the browser.",
+    "sensitiveSkippedTitle": "Skipped",
+    "submitFailedBody": "Re-downloading in the browser.",
+    "submitFailedTitle": "Motrix submit failed"
+  },
+  "options": {
+    "diagnostics": {
+      "adapters": "Adapters",
+      "extensionId": "Extension ID",
+      "logLevel": "Log level",
+      "logLevels": {
+        "silent": "Silent",
+        "error": "Error",
+        "warn": "Warn",
+        "info": "Info",
+        "debug": "Debug"
+      },
+      "noneRegistered": "none registered yet",
+      "title": "Diagnostics",
+      "version": "Version"
+    },
+    "endpoint": {
+      "activate": "Use",
+      "activateAria": "Use {{name}}",
+      "connection": {
+        "bootstrapping": "Starting",
+        "connected": "Connected",
+        "connecting": "Connecting",
+        "denied": "Denied",
+        "disconnected": "Disconnected",
+        "handshaking": "Authorizing",
+        "awaiting-code": "Waiting for code"
+      },
+      "currentDescription": "Choose one App or Server for downloads, tasks, and page-sniffed resources.",
+      "currentTitle": "Motrix backends",
+      "listLabel": "Available Motrix backends",
+      "localDescription": "This computer discovered through Motrix App",
+      "localName": "Motrix App",
+      "selectLabel": "Send downloads to"
+    },
+    "language": {
+      "label": "Language",
+      "system": "Follow system"
+    },
+    "notifications": {
+      "title": "System notifications",
+      "masterLabel": "Enable system notifications",
+      "masterAria": "Enable system notifications",
+      "confirmLabel": "Success / confirmations",
+      "confirmDesc": "Handed to Motrix, download complete",
+      "errorLabel": "Failures / errors",
+      "errorDesc": "Submit failed, not reachable, download failed",
+      "reminderLabel": "Reminders",
+      "reminderDesc": "Pairing prompts, pairing revoked, skipped sites"
+    },
+    "pairing": {
+      "backendTitle": "Pairing {{name}}",
+      "forget": "Forget pairing",
+      "loading": "Loading pair status...",
+      "localHelp": "Click Pair to discover Motrix on this computer and enter its pairing code.",
+      "localTitle": "Pair through Motrix App",
+      "remoteTitle": "Pair with Motrix Server",
+      "remoteHelp": "Click Pair, confirm the request in the Server operator UI, then enter the displayed code here. Both WS and WSS endpoints are supported; WSS is recommended.",
+      "remoteConsentTitle": "Remote downloads",
+      "remoteConsentBody": "Remote downloads send the target URL, source page URL and title, filename, selection, and task controls to this Server. Cookies and request headers stay off unless enabled separately.",
+      "remoteConsentOffline": "Data permissions are bound to the authenticated Server. Connect before changing them.",
+      "remoteHeadersLabel": "Send request headers",
+      "remoteHeadersHelp": "Allows page-derived headers such as Referer and media playback headers. Authentication headers still require the credential permission below.",
+      "remoteCredentialsLabel": "Send cookies and authentication",
+      "remoteCredentialsHelp": "Allows cookies and credential headers for this Server only. Enable only for a Server you control.",
+      "notPaired": "Not paired",
+      "paired": "Paired with Motrix",
+      "pairedHelp": "A committed MBP1 credential is retained for this backend. Current connection status is shown separately.",
+      "pairedTitle": "Pairing ready",
+      "reconnect": "Reconnect",
+      "scopedHelp": "Pairing trust and credentials are isolated for every backend. Switching backends never reuses another backend's trust.",
+      "pair": "Pair",
+      "pairDialogTitle": "Pair with Motrix"
+    },
+    "servers": {
+      "add": "Add server",
+      "addTitle": "Add Motrix Server",
+      "current": "Current",
+      "delete": "Delete server",
+      "deleteActiveDescription": "Delete {{name}} and its locally stored pairing credentials and consent? The current backend will fall back to Motrix App without connecting to or launching it.",
+      "deleteAria": "Delete {{name}}",
+      "deleteDescription": "Delete {{name}} and its locally stored pairing credentials and consent? This does not revoke anything on the server.",
+      "deleteTitle": "Delete Motrix Server?",
+      "description": "Save multiple Motrix Server addresses and switch between them from Options or the popup.",
+      "dialogDescription": "Give this backend a recognizable name and enter its WebSocket base URL.",
+      "editAria": "Edit {{name}}",
+      "editTitle": "Edit Motrix Server",
+      "emptyDescription": "Add a server to connect to Motrix beyond this computer.",
+      "emptyTitle": "No Motrix Servers yet",
+      "footer": "Changing a server address requires pairing again. Pairing information is never shared between addresses.",
+      "nameLabel": "Server name",
+      "namePlaceholder": "Home server",
+      "nameRequired": "Server name is required",
+      "save": "Save server",
+      "statusAuthority": "Server address: {{value}}",
+      "statusRuntime": "Motrix version: {{name}} {{version}}",
+      "statusTitle": "Server information",
+      "statusTransportSecure": "Connection security: WSS is in use and TLS verifies the server identity",
+      "statusTransportPlain": "Connection security: encrypted, but WS cannot verify the server identity and may expose connection information. WSS is recommended",
+      "title": "Motrix Servers",
+      "urlDescription": "Use a ws:// or wss:// base URL. An optional path is kept as an exact reverse-proxy prefix; WSS is recommended.",
+      "urlDuplicate": "This Motrix Server address is already saved",
+      "urlInvalid": "Enter a valid ws:// or wss:// base URL without whitespace, credentials, query, or fragment",
+      "urlLabel": "WebSocket URL",
+      "urlPlaceholder": "ws(s)://host[:port][/base-path]",
+      "transportWarningTitle": "This connection does not use WSS",
+      "transportWarningBody": "Content exchanged with Motrix is still encrypted, but WS cannot verify the server identity and may expose connection information. Use WSS if your NAS supports it.",
+      "urlRequired": "WebSocket URL is required"
+    },
+    "takeover": {
+      "consentBody": "When takeover is on, each download will use your login cookies for that download's domain and send them to Motrix. Sensitive sites (bank / government / medical) are excluded and ask first.",
+      "consentCancel": "Cancel",
+      "consentConfirm": "I understand, enable",
+      "consentDialogLabel": "Enable download takeover?",
+      "denylistLabel": "Denylist (one host per line — always left to the browser)",
+      "enableAria": "Enable takeover",
+      "enableLabel": "Send eligible downloads to Motrix",
+      "loading": "Loading takeover settings…",
+      "minSizeLabel": "Minimum size (MB)",
+      "minSizePlaceholder": "0 = all",
+      "thresholdInvalid": "Minimum size must be a non-negative number",
+      "save": "Save",
+      "saved": "Saved",
+      "title": "Download takeover"
+    },
+    "tabs": {
+      "general": "General",
+      "appearance": "Appearance",
+      "integration": "Integration",
+      "help": "Help"
+    },
+    "common": {
+      "apply": "Apply",
+      "cancel": "Cancel",
+      "loadError": "Settings could not be loaded because the extension background failed to start. Reload the extension and try again.",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "saveError": "Save failed"
+    },
+    "appearance": {
+      "theme": {
+        "label": "Theme",
+        "system": "Follow system",
+        "light": "Light",
+        "dark": "Dark"
+      }
+    },
+    "help": {
+      "title": "Help & Support",
+      "description": "Browse guides, get support, and inspect extension diagnostics.",
+      "reportBug": "Report a problem",
+      "reportBugDescription": "Open a GitHub issue or share feedback.",
+      "issues": "GitHub Issues",
+      "docs": "Documentation",
+      "docsDescription": "Read setup, pairing, download takeover, and troubleshooting guides.",
+      "copyDiagnostics": "Copy diagnostics",
+      "copied": "Copied",
+      "diagnostics": "Diagnostics",
+      "diagnosticsDescription": "Adjust logging and copy details useful for troubleshooting."
+    },
+    "about": {
+      "subtitle": "Browser bridge for the Motrix download manager",
+      "website": "Official website"
+    },
+    "title": "Motrix Extension Settings"
+  },
+  "popup": {
+    "backend": {
+      "app": "Motrix App",
+      "appDescription": "This computer",
+      "choose": "Choose Motrix backend",
+      "configureServer": "Manage Motrix Servers",
+      "notConfigured": "Not configured",
+      "server": "Motrix Server",
+      "version": "v{{version}}"
+    },
+    "controlPanel": {
+      "engineState": "engine {{state}}",
+      "noDownloads": "No downloads",
+      "pause": "Pause",
+      "remove": "Remove",
+      "resume": "Resume",
+      "statsSummary": "{{active}} active {{waiting}} waiting"
+    },
+    "dashboard": {
+      "activity": "Activity",
+      "resources": "Resources",
+      "showResources": "Show resources from this page",
+      "showTasks": "Show active tasks",
+      "title": "Transfer overview"
+    },
+    "loading": "Loading...",
+    "quickSettings": {
+      "fullSettings": "Full settings",
+      "fullSettingsDescription": "General, appearance, Backend, and help",
+      "loadError": "Quick settings could not be loaded.",
+      "notificationsDescription": "Control system notifications from the extension",
+      "retry": "Retry",
+      "saveError": "The setting could not be saved. Try again.",
+      "takeoverDescription": "Send browser downloads to the current Motrix Backend"
+    },
+    "quickAdd": {
+      "title": "New task",
+      "description": "Paste an HTTP, HTTPS, or magnet link.",
+      "inputLabel": "Download address",
+      "placeholder": "https://example.com/file.zip",
+      "cancel": "Cancel",
+      "add": "Add",
+      "submitting": "Adding…",
+      "error": {
+        "empty": "Enter a download address.",
+        "unsupported": "Only HTTP, HTTPS, or magnet links are supported.",
+        "invalid": "The download address is invalid.",
+        "submitFailed": "Couldn’t add the task. Try again."
+      }
+    },
+    "reconnect": "Connect",
+    "settings": "Open settings",
+    "sniffer": {
+      "clearFilters": "Clear filters",
+      "detected": "{{count}} items",
+      "downloadCount": "Download {{count}}",
+      "downloadSelected": "Download selected",
+      "downloadedResource": "Sent {{name}}",
+      "downloadingResource": "Downloading {{name}}",
+      "emptyDescription": "Play media, then try again.",
+      "emptyFilter": "No resources match this filter",
+      "emptyTitle": "No media found",
+      "filteredCount": "{{matched}} / {{total}} images",
+      "filters": {
+        "all": "All",
+        "audio": "Audio",
+        "image": "Images",
+        "video": "Video"
+      },
+      "imageFilters": {
+        "activeCount": "{{count}} active filters",
+        "dimensions": "Dimensions and size",
+        "done": "Done",
+        "fields": {
+          "height": "Height",
+          "size": "Size",
+          "width": "Width"
+        },
+        "formatOptionLabel": "Filter {{format}} images",
+        "formats": "Image format",
+        "operatorLabel": "{{label}} comparison",
+        "reset": "Reset",
+        "result": "{{matched}} / {{total}}",
+        "sizeUnitLabel": "File size unit",
+        "title": "Quick filters",
+        "trigger": "Filter",
+        "valueLabel": "{{label}} value"
+      },
+      "imageCount": "{{count}} images",
+      "noImageMatches": "No matching images",
+      "pageAction": {
+        "bilibili": "Send this bilibili video",
+        "youtube": "Send this YouTube video"
+      },
+      "pageSubmitted": "Video sent to Motrix {{taskId}}",
+      "pageResources": "Page resources",
+      "quickDownloadResource": "Quick download {{name}}",
+      "connectToSubmit": "Connect to Motrix to send resources.",
+      "scan": "Scan again",
+      "scanning": "Scanning…",
+      "selectAll": "Select all",
+      "selected": "{{count}} selected",
+      "selectResource": "Select {{name}}",
+      "sourceHost": "Source: {{host}}",
+      "sendResource": "Send {{name}} to Motrix",
+      "sent": "Sent",
+      "sending": "Sending",
+      "submitFailed": "Couldn’t send the resource. Try again.",
+      "title": "Sniffer",
+      "unavailableDescription": "Switch pages or try again later.",
+      "unavailableTitle": "This page can’t be scanned",
+      "unsupported": "Requires ffmpeg",
+      "unsupportedReason": "The selected backend cannot submit {{kind}} resources because ffmpeg support is unavailable.",
+      "unsupportedSelectionReason": "The selected backend cannot submit one or more selected resource types.",
+      "unsupportedResource": "{{name}} cannot be sent. {{reason}}"
+    },
+    "speed": {
+      "download": "Download",
+      "upload": "Upload"
+    },
+    "status": {
+      "bootstrapping": "Discovering Motrix...",
+      "connected": "Connected",
+      "connecting": "Connecting...",
+      "denied": "Pairing denied",
+      "disconnected": "Disconnected",
+      "handshaking": "Handshake in progress",
+      "awaiting-code": "Waiting for the pairing code…"
+    },
+    "tabs": {
+      "settings": "Settings",
+      "sniffer": "Sniffer",
+      "tasks": "Tasks"
+    },
+    "takeover": {
+      "aria": "Toggle download takeover",
+      "label": "Takeover"
+    },
+    "tasks": {
+      "actions": "Actions for {{name}}",
+      "openFolder": "Open containing folder in Motrix",
+      "openFolderError": "Couldn't open the task folder. Try again.",
+      "openFolderMetadataPending": "Wait for task metadata before opening the folder",
+      "openFolderTask": "Open the folder containing {{name}}",
+      "openFolderUnsupported": "Update Motrix to open folders",
+      "pauseTask": "Pause {{name}}",
+      "removeTask": "Remove {{name}}",
+      "resumeTask": "Resume {{name}}",
+      "bytes": "{{done}} of {{total}}",
+      "disconnectedDescription": "Connect to view tasks.",
+      "disconnectedTitle": "Motrix is offline",
+      "empty": {
+        "active": "No active tasks",
+        "failed": "No failed tasks",
+        "recent": "No completed tasks"
+      },
+      "filters": {
+        "active": "Active",
+        "failed": "Failed",
+        "recent": "Completed"
+      },
+      "loading": "Loading tasks",
+      "status": {
+        "completed": "Completed",
+        "downloading": "Downloading",
+        "error": "Failed",
+        "fetching_metadata": "Fetching metadata",
+        "finalizing": "Finalizing",
+        "paused": "Paused",
+        "queued": "Queued",
+        "seeding": "Seeding"
+      },
+      "title": "Tasks"
+    },
+    "pairing": {
+      "attemptOf": "Attempt {{run}} of {{maxRuns}}",
+      "attemptsRemaining": "{{attemptsRemaining}} attempts remaining",
+      "codeLabel": "Pairing code",
+      "codeDescription": "Enter the 8-character code shown in the Motrix pairing dialog.",
+      "codeInvalid": "Enter the 8-character code shown in the pairing dialog.",
+      "dialogTitle": "Enter pairing code",
+      "dismissPrompt": "Enter it later and keep browsing",
+      "enterCode": "Enter pairing code",
+      "expiresIn": "Expires in {{time}}",
+      "pairButton": "Pair",
+      "pickerHelp": "Multiple Motrix instances were found. Choose one to pair with.",
+      "rescan": "Rescan",
+      "noCandidates": "No Motrix instance was found.",
+      "candidatesLabel": "Discovered Motrix instances",
+      "candidatePort": "Port {{port}}",
+      "candidateDetail": "{{instanceId}} · v{{appVersion}}",
+      "unknownVersion": "unknown version",
+      "choose": "Choose",
+      "backoffTitle": "Too many pairing attempts",
+      "backoffBody": "Try again at {{time}}.",
+      "retryIn": "Retry in {{seconds}}s",
+      "permissionMissingTitle": "Permission needed",
+      "permissionMissingBody": "Grant access to localhost to discover Motrix on this computer.",
+      "grantPermission": "Grant permission",
+      "degradedTitle": "Connected without host attestation",
+      "degradedBody": "This pairing was authenticated by the code you entered, but Motrix did not provide extra proof of which installation answered.",
+      "recoveryExhaustedTitle": "Couldn't reconnect automatically",
+      "recoveryExhaustedBody": "None of the saved Motrix pairings worked. Press Connect to pair again."
+    }
+  },
+  "errors": {
+    "connection": {
+      "generic": "The connection failed. Try again.",
+      "backoffLocked": "Too many pairing attempts. Try again later.",
+      "staleAttempt": "A newer connection attempt took over.",
+      "aborted": "The pairing was cancelled.",
+      "deadlineExceeded": "The attempt timed out. Try again.",
+      "runsExhausted": "Too many incorrect codes. Start pairing again for a fresh code.",
+      "invalidCode": "The code isn't in the expected format. Check the Motrix dialog.",
+      "missingNonce": "Motrix didn't offer a pairing slot. Make sure Motrix is running, then try again.",
+      "unsupportedBrowser": "Pairing isn't supported in this browser.",
+      "ticketPreparationFailed": "Pairing couldn't be prepared. Try again.",
+      "protocolViolation": "Motrix sent an unexpected response. Try again.",
+      "unsupportedVersion": "This extension and Motrix use different protocol versions. Update both and try again.",
+      "backendUpgradeRequired": "This Motrix version is too old for secure pairing. Update Motrix, then try again.",
+      "extensionUpgradeRequired": "This extension version is too old for this Motrix. Update the Motrix extension, then try again.",
+      "unsupportedRemote": "The authenticated Motrix is not the App or Server selected for this connection. Check the endpoint and try again.",
+      "remoteDiscoveryUnavailable": "The remote Motrix Server could not be reached. Check its address, listener, and network; for WSS, also check the certificate and reverse proxy.",
+      "remotePairingUnavailable": "The remote Motrix Server could not open a secure pairing session. Try again shortly.",
+      "remoteTransportUnavailable": "The remote Motrix Server connection failed. Check its address, listener, DNS, and network; for WSS, also check the certificate and reverse proxy. The browser cannot identify which one failed.",
+      "peerRejected": "Motrix declined the pairing.",
+      "peerBusy": "Motrix is handling too many pairing requests. Try again shortly.",
+      "securityCheckFailed": "The connection failed a security check and was stopped.",
+      "peerNotAuthentic": "The other side couldn't prove it is your Motrix. The connection was stopped.",
+      "credentialPhaseFailed": "The pairing couldn't be saved. Try pairing again.",
+      "internalError": "Something went wrong in the extension. Try again.",
+      "authFailed": "Motrix didn't recognize this pairing. It may have been revoked — try pairing again.",
+      "serverMacMismatch": "The reply failed verification, so the connection was stopped. It may not be your Motrix.",
+      "channelClosed": "The connection was closed. Reconnect to continue.",
+      "channelUnavailable": "Motrix isn't reachable right now. Make sure it's running."
+    }
+  }
+}

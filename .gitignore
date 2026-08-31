@@ -1,0 +1,50 @@
+# Dependencies
+/node_modules/
+/.pnpm-store/
+
+# Build and browser-extension packages
+/dist/
+/artifacts/
+/web-ext-artifacts/
+*.crx
+*.xpi
+*.pem
+*.key
+*.tsbuildinfo
+
+# Test output
+/coverage/
+/.nyc_output/
+
+# Vite, tools, and temporary files
+/.cache/
+/.tmp/
+/tmp/
+vite.config.*.timestamp-*
+vitest.config.*.timestamp-*
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment overrides
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Editors
+/.vscode/
+/.idea/
+*.swp
+*.swo
+
+# Operating-system metadata
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# Repository-local worktrees
+/.worktrees/
