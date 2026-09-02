@@ -149,6 +149,21 @@ pnpm lint                # 代码检查
 pnpm build:webstore      # Chrome Web Store 合规构建
 ```
 
+### 发布 GitHub Release
+
+Release 由 GitHub Actions 从已有的 `vX.Y.Z` 标签构建。先修改
+`package.json` 中的版本并提交，再创建、推送同版本标签：
+
+```bash
+git tag -a v0.1.2 -m "Motrix Extension 0.1.2"
+git push origin v0.1.2
+```
+
+工作流会依次执行代码检查与测试，构建 Chrome/Edge 商店版和 Firefox 版，
+确认两个 manifest 的版本一致，然后把两个浏览器 ZIP、供 Firefox 审核的
+可复现源码 ZIP 和 `SHA256SUMS.txt` 发布到 GitHub Release。也可以在 GitHub
+Actions 的 **Release browser extension** 工作流中手动发布一个已有标签。
+
 主要代码位于：
 
 - `src/background/`：配对、连接、下载交接、任务控制和配置存储；

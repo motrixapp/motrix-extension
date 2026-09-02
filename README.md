@@ -156,6 +156,23 @@ pnpm lint                # Code checks
 pnpm build:webstore      # Chrome Web Store-compliant build
 ```
 
+### Publish a GitHub release
+
+Releases are built by GitHub Actions from an existing `vX.Y.Z` tag. Update the
+version in `package.json`, commit the change, then create and push the matching
+tag:
+
+```bash
+git tag -a v0.1.2 -m "Motrix Extension 0.1.2"
+git push origin v0.1.2
+```
+
+The workflow runs the checks and tests, builds the Chrome/Edge Web Store and
+Firefox variants, verifies their manifest versions, and publishes both ZIP
+files, a reproducible source ZIP for Firefox review, and `SHA256SUMS.txt` to a
+GitHub Release. An existing tag can also be released manually from the
+**Release browser extension** workflow in GitHub Actions.
+
 The main areas of the codebase are:
 
 - `src/background/` — pairing, connections, download handoff, task controls, and stored configuration;
