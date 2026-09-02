@@ -54,12 +54,15 @@ jobs:
           echo "version=$package_version" >> "$GITHUB_OUTPUT"
           echo "VERSION=$package_version" >> "$GITHUB_ENV"
 
-      - name: Install pnpm, Node.js, and dependencies
+      - name: Install pnpm and Node.js
         uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
         with:
           runtime: node@24.18.0
           cache: true
-          require-lockfile: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Run quality checks
         run: |
