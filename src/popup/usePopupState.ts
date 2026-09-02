@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import {
   type EndpointConfig,
@@ -6,6 +6,7 @@ import {
   type MotrixServerEndpoint,
 } from '@/background/EndpointConfigStore'
 import { send } from '@/background/MessageBus'
+import { snapshotEqual } from '@/popup/snapshotEqual'
 import { isErrorResponse } from '@/shared/messages'
 
 export { LOCAL_ENDPOINT_ID }
@@ -76,8 +77,10 @@ export function usePopupState(): {
     pairingCode: null,
   })
   const [switching, setSwitching] = useState(false)
+  const stateRef = useRef(state)
   const stateVersionRef = useRef(0)
   const switchingRef = useRef(false)
+  stateRef.current = state
 
   useEffect(() => {
     let cancelled = false
@@ -99,7 +102,7 @@ export function usePopupState(): {
         ) {
           return
         }
-        setState({
+        const nextState: PopupState = {
           loading: false,
           connection: connection.state,
           lastError: connection.lastError ?? null,
@@ -114,7 +117,10 @@ export function usePopupState(): {
             taskReveal: connection.capabilities?.taskReveal === true,
           },
           pairingCode: connection.pairingCode ?? null,
-        })
+        }
+        setState((current) =>
+          snapshotEqual(current, nextState) ? current : nextState
+        )
       } catch (error) {
         if (
           cancelled ||
@@ -123,22 +129,25 @@ export function usePopupState(): {
         ) {
           return
         }
-        setState((current) => ({
-          ...current,
-          loading: false,
-          connection: 'disconnected',
-          lastError: (error as Error).message,
-          // A round-trip failure carries no reason code; clearing the stale
-          // one keeps the alert on generic copy instead of the previous
-          // error's sentence.
-          lastErrorReason: null,
-          server: null,
-          capabilities: { taskReveal: false },
-          // A genuine new error (a `bg.getState` round-trip failure) always
-          // supersedes a stale flag from whatever the last successful poll
-          // reported.
-          recoveryExhaustedUnattended: false,
-        }))
+        setState((current) => {
+          const nextState: PopupState = {
+            ...current,
+            loading: false,
+            connection: 'disconnected',
+            lastError: (error as Error).message,
+            // A round-trip failure carries no reason code; clearing the stale
+            // one keeps the alert on generic copy instead of the previous
+            // error's sentence.
+            lastErrorReason: null,
+            server: null,
+            capabilities: { taskReveal: false },
+            // A genuine new error (a `bg.getState` round-trip failure) always
+            // supersedes a stale flag from whatever the last successful poll
+            // reported.
+            recoveryExhaustedUnattended: false,
+          }
+          return snapshotEqual(current, nextState) ? current : nextState
+        })
       }
     }
     void tick()
@@ -149,51 +158,54 @@ export function usePopupState(): {
     }
   }, [])
 
-  const reconnect = async (): Promise<void> => {
+  const reconnect = useCallback(async (): Promise<void> => {
     const response = await send('bg.reconnect', undefined)
     if (isErrorResponse(response)) throw new Error(response.error)
-  }
+  }, [])
 
-  const submitPairingCode = async (code: string): Promise<void> => {
+  const submitPairingCode = useCallback(async (code: string): Promise<void> => {
     const response = await send('bg.submitPairingCode', { code })
     if (isErrorResponse(response)) throw new Error(response.error)
     if (!response.ok) {
       throw new Error(response.error ?? 'no pairing code request is pending')
     }
-  }
+  }, [])
 
-  const switchEndpoint = async (endpointId: string): Promise<void> => {
-    const currentEndpoint = state.endpoint
-    if (!currentEndpoint || currentEndpoint.activeEndpointId === endpointId) {
-      return
-    }
-    if (
-      endpointId !== LOCAL_ENDPOINT_ID &&
-      !currentEndpoint.servers.some((server) => server.id === endpointId)
-    ) {
-      throw new Error('Motrix Server is not configured')
-    }
+  const switchEndpoint = useCallback(
+    async (endpointId: string): Promise<void> => {
+      const currentEndpoint = stateRef.current.endpoint
+      if (!currentEndpoint || currentEndpoint.activeEndpointId === endpointId) {
+        return
+      }
+      if (
+        endpointId !== LOCAL_ENDPOINT_ID &&
+        !currentEndpoint.servers.some((server) => server.id === endpointId)
+      ) {
+        throw new Error('Motrix Server is not configured')
+      }
 
-    switchingRef.current = true
-    stateVersionRef.current += 1
-    setSwitching(true)
-    try {
-      const activated = await send('bg.activateEndpoint', { endpointId })
-      if (isErrorResponse(activated)) throw new Error(activated.error)
-      setState((current) => ({
-        ...current,
-        connection: 'connecting',
-        endpoint: activated.config,
-        lastError: null,
-        lastErrorReason: null,
-        server: null,
-        capabilities: { taskReveal: false },
-      }))
-    } finally {
-      switchingRef.current = false
-      setSwitching(false)
-    }
-  }
+      switchingRef.current = true
+      stateVersionRef.current += 1
+      setSwitching(true)
+      try {
+        const activated = await send('bg.activateEndpoint', { endpointId })
+        if (isErrorResponse(activated)) throw new Error(activated.error)
+        setState((current) => ({
+          ...current,
+          connection: 'connecting',
+          endpoint: activated.config,
+          lastError: null,
+          lastErrorReason: null,
+          server: null,
+          capabilities: { taskReveal: false },
+        }))
+      } finally {
+        switchingRef.current = false
+        setSwitching(false)
+      }
+    },
+    []
+  )
 
   return { state, switching, reconnect, switchEndpoint, submitPairingCode }
 }

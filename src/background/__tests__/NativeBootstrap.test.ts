@@ -8,7 +8,7 @@ import {
 
 declare const browser: {
   runtime: {
-    connectNative: (...args: unknown[]) => unknown
+    connectNative?: (...args: unknown[]) => unknown
     lastError: undefined | { message: string }
   }
 }
@@ -52,6 +52,19 @@ beforeEach(() => {
 })
 
 describe('NativeBootstrap', () => {
+  it('rejects cleanly when the browser has no Native Messaging API', async () => {
+    const connectNative = browser.runtime.connectNative
+    browser.runtime.connectNative = undefined
+
+    try {
+      await expect(new NativeBootstrap().discover()).rejects.toMatchObject({
+        code: 'unsupported',
+      })
+    } finally {
+      browser.runtime.connectNative = connectNative
+    }
+  })
+
   it('returns WS port + nonce on requestPair (Plan 02 contract)', async () => {
     const port = makeFakePort()
     browser.runtime.connectNative = vi.fn(() => port)

@@ -46,6 +46,7 @@ let previewConnectionState: 'connected' | 'disconnected' = 'connected'
 
 const previewRuntime = {
   id: 'motrix-options-preview',
+  connectNative: () => undefined,
   getManifest: () => ({ version: '0.1.0' }),
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }

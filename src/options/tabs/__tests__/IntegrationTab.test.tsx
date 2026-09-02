@@ -15,6 +15,7 @@ interface MessageEnvelope {
 declare const browser: {
   runtime: {
     sendMessage: (env: MessageEnvelope) => Promise<unknown>
+    connectNative?: (...args: unknown[]) => unknown
   }
 }
 
@@ -249,6 +250,32 @@ beforeEach(() => {
 })
 
 describe('IntegrationTab', () => {
+  it('shows Server-only setup when Native Messaging is unavailable', async () => {
+    const connectNative = browser.runtime.connectNative
+    browser.runtime.connectNative = undefined
+
+    try {
+      render(<IntegrationTab />)
+      const backendList = await screen.findByRole('list', {
+        name: 'Available Motrix backends',
+      })
+
+      expect(within(backendList).queryByText('Motrix App')).toBeNull()
+      expect(within(backendList).getAllByRole('listitem')).toHaveLength(2)
+      expect(
+        await screen.findByRole('heading', {
+          level: 3,
+          name: 'Pairing Motrix Server',
+        })
+      ).toBeTruthy()
+      expect(screen.getByText('Motrix Server required')).toBeTruthy()
+      expect(screen.queryByRole('button', { name: 'Pair' })).toBeNull()
+      expect(screen.getByRole('button', { name: 'Add server' })).toBeTruthy()
+    } finally {
+      browser.runtime.connectNative = connectNative
+    }
+  })
+
   it('renders one Integration panel with backends and pairing as sections', async () => {
     render(<IntegrationTab />)
     await screen.findByRole('list', { name: 'Available Motrix backends' })

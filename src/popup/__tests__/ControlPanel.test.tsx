@@ -113,22 +113,24 @@ describe('ControlPanel task views', () => {
 
     const tablist = screen.getByRole('tablist')
     expect(tablist.className).toContain('h-8')
-    expect(tablist.className).toContain('w-40')
+    expect(tablist.className).toContain('min-w-0')
+    expect(tablist.className).toContain('flex-1')
     expect(tablist.className).toContain('rounded-[10px]')
     expect(tablist.className).toContain('bg-tab-background')
 
-    for (const tab of screen.getAllByRole('tab')) {
+    const tabs = screen.getAllByRole('tab')
+    for (const tab of tabs) {
       expect(tab.className).toContain('h-7')
-      expect(tab.className).toContain('w-[52px]')
-      expect(tab.className).toContain('flex-none')
+      expect(tab.className).toContain('w-auto')
+      expect(tab.className).toContain('min-w-0')
+      expect(tab.className).toContain('flex-auto')
       expect(tab.className).toContain('border-0')
-      expect(tab.className).toContain('px-0')
+      expect(tab.className).toContain('px-2')
       expect(tab.className).toContain('text-[11px]')
       expect(tab.className).toContain(
         'group-data-[variant=default]/tabs-list:data-active:shadow-xs'
       )
     }
-
     const card = screen.getByTestId('task-card')
     expect(card.className).toContain('h-[340px]')
     expect(card.className).toContain('rounded-[12px]')
@@ -187,6 +189,76 @@ describe('ControlPanel task views', () => {
     ).toBeTruthy()
   })
 
+  it('keeps action nodes and focus stable while live progress is repainted', () => {
+    const control = controller()
+    control.tasks = [task('active-1', 'active.iso', 'downloading', 1)]
+    const onReconnect = vi.fn()
+    const view = render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        canRevealTask
+        onReconnect={onReconnect}
+      />
+    )
+    const remove = screen.getByRole('button', { name: 'Remove active.iso' })
+    const identity = screen.getByText('active.iso')
+    remove.focus()
+
+    const updated = {
+      ...control.tasks[0],
+      progress: 0.75,
+      bytesDone: 768,
+      speedBps: 4096,
+    }
+    view.rerender(
+      <ControlPanel
+        connection="connected"
+        controller={{ ...control, tasks: [updated] }}
+        canRevealTask
+        onReconnect={onReconnect}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Remove active.iso' })).toBe(
+      remove
+    )
+    expect(screen.getByText('active.iso')).toBe(identity)
+    expect(document.activeElement).toBe(remove)
+    expect(screen.getByText(/768 B of 1\.0 KB/)).toBeTruthy()
+  })
+
+  it('reuses the transfer button when pause changes to resume', () => {
+    const control = controller()
+    control.tasks = [task('active-1', 'active.iso', 'downloading', 1)]
+    const onReconnect = vi.fn()
+    const view = render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        onReconnect={onReconnect}
+      />
+    )
+    const transfer = screen.getByRole('button', { name: 'Pause active.iso' })
+    transfer.focus()
+
+    view.rerender(
+      <ControlPanel
+        connection="connected"
+        controller={{
+          ...control,
+          tasks: [task('active-1', 'active.iso', 'paused', 1)],
+        }}
+        onReconnect={onReconnect}
+      />
+    )
+
+    expect(screen.getByRole('button', { name: 'Resume active.iso' })).toBe(
+      transfer
+    )
+    expect(document.activeElement).toBe(transfer)
+  })
+
   it('dispatches visible pause, resume, and remove icons without revealing the row', async () => {
     const control = controller()
     const user = userEvent.setup()
@@ -208,7 +280,22 @@ describe('ControlPanel task views', () => {
     const remove = screen.getByRole('button', { name: 'Remove active.iso' })
     expect(remove.getAttribute('title')).toBe('Remove active.iso')
     await user.click(remove)
-    await waitFor(() => expect(control.remove).toHaveBeenCalledWith('active-1'))
+    expect(control.remove).not.toHaveBeenCalled()
+    expect(screen.getByRole('alertdialog')).toBeTruthy()
+    expect(
+      screen.getByText('“active.iso” will be removed from the download list.')
+    ).toBeTruthy()
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Delete downloaded files',
+        }) as HTMLInputElement
+      ).checked
+    ).toBe(false)
+    await user.click(screen.getByRole('button', { name: 'Remove' }))
+    await waitFor(() =>
+      expect(control.remove).toHaveBeenCalledWith('active-1', false)
+    )
     expect(control.reveal).not.toHaveBeenCalled()
 
     await user.click(
@@ -220,6 +307,70 @@ describe('ControlPanel task views', () => {
     await waitFor(() => expect(control.resume).toHaveBeenCalledWith('failed-1'))
     expect(control.reveal).not.toHaveBeenCalled()
     expect(screen.queryByRole('button', { name: /Actions for/ })).toBeNull()
+  })
+
+  it('cancels task removal without calling the backend', async () => {
+    const control = controller()
+    const user = userEvent.setup()
+    render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        onReconnect={vi.fn()}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Remove active.iso' }))
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+    expect(control.remove).not.toHaveBeenCalled()
+  })
+
+  it('deletes downloaded files only after explicit opt-in', async () => {
+    const control = controller()
+    const user = userEvent.setup()
+    render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        onReconnect={vi.fn()}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Remove active.iso' }))
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Delete downloaded files' })
+    )
+    await user.click(screen.getByRole('button', { name: 'Remove' }))
+
+    await waitFor(() =>
+      expect(control.remove).toHaveBeenCalledWith('active-1', true)
+    )
+  })
+
+  it('preselects file deletion when the remove action is shift-clicked', async () => {
+    const control = controller()
+    render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        onReconnect={vi.fn()}
+      />
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove active.iso' }), {
+      shiftKey: true,
+    })
+
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: 'Delete downloaded files',
+        }) as HTMLInputElement
+      ).checked
+    ).toBe(true)
+    expect(control.remove).not.toHaveBeenCalled()
   })
 
   it('reveals from the task body or visible folder icon without action cross-talk', async () => {
@@ -298,7 +449,9 @@ describe('ControlPanel task views', () => {
       />
     )
 
-    expect(screen.queryByTestId('task-main-metadata')).toBeNull()
+    const mainAction = screen.getByTestId('task-main-metadata')
+    expect(mainAction.getAttribute('aria-hidden')).toBe('true')
+    expect(mainAction.getAttribute('tabindex')).toBe('-1')
     const folder = screen.getByTestId(
       'task-reveal-metadata'
     ) as HTMLButtonElement
@@ -318,6 +471,74 @@ describe('ControlPanel task views', () => {
     ).toBeTruthy()
     await user.click(folder)
     expect(control.reveal).not.toHaveBeenCalled()
+  })
+
+  it('keeps the task body mounted when metadata becomes ready', () => {
+    const control = controller()
+    control.tasks = [task('metadata', 'metadata.iso', 'fetching_metadata', 1)]
+    const onReconnect = vi.fn()
+    const view = render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        canRevealTask
+        onReconnect={onReconnect}
+      />
+    )
+    const mainAction = screen.getByTestId('task-main-metadata')
+
+    view.rerender(
+      <ControlPanel
+        connection="connected"
+        controller={{
+          ...control,
+          tasks: [task('metadata', 'metadata.iso', 'downloading', 1)],
+        }}
+        canRevealTask
+        onReconnect={onReconnect}
+      />
+    )
+
+    const readyAction = screen.getByTestId('task-main-metadata')
+    expect(readyAction).toBe(mainAction)
+    expect(readyAction.getAttribute('aria-hidden')).toBeNull()
+    expect(readyAction.getAttribute('tabindex')).toBe('0')
+  })
+
+  it('keeps focus on the task body while folder reveal is in flight', async () => {
+    const control = controller()
+    control.tasks = [task('active-1', 'active.iso', 'downloading', 1)]
+    let finishReveal!: () => void
+    vi.mocked(control.reveal).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishReveal = resolve
+        })
+    )
+    const user = userEvent.setup()
+    render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        canRevealTask
+        onReconnect={vi.fn()}
+      />
+    )
+
+    const mainAction = screen.getByTestId(
+      'task-main-active-1'
+    ) as HTMLButtonElement
+    await user.click(mainAction)
+    await waitFor(() =>
+      expect(mainAction.getAttribute('aria-busy')).toBe('true')
+    )
+
+    expect(mainAction.disabled).toBe(false)
+    expect(mainAction.getAttribute('aria-disabled')).toBe('true')
+    expect(document.activeElement).toBe(mainAction)
+
+    await act(async () => finishReveal())
+    await waitFor(() => expect(mainAction.getAttribute('aria-busy')).toBeNull())
   })
 
   it('shows localized reveal failure copy without exposing the RPC error', async () => {

@@ -11,11 +11,13 @@ export function ConnectionPanel({
   state,
   onReconnect,
   onShowPairing,
+  actionLabel,
 }: {
   title: string
   state: PopupState
   onReconnect: () => void
   onShowPairing?: () => void
+  actionLabel?: string
 }): React.ReactElement {
   const { t } = useTranslation()
 
@@ -27,6 +29,7 @@ export function ConnectionPanel({
           state={state}
           onReconnect={onReconnect}
           {...(onShowPairing ? { onShowPairing } : {})}
+          {...(actionLabel ? { actionLabel } : {})}
         />
       </CompactContentCard>
     </section>

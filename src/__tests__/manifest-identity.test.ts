@@ -15,8 +15,19 @@ describe('manifest identity', () => {
       mode: 'firefox',
     })) as Record<string, unknown>
     const settings = manifest.browser_specific_settings as
-      | { gecko?: { id?: string } }
+      | {
+          gecko?: {
+            id?: string
+            data_collection_permissions?: { required?: string[] }
+          }
+        }
       | undefined
     expect(settings?.gecko?.id).toBe(STORE_SIGNED_GECKO_ID)
+    expect(settings?.gecko?.data_collection_permissions?.required).toEqual([
+      'authenticationInfo',
+      'browsingActivity',
+      'websiteContent',
+      'websiteActivity',
+    ])
   })
 })

@@ -2411,6 +2411,12 @@ export function classifyConnectError(e: unknown): {
     return { level: 'info', reason: e.message }
   }
   if (e instanceof NativeBootstrapError) {
+    // Firefox for Android deliberately omits Native Messaging. This is an
+    // expected platform capability boundary; remote Server backends continue
+    // to work and the UI guides the user to configure one.
+    if (e.code === 'unsupported') {
+      return { level: 'info', reason: e.message }
+    }
     // NM host answered, but reports the desktop app is down — the single most
     // common state when the extension wakes and Motrix simply isn't open.
     if (e.code === 'host-error:motrix-not-running') {

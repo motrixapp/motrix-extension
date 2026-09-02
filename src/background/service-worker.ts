@@ -1,5 +1,5 @@
-// YouTube MAIN-world sniffer (full build only — excluded on webstore builds
-// from the build graph by the virtual build-variant module).
+// YouTube MAIN-world sniffer (Chromium development build only — excluded from
+// Chrome/Edge Web Store and Firefox builds by the virtual build-variant module).
 import youtubeSnifferScriptPath from 'virtual:motrix-youtube-sniffer-script'
 // Import from the `/browser` entry so vscode-jsonrpc's browser RAL is installed
 // at SW startup. vscode-jsonrpc v9 requires a platform RAL before any
@@ -76,6 +76,10 @@ import snifferScriptPath from '@/content/sniffer-entry?script&iife'
 // @ts-expect-error TS2307 — query-string import not in tsconfig types
 import relayScriptPath from '@/content/sniffer-relay?script&iife'
 import { isWebStoreBuild } from '@/shared/buildFlags'
+import {
+  CONTROL_PANEL_ACTIVITY_EVENT,
+  type ControlPanelActivityEvent,
+} from '@/shared/controlPanelEvents'
 import { initI18n } from '@/shared/i18n'
 import { isResolvableVideoPage, shouldExcludeHost } from '@/shared/media'
 import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
@@ -222,7 +226,15 @@ manager.onStateChange((s) => {
   log.info('connection state →', s)
 })
 manager.onStateChange(() => void badge.refresh())
-manager.onActivityChange(() => void badge.refresh())
+manager.onActivityChange(() => {
+  void badge.refresh()
+  // Best-effort wake-up for an open popup. There is normally no receiver while
+  // the popup is closed, and that expected rejection must not reach the SW.
+  const event: ControlPanelActivityEvent = {
+    kind: CONTROL_PANEL_ACTIVITY_EVENT,
+  }
+  void browser.runtime.sendMessage(event).catch(() => undefined)
+})
 void badge.refresh() // initial paint / re-apply a persisted error after SW restart
 
 const bus = new MessageBus({

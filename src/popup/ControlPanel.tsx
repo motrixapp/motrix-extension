@@ -14,10 +14,27 @@ import {
   Plus,
   Trash2,
 } from 'lucide-react'
-import { type ReactNode, useMemo, useState } from 'react'
+import {
+  memo,
+  type ReactNode,
+  useCallback,
+  useId,
+  useMemo,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -35,9 +52,10 @@ import {
   CompactSectionToolbar,
 } from '@/popup/CompactPopupLayout'
 import { QuickAddTaskDialog } from '@/popup/QuickAddTaskDialog'
-import type { ControlPanel as ControlPanelController } from '@/popup/useControlPanel'
+import type { TaskControlPanel as ControlPanelController } from '@/popup/useControlPanel'
 
 type TaskView = 'active' | 'failed' | 'recent'
+type PendingTaskRemoval = Pick<MdxpTask, 'id' | 'name'>
 
 const TASK_VIEWS: readonly TaskView[] = ['active', 'failed', 'recent']
 const RESUMABLE = new Set(['paused', 'error'])
@@ -78,80 +96,85 @@ function filterTasks(tasks: MdxpTask[], view: TaskView): MdxpTask[] {
   return [...filtered].sort((a, b) => taskTime(b) - taskTime(a))
 }
 
-function taskIcon(task: MdxpTask): LucideIcon {
-  if (task.status === 'error') return CircleAlert
-  if (task.status === 'completed') return CircleCheck
-  if (task.type === 'magnet') return Magnet
-  if (task.type === 'bt') return FileArchive
+function taskIcon(
+  type: MdxpTask['type'],
+  status: MdxpTask['status']
+): LucideIcon {
+  if (status === 'error') return CircleAlert
+  if (status === 'completed') return CircleCheck
+  if (type === 'magnet') return Magnet
+  if (type === 'bt') return FileArchive
   return FileDown
 }
 
-function taskIconClassName(task: MdxpTask): string {
-  if (task.status === 'error') return 'bg-destructive/[0.08] text-destructive'
-  if (task.status === 'completed') {
+function taskIconClassName(status: MdxpTask['status']): string {
+  if (status === 'error') return 'bg-destructive/[0.08] text-destructive'
+  if (status === 'completed') {
     return 'bg-connection-online/[0.08] text-connection-online'
   }
-  if (task.status === 'paused') return 'bg-muted text-muted-foreground'
+  if (status === 'paused') return 'bg-muted text-muted-foreground'
   return 'bg-speed-download/[0.07] text-speed-download'
 }
 
-function TaskRow({
-  task,
-  onPause,
-  onResume,
-  onReveal,
-  onRemove,
-  canRevealTask,
-  revealing,
-}: {
-  task: MdxpTask
-  onPause: (id: string) => void
-  onResume: (id: string) => void
-  onReveal: (id: string) => void
-  onRemove: (id: string) => void
-  canRevealTask: boolean
-  revealing: boolean
-}): React.ReactElement {
-  const { t } = useTranslation()
-  const progress = Math.round(Math.min(1, Math.max(0, task.progress)) * 100)
-  const total = task.bytesTotal
-  const Icon = taskIcon(task)
-  const status = t(`popup.tasks.status.${task.status}`)
-  const bytes = t('popup.tasks.bytes', {
-    done: formatBytes(task.bytesDone),
-    total: total === null ? '—' : formatBytes(total),
-  })
-  const secondary = [
-    status,
-    task.status === 'error' ? task.error : bytes,
-    task.speedBps > 0 ? formatSpeed(task.speedBps) : null,
-  ]
-    .filter((part): part is string => Boolean(part))
-    .join(' · ')
-  const revealReady = canRevealTask && task.status !== 'fetching_metadata'
-  const revealLabel = !canRevealTask
-    ? t('popup.tasks.openFolderUnsupported')
-    : task.status === 'fetching_metadata'
-      ? t('popup.tasks.openFolderMetadataPending')
-      : t('popup.tasks.openFolderTask', { name: task.name })
-  const pauseLabel = t('popup.tasks.pauseTask', { name: task.name })
-  const resumeLabel = t('popup.tasks.resumeTask', { name: task.name })
-  const removeLabel = t('popup.tasks.removeTask', { name: task.name })
-  const secondaryId = `task-secondary-${task.id}`
-  const revealUnavailable = !revealReady || revealing
-  const taskContent = (
+const TaskIdentity = memo(function TaskIdentity({
+  name,
+  type,
+  status,
+}: Pick<MdxpTask, 'name' | 'type' | 'status'>): React.ReactElement {
+  const Icon = taskIcon(type, status)
+  return (
     <>
       <span
-        className={`absolute top-[17px] left-4 flex size-10 items-center justify-center rounded-[10px] ${taskIconClassName(task)}`}
+        className={`absolute top-[17px] left-4 flex size-10 items-center justify-center rounded-[10px] ${taskIconClassName(status)}`}
       >
         <Icon className="size-5" strokeWidth={1.8} aria-hidden="true" />
       </span>
       <span
         className="absolute top-[9px] right-2 left-[72px] truncate text-[13px]/5 font-normal"
-        title={task.name}
+        title={name}
       >
-        {task.name}
+        {name}
       </span>
+    </>
+  )
+})
+
+const TaskLiveMetrics = memo(function TaskLiveMetrics({
+  name,
+  status,
+  progress,
+  bytesDone,
+  bytesTotal,
+  speedBps,
+  error,
+  secondaryId,
+}: Pick<
+  MdxpTask,
+  | 'name'
+  | 'status'
+  | 'progress'
+  | 'bytesDone'
+  | 'bytesTotal'
+  | 'speedBps'
+  | 'error'
+> & { secondaryId: string }): React.ReactElement {
+  const { t } = useTranslation()
+  const progressPercent = Math.round(Math.min(1, Math.max(0, progress)) * 100)
+  const statusLabel = t(`popup.tasks.status.${status}`)
+  const bytes = t('popup.tasks.bytes', {
+    done: formatBytes(bytesDone),
+    total: bytesTotal === null ? '—' : formatBytes(bytesTotal),
+  })
+  const secondary = [
+    statusLabel,
+    status === 'error' ? error : bytes,
+    speedBps > 0 ? formatSpeed(speedBps) : null,
+  ]
+    .filter((part): part is string => Boolean(part))
+    .join(' · ')
+
+  return (
+    <>
       <span
         id={secondaryId}
         className="absolute top-[31px] right-2 left-[72px] truncate text-[11px]/4 text-muted-foreground"
@@ -159,12 +182,12 @@ function TaskRow({
       >
         {secondary}
       </span>
-      {task.status !== 'error' && task.status !== 'completed' && (
+      {status !== 'error' && status !== 'completed' && (
         <Progress
-          value={progress}
-          aria-label={`${task.name} ${progress}%`}
+          value={progressPercent}
+          aria-label={`${name} ${progressPercent}%`}
           className={`absolute top-[55px] right-2 left-[72px] h-1 gap-0 [&_[data-slot=progress-track]]:h-1 [&_[data-slot=progress-track]]:bg-muted ${
-            task.status === 'paused'
+            status === 'paused'
               ? '[&_[data-slot=progress-indicator]]:bg-muted-foreground'
               : '[&_[data-slot=progress-indicator]]:bg-speed-download'
           }`}
@@ -172,102 +195,215 @@ function TaskRow({
       )}
     </>
   )
+})
+
+const TaskActions = memo(function TaskActions({
+  taskId,
+  taskName,
+  status,
+  onPause,
+  onResume,
+  onReveal,
+  onRemove,
+  canRevealTask,
+  revealing,
+}: {
+  taskId: string
+  taskName: string
+  status: MdxpTask['status']
+  onPause: (id: string) => void
+  onResume: (id: string) => void
+  onReveal: (id: string) => void
+  onRemove: (id: string, deleteFiles: boolean) => void
+  canRevealTask: boolean
+  revealing: boolean
+}): React.ReactElement {
+  const { t } = useTranslation()
+  const revealReady = canRevealTask && status !== 'fetching_metadata'
+  const revealLabel = !canRevealTask
+    ? t('popup.tasks.openFolderUnsupported')
+    : status === 'fetching_metadata'
+      ? t('popup.tasks.openFolderMetadataPending')
+      : t('popup.tasks.openFolderTask', { name: taskName })
+  const revealUnavailable = !revealReady || revealing
+  const transferAction = PAUSABLE.has(status)
+    ? 'pause'
+    : RESUMABLE.has(status)
+      ? 'resume'
+      : null
+  const transferLabel =
+    transferAction === 'pause'
+      ? t('popup.tasks.pauseTask', { name: taskName })
+      : t('popup.tasks.resumeTask', { name: taskName })
+  const TransferIcon = transferAction === 'resume' ? Play : Pause
+  const removeLabel = t('popup.tasks.removeTask', { name: taskName })
+
+  return (
+    <div
+      data-testid={`task-actions-${taskId}`}
+      className="absolute top-[23px] right-3 z-10 flex w-[88px] items-center justify-end gap-0.5"
+    >
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        data-testid={`task-reveal-${taskId}`}
+        data-task-id={taskId}
+        data-task-action="reveal"
+        className="size-7 text-muted-foreground aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+        aria-label={revealLabel}
+        aria-busy={revealing || undefined}
+        aria-disabled={revealUnavailable || undefined}
+        title={revealLabel}
+        onClick={(event) => {
+          event.stopPropagation()
+          if (revealUnavailable) return
+          onReveal(taskId)
+        }}
+      >
+        <FolderOpen className="size-3.5" aria-hidden="true" />
+      </Button>
+      {transferAction !== null && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-xs"
+          data-testid={`task-transfer-${taskId}`}
+          data-task-id={taskId}
+          data-task-action="transfer"
+          className="size-7 text-muted-foreground"
+          aria-label={transferLabel}
+          title={transferLabel}
+          onClick={(event) => {
+            event.stopPropagation()
+            if (transferAction === 'pause') onPause(taskId)
+            else onResume(taskId)
+          }}
+        >
+          <TransferIcon className="size-3.5" aria-hidden="true" />
+        </Button>
+      )}
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        data-task-id={taskId}
+        data-task-action="remove"
+        className="size-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+        aria-label={removeLabel}
+        title={removeLabel}
+        onClick={(event) => {
+          event.stopPropagation()
+          onRemove(taskId, event.shiftKey)
+        }}
+      >
+        <Trash2 className="size-3.5" aria-hidden="true" />
+      </Button>
+    </div>
+  )
+})
+
+interface TaskRowProps {
+  task: MdxpTask
+  onPause: (id: string) => void
+  onResume: (id: string) => void
+  onReveal: (id: string) => void
+  onRemove: (id: string, deleteFiles: boolean) => void
+  canRevealTask: boolean
+  revealing: boolean
+}
+
+function taskRowPropsEqual(
+  previous: TaskRowProps,
+  next: TaskRowProps
+): boolean {
+  const a = previous.task
+  const b = next.task
+  return (
+    previous.onPause === next.onPause &&
+    previous.onResume === next.onResume &&
+    previous.onReveal === next.onReveal &&
+    previous.onRemove === next.onRemove &&
+    previous.canRevealTask === next.canRevealTask &&
+    previous.revealing === next.revealing &&
+    a.id === b.id &&
+    a.name === b.name &&
+    a.type === b.type &&
+    a.status === b.status &&
+    a.progress === b.progress &&
+    a.bytesDone === b.bytesDone &&
+    a.bytesTotal === b.bytesTotal &&
+    a.speedBps === b.speedBps &&
+    a.error === b.error
+  )
+}
+
+const TaskRow = memo(function TaskRow({
+  task,
+  onPause,
+  onResume,
+  onReveal,
+  onRemove,
+  canRevealTask,
+  revealing,
+}: TaskRowProps): React.ReactElement {
+  const { t } = useTranslation()
+  const revealReady = canRevealTask && task.status !== 'fetching_metadata'
+  const secondaryId = `task-secondary-${task.id}`
+  const revealUnavailable = !revealReady || revealing
 
   return (
     <li
       data-testid={`task-row-${task.id}`}
       className="relative h-[74px] shrink-0 after:pointer-events-none after:absolute after:inset-x-4 after:bottom-0 after:h-px after:bg-border"
     >
-      {revealReady ? (
-        <button
-          type="button"
-          data-testid={`task-main-${task.id}`}
-          className="absolute inset-y-0 right-[108px] left-0 text-left transition-colors hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 focus-visible:outline-none disabled:pointer-events-none"
-          aria-label={t('popup.tasks.openFolderTask', { name: task.name })}
-          aria-describedby={secondaryId}
-          aria-busy={revealing || undefined}
-          disabled={revealing}
-          onClick={() => onReveal(task.id)}
-        >
-          {taskContent}
-        </button>
-      ) : (
-        <div className="absolute inset-y-0 right-[108px] left-0">
-          {taskContent}
-        </div>
-      )}
-      <div
-        data-testid={`task-actions-${task.id}`}
-        className="absolute top-[23px] right-3 z-10 flex w-[88px] items-center justify-end gap-0.5"
-      >
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          data-testid={`task-reveal-${task.id}`}
-          className="size-7 text-muted-foreground aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
-          aria-label={revealLabel}
-          aria-busy={revealing || undefined}
-          aria-disabled={revealUnavailable || undefined}
-          title={revealLabel}
-          onClick={(event) => {
-            event.stopPropagation()
-            if (revealUnavailable) return
-            onReveal(task.id)
-          }}
-        >
-          <FolderOpen className="size-3.5" aria-hidden="true" />
-        </Button>
-        {PAUSABLE.has(task.status) && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="size-7 text-muted-foreground"
-            aria-label={pauseLabel}
-            title={pauseLabel}
-            onClick={(event) => {
-              event.stopPropagation()
-              onPause(task.id)
-            }}
-          >
-            <Pause className="size-3.5" aria-hidden="true" />
-          </Button>
-        )}
-        {RESUMABLE.has(task.status) && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-xs"
-            className="size-7 text-muted-foreground"
-            aria-label={resumeLabel}
-            title={resumeLabel}
-            onClick={(event) => {
-              event.stopPropagation()
-              onResume(task.id)
-            }}
-          >
-            <Play className="size-3.5" aria-hidden="true" />
-          </Button>
-        )}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          className="size-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
-          aria-label={removeLabel}
-          title={removeLabel}
-          onClick={(event) => {
-            event.stopPropagation()
-            onRemove(task.id)
-          }}
-        >
-          <Trash2 className="size-3.5" aria-hidden="true" />
-        </Button>
+      <button
+        type="button"
+        data-testid={`task-main-${task.id}`}
+        data-task-id={task.id}
+        data-task-action="main"
+        className="absolute inset-y-0 right-[108px] left-0 text-left transition-colors hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 focus-visible:outline-none aria-disabled:pointer-events-none"
+        aria-label={
+          revealReady
+            ? t('popup.tasks.openFolderTask', { name: task.name })
+            : undefined
+        }
+        aria-describedby={secondaryId}
+        aria-busy={revealing || undefined}
+        aria-disabled={revealUnavailable || undefined}
+        aria-hidden={revealReady ? undefined : true}
+        tabIndex={revealReady ? 0 : -1}
+        onClick={() => {
+          if (!revealUnavailable) onReveal(task.id)
+        }}
+      />
+      <div className="pointer-events-none absolute inset-y-0 right-[108px] left-0">
+        <TaskIdentity name={task.name} type={task.type} status={task.status} />
+        <TaskLiveMetrics
+          name={task.name}
+          status={task.status}
+          progress={task.progress}
+          bytesDone={task.bytesDone}
+          bytesTotal={task.bytesTotal}
+          speedBps={task.speedBps}
+          error={task.error}
+          secondaryId={secondaryId}
+        />
       </div>
+      <TaskActions
+        taskId={task.id}
+        taskName={task.name}
+        status={task.status}
+        onPause={onPause}
+        onResume={onResume}
+        onReveal={onReveal}
+        onRemove={onRemove}
+        canRevealTask={canRevealTask}
+        revealing={revealing}
+      />
     </li>
   )
-}
+}, taskRowPropsEqual)
 
 function EmptyTasks({ view }: { view: TaskView }): React.ReactElement {
   const { t } = useTranslation()
@@ -293,7 +429,7 @@ interface ControlPanelProps {
   notice?: ReactNode
 }
 
-export function ControlPanel({
+export const ControlPanel = memo(function ControlPanel({
   connection,
   controller,
   canRevealTask = false,
@@ -304,6 +440,13 @@ export function ControlPanel({
   const [view, setView] = useState<TaskView>('active')
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [taskToRemove, setTaskToRemove] = useState<PendingTaskRemoval | null>(
+    null
+  )
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
+  const [removingTask, setRemovingTask] = useState(false)
+  const [deleteTaskFiles, setDeleteTaskFiles] = useState(false)
+  const deleteTaskFilesId = useId()
   const [revealingTaskIds, setRevealingTaskIds] = useState<Set<string>>(
     () => new Set()
   )
@@ -324,41 +467,86 @@ export function ControlPanel({
     connection === 'handshaking' ||
     connection === 'awaiting-code'
 
-  const runAction = async (action: () => Promise<void>): Promise<void> => {
+  const runAction = useCallback(
+    async (action: () => Promise<void>): Promise<void> => {
+      setActionError(null)
+      try {
+        await action()
+      } catch (error) {
+        setActionError((error as Error).message)
+      }
+    },
+    []
+  )
+
+  const revealTask = useCallback(
+    async (taskId: string): Promise<void> => {
+      setActionError(null)
+      setRevealingTaskIds((current) => new Set(current).add(taskId))
+      try {
+        await controller.reveal(taskId)
+      } catch {
+        // RPC messages can contain implementation details or local paths.
+        // The popup deliberately surfaces stable, localized copy instead.
+        setActionError(t('popup.tasks.openFolderError'))
+      } finally {
+        setRevealingTaskIds((current) => {
+          const next = new Set(current)
+          next.delete(taskId)
+          return next
+        })
+      }
+    },
+    [controller.reveal, t]
+  )
+
+  const pauseTask = useCallback(
+    (taskId: string) => {
+      void runAction(() => controller.pause(taskId))
+    },
+    [controller.pause, runAction]
+  )
+  const resumeTask = useCallback(
+    (taskId: string) => {
+      void runAction(() => controller.resume(taskId))
+    },
+    [controller.resume, runAction]
+  )
+  const removeTask = useCallback(
+    (taskId: string, deleteFiles: boolean) => {
+      const task = controller.tasks.find((candidate) => candidate.id === taskId)
+      if (task) {
+        setDeleteTaskFiles(deleteFiles)
+        setTaskToRemove({ id: task.id, name: task.name })
+        setRemoveDialogOpen(true)
+      }
+    },
+    [controller.tasks]
+  )
+
+  const confirmRemoveTask = useCallback(async (): Promise<void> => {
+    if (taskToRemove === null || removingTask) return
     setActionError(null)
+    setRemovingTask(true)
     try {
-      await action()
+      await controller.remove(taskToRemove.id, deleteTaskFiles)
     } catch (error) {
       setActionError((error as Error).message)
-    }
-  }
-
-  const revealTask = async (taskId: string): Promise<void> => {
-    setActionError(null)
-    setRevealingTaskIds((current) => new Set(current).add(taskId))
-    try {
-      await controller.reveal(taskId)
-    } catch {
-      // RPC messages can contain implementation details or local paths.
-      // The popup deliberately surfaces stable, localized copy instead.
-      setActionError(t('popup.tasks.openFolderError'))
     } finally {
-      setRevealingTaskIds((current) => {
-        const next = new Set(current)
-        next.delete(taskId)
-        return next
-      })
+      setRemovingTask(false)
+      setDeleteTaskFiles(false)
+      setRemoveDialogOpen(false)
     }
-  }
+  }, [controller.remove, deleteTaskFiles, removingTask, taskToRemove])
 
   const filter = (
-    <TabsList className="h-8 w-40 gap-0 rounded-[10px] bg-tab-background p-0.5 group-data-horizontal/tabs:h-8">
+    <TabsList className="h-8 min-w-0 flex-1 gap-0 rounded-[10px] bg-tab-background p-0.5 group-data-horizontal/tabs:h-8">
       {TASK_VIEWS.map((candidate) => (
         <TabsTrigger
           key={candidate}
           value={candidate}
           disabled={controller.loading}
-          className="h-7 w-[52px] flex-none rounded-[8px] border-0 px-0 py-0 text-[11px] font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
+          className="h-7 w-auto min-w-0 flex-auto border-0 px-2 py-0 text-[11px] font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
         >
           {t(`popup.tasks.filters.${candidate}`)}
         </TabsTrigger>
@@ -377,7 +565,7 @@ export function ControlPanel({
         disabled={controller.loading}
         onClick={() => setQuickAddOpen(true)}
       >
-        <Plus className="size-[18px]" aria-hidden="true" />
+        <Plus className="size-4.5" aria-hidden="true" />
       </Button>
     ) : undefined
 
@@ -460,16 +648,10 @@ export function ControlPanel({
                           <TaskRow
                             key={task.id}
                             task={task}
-                            onPause={(id) =>
-                              void runAction(() => controller.pause(id))
-                            }
-                            onResume={(id) =>
-                              void runAction(() => controller.resume(id))
-                            }
-                            onReveal={(id) => void revealTask(id)}
-                            onRemove={(id) =>
-                              void runAction(() => controller.remove(id))
-                            }
+                            onPause={pauseTask}
+                            onResume={resumeTask}
+                            onReveal={revealTask}
+                            onRemove={removeTask}
                             canRevealTask={canRevealTask}
                             revealing={revealingTaskIds.has(task.id)}
                           />
@@ -508,6 +690,56 @@ export function ControlPanel({
           await controller.refresh()
         }}
       />
+      <AlertDialog
+        open={removeDialogOpen}
+        onOpenChange={(open) => {
+          if (!open && !removingTask) {
+            setDeleteTaskFiles(false)
+            setRemoveDialogOpen(false)
+          }
+        }}
+      >
+        <AlertDialogContent size="sm" className="max-w-[360px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('popup.tasks.removeConfirmTitle')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('popup.tasks.removeConfirmDescription', {
+                name: taskToRemove?.name ?? '',
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <label
+            htmlFor={deleteTaskFilesId}
+            className="flex cursor-pointer items-center gap-2 text-sm"
+          >
+            <input
+              id={deleteTaskFilesId}
+              type="checkbox"
+              checked={deleteTaskFiles}
+              disabled={removingTask}
+              onChange={(event) => setDeleteTaskFiles(event.target.checked)}
+              className="size-4 accent-primary"
+            />
+            <span>{t('popup.tasks.removeDeleteFilesLabel')}</span>
+          </label>
+          <AlertDialogFooter>
+            <AlertDialogCancel type="button" disabled={removingTask}>
+              {t('options.common.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              type="button"
+              variant="destructive"
+              disabled={removingTask}
+              onClick={() => void confirmRemoveTask()}
+            >
+              {removingTask && <Spinner data-icon="inline-start" />}
+              {t('popup.tasks.removeConfirmAction')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
-}
+})

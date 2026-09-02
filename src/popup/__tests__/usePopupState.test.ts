@@ -119,6 +119,20 @@ describe('usePopupState', () => {
     expect(commands.map(({ kind }) => kind)).not.toContain('bg.reconnect')
   })
 
+  it('reuses an unchanged polling snapshot instead of redrawing the popup', async () => {
+    vi.useFakeTimers()
+    const { result } = renderHook(() => usePopupState())
+
+    await vi.waitFor(() => expect(result.current.state.loading).toBe(false))
+    const firstSnapshot = result.current.state
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000)
+    })
+
+    expect(result.current.state).toBe(firstSnapshot)
+  })
+
   it('reads taskReveal capability and clears it while switching backends', async () => {
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope

@@ -14,6 +14,7 @@ declare const browser: {
   runtime: {
     sendMessage: (msg: unknown) => Promise<unknown>
     openOptionsPage: () => Promise<void>
+    connectNative?: (...args: unknown[]) => unknown
   }
 }
 
@@ -361,6 +362,44 @@ describe('Popup App', () => {
     expect(screen.getAllByRole('menuitemradio')).toHaveLength(3)
     expect(screen.queryByText(/Motrix · electron/i)).toBeNull()
     expect(screen.getByRole('menuitem', { name: /Motrix Server/ })).toBeTruthy()
+  })
+
+  it('offers only Motrix Server setup when Native Messaging is unavailable', async () => {
+    const connectNative = browser.runtime.connectNative
+    browser.runtime.connectNative = undefined
+    browser.runtime.sendMessage = vi.fn(async (msg: unknown) => {
+      const env = msg as Envelope
+      if (env.kind === 'bg.getState') return { state: 'disconnected' }
+      if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
+      if (env.kind === 'bg.scanActiveTab') {
+        return { media: [], selectionKinds: ['direct'] }
+      }
+      return { ok: true }
+    })
+
+    try {
+      const user = userEvent.setup()
+      render(<App />)
+
+      const trigger = await screen.findByRole('button', {
+        name: /^Choose Motrix backend: Motrix Server/,
+      })
+      await user.click(trigger)
+      expect(
+        screen.queryByRole('menuitemradio', { name: /Motrix App/ })
+      ).toBeNull()
+      expect(
+        await screen.findByRole('menuitemradio', { name: /Studio Server/ })
+      ).toBeTruthy()
+      expect(screen.getAllByRole('menuitemradio')).toHaveLength(2)
+
+      await user.click(
+        screen.getByRole('menuitem', { name: /Manage Motrix Servers/ })
+      )
+      expect(browser.runtime.openOptionsPage).toHaveBeenCalledOnce()
+    } finally {
+      browser.runtime.connectNative = connectNative
+    }
   })
 
   it('switches between configured servers and marks only the active radio item', async () => {

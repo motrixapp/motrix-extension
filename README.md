@@ -7,7 +7,7 @@ Send downloads from your browser to [Motrix](https://motrix.app), then check the
 I think of it as a bridge between the browser and Motrix. The browser is good at finding resources; Motrix is good at downloading them reliably. That division of labor is simple, and it feels right in daily use.
 
 > [!IMPORTANT]
-> `v0.1.0` is still in development and has not been released publicly. It is not ready to be your everyday download tool. YouTube support, in particular, is only placeholder code for integration testing and cannot perform a real download. The Chrome Web Store build removes that code entirely.
+> `v0.1.2` is still in development and has not been released publicly. It is not ready to be your everyday download tool. YouTube support, in particular, is only placeholder code for integration testing and cannot perform a real download. Store-facing Chrome/Edge and Firefox builds remove that code entirely.
 
 ## What you can do
 
@@ -24,9 +24,12 @@ This is useful, but websites are messy. Login state, expiring URLs, hotlink prot
 
 You will need:
 
-- Chrome 120 or later, or Firefox 128 or later;
+- Chrome 120 or later, or Firefox 142 or later;
 - a Motrix App or Motrix Server compatible with the current MDXP / MBP1 protocol;
 - for a local connection, a running Motrix App with its browser integration component installed correctly.
+
+Firefox for Android connects through Motrix Server. Native Messaging is not
+available there, so the local Motrix App backend is shown only on desktop.
 
 There is no store release or stable installer yet. Early testing requires a source build. If you simply want a quiet, dependable download tool, I would wait for the first public release. It will save you a fair amount of friction.
 

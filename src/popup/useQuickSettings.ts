@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { send } from '@/background/MessageBus'
 import type { NotificationsConfig } from '@/shared/notifications'
 import { CONSENT_VERSION, type TakeoverConfig } from '@/shared/takeover'
@@ -198,17 +198,32 @@ export function useQuickSettings(): QuickSettingsController {
     [persistNotifications]
   )
 
-  return {
-    takeover,
-    notifications,
-    loading,
-    saving,
-    error,
-    consentRequired,
-    reload,
-    requestTakeoverEnabled,
-    confirmTakeoverConsent,
-    cancelTakeoverConsent,
-    setNotification,
-  }
+  return useMemo(
+    () => ({
+      takeover,
+      notifications,
+      loading,
+      saving,
+      error,
+      consentRequired,
+      reload,
+      requestTakeoverEnabled,
+      confirmTakeoverConsent,
+      cancelTakeoverConsent,
+      setNotification,
+    }),
+    [
+      cancelTakeoverConsent,
+      confirmTakeoverConsent,
+      consentRequired,
+      error,
+      loading,
+      notifications,
+      reload,
+      requestTakeoverEnabled,
+      saving,
+      setNotification,
+      takeover,
+    ]
+  )
 }

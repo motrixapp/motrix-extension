@@ -6,6 +6,7 @@ import { defineConfig } from 'vite'
 import {
   buildOutputHygienePlugin,
   buildVariantPlugin,
+  cspSafeZodPlugin,
 } from '#build-variant-plugin'
 import manifest from '#manifest-config'
 
@@ -13,6 +14,7 @@ export default defineConfig(({ command, mode }) => {
   const firefox = mode === 'firefox'
   const webStore =
     mode === 'webstore' || process.env.MOTRIX_BUILD === 'webstore'
+  const excludeYouTube = webStore || firefox
   const releaseBuild = command === 'build' && webStore
   const debugBuild = command === 'build' && !webStore
   const outputDir = resolve(
@@ -21,7 +23,8 @@ export default defineConfig(({ command, mode }) => {
   )
   return {
     plugins: [
-      buildVariantPlugin(webStore),
+      buildVariantPlugin(excludeYouTube),
+      cspSafeZodPlugin(),
       react(),
       tailwindcss(),
       crx({ manifest, browser: firefox ? 'firefox' : 'chrome' }),
@@ -41,7 +44,7 @@ export default defineConfig(({ command, mode }) => {
     },
     define: {
       __BROWSER__: JSON.stringify(firefox ? 'firefox' : 'chromium'),
-      __MOTRIX_BUILD__: JSON.stringify(webStore ? 'webstore' : 'full'),
+      __MOTRIX_BUILD__: JSON.stringify(excludeYouTube ? 'webstore' : 'full'),
       // Dev-only §7.3 backoff override (see shared/buildFlags.ts). Never
       // honored in a Web Store build: the define is forced to undefined
       // here regardless of the environment.

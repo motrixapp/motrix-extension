@@ -153,17 +153,17 @@ function verifyIifeScript(outputPath, scriptPath, expectSourceMap) {
   }
 }
 
-function verifyWebStoreExclusions(manifest, files, outputPath) {
+function verifyYouTubeExclusions(variant, manifest, files, outputPath) {
   const manifestText = JSON.stringify(manifest)
   if (/youtube\.com|youtu\.be/i.test(manifestText)) {
-    throw new Error('Web Store manifest still declares a YouTube host')
+    throw new Error(`${variant} manifest still declares a YouTube host`)
   }
   const forbiddenFile = files.find((path) =>
     /youtube-sniffer/i.test(relative(outputPath, path))
   )
   if (forbiddenFile) {
     throw new Error(
-      `Web Store output contains a YouTube sniffer: ${relative(outputPath, forbiddenFile)}`
+      `${variant} output contains a YouTube sniffer: ${relative(outputPath, forbiddenFile)}`
     )
   }
   for (const path of files) {
@@ -175,7 +175,36 @@ function verifyWebStoreExclusions(manifest, files, outputPath) {
       )
     ) {
       throw new Error(
-        `Web Store output contains executable YouTube capability: ${relative(outputPath, path)}`
+        `${variant} output contains executable YouTube capability: ${relative(outputPath, path)}`
+      )
+    }
+  }
+}
+
+function verifyDynamicCodeAbsence(files, outputPath) {
+  const forbidden = [
+    {
+      pattern: /(^|[^\w$.])eval\s*\(/,
+      label: 'eval call',
+    },
+    {
+      pattern: /(^|[^\w$.])Function\s*\(/,
+      label: 'Function constructor',
+    },
+    {
+      pattern:
+        /\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=\s*Function\s*(?:[;,]|$)/m,
+      label: 'aliased Function constructor',
+    },
+  ]
+
+  for (const path of files) {
+    if (!path.endsWith('.js')) continue
+    const source = readFileSync(path, 'utf8')
+    const match = forbidden.find(({ pattern }) => pattern.test(source))
+    if (match) {
+      throw new Error(
+        `Build output contains a ${match.label}: ${relative(outputPath, path)}`
       )
     }
   }
@@ -214,9 +243,10 @@ export function verifyBuild(variant) {
 
   const references = collectManifestReferences(manifest)
   verifyManifestReferences(outputPath, relativeFiles, references)
+  verifyDynamicCodeAbsence(files, outputPath)
 
   const expectedIifeScripts = [...GENERIC_IIFE_SCRIPTS]
-  if (variant !== 'webstore') expectedIifeScripts.push(YOUTUBE_IIFE_SCRIPT)
+  if (variant === 'chromium') expectedIifeScripts.push(YOUTUBE_IIFE_SCRIPT)
   const referencedFiles = new Set(references.keys())
   for (const scriptPath of expectedIifeScripts) {
     if (!referencedFiles.has(scriptPath)) {
@@ -244,12 +274,14 @@ export function verifyBuild(variant) {
         `Web Store output refers to a source map: ${relative(outputPath, sourceMapReference)}`
       )
     }
-    verifyWebStoreExclusions(manifest, files, outputPath)
+    verifyYouTubeExclusions(variant, manifest, files, outputPath)
   } else {
     if (sourceMapFiles.length === 0) {
       throw new Error(`${variant} debug build contains no source maps`)
     }
-    if (!JSON.stringify(manifest).includes('youtube.com')) {
+    if (variant === 'firefox') {
+      verifyYouTubeExclusions(variant, manifest, files, outputPath)
+    } else if (!JSON.stringify(manifest).includes('youtube.com')) {
       throw new Error(`${variant} full build is missing the YouTube capability`)
     }
   }

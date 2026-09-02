@@ -90,6 +90,7 @@ import { InstancePicker } from '@/popup/InstancePicker'
 import { PairingCodePanel } from '@/popup/PairingCodePanel'
 import { normalizeRemoteEndpoint } from '@/shared/endpoint'
 import { connectionErrorKey } from '@/shared/errorCopy'
+import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 
 function assertMessageSucceeded(value: unknown): void {
   if (
@@ -487,6 +488,7 @@ function PairingDialog({
 
 export function IntegrationTab(): React.ReactElement {
   const { t } = useTranslation()
+  const localBackendAvailable = hasNativeMessagingSupport()
   const [config, setConfig] = useState<EndpointConfig | null>(null)
   const [connectionState, setConnectionState] =
     useState<ConnectionState>('disconnected')
@@ -573,8 +575,15 @@ export function IntegrationTab(): React.ReactElement {
   activeEndpointIdRef.current = activeEndpointId
   const activeServer =
     config?.servers.find((server) => server.id === activeEndpointId) ?? null
+  const localBackendUnavailable =
+    !localBackendAvailable && activeEndpointId === LOCAL_ENDPOINT_ID
   const selectedEndpointName =
-    activeServer?.name ?? t('options.endpoint.localName')
+    activeServer?.name ??
+    t(
+      localBackendAvailable
+        ? 'options.endpoint.localName'
+        : 'popup.backend.server'
+    )
   const paired =
     pairing?.endpointId === activeEndpointId ? pairing.paired : false
   const isRemote = activeEndpointId !== LOCAL_ENDPOINT_ID
@@ -584,12 +593,16 @@ export function IntegrationTab(): React.ReactElement {
     description: string
     server: MotrixServerEndpoint | null
   }> = [
-    {
-      id: LOCAL_ENDPOINT_ID,
-      name: t('options.endpoint.localName'),
-      description: t('options.endpoint.localDescription'),
-      server: null,
-    },
+    ...(localBackendAvailable
+      ? [
+          {
+            id: LOCAL_ENDPOINT_ID,
+            name: t('options.endpoint.localName'),
+            description: t('options.endpoint.localDescription'),
+            server: null,
+          },
+        ]
+      : []),
     ...(config?.servers ?? []).map((server) => ({
       id: server.id,
       name: server.name,
@@ -970,7 +983,17 @@ export function IntegrationTab(): React.ReactElement {
           })}
           description={t('options.pairing.scopedHelp')}
         >
-          {pairingLoading ? (
+          {localBackendUnavailable ? (
+            <Alert className="gap-y-1">
+              <ServerIcon />
+              <AlertTitle>
+                {t('options.pairing.serverRequiredTitle')}
+              </AlertTitle>
+              <AlertDescription>
+                {t('options.pairing.serverRequiredHelp')}
+              </AlertDescription>
+            </Alert>
+          ) : pairingLoading ? (
             <Alert className="gap-y-1">
               <Spinner />
               <AlertTitle>{t('options.pairing.loading')}</AlertTitle>
@@ -1135,37 +1158,39 @@ export function IntegrationTab(): React.ReactElement {
               </AlertDescription>
             </Alert>
           )}
-          <div className="flex flex-wrap gap-2">
-            {!paired && (
+          {!localBackendUnavailable && (
+            <div className="flex flex-wrap gap-2">
+              {!paired && (
+                <Button
+                  type="button"
+                  disabled={config === null || busy}
+                  onClick={() => setPairDialogOpen(true)}
+                >
+                  <KeyRoundIcon data-icon="inline-start" />
+                  {t('options.pairing.pair')}
+                </Button>
+              )}
               <Button
                 type="button"
-                disabled={config === null || busy}
-                onClick={() => setPairDialogOpen(true)}
+                variant="outline"
+                disabled={config === null || busy || !paired}
+                onClick={() => void handleReconnect()}
               >
-                <KeyRoundIcon data-icon="inline-start" />
-                {t('options.pairing.pair')}
+                {busy && <Spinner data-icon="inline-start" />}
+                {!busy && <RefreshCwIcon data-icon="inline-start" />}
+                {t('options.pairing.reconnect')}
               </Button>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              disabled={config === null || busy || !paired}
-              onClick={() => void handleReconnect()}
-            >
-              {busy && <Spinner data-icon="inline-start" />}
-              {!busy && <RefreshCwIcon data-icon="inline-start" />}
-              {t('options.pairing.reconnect')}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              disabled={!paired || busy}
-              onClick={() => void handleForget()}
-            >
-              <Trash2Icon data-icon="inline-start" />
-              {t('options.pairing.forget')}
-            </Button>
-          </div>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={!paired || busy}
+                onClick={() => void handleForget()}
+              >
+                <Trash2Icon data-icon="inline-start" />
+                {t('options.pairing.forget')}
+              </Button>
+            </div>
+          )}
         </SettingSection>
       </SettingPanel>
 
@@ -1202,7 +1227,9 @@ export function IntegrationTab(): React.ReactElement {
             <AlertDialogDescription>
               {t(
                 serverToDelete?.id === activeEndpointId
-                  ? 'options.servers.deleteActiveDescription'
+                  ? localBackendAvailable
+                    ? 'options.servers.deleteActiveDescription'
+                    : 'options.servers.deleteActiveServerOnlyDescription'
                   : 'options.servers.deleteDescription',
                 { name: serverToDelete?.name ?? '' }
               )}

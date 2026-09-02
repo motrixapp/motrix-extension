@@ -1,4 +1,5 @@
 import { ChevronRight, Settings } from 'lucide-react'
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AlertDialog,
@@ -91,7 +92,7 @@ export interface QuickSettingsPanelProps {
   className?: string
 }
 
-export function QuickSettingsPanel({
+export const QuickSettingsPanel = memo(function QuickSettingsPanel({
   controller,
   onOpenFullSettings,
   className,
@@ -243,11 +244,16 @@ export function QuickSettingsPanel({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel type="button" disabled={controller.saving}>
+            <AlertDialogCancel
+              type="button"
+              className="min-w-0"
+              disabled={controller.saving}
+            >
               {t('options.takeover.consentCancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               type="button"
+              className="min-w-0"
               disabled={controller.saving}
               onClick={() => void controller.confirmTakeoverConsent()}
             >
@@ -258,4 +264,4 @@ export function QuickSettingsPanel({
       </AlertDialog>
     </section>
   )
-}
+})

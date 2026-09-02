@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { LOCAL_ENDPOINT_ID, type PopupEndpoint } from '@/popup/usePopupState'
+import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 
 interface BackendSelectorProps {
   connection: ConnectionState | null
@@ -47,11 +48,14 @@ export function BackendSelector({
   onConfigureServer,
 }: BackendSelectorProps): React.ReactElement {
   const { t } = useTranslation()
+  const localBackendAvailable = hasNativeMessagingSupport()
   const activeEndpointId = endpoint?.activeEndpointId ?? LOCAL_ENDPOINT_ID
   const activeServer = endpoint?.servers.find(
     (candidate) => candidate.id === activeEndpointId
   )
-  const backendName = activeServer?.name ?? t('popup.backend.app')
+  const backendName =
+    activeServer?.name ??
+    t(localBackendAvailable ? 'popup.backend.app' : 'popup.backend.server')
   const statusLabel = t(`popup.status.${connection ?? 'disconnected'}`)
 
   return (
@@ -91,15 +95,17 @@ export function BackendSelector({
           onValueChange={onEndpointChange}
         >
           <DropdownMenuLabel>{t('popup.backend.choose')}</DropdownMenuLabel>
-          <DropdownMenuRadioItem value={LOCAL_ENDPOINT_ID}>
-            <Laptop aria-hidden="true" />
-            <span className="flex min-w-0 flex-1 flex-col">
-              <span>{t('popup.backend.app')}</span>
-              <span className="truncate text-xs text-muted-foreground">
-                {t('popup.backend.appDescription')}
+          {localBackendAvailable && (
+            <DropdownMenuRadioItem value={LOCAL_ENDPOINT_ID}>
+              <Laptop aria-hidden="true" />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span>{t('popup.backend.app')}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {t('popup.backend.appDescription')}
+                </span>
               </span>
-            </span>
-          </DropdownMenuRadioItem>
+            </DropdownMenuRadioItem>
+          )}
           {endpoint?.servers.map((configuredServer) => (
             <DropdownMenuRadioItem
               key={configuredServer.id}

@@ -5,6 +5,7 @@ export default defineManifest((env) => {
   const firefox = env.mode === 'firefox'
   const webStore =
     env.mode === 'webstore' || process.env.MOTRIX_BUILD === 'webstore'
+  const includeYouTube = !webStore && !firefox
   const genericSnifferScripts = [
     {
       matches: ['http://*/*', 'https://*/*'],
@@ -55,7 +56,7 @@ export default defineManifest((env) => {
     options_ui: { page: 'options.html', open_in_tab: true },
     content_scripts: [
       ...genericSnifferScripts,
-      ...(!webStore
+      ...(includeYouTube
         ? [
             {
               matches: ['*://*.youtube.com/*', '*://youtu.be/*'],
@@ -86,10 +87,27 @@ export default defineManifest((env) => {
           browser_specific_settings: {
             gecko: {
               id: 'motrix-extension@motrix.app',
-              // Firefox 128 adds execution-world selection for content scripts,
-              // which the generic sniffer needs to observe page fetch/XHR.
-              strict_min_version: '128.0',
+              // Firefox 140 introduced the built-in data-transmission consent
+              // experience on desktop, while Firefox for Android gained the
+              // same manifest support in 142. Use the shared floor so AMO does
+              // not advertise an unsupported Android compatibility range. It
+              // also includes the execution-world support used by the generic
+              // fetch/XHR collector (introduced in Firefox 128).
+              strict_min_version: '142.0',
+              data_collection_permissions: {
+                required: [
+                  'authenticationInfo',
+                  'browsingActivity',
+                  'websiteContent',
+                  'websiteActivity',
+                ],
+              },
             },
+            // Firefox for Android has no Native Messaging, but remote Motrix
+            // Server pairing uses the network transport and remains useful.
+            // Android 142 is the first release with the built-in data consent
+            // manifest support declared above.
+            gecko_android: { strict_min_version: '142.0' },
           },
         }
       : { minimum_chrome_version: '120' }),

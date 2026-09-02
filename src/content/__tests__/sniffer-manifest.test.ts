@@ -48,6 +48,7 @@ describe('continuous generic sniffer manifest matrix', () => {
       content_scripts?: ContentScript[]
       browser_specific_settings?: {
         gecko?: { strict_min_version?: string }
+        gecko_android?: { strict_min_version?: string }
       }
     }
     const scripts = generated.content_scripts ?? []
@@ -71,8 +72,15 @@ describe('continuous generic sniffer manifest matrix', () => {
     expect(relay).not.toHaveProperty('match_about_blank')
     expect(collector).not.toHaveProperty('match_about_blank')
     expect(generated.browser_specific_settings?.gecko?.strict_min_version).toBe(
-      '128.0'
+      '142.0'
     )
+    expect(
+      generated.browser_specific_settings?.gecko_android?.strict_min_version
+    ).toBe('142.0')
+    expect(
+      scripts.some((script) => script.js?.includes('src/content/index.ts'))
+    ).toBe(false)
+    expect(JSON.stringify(scripts)).not.toMatch(/youtube\.com|youtu\.be/i)
   })
 
   it('keeps generic collection in Web Store builds without declaring YouTube hosts', async () => {

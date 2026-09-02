@@ -66,6 +66,7 @@ let previewEndpoint: PreviewEndpoint = {
 }
 
 const previewRuntime = {
+  connectNative: () => undefined,
   openOptionsPage: async () => undefined,
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }

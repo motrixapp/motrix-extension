@@ -19,9 +19,12 @@
 
 你需要：
 
-- Chrome 120 或更高版本，或者 Firefox 128 或更高版本；
+- Chrome 120 或更高版本，或者 Firefox 142 或更高版本；
 - 支持当前 MDXP / MBP1 协议的 Motrix App 或 Motrix Server；
 - 如果要连接本机 Motrix App，请先启动 Motrix，并确保它的浏览器连接组件已经正确安装。
+
+Firefox Android 通过 Motrix Server 连接。Android 不支持 Native Messaging，
+因此本机 Motrix App 后端只会在桌面浏览器中显示。
 
 目前还没有可供普通用户直接安装的商店版本或稳定安装包。想提前试用，需要从源码构建扩展；如果你只想安静地下载文件，我建议等第一个公开版本，这会少踩不少坑。
 
@@ -134,7 +137,7 @@ Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入
 
 ### YouTube 能下载吗？
 
-现在不能。普通构建中的 YouTube 适配器仍是联调用的占位实现，只会提交一个注定失败的测试地址；Chrome Web Store 构建则完全移除了这项能力。
+现在不能。普通 Chromium 开发构建中的 YouTube 适配器仍是联调用的占位实现，只会提交一个注定失败的测试地址；面向 Chrome/Edge 商店和 Firefox 的构建则完全移除了这项能力。
 
 ## 给开发者
 

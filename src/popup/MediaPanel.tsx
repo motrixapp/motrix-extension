@@ -9,7 +9,15 @@ import {
   RefreshCw,
   Send,
 } from 'lucide-react'
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
@@ -568,7 +576,7 @@ interface MediaPanelProps {
   onMediaCountChange?: (count: number) => void
 }
 
-export function MediaPanel({
+export const MediaPanel = memo(function MediaPanel({
   active = false,
   connected = true,
   submissionKey = 'default',
@@ -998,4 +1006,4 @@ export function MediaPanel({
       </CompactContentCard>
     </section>
   )
-}
+})

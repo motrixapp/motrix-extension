@@ -13,6 +13,7 @@ interface Props {
   state: PopupState
   onReconnect: () => void
   onShowPairing?: () => void
+  actionLabel?: string
 }
 
 /**
@@ -65,6 +66,7 @@ export function ConnectionStatusPanel({
   state,
   onReconnect,
   onShowPairing,
+  actionLabel,
 }: Props): React.ReactElement {
   const { t } = useTranslation()
   // Called unconditionally, before the loading early-return below — React's
@@ -180,11 +182,17 @@ export function ConnectionStatusPanel({
             type="button"
             size="sm"
             disabled={
-              !canShowPairing && (pendingReconnect || backoffSecondsLeft > 0)
+              actionLabel === undefined &&
+              !canShowPairing &&
+              (pendingReconnect || backoffSecondsLeft > 0)
             }
             onClick={() => {
               if (canShowPairing) {
                 onShowPairing()
+                return
+              }
+              if (actionLabel !== undefined) {
+                onReconnect()
                 return
               }
               setPendingReconnect(true)
@@ -196,9 +204,11 @@ export function ConnectionStatusPanel({
             )}
             {canShowPairing
               ? t('popup.pairing.enterCode')
-              : backoffSecondsLeft > 0
-                ? t('popup.pairing.retryIn', { seconds: backoffSecondsLeft })
-                : t('popup.reconnect')}
+              : actionLabel !== undefined
+                ? actionLabel
+                : backoffSecondsLeft > 0
+                  ? t('popup.pairing.retryIn', { seconds: backoffSecondsLeft })
+                  : t('popup.reconnect')}
           </Button>
         )}
       </CardContent>

@@ -4,6 +4,14 @@ import { classifyConnectError } from '@/background/ConnectionManager'
 import { NativeBootstrapError } from '@/background/NativeBootstrap'
 
 describe('classifyConnectError', () => {
+  it('treats an unavailable platform Native Messaging API as expected', () => {
+    const e = new NativeBootstrapError(
+      'Native Messaging is unavailable on this browser',
+      'unsupported'
+    )
+    expect(classifyConnectError(e).level).toBe('info')
+  })
+
   it('treats motrix-not-running as info — the desktop app simply is not open', () => {
     const e = new NativeBootstrapError(
       'motrix-not-running',

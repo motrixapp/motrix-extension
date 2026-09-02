@@ -31,6 +31,7 @@
 
 import { log } from '@/background/log'
 import { buildBootstrapRequest } from '@/background/mbp1/ticket-bootstrap'
+import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 
 export interface NativeBootstrapResult {
   wsPort: number
@@ -113,6 +114,13 @@ export class NativeBootstrap {
       throw new NativeBootstrapError(
         `bindingPub must be exactly ${BINDING_PUB_BYTES} bytes, got ${opts.bindingPub.length}`,
         'invalid-binding-pub'
+      )
+    }
+
+    if (!hasNativeMessagingSupport()) {
+      throw new NativeBootstrapError(
+        'Native Messaging is unavailable on this browser; configure a Motrix Server instead',
+        'unsupported'
       )
     }
 

@@ -104,6 +104,15 @@ describe('QuickSettingsPanel', () => {
         name: i18n.t('options.takeover.consentDialogLabel'),
       })
     ).toBeTruthy()
+    expect(i18n.t('options.takeover.consentDialogLabel')).toBe(
+      'Send downloads to Motrix?'
+    )
+    expect(i18n.t('options.takeover.consentConfirm')).toBe('Enable')
+    expect(
+      screen.getByText(
+        "Motrix receives the site's login cookies to download files. Sensitive sites stay in the browser."
+      )
+    ).toBeTruthy()
 
     fireEvent.click(
       screen.getByRole('button', {
