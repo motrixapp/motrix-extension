@@ -1,5 +1,6 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
+import { extensionBrowser } from '@/shared/browser'
 import { getLocaleOverride, type SupportedLocale } from '@/shared/localeStore'
 import enUS from '@/shared/locales/en-US.json'
 import zhCN from '@/shared/locales/zh-CN.json'
@@ -10,7 +11,7 @@ const resources = {
 }
 
 export function resolveDefaultLocale(): SupportedLocale {
-  const ui = browser.i18n.getUILanguage().toLowerCase()
+  const ui = extensionBrowser.i18n.getUILanguage().toLowerCase()
   return ui.startsWith('zh') ? 'zh-CN' : 'en-US'
 }
 
