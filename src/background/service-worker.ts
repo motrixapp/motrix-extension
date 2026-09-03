@@ -7,9 +7,8 @@ import youtubeSnifferScriptPath from 'virtual:motrix-youtube-sniffer-script'
 // "No runtime abstraction layer installed". The `/browser` entry re-exports the
 // full public API, so this also provides `Methods`.
 import { Methods } from '@motrix/mdxp/browser'
-// Chromium only exposes `chrome`; use the polyfill object to hoist `browser`
-// before any service-worker startup code reads it. Firefox already provides it.
-import browserPolyfill from 'webextension-polyfill'
+// Install `browser.*` before any shared dependency evaluates in Chromium.
+import '@/shared/browser'
 import { BgAdapterRegistry } from '@/background/AdapterRegistry'
 import { BackendOperationCoordinator } from '@/background/BackendOperationCoordinator'
 import {
@@ -83,9 +82,6 @@ import {
 import { initI18n } from '@/shared/i18n'
 import { isResolvableVideoPage, shouldExcludeHost } from '@/shared/media'
 import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
-
-const extensionGlobals = globalThis as unknown as { browser?: unknown }
-extensionGlobals.browser ??= browserPolyfill
 
 // Build-time constant injected by vite (see vite.config.ts `define`).
 declare const __BROWSER__: 'chromium' | 'firefox'

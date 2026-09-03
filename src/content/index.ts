@@ -1,6 +1,5 @@
-// MUST be first: the polyfill makes `browser.*` available in Chromium.
-import browserPolyfill from 'webextension-polyfill'
-;(globalThis as unknown as { browser?: unknown }).browser ??= browserPolyfill
+// MUST be first: the shared bootstrap makes `browser.*` available in Chromium.
+import '@/shared/browser'
 
 import { ContentRuntime } from '@/content/ContentRuntime'
 

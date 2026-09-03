@@ -12,6 +12,7 @@ const sessionStorageState = new Map<string, unknown>()
 // these per-test when they need fuller behavior.
 const chromeStub = {
   runtime: {
+    id: 'test-extension-id',
     connectNative: vi.fn(),
     openOptionsPage: vi.fn(async () => undefined),
     // `computeVerifiedOrigin` (mbp1/verified-origin.ts) calls this on every

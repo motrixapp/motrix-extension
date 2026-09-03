@@ -1,8 +1,4 @@
-interface BrowserWithOptionalNativeMessaging {
-  runtime?: {
-    connectNative?: unknown
-  }
-}
+import { extensionBrowser } from '@/shared/browser'
 
 /**
  * Native Messaging is available in desktop Firefox and Chromium browsers,
@@ -10,10 +6,5 @@ interface BrowserWithOptionalNativeMessaging {
  * connections do not depend on it and remain supported on Android.
  */
 export function hasNativeMessagingSupport(): boolean {
-  const extensionBrowser = (
-    globalThis as typeof globalThis & {
-      browser?: BrowserWithOptionalNativeMessaging
-    }
-  ).browser
-  return typeof extensionBrowser?.runtime?.connectNative === 'function'
+  return typeof extensionBrowser.runtime?.connectNative === 'function'
 }
