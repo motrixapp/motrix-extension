@@ -11,6 +11,7 @@ export interface QuickSettingsError {
 }
 
 export interface QuickSettingsController {
+  takeoverSupported: boolean
   takeover: TakeoverConfig | null
   notifications: NotificationsConfig | null
   loading: boolean
@@ -36,7 +37,9 @@ function errorMessage(error: unknown): string {
  * quick settings. Mutations always spread the last full config so fields that
  * are only editable on the Options page are not reset by a quick toggle.
  */
-export function useQuickSettings(): QuickSettingsController {
+export function useQuickSettings(
+  takeoverSupported = true
+): QuickSettingsController {
   const [takeover, setTakeover] = useState<TakeoverConfig | null>(null)
   const [notifications, setNotifications] =
     useState<NotificationsConfig | null>(null)
@@ -44,6 +47,10 @@ export function useQuickSettings(): QuickSettingsController {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<QuickSettingsError | null>(null)
   const [consentRequired, setConsentRequired] = useState(false)
+
+  useEffect(() => {
+    if (!takeoverSupported) setConsentRequired(false)
+  }, [takeoverSupported])
 
   const mountedRef = useRef(true)
   const loadGenerationRef = useRef(0)
@@ -160,6 +167,7 @@ export function useQuickSettings(): QuickSettingsController {
   const requestTakeoverEnabled = useCallback(
     async (enabled: boolean): Promise<void> => {
       const current = takeoverRef.current
+      if (!takeoverSupported) return
       if (current === null || current.enabled === enabled) return
 
       if (enabled && current.consentAckVersion < CONSENT_VERSION) {
@@ -170,12 +178,12 @@ export function useQuickSettings(): QuickSettingsController {
       if (!enabled && mountedRef.current) setConsentRequired(false)
       await persistTakeover({ ...current, enabled })
     },
-    [persistTakeover]
+    [persistTakeover, takeoverSupported]
   )
 
   const confirmTakeoverConsent = useCallback(async (): Promise<void> => {
     const current = takeoverRef.current
-    if (current === null) return
+    if (!takeoverSupported || current === null) return
 
     const saved = await persistTakeover({
       ...current,
@@ -183,7 +191,7 @@ export function useQuickSettings(): QuickSettingsController {
       consentAckVersion: Math.max(current.consentAckVersion, CONSENT_VERSION),
     })
     if (saved && mountedRef.current) setConsentRequired(false)
-  }, [persistTakeover])
+  }, [persistTakeover, takeoverSupported])
 
   const cancelTakeoverConsent = useCallback((): void => {
     if (mountedRef.current) setConsentRequired(false)
@@ -200,6 +208,7 @@ export function useQuickSettings(): QuickSettingsController {
 
   return useMemo(
     () => ({
+      takeoverSupported,
       takeover,
       notifications,
       loading,
@@ -224,6 +233,7 @@ export function useQuickSettings(): QuickSettingsController {
       saving,
       setNotification,
       takeover,
+      takeoverSupported,
     ]
   )
 }

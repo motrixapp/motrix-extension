@@ -62,6 +62,8 @@ async function handle(
 ): Promise<void> {
   const cfg = await deps.getConfig()
   if (!cfg.enabled) return
+  const guard = await deps.captureGuard()
+  if (guard === null) return
   const finalUrl = (item as unknown as { finalUrl?: string }).finalUrl
   const url = finalUrl && finalUrl.length > 0 ? finalUrl : item.url
 
@@ -90,6 +92,7 @@ async function handle(
 
   const ops = makeOps({
     manager: deps.manager,
+    guard,
     isPaired: deps.isPaired,
     gate: deps.gate,
     nudge: deps.nudge,

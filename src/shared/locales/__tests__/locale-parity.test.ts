@@ -1,6 +1,22 @@
 import { describe, expect, it } from 'vitest'
 import en from '@/shared/locales/en-US.json'
-import zh from '@/shared/locales/zh-CN.json'
+import { SUPPORTED_LOCALES } from '@/shared/supportedLocales'
+
+const locales = import.meta.glob('../*.json', {
+  eager: true,
+  import: 'default',
+})
+
+function entries(value: unknown, prefix = ''): [string, unknown][] {
+  if (value === null || typeof value !== 'object') return [[prefix, value]]
+  return Object.entries(value).flatMap(([key, child]) =>
+    entries(child, prefix ? `${prefix}.${key}` : key)
+  )
+}
+
+function placeholders(value: string): string[] {
+  return (value.match(/{{\s*[^{}]+\s*}}/g) ?? []).sort()
+}
 
 function keys(o: unknown, prefix = ''): string[] {
   if (o === null || typeof o !== 'object') return [prefix]
@@ -10,9 +26,28 @@ function keys(o: unknown, prefix = ''): string[] {
 }
 
 describe('locale parity', () => {
-  it('en-US and zh-CN have identical key sets', () => {
-    expect(new Set(keys(en))).toEqual(new Set(keys(zh)))
+  it('ships exactly the supported UI languages', () => {
+    expect(
+      Object.keys(locales)
+        .map((path) => path.slice(3, -5))
+        .sort()
+    ).toEqual([...SUPPORTED_LOCALES].sort())
   })
+  it.each(SUPPORTED_LOCALES)(
+    '%s has complete strings and matching placeholders',
+    (locale) => {
+      const translated = locales[`../${locale}.json`]
+      expect(new Set(keys(translated))).toEqual(new Set(keys(en)))
+      const reference = new Map(entries(en))
+      for (const [key, value] of entries(translated)) {
+        expect(typeof value, `${locale}:${key}`).toBe('string')
+        expect((value as string).trim(), `${locale}:${key}`).not.toBe('')
+        expect(placeholders(value as string), `${locale}:${key}`).toEqual(
+          placeholders(reference.get(key) as string)
+        )
+      }
+    }
+  )
   it('has the new options.tabs keys', () => {
     const k = new Set(keys(en))
     for (const t of [

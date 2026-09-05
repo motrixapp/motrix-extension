@@ -24,9 +24,13 @@ export default defineManifest((env) => {
   ]
   return {
     manifest_version: 3,
-    name: 'Motrix Extension',
+    // Name and description resolve from public/_locales/<code>/messages.json.
+    // Each locale listed there is also a language the Chrome Web Store lets
+    // us localize the listing (description, screenshots) for.
+    default_locale: 'en',
+    name: '__MSG_appName__',
     version: pkg.version,
-    description: 'Send downloads to Motrix',
+    description: '__MSG_appDescription__',
     icons: {
       16: 'icons/icon-16.png',
       32: 'icons/icon-32.png',

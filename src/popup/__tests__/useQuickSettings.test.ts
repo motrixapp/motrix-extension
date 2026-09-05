@@ -55,6 +55,32 @@ describe('useQuickSettings', () => {
     expect(result.current.error).toBeNull()
   })
 
+  it('blocks remote toggles and consent without overwriting the retained local preference', async () => {
+    mockSuccessfulBus()
+    const { result, rerender } = renderHook(
+      ({ supported }) => useQuickSettings(supported),
+      { initialProps: { supported: true } }
+    )
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    await act(async () => {
+      await result.current.requestTakeoverEnabled(true)
+    })
+    expect(result.current.consentRequired).toBe(true)
+    rerender({ supported: false })
+    expect(result.current.consentRequired).toBe(false)
+    await act(async () => {
+      await result.current.confirmTakeoverConsent()
+      await result.current.requestTakeoverEnabled(true)
+    })
+    expect(
+      send.mock.calls.filter(([kind]) => kind === 'bg.setTakeoverConfig')
+    ).toHaveLength(0)
+    expect(result.current.takeover).toEqual(TAKEOVER)
+    rerender({ supported: true })
+    expect(result.current.takeover).toEqual(TAKEOVER)
+    expect(result.current.takeoverSupported).toBe(true)
+  })
+
   it('requires explicit consent before first enable and preserves all fields', async () => {
     mockSuccessfulBus()
     const { result } = renderHook(() => useQuickSettings())

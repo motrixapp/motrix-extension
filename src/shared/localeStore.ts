@@ -1,13 +1,17 @@
 import { extensionBrowser } from '@/shared/browser'
+import {
+  isSupportedLocale,
+  type SupportedLocale,
+} from '@/shared/supportedLocales'
+
+export type { SupportedLocale } from '@/shared/supportedLocales'
 
 const LOCALE_KEY = 'motrix.locale'
-
-export type SupportedLocale = 'en-US' | 'zh-CN'
 
 export async function getLocaleOverride(): Promise<SupportedLocale | null> {
   const got = await extensionBrowser.storage.local.get(LOCALE_KEY)
   const v = got[LOCALE_KEY]
-  return v === 'en-US' || v === 'zh-CN' ? v : null
+  return isSupportedLocale(v) ? v : null
 }
 
 export async function setLocaleOverride(

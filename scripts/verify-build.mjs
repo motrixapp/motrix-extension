@@ -97,6 +97,51 @@ function verifyManifestReferences(outputPath, relativeFiles, references) {
   }
 }
 
+function verifyManifestLocales(outputPath, manifest) {
+  const defaultLocale = manifest.default_locale
+  if (typeof defaultLocale !== 'string' || defaultLocale.length === 0) {
+    throw new Error('Build manifest is missing default_locale')
+  }
+
+  const localesPath = join(outputPath, '_locales')
+  if (!existsSync(localesPath)) {
+    throw new Error('Build output is missing _locales')
+  }
+
+  const locales = readdirSync(localesPath, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort()
+  if (!locales.includes(defaultLocale)) {
+    throw new Error(`Build output is missing default locale: ${defaultLocale}`)
+  }
+
+  const messageKeys = new Set(
+    [...JSON.stringify(manifest).matchAll(/__MSG_([A-Za-z0-9_@]+)__/g)]
+      .map((match) => match[1])
+      .filter(Boolean)
+  )
+  if (messageKeys.size === 0) {
+    throw new Error('Build manifest contains no localized message references')
+  }
+
+  for (const locale of locales) {
+    const messagesPath = join(localesPath, locale, 'messages.json')
+    if (!existsSync(messagesPath)) {
+      throw new Error(`Build locale is missing messages.json: ${locale}`)
+    }
+    const messages = JSON.parse(readFileSync(messagesPath, 'utf8'))
+    for (const key of messageKeys) {
+      const message = messages[key]?.message
+      if (typeof message !== 'string' || message.trim().length === 0) {
+        throw new Error(`Build locale is missing message ${key}: ${locale}`)
+      }
+    }
+  }
+
+  return locales.length
+}
+
 function findModuleSyntax(source, fileName) {
   const [imports, exports] = parse(source, fileName)
   const violations = []
@@ -243,6 +288,7 @@ export function verifyBuild(variant) {
 
   const references = collectManifestReferences(manifest)
   verifyManifestReferences(outputPath, relativeFiles, references)
+  const localeCount = verifyManifestLocales(outputPath, manifest)
   verifyDynamicCodeAbsence(files, outputPath)
 
   const expectedIifeScripts = [...GENERIC_IIFE_SCRIPTS]
@@ -287,7 +333,7 @@ export function verifyBuild(variant) {
   }
 
   console.log(
-    `Verified ${variant} artifact: ${files.length} files, ${references.size} manifest references, ${expectedIifeScripts.length} self-contained IIFE content scripts`
+    `Verified ${variant} artifact: ${files.length} files, ${references.size} manifest references, ${localeCount} locales, ${expectedIifeScripts.length} self-contained IIFE content scripts`
   )
 }
 

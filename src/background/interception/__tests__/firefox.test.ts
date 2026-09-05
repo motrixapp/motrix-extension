@@ -49,6 +49,27 @@ describe('cancelFirefoxDownload', () => {
 })
 
 describe('handleFirefoxDownloadSafely', () => {
+  it('does not touch the original remote download or attempt a handoff', async () => {
+    const captureGuard = vi.fn(async () => null)
+    const getState = vi.fn()
+    const deps = {
+      getConfig: async () => ({ enabled: true }),
+      captureGuard,
+      manager: { getState },
+    } as unknown as ChromiumInterceptionDeps
+    await handleFirefoxDownloadSafely(
+      {
+        id: 7,
+        url: 'https://example.com/file',
+        totalBytes: -1,
+      } as browser.downloads.DownloadItem,
+      deps
+    )
+    expect(captureGuard).toHaveBeenCalledOnce()
+    expect(getState).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+    expect(downloads.erase).not.toHaveBeenCalled()
+  })
   it('contains a rejected startup barrier before touching the native download', async () => {
     const deps = {
       getConfig: async () => {

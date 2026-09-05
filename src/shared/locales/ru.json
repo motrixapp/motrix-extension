@@ -1,0 +1,448 @@
+{
+  "badge": {
+    "tooltip": {
+      "connected": "Motrix: подключён",
+      "disconnected": "Motrix: не подключён",
+      "connecting": "Motrix: подключение…",
+      "downloading": "Motrix: загрузка",
+      "denied": "Motrix: сопряжение отклонено — откройте для повторного сопряжения",
+      "error": "Motrix: передача не удалась — нажмите для подробностей"
+    }
+  },
+  "contextMenu": {
+    "downloadWithMotrix": "Скачать через Motrix",
+    "pairThenDownload": "Выполнить сопряжение с Motrix и скачать"
+  },
+  "notify": {
+    "browserFallbackBody": "Motrix недоступен. Файл будет скачан браузером.",
+    "browserFallbackTitle": "Загрузка в браузере",
+    "downloadComplete": "Загрузка завершена",
+    "downloadFailed": "Ошибка загрузки",
+    "handedToMotrix": "Передано в Motrix",
+    "notConnectedBody": "Выполните сопряжение с Motrix для перехвата загрузок.",
+    "notConnectedTitle": "Motrix не подключён",
+    "notReachableBody": "Выполните сопряжение с Motrix и повторите загрузку.",
+    "notReachableTitle": "Motrix недоступен",
+    "pairNudgeBody": "Откройте Motrix для завершения сопряжения.",
+    "pairNudgeTitle": "Выполнить сопряжение с Motrix",
+    "pairRevokedBody": "Motrix отозвал сопряжение с этим браузером.",
+    "pairRevokedTitle": "Сопряжение отозвано",
+    "sensitiveSkippedBody": "Загрузка с конфиденциального сайта оставлена браузеру.",
+    "sensitiveSkippedTitle": "Пропущено",
+    "submitFailedBody": "Повторная загрузка в браузере.",
+    "submitFailedTitle": "Ошибка отправки в Motrix"
+  },
+  "options": {
+    "diagnostics": {
+      "adapters": "Адаптеры",
+      "extensionId": "ID расширения",
+      "logLevel": "Уровень журналирования",
+      "logLevels": {
+        "silent": "Без записи",
+        "error": "Ошибка",
+        "warn": "Предупреждение",
+        "info": "Информация",
+        "debug": "Отладка"
+      },
+      "noneRegistered": "Пока не зарегистрированы",
+      "title": "Диагностика",
+      "version": "Версия"
+    },
+    "endpoint": {
+      "activate": "Использовать",
+      "activateAria": "Использовать {{name}}",
+      "connection": {
+        "bootstrapping": "Запуск",
+        "connected": "Подключён",
+        "connecting": "Подключение",
+        "denied": "Отклонено",
+        "disconnected": "Отключён",
+        "handshaking": "Авторизация",
+        "awaiting-code": "Ожидание кода"
+      },
+      "currentDescription": "Выберите App или Server для загрузок, задач и ресурсов, обнаруженных на страницах.",
+      "currentTitle": "Службы Motrix",
+      "listLabel": "Доступные службы Motrix",
+      "localDescription": "Этот компьютер, обнаруженный через Motrix App",
+      "localName": "Motrix App",
+      "selectLabel": "Отправлять загрузки в"
+    },
+    "language": {
+      "label": "Язык",
+      "system": "Как в системе"
+    },
+    "notifications": {
+      "title": "Системные уведомления",
+      "masterLabel": "Включить системные уведомления",
+      "masterAria": "Включить системные уведомления",
+      "confirmLabel": "Успех / подтверждения",
+      "confirmDesc": "Передано в Motrix, загрузка завершена",
+      "errorLabel": "Сбои / ошибки",
+      "errorDesc": "Ошибка отправки, недоступность, ошибка загрузки",
+      "reminderLabel": "Напоминания",
+      "reminderDesc": "Запросы сопряжения, отзыв сопряжения, пропущенные сайты"
+    },
+    "pairing": {
+      "backendTitle": "Сопряжение с {{name}}",
+      "forget": "Забыть сопряжение",
+      "loading": "Загрузка состояния сопряжения…",
+      "localHelp": "Нажмите «Сопряжение», чтобы найти Motrix на этом компьютере, и введите код сопряжения.",
+      "localTitle": "Сопряжение через Motrix App",
+      "remoteTitle": "Сопряжение с Motrix Server",
+      "remoteHelp": "Нажмите «Сопряжение», подтвердите запрос в интерфейсе управления Server и введите здесь показанный код. Поддерживаются адреса WS и WSS; рекомендуется WSS.",
+      "serverRequiredTitle": "Требуется Motrix Server",
+      "serverRequiredHelp": "Firefox для Android подключается через Motrix Server. Добавьте Server выше и выберите его для сопряжения.",
+      "remoteConsentTitle": "Удалённые загрузки",
+      "remoteConsentBody": "При удалённых загрузках на этот Server передаются целевой URL, URL и заголовок исходной страницы, имя файла, выделение и команды управления задачами. Файлы cookie и заголовки запросов отправляются только при отдельном включении.",
+      "remoteConsentOffline": "Разрешения на передачу данных привязаны к аутентифицированному Server. Подключитесь перед их изменением.",
+      "remoteHeadersLabel": "Отправлять заголовки запросов",
+      "remoteHeadersHelp": "Разрешает заголовки, полученные со страницы, например Referer и заголовки воспроизведения медиа. Для заголовков аутентификации по-прежнему требуется разрешение на учётные данные ниже.",
+      "remoteCredentialsLabel": "Отправлять cookie и данные аутентификации",
+      "remoteCredentialsHelp": "Разрешает cookie и заголовки с учётными данными только для этого Server. Включайте только для Server под вашим контролем.",
+      "notPaired": "Не сопряжён",
+      "paired": "Сопряжён с Motrix",
+      "pairedHelp": "Для этой службы сохранены подтверждённые учётные данные MBP1. Текущее состояние подключения показано отдельно.",
+      "pairedTitle": "Сопряжение готово",
+      "reconnect": "Переподключиться",
+      "scopedHelp": "Доверие и учётные данные сопряжения изолированы для каждой службы. При переключении доверие к другой службе никогда не используется.",
+      "pair": "Сопряжение",
+      "pairDialogTitle": "Сопряжение с Motrix"
+    },
+    "servers": {
+      "add": "Добавить сервер",
+      "addTitle": "Добавить Motrix Server",
+      "current": "Текущий",
+      "delete": "Удалить сервер",
+      "deleteActiveDescription": "Удалить {{name}}, локально сохранённые учётные данные сопряжения и согласия? Текущая служба сменится на Motrix App без подключения к нему или его запуска.",
+      "deleteActiveServerOnlyDescription": "Удалить {{name}}, локально сохранённые учётные данные сопряжения и согласия? Перед загрузкой потребуется добавить или выбрать другой Motrix Server.",
+      "deleteAria": "Удалить {{name}}",
+      "deleteDescription": "Удалить {{name}}, локально сохранённые учётные данные сопряжения и согласия? На сервере ничего не будет отозвано.",
+      "deleteTitle": "Удалить Motrix Server?",
+      "description": "Сохраните несколько адресов Motrix Server и переключайтесь между ними в настройках или всплывающем окне.",
+      "dialogDescription": "Задайте понятное имя этой службы и введите её базовый URL WebSocket.",
+      "editAria": "Изменить {{name}}",
+      "editTitle": "Изменить Motrix Server",
+      "emptyDescription": "Добавьте сервер для подключения к Motrix на другом компьютере.",
+      "emptyTitle": "Серверы Motrix ещё не добавлены",
+      "footer": "После изменения адреса сервера требуется повторное сопряжение. Данные сопряжения никогда не передаются между адресами.",
+      "nameLabel": "Имя сервера",
+      "namePlaceholder": "Домашний сервер",
+      "nameRequired": "Укажите имя сервера",
+      "save": "Сохранить сервер",
+      "statusAuthority": "Адрес сервера: {{value}}",
+      "statusRuntime": "Версия Motrix: {{name}} {{version}}",
+      "statusTitle": "Сведения о сервере",
+      "statusTransportSecure": "Безопасность подключения: используется WSS, TLS проверяет подлинность сервера",
+      "statusTransportPlain": "Безопасность подключения: зашифровано, но WS не проверяет подлинность сервера и может раскрыть сведения о соединении. Рекомендуется WSS",
+      "title": "Серверы Motrix",
+      "urlDescription": "Используйте базовый URL ws:// или wss://. Необязательный путь сохраняется без изменений как префикс обратного прокси; рекомендуется WSS.",
+      "urlDuplicate": "Этот адрес Motrix Server уже сохранён",
+      "urlInvalid": "Введите корректный базовый URL ws:// или wss:// без пробелов, учётных данных, строки запроса и фрагмента",
+      "urlLabel": "URL WebSocket",
+      "urlPlaceholder": "ws(s)://host[:port][/base-path]",
+      "transportWarningTitle": "Это подключение не использует WSS",
+      "transportWarningBody": "Содержимое обмена с Motrix зашифровано, но WS не проверяет подлинность сервера и может раскрыть сведения о соединении. Используйте WSS, если ваш NAS его поддерживает.",
+      "urlRequired": "Укажите URL WebSocket"
+    },
+    "takeover": {
+      "consentBody": "Motrix получает cookie авторизации сайта для скачивания файлов. Загрузки с конфиденциальных сайтов остаются в браузере.",
+      "consentCancel": "Отмена",
+      "consentConfirm": "Включить",
+      "consentDialogLabel": "Отправлять загрузки в Motrix?",
+      "denylistLabel": "Список исключений (один хост на строку — всегда обрабатывается браузером)",
+      "enableAria": "Включить перехват",
+      "enableLabel": "Отправлять подходящие загрузки в Motrix",
+      "loading": "Загрузка настроек перехвата…",
+      "minSizeLabel": "Минимальный размер (МБ)",
+      "minSizePlaceholder": "0 = все",
+      "thresholdInvalid": "Минимальный размер должен быть неотрицательным числом",
+      "save": "Сохранить",
+      "saved": "Сохранено",
+      "title": "Перехват загрузок",
+      "remoteUnavailable": "Автоматический перехват пока требует локального Motrix App. Удалённые загрузки и разрешения на заголовки или cookie его не включают. Вы по-прежнему можете отправлять загрузки на этот Server вручную или через контекстное меню.",
+      "availabilityUnknown": "Перехват недоступен, пока выбранную службу нельзя проверить.",
+      "remoteUnavailableShort": "Только локальный App. Отправка через контекстное меню работает и с Server."
+    },
+    "tabs": {
+      "general": "Общие",
+      "appearance": "Внешний вид",
+      "integration": "Интеграция",
+      "help": "Справка"
+    },
+    "common": {
+      "apply": "Применить",
+      "cancel": "Отмена",
+      "loadError": "Не удалось загрузить настройки: фоновый процесс расширения не запустился. Перезагрузите расширение и повторите попытку.",
+      "saved": "Сохранено",
+      "saving": "Сохранение…",
+      "saveError": "Ошибка сохранения"
+    },
+    "appearance": {
+      "theme": {
+        "label": "Тема",
+        "system": "Как в системе",
+        "light": "Светлая",
+        "dark": "Тёмная"
+      }
+    },
+    "help": {
+      "title": "Справка и поддержка",
+      "description": "Читайте руководства, получайте помощь и просматривайте диагностику расширения.",
+      "reportBug": "Сообщить о проблеме",
+      "reportBugDescription": "Создайте issue на GitHub или отправьте отзыв.",
+      "issues": "GitHub Issues",
+      "docs": "Документация",
+      "docsDescription": "Руководства по настройке, сопряжению, перехвату загрузок и устранению неполадок.",
+      "copyDiagnostics": "Копировать диагностику",
+      "copied": "Скопировано",
+      "diagnostics": "Диагностика",
+      "diagnosticsDescription": "Настройте журналирование и скопируйте сведения для устранения неполадок."
+    },
+    "about": {
+      "subtitle": "Связь браузера с менеджером загрузок Motrix",
+      "website": "Официальный сайт"
+    },
+    "title": "Настройки расширения Motrix"
+  },
+  "popup": {
+    "backend": {
+      "app": "Motrix App",
+      "appDescription": "Этот компьютер",
+      "choose": "Выбрать службу Motrix",
+      "configureServer": "Управление Motrix Server",
+      "notConfigured": "Не настроено",
+      "server": "Motrix Server",
+      "version": "v{{version}}"
+    },
+    "controlPanel": {
+      "engineState": "движок: {{state}}",
+      "noDownloads": "Нет загрузок",
+      "pause": "Приостановить",
+      "remove": "Убрать",
+      "resume": "Возобновить",
+      "statsSummary": "Активных: {{active}} · Ожидающих: {{waiting}}"
+    },
+    "dashboard": {
+      "activity": "Активность",
+      "resources": "Ресурсы",
+      "showResources": "Показать ресурсы этой страницы",
+      "showTasks": "Показать активные задачи",
+      "title": "Обзор передач"
+    },
+    "loading": "Загрузка…",
+    "quickSettings": {
+      "fullSettings": "Все настройки",
+      "fullSettingsDescription": "Общие, внешний вид, служба и справка",
+      "loadError": "Не удалось загрузить быстрые настройки.",
+      "notificationsDescription": "Управление системными уведомлениями расширения",
+      "retry": "Повторить",
+      "saveError": "Не удалось сохранить настройку. Повторите попытку.",
+      "takeoverDescription": "Отправлять загрузки браузера в текущую службу Motrix"
+    },
+    "quickAdd": {
+      "title": "Новая задача",
+      "description": "Вставьте ссылку HTTP, HTTPS или magnet.",
+      "inputLabel": "Адрес загрузки",
+      "placeholder": "https://example.com/file.zip",
+      "cancel": "Отмена",
+      "add": "Добавить",
+      "submitting": "Добавление…",
+      "error": {
+        "empty": "Введите адрес загрузки.",
+        "unsupported": "Поддерживаются только ссылки HTTP, HTTPS и magnet.",
+        "invalid": "Некорректный адрес загрузки.",
+        "submitFailed": "Не удалось добавить задачу. Повторите попытку."
+      }
+    },
+    "reconnect": "Подключиться",
+    "settings": "Открыть настройки",
+    "sniffer": {
+      "clearFilters": "Сбросить фильтры",
+      "detected": "Объектов: {{count}}",
+      "downloadCount": "Скачать: {{count}}",
+      "downloadSelected": "Скачать выбранное",
+      "downloadedResource": "Отправлено: {{name}}",
+      "downloadingResource": "Загрузка {{name}}",
+      "emptyDescription": "Запустите воспроизведение медиа и повторите попытку.",
+      "emptyFilter": "Нет ресурсов, соответствующих фильтру",
+      "emptyTitle": "Медиа не найдены",
+      "filteredCount": "Изображения: {{matched}} / {{total}}",
+      "filters": {
+        "all": "Все",
+        "audio": "Аудио",
+        "image": "Изображения",
+        "video": "Видео"
+      },
+      "imageFilters": {
+        "activeCount": "Активных фильтров: {{count}}",
+        "dimensions": "Размеры и объём",
+        "done": "Готово",
+        "fields": {
+          "height": "Высота",
+          "size": "Размер",
+          "width": "Ширина"
+        },
+        "formatOptionLabel": "Фильтровать изображения {{format}}",
+        "formats": "Формат изображения",
+        "operatorLabel": "Сравнение: {{label}}",
+        "reset": "Сбросить",
+        "result": "{{matched}} / {{total}}",
+        "sizeUnitLabel": "Единица размера файла",
+        "title": "Быстрые фильтры",
+        "trigger": "Фильтр",
+        "valueLabel": "Значение: {{label}}"
+      },
+      "imageCount": "Изображений: {{count}}",
+      "noImageMatches": "Нет подходящих изображений",
+      "pageAction": {
+        "bilibili": "Отправить это видео bilibili",
+        "youtube": "Отправить это видео YouTube"
+      },
+      "pageSubmitted": "Видео отправлено в Motrix {{taskId}}",
+      "pageResources": "Ресурсы страницы",
+      "quickDownloadResource": "Быстро скачать {{name}}",
+      "connectToSubmit": "Подключитесь к Motrix для отправки ресурсов.",
+      "scan": "Сканировать снова",
+      "scanning": "Сканирование…",
+      "selectAll": "Выбрать всё",
+      "selected": "Выбрано: {{count}}",
+      "selectResource": "Выбрать {{name}}",
+      "sourceHost": "Источник: {{host}}",
+      "sendResource": "Отправить {{name}} в Motrix",
+      "sent": "Отправлено",
+      "sending": "Отправка",
+      "submitFailed": "Не удалось отправить ресурс. Повторите попытку.",
+      "title": "Поиск ресурсов",
+      "unavailableDescription": "Перейдите на другую страницу или повторите попытку позже.",
+      "unavailableTitle": "Эту страницу нельзя просканировать",
+      "unsupported": "Требуется ffmpeg",
+      "unsupportedReason": "Выбранная служба не может отправить ресурсы {{kind}}, поскольку поддержка ffmpeg недоступна.",
+      "unsupportedSelectionReason": "Выбранная служба не может отправить один или несколько выбранных типов ресурсов.",
+      "unsupportedResource": "Не удаётся отправить {{name}}. {{reason}}"
+    },
+    "speed": {
+      "download": "Скачивание",
+      "upload": "Отдача"
+    },
+    "status": {
+      "bootstrapping": "Поиск Motrix…",
+      "connected": "Подключён",
+      "connecting": "Подключение…",
+      "denied": "Сопряжение отклонено",
+      "disconnected": "Отключён",
+      "handshaking": "Согласование соединения",
+      "awaiting-code": "Ожидание кода сопряжения…"
+    },
+    "tabs": {
+      "settings": "Настройки",
+      "sniffer": "Поиск ресурсов",
+      "tasks": "Задачи"
+    },
+    "takeover": {
+      "aria": "Переключить перехват загрузок",
+      "label": "Перехват"
+    },
+    "tasks": {
+      "actions": "Действия с {{name}}",
+      "openFolder": "Открыть папку файла в Motrix",
+      "openFolderError": "Не удалось открыть папку задачи. Повторите попытку.",
+      "openFolderMetadataPending": "Дождитесь метаданных задачи, прежде чем открывать папку",
+      "openFolderTask": "Открыть папку с {{name}}",
+      "openFolderUnsupported": "Обновите Motrix для открытия папок",
+      "pauseTask": "Приостановить {{name}}",
+      "removeTask": "Убрать {{name}}",
+      "removeConfirmTitle": "Убрать задачу?",
+      "removeConfirmDescription": "«{{name}}» будет убрано из списка загрузок.",
+      "removeDeleteFilesLabel": "Удалить скачанные файлы",
+      "removeConfirmAction": "Убрать",
+      "resumeTask": "Возобновить {{name}}",
+      "bytes": "{{done}} из {{total}}",
+      "disconnectedDescription": "Подключитесь для просмотра задач.",
+      "disconnectedTitle": "Motrix не в сети",
+      "empty": {
+        "active": "Нет активных задач",
+        "failed": "Нет задач с ошибками",
+        "recent": "Нет завершённых задач"
+      },
+      "filters": {
+        "active": "Активные",
+        "failed": "С ошибками",
+        "recent": "Завершённые"
+      },
+      "loading": "Загрузка задач",
+      "status": {
+        "completed": "Завершённые",
+        "downloading": "Скачивание",
+        "error": "С ошибками",
+        "fetching_metadata": "Получение метаданных",
+        "finalizing": "Завершение",
+        "paused": "Приостановлено",
+        "queued": "В очереди",
+        "seeding": "Раздача"
+      },
+      "title": "Задачи"
+    },
+    "pairing": {
+      "attemptOf": "Попытка {{run}} из {{maxRuns}}",
+      "attemptsRemaining": "Осталось попыток: {{attemptsRemaining}}",
+      "codeLabel": "Код сопряжения",
+      "codeDescription": "Введите 8-символьный код из окна сопряжения Motrix.",
+      "codeInvalid": "Введите 8-символьный код из окна сопряжения.",
+      "dialogTitle": "Ввести код сопряжения",
+      "dismissPrompt": "Ввести позже и продолжить просмотр",
+      "enterCode": "Ввести код сопряжения",
+      "expiresIn": "Истекает через {{time}}",
+      "pairButton": "Сопряжение",
+      "pickerHelp": "Найдено несколько экземпляров Motrix. Выберите один для сопряжения.",
+      "rescan": "Повторить поиск",
+      "noCandidates": "Экземпляры Motrix не найдены.",
+      "candidatesLabel": "Обнаруженные экземпляры Motrix",
+      "candidatePort": "Порт {{port}}",
+      "candidateDetail": "{{instanceId}} · v{{appVersion}}",
+      "unknownVersion": "неизвестная версия",
+      "choose": "Выбрать",
+      "backoffTitle": "Слишком много попыток сопряжения",
+      "backoffBody": "Повторите попытку в {{time}}.",
+      "retryIn": "Повторить через {{seconds}} с",
+      "permissionMissingTitle": "Требуется разрешение",
+      "permissionMissingBody": "Разрешите доступ к localhost для поиска Motrix на этом компьютере.",
+      "grantPermission": "Предоставить разрешение",
+      "degradedTitle": "Motrix подключён",
+      "degradedBody": "Вы можете пользоваться Motrix как обычно. Это соединение прошло только базовую проверку. Для более надёжной защиты обновите Motrix и выполните сопряжение заново.",
+      "recoveryExhaustedTitle": "Не удалось переподключиться автоматически",
+      "recoveryExhaustedBody": "Ни одно сохранённое сопряжение Motrix не сработало. Нажмите «Подключиться» для повторного сопряжения."
+    }
+  },
+  "errors": {
+    "connection": {
+      "generic": "Не удалось подключиться. Повторите попытку.",
+      "backoffLocked": "Слишком много попыток сопряжения. Повторите позже.",
+      "staleAttempt": "Начата более новая попытка подключения.",
+      "aborted": "Сопряжение отменено.",
+      "deadlineExceeded": "Время ожидания истекло. Повторите попытку.",
+      "runsExhausted": "Слишком много неверных кодов. Начните сопряжение заново, чтобы получить новый код.",
+      "invalidCode": "Неверный формат кода. Проверьте окно Motrix.",
+      "missingNonce": "Motrix не предоставил место для сопряжения. Убедитесь, что Motrix запущен, и повторите попытку.",
+      "unsupportedBrowser": "Этот браузер не поддерживает сопряжение.",
+      "ticketPreparationFailed": "Не удалось подготовить сопряжение. Повторите попытку.",
+      "protocolViolation": "Motrix отправил неожиданный ответ. Повторите попытку.",
+      "unsupportedVersion": "Расширение и Motrix используют разные версии протокола. Обновите оба и повторите попытку.",
+      "backendUpgradeRequired": "Эта версия Motrix слишком стара для безопасного сопряжения. Обновите Motrix и повторите попытку.",
+      "extensionUpgradeRequired": "Эта версия расширения слишком стара для данного Motrix. Обновите расширение Motrix и повторите попытку.",
+      "unsupportedRemote": "Аутентифицированный Motrix — не тот App или Server, который выбран для подключения. Проверьте адрес подключения и повторите попытку.",
+      "remoteDiscoveryUnavailable": "Не удалось связаться с удалённым Motrix Server. Проверьте адрес, службу прослушивания и сеть; для WSS также проверьте сертификат и обратный прокси.",
+      "remotePairingUnavailable": "Удалённый Motrix Server не смог открыть защищённый сеанс сопряжения. Повторите попытку чуть позже.",
+      "remoteTransportUnavailable": "Не удалось подключиться к удалённому Motrix Server. Проверьте адрес, службу прослушивания, DNS и сеть; для WSS также проверьте сертификат и обратный прокси. Браузер не может определить точную причину сбоя.",
+      "peerRejected": "Motrix отклонил сопряжение.",
+      "peerBusy": "Motrix обрабатывает слишком много запросов сопряжения. Повторите попытку чуть позже.",
+      "securityCheckFailed": "Соединение не прошло проверку безопасности и было остановлено.",
+      "peerNotAuthentic": "Другая сторона не смогла подтвердить, что это ваш Motrix. Соединение остановлено.",
+      "credentialPhaseFailed": "Не удалось сохранить сопряжение. Попробуйте выполнить его заново.",
+      "internalError": "В расширении произошла ошибка. Повторите попытку.",
+      "authFailed": "Motrix не распознал это сопряжение. Возможно, оно отозвано — выполните сопряжение заново.",
+      "serverMacMismatch": "Ответ не прошёл проверку, поэтому соединение остановлено. Возможно, это не ваш Motrix.",
+      "channelClosed": "Соединение закрыто. Подключитесь заново, чтобы продолжить.",
+      "channelUnavailable": "Motrix сейчас недоступен. Убедитесь, что он запущен."
+    }
+  }
+}

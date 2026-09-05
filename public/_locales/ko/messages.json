@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Motrix 확장 프로그램",
+    "description": "Extension name shown in the browser and in store listings."
+  },
+  "appDescription": {
+    "message": "다운로드를 Motrix로 보내기",
+    "description": "Short summary shown under the name in the browser and in store listings."
+  }
+}

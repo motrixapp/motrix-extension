@@ -1,5 +1,7 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
+import type { NotificationsConfig } from '@/shared/notifications'
+import type { TakeoverConfig } from '@/shared/takeover'
 
 const previewParams = new URLSearchParams(globalThis.location.search)
 const previewScan = previewParams.get('scan')
@@ -65,13 +67,38 @@ let previewEndpoint: PreviewEndpoint = {
   cleanupTombstones: [],
 }
 
+let previewTakeover: TakeoverConfig = {
+  enabled: true,
+  consentAckVersion: 1,
+  defaultAction: 'motrix',
+  rules: [],
+}
+let previewNotifications: NotificationsConfig = {
+  master: true,
+  confirm: false,
+  error: true,
+  reminder: true,
+}
+
 const previewRuntime = {
+  id: 'motrix-popup-preview',
+  onMessage: { addListener: () => undefined, removeListener: () => undefined },
   connectNative: () => undefined,
   openOptionsPage: async () => undefined,
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }
     const kind = request.kind
     switch (kind) {
+      case 'bg.getTakeoverConfig':
+        return previewTakeover
+      case 'bg.setTakeoverConfig':
+        previewTakeover = request.payload as TakeoverConfig
+        return { ok: true }
+      case 'bg.getNotificationsConfig':
+        return previewNotifications
+      case 'bg.setNotificationsConfig':
+        previewNotifications = request.payload as NotificationsConfig
+        return { ok: true }
       case 'bg.getState':
         if (previewConnection !== 'connected') {
           return {

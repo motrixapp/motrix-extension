@@ -158,7 +158,10 @@
       "thresholdInvalid": "最小体积必须是非负数字",
       "save": "保存",
       "saved": "已保存",
-      "title": "下载接管"
+      "title": "下载接管",
+      "remoteUnavailable": "自动接管目前仅支持本机 Motrix App。开启远程下载、请求头或 Cookie 权限不会启用自动接管。你仍可手动添加下载或通过右键菜单发送到此 Server。",
+      "availabilityUnknown": "确认当前后端之前，自动接管暂不可用。",
+      "remoteUnavailableShort": "仅支持本机 App；远程 Server 可通过右键发送。"
     },
     "tabs": {
       "general": "通用",

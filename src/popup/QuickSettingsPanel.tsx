@@ -70,6 +70,7 @@ export function QuickSettingRow({
         <span
           id={`${id}-description`}
           className="block truncate text-[10px]/4 text-muted-foreground"
+          title={description}
         >
           {description}
         </span>
@@ -141,9 +142,13 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
               <QuickSettingRow
                 id="quick-takeover-switch"
                 title={t('options.takeover.enableLabel')}
-                description={t(QUICK_SETTINGS_I18N_KEYS.takeoverDescription)}
-                checked={takeover.enabled}
-                disabled={controlsDisabled}
+                description={t(
+                  controller.takeoverSupported
+                    ? QUICK_SETTINGS_I18N_KEYS.takeoverDescription
+                    : 'options.takeover.remoteUnavailableShort'
+                )}
+                checked={controller.takeoverSupported && takeover.enabled}
+                disabled={controlsDisabled || !controller.takeoverSupported}
                 onCheckedChange={(checked) =>
                   void controller.requestTakeoverEnabled(checked)
                 }
@@ -229,7 +234,7 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
       )}
 
       <AlertDialog
-        open={controller.consentRequired}
+        open={controller.consentRequired && controller.takeoverSupported}
         onOpenChange={(open) => {
           if (!open) controller.cancelTakeoverConsent()
         }}

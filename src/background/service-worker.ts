@@ -30,6 +30,7 @@ import {
 } from '@/background/contextMenu/register'
 import { EndpointCatalogService } from '@/background/EndpointCatalogService'
 import { EndpointConfigStore } from '@/background/EndpointConfigStore'
+import { HandoffEndpointTracker } from '@/background/handoff/guard'
 import { makeOps } from '@/background/handoff/makeOps'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import { registerChromiumInterception } from '@/background/interception/chromium'
@@ -115,6 +116,10 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
 
 const endpointConfigStore = new EndpointConfigStore()
 const backendOperationCoordinator = new BackendOperationCoordinator()
+const handoffEndpoints = new HandoffEndpointTracker(
+  endpointConfigStore,
+  backendOperationCoordinator
+)
 const takeoverConfigStore = new TakeoverConfigStore()
 const notificationsConfigStore = new NotificationsConfigStore()
 const badgeErrorStore = new BadgeErrorStore()
@@ -140,7 +145,10 @@ const endpointCatalogService = new EndpointCatalogService(
   },
   {
     coordinator: backendOperationCoordinator,
-    beforeConnectionChange: () => manager.stopForEndpointChange(),
+    beforeConnectionChange: () => {
+      handoffEndpoints.invalidate()
+      manager.stopForEndpointChange()
+    },
     afterConnectionChange: () => {
       // The lifecycle queue is still held here. Schedule the connection after
       // this callback returns so it cannot wait on its own lease operation.
@@ -749,8 +757,11 @@ registerContextMenu({
     await endpointLifecycleReady
     const cfg = await takeoverConfigStore.get()
     if (decideTakeover(cfg, target) !== 'motrix') return
+    const guard = await handoffEndpoints.capture(target.origin)
+    if (guard === null) return
     const ops = makeOps({
       manager,
+      guard,
       isPaired: () => pairingEndpointService.isActivePaired(),
       gate,
       nudge: pairNudge,
@@ -792,6 +803,7 @@ void initI18n().then(() => {
 void initLogLevel()
 
 const interceptionDeps = {
+  captureGuard: () => handoffEndpoints.capture('auto'),
   getConfig: async () => {
     await endpointLifecycleReady
     return takeoverConfigStore.get()

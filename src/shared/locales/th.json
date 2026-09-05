@@ -1,0 +1,448 @@
+{
+  "badge": {
+    "tooltip": {
+      "connected": "Motrix: เชื่อมต่อแล้ว",
+      "disconnected": "Motrix: ยังไม่ได้เชื่อมต่อ",
+      "connecting": "Motrix: กำลังเชื่อมต่อ…",
+      "downloading": "Motrix: กำลังดาวน์โหลด",
+      "denied": "Motrix: การจับคู่ถูกปฏิเสธ — เปิดเพื่อจับคู่ใหม่",
+      "error": "Motrix: ส่งต่อไม่สำเร็จ — คลิกเพื่อดูรายละเอียด"
+    }
+  },
+  "contextMenu": {
+    "downloadWithMotrix": "ดาวน์โหลดด้วย Motrix",
+    "pairThenDownload": "จับคู่ Motrix แล้วดาวน์โหลด"
+  },
+  "notify": {
+    "browserFallbackBody": "Motrix ไม่พร้อมใช้งาน เบราว์เซอร์จะดาวน์โหลดแทน",
+    "browserFallbackTitle": "กำลังดาวน์โหลดในเบราว์เซอร์",
+    "downloadComplete": "ดาวน์โหลดเสร็จแล้ว",
+    "downloadFailed": "ดาวน์โหลดไม่สำเร็จ",
+    "handedToMotrix": "ส่งไปยัง Motrix แล้ว",
+    "notConnectedBody": "จับคู่ Motrix เพื่อให้จัดการการดาวน์โหลด",
+    "notConnectedTitle": "ยังไม่ได้เชื่อมต่อ Motrix",
+    "notReachableBody": "จับคู่ Motrix แล้วลองดาวน์โหลดอีกครั้ง",
+    "notReachableTitle": "ไม่สามารถติดต่อ Motrix ได้",
+    "pairNudgeBody": "เปิด Motrix เพื่อจับคู่ให้เสร็จสิ้น",
+    "pairNudgeTitle": "จับคู่ Motrix",
+    "pairRevokedBody": "Motrix เพิกถอนการจับคู่ของเบราว์เซอร์นี้แล้ว",
+    "pairRevokedTitle": "เพิกถอนการจับคู่แล้ว",
+    "sensitiveSkippedBody": "ให้เบราว์เซอร์ดาวน์โหลดจากเว็บไซต์ที่มีข้อมูลอ่อนไหว",
+    "sensitiveSkippedTitle": "ข้ามแล้ว",
+    "submitFailedBody": "กำลังดาวน์โหลดใหม่ในเบราว์เซอร์",
+    "submitFailedTitle": "ส่งไปยัง Motrix ไม่สำเร็จ"
+  },
+  "options": {
+    "diagnostics": {
+      "adapters": "อะแดปเตอร์",
+      "extensionId": "รหัสส่วนขยาย",
+      "logLevel": "ระดับบันทึกเหตุการณ์",
+      "logLevels": {
+        "silent": "ไม่บันทึก",
+        "error": "ข้อผิดพลาด",
+        "warn": "คำเตือน",
+        "info": "ข้อมูล",
+        "debug": "ดีบัก"
+      },
+      "noneRegistered": "ยังไม่มีรายการที่ลงทะเบียน",
+      "title": "การวินิจฉัย",
+      "version": "เวอร์ชัน"
+    },
+    "endpoint": {
+      "activate": "ใช้",
+      "activateAria": "ใช้ {{name}}",
+      "connection": {
+        "bootstrapping": "กำลังเริ่มต้น",
+        "connected": "เชื่อมต่อแล้ว",
+        "connecting": "กำลังเชื่อมต่อ",
+        "denied": "ถูกปฏิเสธ",
+        "disconnected": "ไม่ได้เชื่อมต่อ",
+        "handshaking": "กำลังอนุญาต",
+        "awaiting-code": "กำลังรอรหัส"
+      },
+      "currentDescription": "เลือก App หรือ Server สำหรับการดาวน์โหลด งาน และทรัพยากรที่ตรวจพบในหน้าเว็บ",
+      "currentTitle": "แบ็กเอนด์ Motrix",
+      "listLabel": "แบ็กเอนด์ Motrix ที่พร้อมใช้งาน",
+      "localDescription": "คอมพิวเตอร์เครื่องนี้ที่ค้นพบผ่าน Motrix App",
+      "localName": "Motrix App",
+      "selectLabel": "ส่งการดาวน์โหลดไปยัง"
+    },
+    "language": {
+      "label": "ภาษา",
+      "system": "ตามระบบ"
+    },
+    "notifications": {
+      "title": "การแจ้งเตือนของระบบ",
+      "masterLabel": "เปิดการแจ้งเตือนของระบบ",
+      "masterAria": "เปิดการแจ้งเตือนของระบบ",
+      "confirmLabel": "สำเร็จ / การยืนยัน",
+      "confirmDesc": "ส่งไปยัง Motrix แล้ว, ดาวน์โหลดเสร็จแล้ว",
+      "errorLabel": "ความล้มเหลว / ข้อผิดพลาด",
+      "errorDesc": "ส่งไม่สำเร็จ, ติดต่อไม่ได้, ดาวน์โหลดไม่สำเร็จ",
+      "reminderLabel": "การเตือน",
+      "reminderDesc": "คำขอจับคู่, การเพิกถอนการจับคู่, เว็บไซต์ที่ข้าม"
+    },
+    "pairing": {
+      "backendTitle": "กำลังจับคู่ {{name}}",
+      "forget": "ลืมการจับคู่",
+      "loading": "กำลังโหลดสถานะการจับคู่…",
+      "localHelp": "คลิกจับคู่เพื่อค้นหา Motrix บนคอมพิวเตอร์เครื่องนี้ แล้วป้อนรหัสจับคู่",
+      "localTitle": "จับคู่ผ่าน Motrix App",
+      "remoteTitle": "จับคู่กับ Motrix Server",
+      "remoteHelp": "คลิกจับคู่ ยืนยันคำขอในหน้าจัดการ Server แล้วป้อนรหัสที่แสดงที่นี่ รองรับทั้งปลายทาง WS และ WSS โดยแนะนำให้ใช้ WSS",
+      "serverRequiredTitle": "ต้องใช้ Motrix Server",
+      "serverRequiredHelp": "Firefox สำหรับ Android เชื่อมต่อผ่าน Motrix Server เพิ่ม Server ด้านบนแล้วเลือกเพื่อจับคู่",
+      "remoteConsentTitle": "การดาวน์โหลดระยะไกล",
+      "remoteConsentBody": "การดาวน์โหลดระยะไกลจะส่ง URL เป้าหมาย, URL และชื่อหน้าเว็บต้นทาง, ชื่อไฟล์, รายการที่เลือก และคำสั่งควบคุมงานไปยัง Server นี้ คุกกี้และส่วนหัวคำขอจะไม่ถูกส่งจนกว่าจะเปิดใช้งานแยกต่างหาก",
+      "remoteConsentOffline": "สิทธิ์ข้อมูลผูกกับ Server ที่ยืนยันตัวตนแล้ว โปรดเชื่อมต่อก่อนเปลี่ยนสิทธิ์",
+      "remoteHeadersLabel": "ส่งส่วนหัวคำขอ",
+      "remoteHeadersHelp": "อนุญาตส่วนหัวที่ได้จากหน้าเว็บ เช่น Referer และส่วนหัวการเล่นสื่อ ส่วนหัวการยืนยันตัวตนยังต้องใช้สิทธิ์ข้อมูลรับรองด้านล่าง",
+      "remoteCredentialsLabel": "ส่งคุกกี้และข้อมูลยืนยันตัวตน",
+      "remoteCredentialsHelp": "อนุญาตคุกกี้และส่วนหัวข้อมูลรับรองสำหรับ Server นี้เท่านั้น เปิดใช้เฉพาะ Server ที่คุณควบคุม",
+      "notPaired": "ยังไม่ได้จับคู่",
+      "paired": "จับคู่กับ Motrix แล้ว",
+      "pairedHelp": "เก็บข้อมูลรับรอง MBP1 ที่ยืนยันแล้วไว้สำหรับแบ็กเอนด์นี้ สถานะการเชื่อมต่อปัจจุบันจะแสดงแยกต่างหาก",
+      "pairedTitle": "การจับคู่พร้อมใช้งาน",
+      "reconnect": "เชื่อมต่อใหม่",
+      "scopedHelp": "ความเชื่อถือและข้อมูลรับรองการจับคู่แยกกันสำหรับแต่ละแบ็กเอนด์ การเปลี่ยนแบ็กเอนด์จะไม่ใช้ความเชื่อถือของแบ็กเอนด์อื่น",
+      "pair": "จับคู่",
+      "pairDialogTitle": "จับคู่กับ Motrix"
+    },
+    "servers": {
+      "add": "เพิ่มเซิร์ฟเวอร์",
+      "addTitle": "เพิ่ม Motrix Server",
+      "current": "ปัจจุบัน",
+      "delete": "ลบเซิร์ฟเวอร์",
+      "deleteActiveDescription": "ลบ {{name}} พร้อมข้อมูลรับรองการจับคู่และความยินยอมที่เก็บไว้ในเครื่องหรือไม่? แบ็กเอนด์ปัจจุบันจะกลับไปเป็น Motrix App โดยไม่เชื่อมต่อหรือเปิดแอป",
+      "deleteActiveServerOnlyDescription": "ลบ {{name}} พร้อมข้อมูลรับรองการจับคู่และความยินยอมที่เก็บไว้ในเครื่องหรือไม่? คุณต้องเพิ่มหรือเลือก Motrix Server อื่นก่อนดาวน์โหลด",
+      "deleteAria": "ลบ {{name}}",
+      "deleteDescription": "ลบ {{name}} พร้อมข้อมูลรับรองการจับคู่และความยินยอมที่เก็บไว้ในเครื่องหรือไม่? การดำเนินการนี้ไม่เพิกถอนสิ่งใดบนเซิร์ฟเวอร์",
+      "deleteTitle": "ลบ Motrix Server หรือไม่?",
+      "description": "บันทึกที่อยู่ Motrix Server หลายรายการและสลับใช้งานจากการตั้งค่าหรือป๊อปอัป",
+      "dialogDescription": "ตั้งชื่อที่จดจำง่ายให้แบ็กเอนด์นี้และป้อน URL ฐานของ WebSocket",
+      "editAria": "แก้ไข {{name}}",
+      "editTitle": "แก้ไข Motrix Server",
+      "emptyDescription": "เพิ่มเซิร์ฟเวอร์เพื่อเชื่อมต่อกับ Motrix นอกคอมพิวเตอร์เครื่องนี้",
+      "emptyTitle": "ยังไม่มี Motrix Server",
+      "footer": "การเปลี่ยนที่อยู่เซิร์ฟเวอร์ต้องจับคู่ใหม่ ข้อมูลการจับคู่จะไม่ถูกแชร์ระหว่างที่อยู่",
+      "nameLabel": "ชื่อเซิร์ฟเวอร์",
+      "namePlaceholder": "เซิร์ฟเวอร์ที่บ้าน",
+      "nameRequired": "ต้องระบุชื่อเซิร์ฟเวอร์",
+      "save": "บันทึกเซิร์ฟเวอร์",
+      "statusAuthority": "ที่อยู่เซิร์ฟเวอร์: {{value}}",
+      "statusRuntime": "เวอร์ชัน Motrix: {{name}} {{version}}",
+      "statusTitle": "ข้อมูลเซิร์ฟเวอร์",
+      "statusTransportSecure": "ความปลอดภัยการเชื่อมต่อ: ใช้ WSS และ TLS ตรวจสอบตัวตนเซิร์ฟเวอร์",
+      "statusTransportPlain": "ความปลอดภัยการเชื่อมต่อ: เข้ารหัสแล้ว แต่ WS ไม่สามารถตรวจสอบตัวตนเซิร์ฟเวอร์และอาจเปิดเผยข้อมูลการเชื่อมต่อ แนะนำให้ใช้ WSS",
+      "title": "เซิร์ฟเวอร์ Motrix",
+      "urlDescription": "ใช้ URL ฐาน ws:// หรือ wss:// พาธที่ระบุเพิ่มเติมจะถูกเก็บไว้ตามเดิมเป็นคำนำหน้าของพร็อกซีย้อนกลับ แนะนำให้ใช้ WSS",
+      "urlDuplicate": "ที่อยู่ Motrix Server นี้บันทึกไว้แล้ว",
+      "urlInvalid": "ป้อน URL ฐาน ws:// หรือ wss:// ที่ถูกต้อง โดยไม่มีช่องว่าง ข้อมูลรับรอง คิวรี หรือแฟรกเมนต์",
+      "urlLabel": "URL ของ WebSocket",
+      "urlPlaceholder": "ws(s)://host[:port][/base-path]",
+      "transportWarningTitle": "การเชื่อมต่อนี้ไม่ได้ใช้ WSS",
+      "transportWarningBody": "เนื้อหาที่รับส่งกับ Motrix ยังคงเข้ารหัส แต่ WS ไม่สามารถตรวจสอบตัวตนเซิร์ฟเวอร์และอาจเปิดเผยข้อมูลการเชื่อมต่อ ใช้ WSS หาก NAS ของคุณรองรับ",
+      "urlRequired": "ต้องระบุ URL ของ WebSocket"
+    },
+    "takeover": {
+      "consentBody": "Motrix จะรับคุกกี้เข้าสู่ระบบของเว็บไซต์เพื่อดาวน์โหลดไฟล์ การดาวน์โหลดจากเว็บไซต์ที่มีข้อมูลอ่อนไหวยังคงอยู่ในเบราว์เซอร์",
+      "consentCancel": "ยกเลิก",
+      "consentConfirm": "เปิดใช้งาน",
+      "consentDialogLabel": "ส่งการดาวน์โหลดไปยัง Motrix หรือไม่?",
+      "denylistLabel": "รายการยกเว้น (หนึ่งโฮสต์ต่อบรรทัด — ให้เบราว์เซอร์จัดการเสมอ)",
+      "enableAria": "เปิดการรับช่วงดาวน์โหลด",
+      "enableLabel": "ส่งการดาวน์โหลดที่เข้าเงื่อนไขไปยัง Motrix",
+      "loading": "กำลังโหลดการตั้งค่ารับช่วงดาวน์โหลด…",
+      "minSizeLabel": "ขนาดขั้นต่ำ (MB)",
+      "minSizePlaceholder": "0 = ทั้งหมด",
+      "thresholdInvalid": "ขนาดขั้นต่ำต้องเป็นตัวเลขที่ไม่ติดลบ",
+      "save": "บันทึก",
+      "saved": "บันทึกแล้ว",
+      "title": "รับช่วงดาวน์โหลด",
+      "remoteUnavailable": "การรับช่วงอัตโนมัติในขณะนี้ต้องใช้ Motrix App ในเครื่อง การดาวน์โหลดระยะไกลและสิทธิ์ส่วนหัวหรือคุกกี้จะไม่เปิดใช้คุณสมบัตินี้ คุณยังส่งการดาวน์โหลดไปยัง Server นี้ด้วยตนเองหรือจากเมนูคลิกขวาได้",
+      "availabilityUnknown": "ยังรับช่วงดาวน์โหลดไม่ได้จนกว่าจะตรวจสอบแบ็กเอนด์ที่เลือกได้",
+      "remoteUnavailableShort": "เฉพาะ App ในเครื่อง การส่งผ่านคลิกขวาใช้กับ Server ได้"
+    },
+    "tabs": {
+      "general": "ทั่วไป",
+      "appearance": "รูปลักษณ์",
+      "integration": "การผสานรวม",
+      "help": "ความช่วยเหลือ"
+    },
+    "common": {
+      "apply": "นำไปใช้",
+      "cancel": "ยกเลิก",
+      "loadError": "โหลดการตั้งค่าไม่ได้เนื่องจากกระบวนการเบื้องหลังของส่วนขยายเริ่มทำงานไม่สำเร็จ โหลดส่วนขยายใหม่แล้วลองอีกครั้ง",
+      "saved": "บันทึกแล้ว",
+      "saving": "กำลังบันทึก…",
+      "saveError": "บันทึกไม่สำเร็จ"
+    },
+    "appearance": {
+      "theme": {
+        "label": "ธีม",
+        "system": "ตามระบบ",
+        "light": "สว่าง",
+        "dark": "มืด"
+      }
+    },
+    "help": {
+      "title": "ความช่วยเหลือและการสนับสนุน",
+      "description": "อ่านคู่มือ รับความช่วยเหลือ และตรวจสอบข้อมูลวินิจฉัยของส่วนขยาย",
+      "reportBug": "รายงานปัญหา",
+      "reportBugDescription": "เปิด issue บน GitHub หรือส่งข้อเสนอแนะ",
+      "issues": "GitHub Issues",
+      "docs": "เอกสาร",
+      "docsDescription": "อ่านคู่มือการตั้งค่า การจับคู่ การรับช่วงดาวน์โหลด และการแก้ปัญหา",
+      "copyDiagnostics": "คัดลอกข้อมูลวินิจฉัย",
+      "copied": "คัดลอกแล้ว",
+      "diagnostics": "การวินิจฉัย",
+      "diagnosticsDescription": "ปรับการบันทึกเหตุการณ์และคัดลอกข้อมูลที่มีประโยชน์ในการแก้ปัญหา"
+    },
+    "about": {
+      "subtitle": "เชื่อมเบราว์เซอร์กับตัวจัดการดาวน์โหลด Motrix",
+      "website": "เว็บไซต์ทางการ"
+    },
+    "title": "การตั้งค่าส่วนขยาย Motrix"
+  },
+  "popup": {
+    "backend": {
+      "app": "Motrix App",
+      "appDescription": "คอมพิวเตอร์เครื่องนี้",
+      "choose": "เลือกแบ็กเอนด์ Motrix",
+      "configureServer": "จัดการ Motrix Server",
+      "notConfigured": "ยังไม่ได้ตั้งค่า",
+      "server": "Motrix Server",
+      "version": "v{{version}}"
+    },
+    "controlPanel": {
+      "engineState": "เอนจิน: {{state}}",
+      "noDownloads": "ไม่มีการดาวน์โหลด",
+      "pause": "หยุดชั่วคราว",
+      "remove": "นำออก",
+      "resume": "ทำต่อ",
+      "statsSummary": "กำลังทำงาน {{active}} · รอ {{waiting}}"
+    },
+    "dashboard": {
+      "activity": "กิจกรรม",
+      "resources": "ทรัพยากร",
+      "showResources": "แสดงทรัพยากรจากหน้านี้",
+      "showTasks": "แสดงงานที่กำลังทำงาน",
+      "title": "ภาพรวมการถ่ายโอน"
+    },
+    "loading": "กำลังโหลด…",
+    "quickSettings": {
+      "fullSettings": "การตั้งค่าทั้งหมด",
+      "fullSettingsDescription": "ทั่วไป รูปลักษณ์ แบ็กเอนด์ และความช่วยเหลือ",
+      "loadError": "โหลดการตั้งค่าด่วนไม่ได้",
+      "notificationsDescription": "ควบคุมการแจ้งเตือนของระบบจากส่วนขยาย",
+      "retry": "ลองอีกครั้ง",
+      "saveError": "บันทึกการตั้งค่าไม่ได้ โปรดลองอีกครั้ง",
+      "takeoverDescription": "ส่งการดาวน์โหลดของเบราว์เซอร์ไปยังแบ็กเอนด์ Motrix ปัจจุบัน"
+    },
+    "quickAdd": {
+      "title": "งานใหม่",
+      "description": "วางลิงก์ HTTP, HTTPS หรือ magnet",
+      "inputLabel": "ที่อยู่ดาวน์โหลด",
+      "placeholder": "https://example.com/file.zip",
+      "cancel": "ยกเลิก",
+      "add": "เพิ่ม",
+      "submitting": "กำลังเพิ่ม…",
+      "error": {
+        "empty": "ป้อนที่อยู่ดาวน์โหลด",
+        "unsupported": "รองรับเฉพาะลิงก์ HTTP, HTTPS หรือ magnet",
+        "invalid": "ที่อยู่ดาวน์โหลดไม่ถูกต้อง",
+        "submitFailed": "เพิ่มงานไม่ได้ โปรดลองอีกครั้ง"
+      }
+    },
+    "reconnect": "เชื่อมต่อ",
+    "settings": "เปิดการตั้งค่า",
+    "sniffer": {
+      "clearFilters": "ล้างตัวกรอง",
+      "detected": "{{count}} รายการ",
+      "downloadCount": "ดาวน์โหลด {{count}} รายการ",
+      "downloadSelected": "ดาวน์โหลดรายการที่เลือก",
+      "downloadedResource": "ส่ง {{name}} แล้ว",
+      "downloadingResource": "กำลังดาวน์โหลด {{name}}",
+      "emptyDescription": "เล่นสื่อแล้วลองอีกครั้ง",
+      "emptyFilter": "ไม่มีทรัพยากรที่ตรงกับตัวกรองนี้",
+      "emptyTitle": "ไม่พบสื่อ",
+      "filteredCount": "รูปภาพ {{matched}} / {{total}} รูป",
+      "filters": {
+        "all": "ทั้งหมด",
+        "audio": "เสียง",
+        "image": "รูปภาพ",
+        "video": "วิดีโอ"
+      },
+      "imageFilters": {
+        "activeCount": "ตัวกรองที่เปิดใช้ {{count}} รายการ",
+        "dimensions": "มิติและขนาดไฟล์",
+        "done": "เสร็จสิ้น",
+        "fields": {
+          "height": "ความสูง",
+          "size": "ขนาด",
+          "width": "ความกว้าง"
+        },
+        "formatOptionLabel": "กรองรูปภาพ {{format}}",
+        "formats": "รูปแบบภาพ",
+        "operatorLabel": "การเปรียบเทียบ {{label}}",
+        "reset": "รีเซ็ต",
+        "result": "{{matched}} / {{total}}",
+        "sizeUnitLabel": "หน่วยขนาดไฟล์",
+        "title": "ตัวกรองด่วน",
+        "trigger": "กรอง",
+        "valueLabel": "ค่า {{label}}"
+      },
+      "imageCount": "{{count}} รูป",
+      "noImageMatches": "ไม่มีรูปภาพที่ตรงกัน",
+      "pageAction": {
+        "bilibili": "ส่งวิดีโอ bilibili นี้",
+        "youtube": "ส่งวิดีโอ YouTube นี้"
+      },
+      "pageSubmitted": "ส่งวิดีโอไปยัง Motrix แล้ว {{taskId}}",
+      "pageResources": "ทรัพยากรของหน้าเว็บ",
+      "quickDownloadResource": "ดาวน์โหลด {{name}} แบบด่วน",
+      "connectToSubmit": "เชื่อมต่อกับ Motrix เพื่อส่งทรัพยากร",
+      "scan": "สแกนอีกครั้ง",
+      "scanning": "กำลังสแกน…",
+      "selectAll": "เลือกทั้งหมด",
+      "selected": "เลือกแล้ว {{count}} รายการ",
+      "selectResource": "เลือก {{name}}",
+      "sourceHost": "แหล่งที่มา: {{host}}",
+      "sendResource": "ส่ง {{name}} ไปยัง Motrix",
+      "sent": "ส่งแล้ว",
+      "sending": "กำลังส่ง",
+      "submitFailed": "ส่งทรัพยากรไม่ได้ โปรดลองอีกครั้ง",
+      "title": "ตรวจหาทรัพยากร",
+      "unavailableDescription": "เปลี่ยนหน้าหรือลองอีกครั้งภายหลัง",
+      "unavailableTitle": "สแกนหน้านี้ไม่ได้",
+      "unsupported": "ต้องใช้ ffmpeg",
+      "unsupportedReason": "แบ็กเอนด์ที่เลือกไม่สามารถส่งทรัพยากร {{kind}} ได้ เนื่องจากไม่มีการรองรับ ffmpeg",
+      "unsupportedSelectionReason": "แบ็กเอนด์ที่เลือกไม่สามารถส่งทรัพยากรที่เลือกอย่างน้อยหนึ่งประเภทได้",
+      "unsupportedResource": "ส่ง {{name}} ไม่ได้ {{reason}}"
+    },
+    "speed": {
+      "download": "ดาวน์โหลด",
+      "upload": "อัปโหลด"
+    },
+    "status": {
+      "bootstrapping": "กำลังค้นหา Motrix…",
+      "connected": "เชื่อมต่อแล้ว",
+      "connecting": "กำลังเชื่อมต่อ…",
+      "denied": "การจับคู่ถูกปฏิเสธ",
+      "disconnected": "ไม่ได้เชื่อมต่อ",
+      "handshaking": "กำลังเจรจาการเชื่อมต่อ",
+      "awaiting-code": "กำลังรอรหัสจับคู่…"
+    },
+    "tabs": {
+      "settings": "การตั้งค่า",
+      "sniffer": "ตรวจหาทรัพยากร",
+      "tasks": "งาน"
+    },
+    "takeover": {
+      "aria": "สลับการรับช่วงดาวน์โหลด",
+      "label": "รับช่วง"
+    },
+    "tasks": {
+      "actions": "การดำเนินการสำหรับ {{name}}",
+      "openFolder": "เปิดโฟลเดอร์ที่มีไฟล์ใน Motrix",
+      "openFolderError": "เปิดโฟลเดอร์งานไม่ได้ โปรดลองอีกครั้ง",
+      "openFolderMetadataPending": "รอข้อมูลเมตาของงานก่อนเปิดโฟลเดอร์",
+      "openFolderTask": "เปิดโฟลเดอร์ที่มี {{name}}",
+      "openFolderUnsupported": "อัปเดต Motrix เพื่อเปิดโฟลเดอร์",
+      "pauseTask": "หยุด {{name}} ชั่วคราว",
+      "removeTask": "นำ {{name}} ออก",
+      "removeConfirmTitle": "นำงานออกหรือไม่?",
+      "removeConfirmDescription": "“{{name}}” จะถูกนำออกจากรายการดาวน์โหลด",
+      "removeDeleteFilesLabel": "ลบไฟล์ที่ดาวน์โหลดแล้ว",
+      "removeConfirmAction": "นำออก",
+      "resumeTask": "ทำ {{name}} ต่อ",
+      "bytes": "{{done}} จาก {{total}}",
+      "disconnectedDescription": "เชื่อมต่อเพื่อดูงาน",
+      "disconnectedTitle": "Motrix ออฟไลน์",
+      "empty": {
+        "active": "ไม่มีงานที่กำลังทำงาน",
+        "failed": "ไม่มีงานที่ล้มเหลว",
+        "recent": "ไม่มีงานที่เสร็จแล้ว"
+      },
+      "filters": {
+        "active": "กำลังทำงาน",
+        "failed": "ล้มเหลว",
+        "recent": "เสร็จแล้ว"
+      },
+      "loading": "กำลังโหลดงาน",
+      "status": {
+        "completed": "เสร็จแล้ว",
+        "downloading": "กำลังดาวน์โหลด",
+        "error": "ล้มเหลว",
+        "fetching_metadata": "กำลังรับข้อมูลเมตา",
+        "finalizing": "กำลังดำเนินการขั้นสุดท้าย",
+        "paused": "หยุดชั่วคราว",
+        "queued": "อยู่ในคิว",
+        "seeding": "กำลังปล่อยไฟล์"
+      },
+      "title": "งาน"
+    },
+    "pairing": {
+      "attemptOf": "ครั้งที่ {{run}} จาก {{maxRuns}}",
+      "attemptsRemaining": "เหลือ {{attemptsRemaining}} ครั้ง",
+      "codeLabel": "รหัสจับคู่",
+      "codeDescription": "ป้อนรหัส 8 อักขระที่แสดงในกล่องโต้ตอบจับคู่ของ Motrix",
+      "codeInvalid": "ป้อนรหัส 8 อักขระที่แสดงในกล่องโต้ตอบจับคู่",
+      "dialogTitle": "ป้อนรหัสจับคู่",
+      "dismissPrompt": "ป้อนภายหลังและท่องเว็บต่อ",
+      "enterCode": "ป้อนรหัสจับคู่",
+      "expiresIn": "หมดอายุใน {{time}}",
+      "pairButton": "จับคู่",
+      "pickerHelp": "พบ Motrix หลายอินสแตนซ์ เลือกหนึ่งรายการเพื่อจับคู่",
+      "rescan": "ค้นหาใหม่",
+      "noCandidates": "ไม่พบอินสแตนซ์ Motrix",
+      "candidatesLabel": "อินสแตนซ์ Motrix ที่ค้นพบ",
+      "candidatePort": "พอร์ต {{port}}",
+      "candidateDetail": "{{instanceId}} · v{{appVersion}}",
+      "unknownVersion": "ไม่ทราบเวอร์ชัน",
+      "choose": "เลือก",
+      "backoffTitle": "พยายามจับคู่มากเกินไป",
+      "backoffBody": "ลองอีกครั้งเวลา {{time}}",
+      "retryIn": "ลองอีกครั้งใน {{seconds}} วินาที",
+      "permissionMissingTitle": "ต้องได้รับสิทธิ์",
+      "permissionMissingBody": "อนุญาตให้เข้าถึง localhost เพื่อค้นหา Motrix บนคอมพิวเตอร์เครื่องนี้",
+      "grantPermission": "ให้สิทธิ์",
+      "degradedTitle": "เชื่อมต่อ Motrix แล้ว",
+      "degradedBody": "คุณใช้ Motrix ได้ตามปกติ การเชื่อมต่อนี้มีเพียงการตรวจสอบขั้นพื้นฐาน เพื่อการป้องกันที่ดียิ่งขึ้น ให้อัปเดต Motrix และจับคู่ใหม่",
+      "recoveryExhaustedTitle": "เชื่อมต่อใหม่โดยอัตโนมัติไม่ได้",
+      "recoveryExhaustedBody": "การจับคู่ Motrix ที่บันทึกไว้ทั้งหมดใช้ไม่ได้ กดเชื่อมต่อเพื่อจับคู่ใหม่"
+    }
+  },
+  "errors": {
+    "connection": {
+      "generic": "เชื่อมต่อไม่สำเร็จ โปรดลองอีกครั้ง",
+      "backoffLocked": "พยายามจับคู่มากเกินไป โปรดลองอีกครั้งภายหลัง",
+      "staleAttempt": "มีการพยายามเชื่อมต่อครั้งใหม่เข้ามาแทนที่",
+      "aborted": "ยกเลิกการจับคู่แล้ว",
+      "deadlineExceeded": "หมดเวลาการลอง โปรดลองอีกครั้ง",
+      "runsExhausted": "ป้อนรหัสผิดมากเกินไป เริ่มจับคู่ใหม่เพื่อรับรหัสใหม่",
+      "invalidCode": "รูปแบบรหัสไม่ถูกต้อง ตรวจสอบกล่องโต้ตอบของ Motrix",
+      "missingNonce": "Motrix ไม่ได้จัดสรรช่องสำหรับจับคู่ ตรวจสอบว่า Motrix ทำงานอยู่แล้วลองอีกครั้ง",
+      "unsupportedBrowser": "เบราว์เซอร์นี้ไม่รองรับการจับคู่",
+      "ticketPreparationFailed": "เตรียมการจับคู่ไม่ได้ โปรดลองอีกครั้ง",
+      "protocolViolation": "Motrix ส่งการตอบกลับที่ไม่คาดคิด โปรดลองอีกครั้ง",
+      "unsupportedVersion": "ส่วนขยายนี้กับ Motrix ใช้โปรโตคอลคนละเวอร์ชัน อัปเดตทั้งสองแล้วลองอีกครั้ง",
+      "backendUpgradeRequired": "Motrix เวอร์ชันนี้เก่าเกินไปสำหรับการจับคู่ที่ปลอดภัย อัปเดต Motrix แล้วลองอีกครั้ง",
+      "extensionUpgradeRequired": "ส่วนขยายเวอร์ชันนี้เก่าเกินไปสำหรับ Motrix นี้ อัปเดตส่วนขยาย Motrix แล้วลองอีกครั้ง",
+      "unsupportedRemote": "Motrix ที่ยืนยันตัวตนแล้วไม่ใช่ App หรือ Server ที่เลือกสำหรับการเชื่อมต่อนี้ ตรวจสอบปลายทางแล้วลองอีกครั้ง",
+      "remoteDiscoveryUnavailable": "ติดต่อ Motrix Server ระยะไกลไม่ได้ ตรวจสอบที่อยู่ บริการรับการเชื่อมต่อ และเครือข่าย สำหรับ WSS ให้ตรวจสอบใบรับรองและพร็อกซีย้อนกลับด้วย",
+      "remotePairingUnavailable": "Motrix Server ระยะไกลเปิดเซสชันจับคู่ที่ปลอดภัยไม่ได้ โปรดลองอีกครั้งในอีกสักครู่",
+      "remoteTransportUnavailable": "เชื่อมต่อ Motrix Server ระยะไกลไม่สำเร็จ ตรวจสอบที่อยู่ บริการรับการเชื่อมต่อ DNS และเครือข่าย สำหรับ WSS ให้ตรวจสอบใบรับรองและพร็อกซีย้อนกลับด้วย เบราว์เซอร์ไม่สามารถระบุได้ว่าส่วนใดล้มเหลว",
+      "peerRejected": "Motrix ปฏิเสธการจับคู่",
+      "peerBusy": "Motrix กำลังจัดการคำขอจับคู่มากเกินไป โปรดลองอีกครั้งในอีกสักครู่",
+      "securityCheckFailed": "การเชื่อมต่อไม่ผ่านการตรวจสอบความปลอดภัยและถูกหยุดแล้ว",
+      "peerNotAuthentic": "อีกฝ่ายพิสูจน์ไม่ได้ว่าเป็น Motrix ของคุณ การเชื่อมต่อจึงถูกหยุด",
+      "credentialPhaseFailed": "บันทึกการจับคู่ไม่ได้ โปรดลองจับคู่ใหม่",
+      "internalError": "เกิดปัญหาในส่วนขยาย โปรดลองอีกครั้ง",
+      "authFailed": "Motrix ไม่รู้จักการจับคู่นี้ อาจถูกเพิกถอนแล้ว โปรดลองจับคู่ใหม่",
+      "serverMacMismatch": "การตอบกลับไม่ผ่านการตรวจสอบจึงหยุดการเชื่อมต่อ อีกฝ่ายอาจไม่ใช่ Motrix ของคุณ",
+      "channelClosed": "ปิดการเชื่อมต่อแล้ว เชื่อมต่อใหม่เพื่อดำเนินการต่อ",
+      "channelUnavailable": "ขณะนี้ติดต่อ Motrix ไม่ได้ ตรวจสอบว่าโปรแกรมทำงานอยู่"
+    }
+  }
+}

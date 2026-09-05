@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { getLocaleOverride, setLocaleOverride } from '@/shared/localeStore'
+import { SUPPORTED_LOCALES } from '@/shared/supportedLocales'
 
 declare const browser: {
   storage: {
@@ -28,9 +29,13 @@ describe('localeStore', () => {
   it('defaults to null (follow browser)', async () => {
     expect(await getLocaleOverride()).toBeNull()
   })
-  it('round-trips a set override', async () => {
-    await setLocaleOverride('zh-CN')
-    expect(await getLocaleOverride()).toBe('zh-CN')
+  it.each(SUPPORTED_LOCALES)('persists %s', async (locale) => {
+    await setLocaleOverride(locale)
+    expect(await getLocaleOverride()).toBe(locale)
+  })
+  it('ignores unsupported stored values', async () => {
+    await browser.storage.local.set({ 'motrix.locale': 'unknown' })
+    expect(await getLocaleOverride()).toBeNull()
   })
   it('clears the override with null', async () => {
     await setLocaleOverride('en-US')
