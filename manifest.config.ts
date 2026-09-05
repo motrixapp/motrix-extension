@@ -84,6 +84,15 @@ export default defineManifest((env) => {
       : { service_worker: 'src/background/service-worker.ts', type: 'module' },
     ...(firefox
       ? {
+          // Firefox's default Manifest V3 CSP includes
+          // `upgrade-insecure-requests`, which rewrites the loopback MBP1
+          // transport from ws:// to wss://. Motrix deliberately serves the
+          // local bridge over plain WebSocket because MBP1 authenticates and
+          // encrypts the session itself, so keep the extension policy strict
+          // while explicitly opting out of that scheme rewrite.
+          content_security_policy: {
+            extension_pages: "script-src 'self'; object-src 'self';",
+          },
           browser_specific_settings: {
             gecko: {
               id: 'motrix-extension@motrix.app',
