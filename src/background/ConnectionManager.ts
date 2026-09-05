@@ -804,8 +804,12 @@ export class ConnectionManager {
    *  real adapter extraction; this is the reachable, typed submit capability. */
   async submitDownload(
     params: DownloadSubmitParams,
-    options: { automaticTakeover?: boolean } = {}
+    options: {
+      automaticTakeover?: boolean
+      assertCurrent?: () => void
+    } = {}
   ): Promise<DownloadSubmitResult> {
+    options.assertCurrent?.()
     let outbound = params
     const scope = this.currentEndpointScope
     if (scope?.authority.kind === 'remote') {
@@ -829,6 +833,7 @@ export class ConnectionManager {
     const withKey: DownloadSubmitParams = outbound.idempotencyKey
       ? outbound
       : { ...outbound, idempotencyKey: crypto.randomUUID() }
+    options.assertCurrent?.()
     return this.request(Methods.DownloadSubmit, withKey)
   }
 

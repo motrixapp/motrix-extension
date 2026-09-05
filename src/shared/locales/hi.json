@@ -1,0 +1,448 @@
+{
+  "badge": {
+    "tooltip": {
+      "connected": "Motrix: कनेक्ट है",
+      "disconnected": "Motrix: कनेक्ट नहीं है",
+      "connecting": "Motrix: कनेक्ट हो रहा है…",
+      "downloading": "Motrix: डाउनलोड हो रहा है",
+      "denied": "Motrix: पेयरिंग अस्वीकार हुई — दोबारा पेयर करने के लिए खोलें",
+      "error": "Motrix: भेजना विफल हुआ — विवरण के लिए क्लिक करें"
+    }
+  },
+  "contextMenu": {
+    "downloadWithMotrix": "Motrix से डाउनलोड करें",
+    "pairThenDownload": "Motrix को पेयर करें, फिर डाउनलोड करें"
+  },
+  "notify": {
+    "browserFallbackBody": "Motrix उपलब्ध नहीं है। डाउनलोड अब ब्राउज़र करेगा।",
+    "browserFallbackTitle": "ब्राउज़र में डाउनलोड हो रहा है",
+    "downloadComplete": "डाउनलोड पूरा हुआ",
+    "downloadFailed": "डाउनलोड विफल हुआ",
+    "handedToMotrix": "Motrix को भेज दिया गया",
+    "notConnectedBody": "डाउनलोड संभालने के लिए Motrix को पेयर करें।",
+    "notConnectedTitle": "Motrix कनेक्ट नहीं है",
+    "notReachableBody": "Motrix को पेयर करें, फिर डाउनलोड दोबारा आज़माएँ।",
+    "notReachableTitle": "Motrix से संपर्क नहीं हो पा रहा",
+    "pairNudgeBody": "पेयरिंग पूरी करने के लिए Motrix खोलें।",
+    "pairNudgeTitle": "Motrix को पेयर करें",
+    "pairRevokedBody": "Motrix ने इस ब्राउज़र की पेयरिंग रद्द कर दी है।",
+    "pairRevokedTitle": "पेयरिंग रद्द कर दी गई",
+    "sensitiveSkippedBody": "संवेदनशील साइट का डाउनलोड ब्राउज़र को सौंप दिया गया।",
+    "sensitiveSkippedTitle": "छोड़ दिया गया",
+    "submitFailedBody": "ब्राउज़र में दोबारा डाउनलोड हो रहा है।",
+    "submitFailedTitle": "Motrix को भेजना विफल हुआ"
+  },
+  "options": {
+    "diagnostics": {
+      "adapters": "अडैप्टर",
+      "extensionId": "एक्सटेंशन आईडी",
+      "logLevel": "लॉग स्तर",
+      "logLevels": {
+        "silent": "लॉग बंद",
+        "error": "त्रुटि",
+        "warn": "चेतावनी",
+        "info": "जानकारी",
+        "debug": "डीबग"
+      },
+      "noneRegistered": "अभी कोई पंजीकृत नहीं है",
+      "title": "निदान",
+      "version": "संस्करण"
+    },
+    "endpoint": {
+      "activate": "इस्तेमाल करें",
+      "activateAria": "{{name}} इस्तेमाल करें",
+      "connection": {
+        "bootstrapping": "शुरू हो रहा है",
+        "connected": "कनेक्ट है",
+        "connecting": "कनेक्ट हो रहा है",
+        "denied": "अस्वीकार किया गया",
+        "disconnected": "डिस्कनेक्ट है",
+        "handshaking": "अनुमति की पुष्टि हो रही है",
+        "awaiting-code": "कोड का इंतज़ार है"
+      },
+      "currentDescription": "डाउनलोड, कार्यों और पेज पर मिले संसाधनों के लिए एक App या Server चुनें।",
+      "currentTitle": "Motrix बैकएंड",
+      "listLabel": "उपलब्ध Motrix बैकएंड",
+      "localDescription": "Motrix App के ज़रिए मिला यह कंप्यूटर",
+      "localName": "Motrix App",
+      "selectLabel": "डाउनलोड यहाँ भेजें"
+    },
+    "language": {
+      "label": "भाषा",
+      "system": "सिस्टम के अनुसार"
+    },
+    "notifications": {
+      "title": "सिस्टम सूचनाएँ",
+      "masterLabel": "सिस्टम सूचनाएँ चालू करें",
+      "masterAria": "सिस्टम सूचनाएँ चालू करें",
+      "confirmLabel": "सफलता / पुष्टि",
+      "confirmDesc": "Motrix को भेजा गया, डाउनलोड पूरा हुआ",
+      "errorLabel": "विफलताएँ / त्रुटियाँ",
+      "errorDesc": "भेजना विफल, संपर्क नहीं हो पाया, डाउनलोड विफल",
+      "reminderLabel": "रिमाइंडर",
+      "reminderDesc": "पेयरिंग अनुरोध, रद्द की गई पेयरिंग, छोड़ी गई साइटें"
+    },
+    "pairing": {
+      "backendTitle": "{{name}} से पेयरिंग",
+      "forget": "पेयरिंग भूलें",
+      "loading": "पेयरिंग की स्थिति लोड हो रही है…",
+      "localHelp": "इस कंप्यूटर पर Motrix खोजने के लिए पेयर करें पर क्लिक करें और उसका पेयरिंग कोड डालें।",
+      "localTitle": "Motrix App के ज़रिए पेयर करें",
+      "remoteTitle": "Motrix Server से पेयर करें",
+      "remoteHelp": "पेयर करें पर क्लिक करें, Server के प्रबंधन इंटरफ़ेस में अनुरोध स्वीकार करें और वहाँ दिखाया गया कोड यहाँ डालें। WS और WSS दोनों एंडपॉइंट समर्थित हैं; WSS की सलाह दी जाती है।",
+      "serverRequiredTitle": "Motrix Server ज़रूरी है",
+      "serverRequiredHelp": "Android के लिए Firefox, Motrix Server के ज़रिए कनेक्ट होता है। ऊपर Server जोड़ें, फिर पेयर करने के लिए उसे चुनें।",
+      "remoteConsentTitle": "रिमोट डाउनलोड",
+      "remoteConsentBody": "रिमोट डाउनलोड में लक्ष्य URL, स्रोत पेज का URL और शीर्षक, फ़ाइल नाम, चयन और कार्य नियंत्रण इस Server को भेजे जाते हैं। कुकीज़ और अनुरोध हेडर अलग से चालू किए बिना नहीं भेजे जाते।",
+      "remoteConsentOffline": "डेटा अनुमतियाँ प्रमाणित Server से जुड़ी होती हैं। इन्हें बदलने से पहले कनेक्ट करें।",
+      "remoteHeadersLabel": "अनुरोध हेडर भेजें",
+      "remoteHeadersHelp": "पेज से मिले Referer और मीडिया प्लेबैक हेडर जैसे हेडर भेजने की अनुमति देता है। प्रमाणीकरण हेडर के लिए नीचे दी गई क्रेडेंशियल अनुमति अब भी ज़रूरी है।",
+      "remoteCredentialsLabel": "कुकीज़ और प्रमाणीकरण जानकारी भेजें",
+      "remoteCredentialsHelp": "केवल इस Server के लिए कुकीज़ और क्रेडेंशियल हेडर की अनुमति देता है। इसे केवल अपने नियंत्रण वाले Server के लिए चालू करें।",
+      "notPaired": "पेयर नहीं है",
+      "paired": "Motrix से पेयर है",
+      "pairedHelp": "इस बैकएंड के लिए पुष्टि किया गया MBP1 क्रेडेंशियल सहेजा गया है। मौजूदा कनेक्शन की स्थिति अलग दिखाई जाती है।",
+      "pairedTitle": "पेयरिंग तैयार है",
+      "reconnect": "दोबारा कनेक्ट करें",
+      "scopedHelp": "पेयरिंग का भरोसा और क्रेडेंशियल हर बैकएंड के लिए अलग हैं। बैकएंड बदलने पर दूसरे बैकएंड का भरोसा कभी इस्तेमाल नहीं होता।",
+      "pair": "पेयर करें",
+      "pairDialogTitle": "Motrix से पेयर करें"
+    },
+    "servers": {
+      "add": "सर्वर जोड़ें",
+      "addTitle": "Motrix Server जोड़ें",
+      "current": "मौजूदा",
+      "delete": "सर्वर मिटाएँ",
+      "deleteActiveDescription": "क्या {{name}} और स्थानीय रूप से सहेजे गए उसके पेयरिंग क्रेडेंशियल व सहमतियाँ मिटाएँ? मौजूदा बैकएंड Motrix App पर लौट जाएगा, लेकिन उसे कनेक्ट या शुरू नहीं किया जाएगा।",
+      "deleteActiveServerOnlyDescription": "क्या {{name}} और स्थानीय रूप से सहेजे गए उसके पेयरिंग क्रेडेंशियल व सहमतियाँ मिटाएँ? डाउनलोड करने से पहले आपको दूसरा Motrix Server जोड़ना या चुनना होगा।",
+      "deleteAria": "{{name}} मिटाएँ",
+      "deleteDescription": "क्या {{name}} और स्थानीय रूप से सहेजे गए उसके पेयरिंग क्रेडेंशियल व सहमतियाँ मिटाएँ? इससे सर्वर पर कुछ भी रद्द नहीं होगा।",
+      "deleteTitle": "Motrix Server मिटाएँ?",
+      "description": "कई Motrix Server पते सहेजें और विकल्पों या पॉपअप से उनके बीच स्विच करें।",
+      "dialogDescription": "इस बैकएंड को पहचानने योग्य नाम दें और उसका WebSocket बेस URL डालें।",
+      "editAria": "{{name}} संपादित करें",
+      "editTitle": "Motrix Server संपादित करें",
+      "emptyDescription": "इस कंप्यूटर से बाहर Motrix से कनेक्ट करने के लिए सर्वर जोड़ें।",
+      "emptyTitle": "अभी कोई Motrix Server नहीं है",
+      "footer": "सर्वर का पता बदलने पर दोबारा पेयरिंग ज़रूरी है। पेयरिंग जानकारी कभी भी अलग-अलग पतों के बीच साझा नहीं होती।",
+      "nameLabel": "सर्वर का नाम",
+      "namePlaceholder": "घर का सर्वर",
+      "nameRequired": "सर्वर का नाम ज़रूरी है",
+      "save": "सर्वर सहेजें",
+      "statusAuthority": "सर्वर का पता: {{value}}",
+      "statusRuntime": "Motrix संस्करण: {{name}} {{version}}",
+      "statusTitle": "सर्वर की जानकारी",
+      "statusTransportSecure": "कनेक्शन सुरक्षा: WSS इस्तेमाल हो रहा है और TLS सर्वर की पहचान सत्यापित करता है",
+      "statusTransportPlain": "कनेक्शन सुरक्षा: एन्क्रिप्टेड है, लेकिन WS सर्वर की पहचान सत्यापित नहीं कर सकता और कनेक्शन जानकारी उजागर हो सकती है। WSS की सलाह दी जाती है",
+      "title": "Motrix सर्वर",
+      "urlDescription": "ws:// या wss:// बेस URL इस्तेमाल करें। वैकल्पिक पाथ रिवर्स प्रॉक्सी प्रीफ़िक्स के रूप में हूबहू रखा जाता है; WSS की सलाह दी जाती है।",
+      "urlDuplicate": "यह Motrix Server पता पहले से सहेजा गया है",
+      "urlInvalid": "बिना खाली जगह, क्रेडेंशियल, क्वेरी या फ़्रैगमेंट वाला मान्य ws:// या wss:// बेस URL डालें",
+      "urlLabel": "WebSocket URL",
+      "urlPlaceholder": "ws(s)://host[:port][/base-path]",
+      "transportWarningTitle": "यह कनेक्शन WSS इस्तेमाल नहीं करता",
+      "transportWarningBody": "Motrix के साथ भेजी और प्राप्त की गई सामग्री एन्क्रिप्टेड रहती है, लेकिन WS सर्वर की पहचान सत्यापित नहीं कर सकता और कनेक्शन जानकारी उजागर हो सकती है। अगर आपका NAS समर्थन करता है, तो WSS इस्तेमाल करें।",
+      "urlRequired": "WebSocket URL ज़रूरी है"
+    },
+    "takeover": {
+      "consentBody": "फ़ाइलें डाउनलोड करने के लिए Motrix को साइट की लॉगिन कुकीज़ मिलती हैं। संवेदनशील साइटों के डाउनलोड ब्राउज़र में ही रहते हैं।",
+      "consentCancel": "रद्द करें",
+      "consentConfirm": "चालू करें",
+      "consentDialogLabel": "डाउनलोड Motrix को भेजें?",
+      "denylistLabel": "बहिष्करण सूची (हर पंक्ति में एक होस्ट — हमेशा ब्राउज़र संभालेगा)",
+      "enableAria": "डाउनलोड टेकओवर चालू करें",
+      "enableLabel": "उपयुक्त डाउनलोड Motrix को भेजें",
+      "loading": "टेकओवर सेटिंग लोड हो रही हैं…",
+      "minSizeLabel": "न्यूनतम आकार (MB)",
+      "minSizePlaceholder": "0 = सभी",
+      "thresholdInvalid": "न्यूनतम आकार शून्य या उससे बड़ा होना चाहिए",
+      "save": "सहेजें",
+      "saved": "सहेजा गया",
+      "title": "डाउनलोड टेकओवर",
+      "remoteUnavailable": "अपने-आप डाउनलोड संभालने के लिए अभी स्थानीय Motrix App ज़रूरी है। रिमोट डाउनलोड और हेडर या कुकी अनुमतियाँ इसे चालू नहीं करतीं। आप इस Server को मैन्युअल रूप से या राइट-क्लिक मेन्यू से डाउनलोड भेज सकते हैं।",
+      "availabilityUnknown": "चुने गए बैकएंड की जाँच होने तक टेकओवर उपलब्ध नहीं है।",
+      "remoteUnavailableShort": "केवल स्थानीय App। राइट-क्लिक से भेजना Server के साथ भी काम करता है।"
+    },
+    "tabs": {
+      "general": "सामान्य",
+      "appearance": "दिखावट",
+      "integration": "एकीकरण",
+      "help": "मदद"
+    },
+    "common": {
+      "apply": "लागू करें",
+      "cancel": "रद्द करें",
+      "loadError": "एक्सटेंशन की बैकग्राउंड प्रक्रिया शुरू नहीं हुई, इसलिए सेटिंग लोड नहीं हो सकीं। एक्सटेंशन दोबारा लोड करके फिर कोशिश करें।",
+      "saved": "सहेजा गया",
+      "saving": "सहेजा जा रहा है…",
+      "saveError": "सहेजना विफल हुआ"
+    },
+    "appearance": {
+      "theme": {
+        "label": "थीम",
+        "system": "सिस्टम के अनुसार",
+        "light": "हल्की",
+        "dark": "गहरी"
+      }
+    },
+    "help": {
+      "title": "मदद और सहायता",
+      "description": "गाइड पढ़ें, सहायता पाएँ और एक्सटेंशन की निदान जानकारी देखें।",
+      "reportBug": "समस्या की रिपोर्ट करें",
+      "reportBugDescription": "GitHub पर issue खोलें या प्रतिक्रिया भेजें।",
+      "issues": "GitHub Issues",
+      "docs": "दस्तावेज़",
+      "docsDescription": "सेटअप, पेयरिंग, डाउनलोड टेकओवर और समस्या निवारण की गाइड पढ़ें।",
+      "copyDiagnostics": "निदान जानकारी कॉपी करें",
+      "copied": "कॉपी किया गया",
+      "diagnostics": "निदान",
+      "diagnosticsDescription": "लॉगिंग बदलें और समस्या निवारण के लिए उपयोगी जानकारी कॉपी करें।"
+    },
+    "about": {
+      "subtitle": "ब्राउज़र को Motrix डाउनलोड मैनेजर से जोड़ता है",
+      "website": "आधिकारिक वेबसाइट"
+    },
+    "title": "Motrix एक्सटेंशन सेटिंग"
+  },
+  "popup": {
+    "backend": {
+      "app": "Motrix App",
+      "appDescription": "यह कंप्यूटर",
+      "choose": "Motrix बैकएंड चुनें",
+      "configureServer": "Motrix Server प्रबंधित करें",
+      "notConfigured": "कॉन्फ़िगर नहीं किया गया",
+      "server": "Motrix Server",
+      "version": "v{{version}}"
+    },
+    "controlPanel": {
+      "engineState": "इंजन: {{state}}",
+      "noDownloads": "कोई डाउनलोड नहीं",
+      "pause": "रोकें",
+      "remove": "हटाएँ",
+      "resume": "जारी रखें",
+      "statsSummary": "सक्रिय: {{active}} · प्रतीक्षा में: {{waiting}}"
+    },
+    "dashboard": {
+      "activity": "गतिविधि",
+      "resources": "संसाधन",
+      "showResources": "इस पेज के संसाधन दिखाएँ",
+      "showTasks": "सक्रिय कार्य दिखाएँ",
+      "title": "ट्रांसफ़र का अवलोकन"
+    },
+    "loading": "लोड हो रहा है…",
+    "quickSettings": {
+      "fullSettings": "सभी सेटिंग",
+      "fullSettingsDescription": "सामान्य, दिखावट, बैकएंड और मदद",
+      "loadError": "त्वरित सेटिंग लोड नहीं हो सकीं।",
+      "notificationsDescription": "एक्सटेंशन की सिस्टम सूचनाएँ नियंत्रित करें",
+      "retry": "फिर कोशिश करें",
+      "saveError": "सेटिंग सहेजी नहीं जा सकी। फिर कोशिश करें।",
+      "takeoverDescription": "ब्राउज़र के डाउनलोड मौजूदा Motrix बैकएंड को भेजें"
+    },
+    "quickAdd": {
+      "title": "नया कार्य",
+      "description": "HTTP, HTTPS या मैग्नेट लिंक पेस्ट करें।",
+      "inputLabel": "डाउनलोड पता",
+      "placeholder": "https://example.com/file.zip",
+      "cancel": "रद्द करें",
+      "add": "जोड़ें",
+      "submitting": "जोड़ा जा रहा है…",
+      "error": {
+        "empty": "डाउनलोड पता डालें।",
+        "unsupported": "केवल HTTP, HTTPS या मैग्नेट लिंक समर्थित हैं।",
+        "invalid": "डाउनलोड पता अमान्य है।",
+        "submitFailed": "कार्य जोड़ा नहीं जा सका। फिर कोशिश करें।"
+      }
+    },
+    "reconnect": "कनेक्ट करें",
+    "settings": "सेटिंग खोलें",
+    "sniffer": {
+      "clearFilters": "फ़िल्टर साफ़ करें",
+      "detected": "{{count}} आइटम",
+      "downloadCount": "{{count}} डाउनलोड करें",
+      "downloadSelected": "चुने गए आइटम डाउनलोड करें",
+      "downloadedResource": "{{name}} भेज दिया गया",
+      "downloadingResource": "{{name}} डाउनलोड हो रहा है",
+      "emptyDescription": "मीडिया चलाएँ, फिर कोशिश करें।",
+      "emptyFilter": "इस फ़िल्टर से मेल खाने वाला कोई संसाधन नहीं है",
+      "emptyTitle": "कोई मीडिया नहीं मिला",
+      "filteredCount": "{{matched}} / {{total}} चित्र",
+      "filters": {
+        "all": "सभी",
+        "audio": "ऑडियो",
+        "image": "चित्र",
+        "video": "वीडियो"
+      },
+      "imageFilters": {
+        "activeCount": "{{count}} सक्रिय फ़िल्टर",
+        "dimensions": "आयाम और आकार",
+        "done": "हो गया",
+        "fields": {
+          "height": "ऊँचाई",
+          "size": "आकार",
+          "width": "चौड़ाई"
+        },
+        "formatOptionLabel": "{{format}} चित्र फ़िल्टर करें",
+        "formats": "चित्र फ़ॉर्मैट",
+        "operatorLabel": "{{label}} की तुलना",
+        "reset": "रीसेट करें",
+        "result": "{{matched}} / {{total}}",
+        "sizeUnitLabel": "फ़ाइल आकार की इकाई",
+        "title": "त्वरित फ़िल्टर",
+        "trigger": "फ़िल्टर",
+        "valueLabel": "{{label}} का मान"
+      },
+      "imageCount": "{{count}} चित्र",
+      "noImageMatches": "कोई मेल खाने वाला चित्र नहीं",
+      "pageAction": {
+        "bilibili": "यह bilibili वीडियो भेजें",
+        "youtube": "यह YouTube वीडियो भेजें"
+      },
+      "pageSubmitted": "वीडियो Motrix को भेज दिया गया {{taskId}}",
+      "pageResources": "पेज के संसाधन",
+      "quickDownloadResource": "{{name}} तुरंत डाउनलोड करें",
+      "connectToSubmit": "संसाधन भेजने के लिए Motrix से कनेक्ट करें।",
+      "scan": "फिर स्कैन करें",
+      "scanning": "स्कैन हो रहा है…",
+      "selectAll": "सभी चुनें",
+      "selected": "{{count}} चुने गए",
+      "selectResource": "{{name}} चुनें",
+      "sourceHost": "स्रोत: {{host}}",
+      "sendResource": "{{name}} को Motrix पर भेजें",
+      "sent": "भेज दिया गया",
+      "sending": "भेजा जा रहा है",
+      "submitFailed": "संसाधन भेजा नहीं जा सका। फिर कोशिश करें।",
+      "title": "संसाधन खोज",
+      "unavailableDescription": "पेज बदलें या बाद में कोशिश करें।",
+      "unavailableTitle": "यह पेज स्कैन नहीं किया जा सकता",
+      "unsupported": "ffmpeg ज़रूरी है",
+      "unsupportedReason": "ffmpeg समर्थन उपलब्ध नहीं है, इसलिए चुना गया बैकएंड {{kind}} संसाधन नहीं भेज सकता।",
+      "unsupportedSelectionReason": "चुना गया बैकएंड चयनित संसाधनों में से एक या अधिक प्रकार नहीं भेज सकता।",
+      "unsupportedResource": "{{name}} भेजा नहीं जा सकता। {{reason}}"
+    },
+    "speed": {
+      "download": "डाउनलोड",
+      "upload": "अपलोड"
+    },
+    "status": {
+      "bootstrapping": "Motrix खोजा जा रहा है…",
+      "connected": "कनेक्ट है",
+      "connecting": "कनेक्ट हो रहा है…",
+      "denied": "पेयरिंग अस्वीकार हुई",
+      "disconnected": "डिस्कनेक्ट है",
+      "handshaking": "हैंडशेक चल रहा है",
+      "awaiting-code": "पेयरिंग कोड का इंतज़ार है…"
+    },
+    "tabs": {
+      "settings": "सेटिंग",
+      "sniffer": "संसाधन खोज",
+      "tasks": "कार्य"
+    },
+    "takeover": {
+      "aria": "डाउनलोड टेकओवर चालू/बंद करें",
+      "label": "टेकओवर"
+    },
+    "tasks": {
+      "actions": "{{name}} के लिए कार्रवाइयाँ",
+      "openFolder": "फ़ाइल वाला फ़ोल्डर Motrix में खोलें",
+      "openFolderError": "कार्य का फ़ोल्डर खुल नहीं सका। फिर कोशिश करें।",
+      "openFolderMetadataPending": "फ़ोल्डर खोलने से पहले कार्य के मेटाडेटा का इंतज़ार करें",
+      "openFolderTask": "{{name}} वाला फ़ोल्डर खोलें",
+      "openFolderUnsupported": "फ़ोल्डर खोलने के लिए Motrix अपडेट करें",
+      "pauseTask": "{{name}} रोकें",
+      "removeTask": "{{name}} हटाएँ",
+      "removeConfirmTitle": "कार्य हटाएँ?",
+      "removeConfirmDescription": "“{{name}}” को डाउनलोड सूची से हटा दिया जाएगा।",
+      "removeDeleteFilesLabel": "डाउनलोड की गई फ़ाइलें मिटाएँ",
+      "removeConfirmAction": "हटाएँ",
+      "resumeTask": "{{name}} जारी रखें",
+      "bytes": "{{total}} में से {{done}}",
+      "disconnectedDescription": "कार्य देखने के लिए कनेक्ट करें।",
+      "disconnectedTitle": "Motrix ऑफ़लाइन है",
+      "empty": {
+        "active": "कोई सक्रिय कार्य नहीं",
+        "failed": "कोई विफल कार्य नहीं",
+        "recent": "कोई पूरा हुआ कार्य नहीं"
+      },
+      "filters": {
+        "active": "सक्रिय",
+        "failed": "विफल",
+        "recent": "पूरे हुए"
+      },
+      "loading": "कार्य लोड हो रहे हैं",
+      "status": {
+        "completed": "पूरे हुए",
+        "downloading": "डाउनलोड हो रहा है",
+        "error": "विफल",
+        "fetching_metadata": "मेटाडेटा मिल रहा है",
+        "finalizing": "अंतिम प्रक्रिया चल रही है",
+        "paused": "रुका हुआ",
+        "queued": "कतार में",
+        "seeding": "सीडिंग हो रही है"
+      },
+      "title": "कार्य"
+    },
+    "pairing": {
+      "attemptOf": "प्रयास {{run}} / {{maxRuns}}",
+      "attemptsRemaining": "{{attemptsRemaining}} प्रयास बाकी हैं",
+      "codeLabel": "पेयरिंग कोड",
+      "codeDescription": "Motrix के पेयरिंग डायलॉग में दिखाया गया 8-अक्षर का कोड डालें।",
+      "codeInvalid": "पेयरिंग डायलॉग में दिखाया गया 8-अक्षर का कोड डालें।",
+      "dialogTitle": "पेयरिंग कोड डालें",
+      "dismissPrompt": "बाद में डालें और ब्राउज़िंग जारी रखें",
+      "enterCode": "पेयरिंग कोड डालें",
+      "expiresIn": "{{time}} में समय समाप्त होगा",
+      "pairButton": "पेयर करें",
+      "pickerHelp": "Motrix के कई इंस्टेंस मिले हैं। पेयर करने के लिए एक चुनें।",
+      "rescan": "दोबारा खोजें",
+      "noCandidates": "Motrix का कोई इंस्टेंस नहीं मिला।",
+      "candidatesLabel": "मिले हुए Motrix इंस्टेंस",
+      "candidatePort": "पोर्ट {{port}}",
+      "candidateDetail": "{{instanceId}} · v{{appVersion}}",
+      "unknownVersion": "अज्ञात संस्करण",
+      "choose": "चुनें",
+      "backoffTitle": "पेयरिंग के बहुत ज़्यादा प्रयास",
+      "backoffBody": "{{time}} पर फिर कोशिश करें।",
+      "retryIn": "{{seconds}} सेकंड में फिर कोशिश करें",
+      "permissionMissingTitle": "अनुमति ज़रूरी है",
+      "permissionMissingBody": "इस कंप्यूटर पर Motrix खोजने के लिए localhost की पहुँच दें।",
+      "grantPermission": "अनुमति दें",
+      "degradedTitle": "Motrix कनेक्ट है",
+      "degradedBody": "आप Motrix सामान्य रूप से इस्तेमाल कर सकते हैं। इस कनेक्शन में केवल बुनियादी सत्यापन है। बेहतर सुरक्षा के लिए Motrix अपडेट करके दोबारा पेयर करें।",
+      "recoveryExhaustedTitle": "अपने-आप दोबारा कनेक्ट नहीं हो सका",
+      "recoveryExhaustedBody": "Motrix की कोई भी सहेजी गई पेयरिंग काम नहीं आई। दोबारा पेयर करने के लिए कनेक्ट करें दबाएँ।"
+    }
+  },
+  "errors": {
+    "connection": {
+      "generic": "कनेक्शन विफल हुआ। फिर कोशिश करें।",
+      "backoffLocked": "पेयरिंग के बहुत ज़्यादा प्रयास हुए। बाद में कोशिश करें।",
+      "staleAttempt": "नए कनेक्शन प्रयास ने इसकी जगह ले ली।",
+      "aborted": "पेयरिंग रद्द की गई।",
+      "deadlineExceeded": "प्रयास का समय समाप्त हुआ। फिर कोशिश करें।",
+      "runsExhausted": "बहुत ज़्यादा गलत कोड डाले गए। नए कोड के लिए पेयरिंग फिर शुरू करें।",
+      "invalidCode": "कोड का फ़ॉर्मैट सही नहीं है। Motrix डायलॉग देखें।",
+      "missingNonce": "Motrix ने पेयरिंग स्लॉट नहीं दिया। पक्का करें कि Motrix चल रहा है, फिर कोशिश करें।",
+      "unsupportedBrowser": "इस ब्राउज़र में पेयरिंग समर्थित नहीं है।",
+      "ticketPreparationFailed": "पेयरिंग तैयार नहीं हो सकी। फिर कोशिश करें।",
+      "protocolViolation": "Motrix ने अनपेक्षित जवाब भेजा। फिर कोशिश करें।",
+      "unsupportedVersion": "यह एक्सटेंशन और Motrix अलग प्रोटोकॉल संस्करण इस्तेमाल करते हैं। दोनों अपडेट करके फिर कोशिश करें।",
+      "backendUpgradeRequired": "सुरक्षित पेयरिंग के लिए Motrix का यह संस्करण बहुत पुराना है। Motrix अपडेट करके फिर कोशिश करें।",
+      "extensionUpgradeRequired": "इस Motrix के लिए एक्सटेंशन का यह संस्करण बहुत पुराना है। Motrix एक्सटेंशन अपडेट करके फिर कोशिश करें।",
+      "unsupportedRemote": "प्रमाणित Motrix इस कनेक्शन के लिए चुना गया App या Server नहीं है। एंडपॉइंट जाँचकर फिर कोशिश करें।",
+      "remoteDiscoveryUnavailable": "रिमोट Motrix Server से संपर्क नहीं हो सका। उसका पता, लिसनर और नेटवर्क जाँचें; WSS के लिए प्रमाणपत्र और रिवर्स प्रॉक्सी भी जाँचें।",
+      "remotePairingUnavailable": "रिमोट Motrix Server सुरक्षित पेयरिंग सत्र शुरू नहीं कर सका। थोड़ी देर बाद कोशिश करें।",
+      "remoteTransportUnavailable": "रिमोट Motrix Server कनेक्शन विफल हुआ। पता, लिसनर, DNS और नेटवर्क जाँचें; WSS के लिए प्रमाणपत्र और रिवर्स प्रॉक्सी भी जाँचें। ब्राउज़र नहीं बता सकता कि किसमें समस्या आई।",
+      "peerRejected": "Motrix ने पेयरिंग अस्वीकार कर दी।",
+      "peerBusy": "Motrix बहुत ज़्यादा पेयरिंग अनुरोध संभाल रहा है। थोड़ी देर बाद कोशिश करें।",
+      "securityCheckFailed": "कनेक्शन सुरक्षा जाँच में विफल हुआ और रोक दिया गया।",
+      "peerNotAuthentic": "दूसरा पक्ष साबित नहीं कर सका कि वह आपका Motrix है। कनेक्शन रोक दिया गया।",
+      "credentialPhaseFailed": "पेयरिंग सहेजी नहीं जा सकी। फिर पेयर करें।",
+      "internalError": "एक्सटेंशन में समस्या आई। फिर कोशिश करें।",
+      "authFailed": "Motrix ने इस पेयरिंग को नहीं पहचाना। शायद इसे रद्द किया गया है — दोबारा पेयर करें।",
+      "serverMacMismatch": "जवाब का सत्यापन विफल हुआ, इसलिए कनेक्शन रोक दिया गया। शायद वह आपका Motrix नहीं है।",
+      "channelClosed": "कनेक्शन बंद हो गया। जारी रखने के लिए दोबारा कनेक्ट करें।",
+      "channelUnavailable": "अभी Motrix से संपर्क नहीं हो पा रहा। पक्का करें कि वह चल रहा है।"
+    }
+  }
+}

@@ -550,3 +550,5 @@ export class EndpointConfigStore {
     })
   }
 }
+
+export { STORAGE_KEY as ENDPOINT_CONFIG_STORAGE_KEY }

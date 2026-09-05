@@ -8,6 +8,7 @@ function controller(
   overrides: Partial<QuickSettingsController> = {}
 ): QuickSettingsController {
   return {
+    takeoverSupported: true,
     takeover: {
       enabled: false,
       consentAckVersion: 1,
@@ -58,6 +59,31 @@ describe('QuickSettingsPanel', () => {
 
     fireEvent.click(screen.getByTestId('full-settings-row'))
     expect(onOpenFullSettings).toHaveBeenCalledOnce()
+  })
+
+  it('shows remote takeover as unavailable while keeping notification controls usable', () => {
+    const settings = controller({ takeoverSupported: false })
+    settings.takeover = { ...settings.takeover!, enabled: true }
+    render(
+      <QuickSettingsPanel controller={settings} onOpenFullSettings={vi.fn()} />
+    )
+    const control = screen.getByRole('switch', {
+      name: i18n.t('options.takeover.enableLabel'),
+    })
+    expect(control.hasAttribute('data-disabled')).toBe(true)
+    expect(control.getAttribute('aria-checked')).toBe('false')
+    expect(
+      screen.getByText(i18n.t('options.takeover.remoteUnavailableShort'))
+    ).toBeTruthy()
+    fireEvent.click(control)
+    expect(settings.requestTakeoverEnabled).not.toHaveBeenCalled()
+    expect(
+      screen
+        .getByRole('switch', {
+          name: i18n.t('options.notifications.masterLabel'),
+        })
+        .hasAttribute('data-disabled')
+    ).toBe(false)
   })
 
   it('disables notification detail switches while the master is off', () => {

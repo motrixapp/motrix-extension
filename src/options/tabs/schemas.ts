@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { parseRemoteEndpoint } from '@/shared/endpoint'
+import { SUPPORTED_LOCALES } from '@/shared/supportedLocales'
 
 export const takeoverFormSchema = z.object({
   enabled: z.boolean(),
@@ -20,7 +21,7 @@ export type GeneralFormValues = z.infer<typeof generalFormSchema>
 
 export const appearanceFormSchema = z.object({
   theme: z.enum(['system', 'light', 'dark']),
-  language: z.enum(['system', 'en-US', 'zh-CN']),
+  language: z.enum(['system', ...SUPPORTED_LOCALES]),
 })
 export type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 

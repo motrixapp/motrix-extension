@@ -6,6 +6,7 @@ import {
   mapCookies,
 } from '@/background/capture/cookies'
 import { isSensitiveDomain } from '@/background/capture/sensitiveDomains'
+import type { HandoffGuard } from '@/background/handoff/guard'
 import type { HandoffOps } from '@/background/handoff/runHandoff'
 import { describeUrlForLog, log } from '@/background/log'
 import type { PairNudge } from '@/background/pairNudge'
@@ -13,7 +14,11 @@ import type { Notify } from '@/shared/notifications'
 import type { TakeoverTarget } from '@/shared/takeover'
 
 export interface OpsDeps {
-  manager: ConnectionManager
+  manager: Pick<
+    ConnectionManager,
+    'getState' | 'getLastError' | 'clearGateAndStart' | 'submitDownload'
+  >
+  guard: HandoffGuard
   /** `PairingEndpointService.isActivePaired` — the one definition of
    *  "paired" every consumer shares. */
   isPaired: () => Promise<boolean>
@@ -28,7 +33,7 @@ export interface OpsDeps {
 }
 
 async function waitForConnected(
-  manager: ConnectionManager,
+  manager: Pick<ConnectionManager, 'getState'>,
   deadlineMs: number
 ): Promise<boolean> {
   const start = Date.now()
@@ -48,8 +53,10 @@ async function waitForConnected(
 export function makeOps(deps: OpsDeps): HandoffOps {
   const { manager, gate, nudge } = deps
   return {
+    assertCurrent: deps.guard.assertCurrent,
     getState: () => manager.getState(),
     connectWithLaunch: async () => {
+      deps.guard.assertCurrent()
       log.debug(
         '[takeover] connectWithLaunch (clearGateAndStart); state=',
         manager.getState()
@@ -81,6 +88,7 @@ export function makeOps(deps: OpsDeps): HandoffOps {
     isSensitive: (host) => isSensitiveDomain(host),
     confirmSensitive: deps.confirmSensitive,
     cancelNative: async () => {
+      deps.guard.assertCurrent()
       log.debug('[takeover] cancelNative')
       await deps.cancelNative()
     },
@@ -89,6 +97,7 @@ export function makeOps(deps: OpsDeps): HandoffOps {
       await deps.fallbackToBrowser()
     },
     captureCookies: async (url): Promise<Cookie[]> => {
+      deps.guard.assertCurrent()
       const raw = (await browser.cookies.getAll({
         url,
       })) as unknown as BrowserCookieLike[]
@@ -125,15 +134,16 @@ export function makeOps(deps: OpsDeps): HandoffOps {
       )
       try {
         const r = await manager.submitDownload(params, {
-          automaticTakeover: true,
+          automaticTakeover: deps.guard.origin === 'auto',
+          assertCurrent: deps.guard.assertCurrent,
         })
         log.debug('[takeover] submit OK taskId=', r.taskId)
         return r
       } catch (e) {
-        const err = e as { message?: string; code?: number }
+        const err = e as { message?: string; code?: number; reason?: string }
         log.error(
-          '[takeover] submit FAILED code=',
-          err?.code,
+          '[takeover] submit FAILED reason=',
+          err?.reason ?? err?.code ?? 'unknown',
           'message=',
           err?.message
         )

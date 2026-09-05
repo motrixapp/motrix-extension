@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Motrix 扩展",
+    "description": "Extension name shown in the browser and in store listings."
+  },
+  "appDescription": {
+    "message": "把下载交给 Motrix",
+    "description": "Short summary shown under the name in the browser and in store listings."
+  }
+}

@@ -47,6 +47,10 @@ function enabledConfig(
 function makeDeps(cfg: TakeoverConfig): ChromiumInterceptionDeps {
   return {
     getConfig: vi.fn(async () => cfg),
+    captureGuard: vi.fn(async () => ({
+      origin: 'auto',
+      assertCurrent: vi.fn(),
+    })),
     manager: {
       getState: () => 'connected',
       getLastError: () => null,
@@ -158,6 +162,26 @@ describe('registerChromiumInterception', () => {
     listener?.(item(), suggest)
     await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1))
     expect(mockedRunHandoff).not.toHaveBeenCalled()
+  })
+
+  it('leaves remote downloads intact before probing, connecting, or capturing data', async () => {
+    const deps = register(
+      enabledConfig({
+        rules: [{ id: 'size', match: { minSizeMB: 100 }, action: 'chrome' }],
+      })
+    )
+    vi.mocked(deps.captureGuard).mockResolvedValue(null)
+    const suggest = vi.fn()
+    listener?.(item({ totalBytes: -1 }), suggest)
+    await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1))
+    const { probeSize } = await import('@/background/capture/probeSize')
+    expect(probeSize).not.toHaveBeenCalled()
+    expect(mockedRunHandoff).not.toHaveBeenCalled()
+    expect(deps.manager.clearGateAndStart).not.toHaveBeenCalled()
+    expect(deps.manager.submitDownload).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+    expect(downloads.erase).not.toHaveBeenCalled()
+    expect(downloads.download).not.toHaveBeenCalled()
   })
 
   it('probes size while held, then releases when a size rule diverts to chrome', async () => {

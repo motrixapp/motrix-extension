@@ -29,6 +29,7 @@ import {
 import { connectionErrorKey } from '@/shared/errorCopy'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 import { CONSENT_VERSION } from '@/shared/takeover'
+import { supportsAutomaticTakeover } from '@/shared/takeoverAvailability'
 
 function CompactConnectionNotice({
   text,
@@ -55,6 +56,7 @@ const PopupHeaderSection = memo(function PopupHeaderSection({
   switching,
   takeoverChecked,
   takeoverDisabled,
+  takeoverSupported,
   onEndpointChange,
   onTakeoverChange,
   onOpenSettings,
@@ -64,6 +66,7 @@ const PopupHeaderSection = memo(function PopupHeaderSection({
   switching: boolean
   takeoverChecked: boolean
   takeoverDisabled: boolean
+  takeoverSupported: boolean
   onEndpointChange: (endpointId: string) => void
   onTakeoverChange: (checked: boolean) => void
   onOpenSettings: () => void
@@ -81,6 +84,7 @@ const PopupHeaderSection = memo(function PopupHeaderSection({
       }
       takeoverChecked={takeoverChecked}
       takeoverDisabled={takeoverDisabled}
+      takeoverSupported={takeoverSupported}
       onTakeoverChange={onTakeoverChange}
       onOpenSettings={onOpenSettings}
     />
@@ -227,7 +231,9 @@ export function App(): React.ReactElement {
   const { t } = useTranslation()
   const { state, switching, reconnect, switchEndpoint, submitPairingCode } =
     usePopupState()
-  const quickSettings = useQuickSettings()
+  const quickSettings = useQuickSettings(
+    !switching && supportsAutomaticTakeover(state.endpoint)
+  )
   const [tab, setTab] = useState<PopupTab>('tasks')
   const [resourceCount, setResourceCount] = useState(0)
   const [endpointError, setEndpointError] = useState<string | null>(null)
@@ -357,8 +363,16 @@ export function App(): React.ReactElement {
         connection={state.loading ? 'connecting' : state.connection}
         endpoint={state.endpoint}
         switching={switching}
-        takeoverChecked={quickSettings.takeover?.enabled ?? false}
-        takeoverDisabled={quickSettings.loading || quickSettings.saving}
+        takeoverChecked={
+          quickSettings.takeoverSupported &&
+          (quickSettings.takeover?.enabled ?? false)
+        }
+        takeoverDisabled={
+          quickSettings.loading ||
+          quickSettings.saving ||
+          !quickSettings.takeoverSupported
+        }
+        takeoverSupported={quickSettings.takeoverSupported}
         onEndpointChange={changeEndpoint}
         onTakeoverChange={handleTakeoverChange}
         onOpenSettings={openOptions}

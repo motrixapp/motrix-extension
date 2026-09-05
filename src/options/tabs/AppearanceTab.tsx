@@ -25,6 +25,7 @@ import {
 import { zodFormResolver } from '@/options/zodFormResolver'
 import { i18n, resolveDefaultLocale } from '@/shared/i18n'
 import { getLocaleOverride, setLocaleOverride } from '@/shared/localeStore'
+import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@/shared/supportedLocales'
 import { getThemeOverride, setThemeOverride } from '@/shared/themeStore'
 
 export function AppearanceTab(): React.ReactElement {
@@ -36,8 +37,7 @@ export function AppearanceTab(): React.ReactElement {
   } satisfies Record<AppearanceFormValues['theme'], string>
   const languageItems = {
     system: t('options.language.system'),
-    'en-US': 'English',
-    'zh-CN': '中文',
+    ...LOCALE_NAMES,
   } satisfies Record<AppearanceFormValues['language'], string>
   const form = useForm<AppearanceFormValues>({
     resolver: zodFormResolver(appearanceFormSchema),
@@ -131,12 +131,11 @@ export function AppearanceTab(): React.ReactElement {
                       <SelectItem value="system">
                         {languageItems.system}
                       </SelectItem>
-                      <SelectItem value="en-US">
-                        {languageItems['en-US']}
-                      </SelectItem>
-                      <SelectItem value="zh-CN">
-                        {languageItems['zh-CN']}
-                      </SelectItem>
+                      {SUPPORTED_LOCALES.map((locale) => (
+                        <SelectItem key={locale} value={locale}>
+                          {languageItems[locale]}
+                        </SelectItem>
+                      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>

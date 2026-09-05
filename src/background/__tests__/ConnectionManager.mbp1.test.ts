@@ -725,6 +725,28 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
     await expect(mgr.submitDownload(submission)).resolves.toEqual({
       taskId: 'remote-task',
     })
+    await expect(
+      mgr.submitDownload(submission, { automaticTakeover: false })
+    ).resolves.toEqual({
+      taskId: 'remote-task',
+    })
+    const beforeGuardedSubmit = vi.mocked(connections.at(-1)!.sendRequest).mock
+      .calls.length
+    let checks = 0
+    await expect(
+      mgr.submitDownload(submission, {
+        automaticTakeover: false,
+        assertCurrent: () => {
+          checks += 1
+          if (checks === 2)
+            throw new Error('endpoint changed while reading policy')
+        },
+      })
+    ).rejects.toThrow('endpoint changed while reading policy')
+    expect(checks).toBe(2)
+    expect(vi.mocked(connections.at(-1)!.sendRequest).mock.calls).toHaveLength(
+      beforeGuardedSubmit
+    )
     const lastConnection = connections.at(-1)
     expect(lastConnection?.sendRequest).toHaveBeenCalledWith(
       'download/submit',

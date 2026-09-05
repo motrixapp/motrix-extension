@@ -1,0 +1,448 @@
+{
+  "badge": {
+    "tooltip": {
+      "connected": "Motrix: connesso",
+      "disconnected": "Motrix: non connesso",
+      "connecting": "Motrix: connessione…",
+      "downloading": "Motrix: download in corso",
+      "denied": "Motrix: associazione rifiutata — apri per riprovare",
+      "error": "Motrix: invio non riuscito — fai clic per i dettagli"
+    }
+  },
+  "contextMenu": {
+    "downloadWithMotrix": "Scarica con Motrix",
+    "pairThenDownload": "Associa Motrix, poi scarica"
+  },
+  "notify": {
+    "browserFallbackBody": "Motrix non è disponibile. Il download verrà gestito dal browser.",
+    "browserFallbackTitle": "Download nel browser",
+    "downloadComplete": "Download completato",
+    "downloadFailed": "Download non riuscito",
+    "handedToMotrix": "Inviato a Motrix",
+    "notConnectedBody": "Associa Motrix per gestire i download.",
+    "notConnectedTitle": "Motrix non connesso",
+    "notReachableBody": "Associa Motrix e riprova il download.",
+    "notReachableTitle": "Motrix non raggiungibile",
+    "pairNudgeBody": "Apri Motrix per completare l’associazione.",
+    "pairNudgeTitle": "Associa Motrix",
+    "pairRevokedBody": "Motrix ha revocato l’associazione di questo browser.",
+    "pairRevokedTitle": "Associazione revocata",
+    "sensitiveSkippedBody": "Il download dal sito sensibile resta nel browser.",
+    "sensitiveSkippedTitle": "Ignorato",
+    "submitFailedBody": "Riavvio del download nel browser.",
+    "submitFailedTitle": "Invio a Motrix non riuscito"
+  },
+  "options": {
+    "diagnostics": {
+      "adapters": "Adattatori",
+      "extensionId": "ID estensione",
+      "logLevel": "Livello di registrazione",
+      "logLevels": {
+        "silent": "Nessuno",
+        "error": "Errore",
+        "warn": "Avviso",
+        "info": "Informazioni",
+        "debug": "Debug"
+      },
+      "noneRegistered": "Nessuno registrato",
+      "title": "Diagnostica",
+      "version": "Versione"
+    },
+    "endpoint": {
+      "activate": "Usa",
+      "activateAria": "Usa {{name}}",
+      "connection": {
+        "bootstrapping": "Avvio",
+        "connected": "Connesso",
+        "connecting": "Connessione",
+        "denied": "Rifiutato",
+        "disconnected": "Disconnesso",
+        "handshaking": "Autorizzazione",
+        "awaiting-code": "In attesa del codice"
+      },
+      "currentDescription": "Scegli un’App o un Server per download, attività e risorse rilevate nelle pagine.",
+      "currentTitle": "Servizi Motrix",
+      "listLabel": "Servizi Motrix disponibili",
+      "localDescription": "Questo computer, rilevato tramite Motrix App",
+      "localName": "Motrix App",
+      "selectLabel": "Invia download a"
+    },
+    "language": {
+      "label": "Lingua",
+      "system": "Segui il sistema"
+    },
+    "notifications": {
+      "title": "Notifiche di sistema",
+      "masterLabel": "Abilita notifiche di sistema",
+      "masterAria": "Abilita notifiche di sistema",
+      "confirmLabel": "Successi / conferme",
+      "confirmDesc": "Invio a Motrix, download completato",
+      "errorLabel": "Problemi / errori",
+      "errorDesc": "Invio non riuscito, non raggiungibile, download non riuscito",
+      "reminderLabel": "Promemoria",
+      "reminderDesc": "Richieste di associazione, associazione revocata, siti ignorati"
+    },
+    "pairing": {
+      "backendTitle": "Associazione di {{name}}",
+      "forget": "Dimentica associazione",
+      "loading": "Caricamento stato associazione…",
+      "localHelp": "Fai clic su Associa per trovare Motrix su questo computer e inserisci il codice di associazione.",
+      "localTitle": "Associa tramite Motrix App",
+      "remoteTitle": "Associa a Motrix Server",
+      "remoteHelp": "Fai clic su Associa, conferma la richiesta nell’interfaccia di amministrazione del Server e inserisci qui il codice visualizzato. Sono supportati endpoint WS e WSS; si consiglia WSS.",
+      "serverRequiredTitle": "È richiesto Motrix Server",
+      "serverRequiredHelp": "Firefox per Android si connette tramite Motrix Server. Aggiungi un Server qui sopra e selezionalo per associarlo.",
+      "remoteConsentTitle": "Download remoti",
+      "remoteConsentBody": "I download remoti inviano a questo Server l’URL di destinazione, l’URL e il titolo della pagina di origine, il nome del file, la selezione e i comandi delle attività. Cookie e intestazioni delle richieste restano disabilitati salvo attivazione separata.",
+      "remoteConsentOffline": "Le autorizzazioni sui dati sono legate al Server autenticato. Connettiti prima di modificarle.",
+      "remoteHeadersLabel": "Invia intestazioni delle richieste",
+      "remoteHeadersHelp": "Consente intestazioni ricavate dalla pagina, come Referer e quelle per la riproduzione multimediale. Le intestazioni di autenticazione richiedono comunque l’autorizzazione alle credenziali qui sotto.",
+      "remoteCredentialsLabel": "Invia cookie e autenticazione",
+      "remoteCredentialsHelp": "Consente cookie e intestazioni con credenziali solo per questo Server. Abilita solo per un Server sotto il tuo controllo.",
+      "notPaired": "Non associato",
+      "paired": "Associato a Motrix",
+      "pairedHelp": "Per questo servizio è conservata una credenziale MBP1 confermata. Lo stato attuale della connessione è mostrato separatamente.",
+      "pairedTitle": "Associazione pronta",
+      "reconnect": "Riconnetti",
+      "scopedHelp": "Fiducia e credenziali di associazione sono isolate per ogni servizio. Cambiare servizio non riutilizza mai la fiducia accordata a un altro.",
+      "pair": "Associa",
+      "pairDialogTitle": "Associa a Motrix"
+    },
+    "servers": {
+      "add": "Aggiungi server",
+      "addTitle": "Aggiungi Motrix Server",
+      "current": "Attuale",
+      "delete": "Elimina server",
+      "deleteActiveDescription": "Eliminare {{name}}, le credenziali di associazione e i consensi salvati localmente? Verrà selezionato Motrix App senza connetterlo né avviarlo.",
+      "deleteActiveServerOnlyDescription": "Eliminare {{name}}, le credenziali di associazione e i consensi salvati localmente? Prima di scaricare dovrai aggiungere o selezionare un altro Motrix Server.",
+      "deleteAria": "Elimina {{name}}",
+      "deleteDescription": "Eliminare {{name}}, le credenziali di associazione e i consensi salvati localmente? Nulla verrà revocato sul server.",
+      "deleteTitle": "Eliminare Motrix Server?",
+      "description": "Salva più indirizzi Motrix Server e passa dall’uno all’altro dalle opzioni o dal popup.",
+      "dialogDescription": "Assegna un nome riconoscibile a questo servizio e inserisci l’URL di base WebSocket.",
+      "editAria": "Modifica {{name}}",
+      "editTitle": "Modifica Motrix Server",
+      "emptyDescription": "Aggiungi un server per connetterti a Motrix su un altro computer.",
+      "emptyTitle": "Nessun Motrix Server",
+      "footer": "Cambiare l’indirizzo del server richiede una nuova associazione. I dati di associazione non vengono mai condivisi tra indirizzi.",
+      "nameLabel": "Nome del server",
+      "namePlaceholder": "Server di casa",
+      "nameRequired": "Il nome del server è obbligatorio",
+      "save": "Salva server",
+      "statusAuthority": "Indirizzo del server: {{value}}",
+      "statusRuntime": "Versione Motrix: {{name}} {{version}}",
+      "statusTitle": "Informazioni sul server",
+      "statusTransportSecure": "Sicurezza della connessione: WSS in uso e identità del server verificata tramite TLS",
+      "statusTransportPlain": "Sicurezza della connessione: crittografata, ma WS non può verificare l’identità del server e può esporre informazioni sulla connessione. Si consiglia WSS",
+      "title": "Server Motrix",
+      "urlDescription": "Usa un URL di base ws:// o wss://. Il percorso facoltativo viene conservato come prefisso esatto del proxy inverso; si consiglia WSS.",
+      "urlDuplicate": "Questo indirizzo Motrix Server è già salvato",
+      "urlInvalid": "Inserisci un URL di base ws:// o wss:// valido, senza spazi, credenziali, query o frammenti",
+      "urlLabel": "URL WebSocket",
+      "urlPlaceholder": "ws(s)://host[:port][/base-path]",
+      "transportWarningTitle": "Questa connessione non usa WSS",
+      "transportWarningBody": "I contenuti scambiati con Motrix restano crittografati, ma WS non può verificare l’identità del server e può esporre informazioni sulla connessione. Usa WSS se il tuo NAS lo supporta.",
+      "urlRequired": "L’URL WebSocket è obbligatorio"
+    },
+    "takeover": {
+      "consentBody": "Motrix riceve i cookie di accesso del sito per scaricare i file. I download dai siti sensibili restano nel browser.",
+      "consentCancel": "Annulla",
+      "consentConfirm": "Abilita",
+      "consentDialogLabel": "Inviare i download a Motrix?",
+      "denylistLabel": "Elenco esclusioni (un host per riga — sempre gestito dal browser)",
+      "enableAria": "Abilita gestione dei download",
+      "enableLabel": "Invia i download idonei a Motrix",
+      "loading": "Caricamento impostazioni di gestione dei download…",
+      "minSizeLabel": "Dimensione minima (MB)",
+      "minSizePlaceholder": "0 = tutti",
+      "thresholdInvalid": "La dimensione minima deve essere un numero non negativo",
+      "save": "Salva",
+      "saved": "Salvato",
+      "title": "Gestione dei download",
+      "remoteUnavailable": "La gestione automatica richiede attualmente Motrix App in locale. I download remoti e le autorizzazioni per intestazioni o cookie non la abilitano. Puoi comunque inviare download a questo Server manualmente o dal menu contestuale.",
+      "availabilityUnknown": "La gestione dei download non è disponibile finché non è possibile verificare il servizio selezionato.",
+      "remoteUnavailableShort": "Solo App locale. L’invio con clic destro funziona con i Server."
+    },
+    "tabs": {
+      "general": "Generali",
+      "appearance": "Aspetto",
+      "integration": "Integrazione",
+      "help": "Aiuto"
+    },
+    "common": {
+      "apply": "Applica",
+      "cancel": "Annulla",
+      "loadError": "Impossibile caricare le impostazioni perché il processo in background dell’estensione non si è avviato. Ricarica l’estensione e riprova.",
+      "saved": "Salvato",
+      "saving": "Salvataggio…",
+      "saveError": "Salvataggio non riuscito"
+    },
+    "appearance": {
+      "theme": {
+        "label": "Tema",
+        "system": "Segui il sistema",
+        "light": "Chiaro",
+        "dark": "Scuro"
+      }
+    },
+    "help": {
+      "title": "Aiuto e supporto",
+      "description": "Consulta le guide, ricevi assistenza ed esamina la diagnostica dell’estensione.",
+      "reportBug": "Segnala un problema",
+      "reportBugDescription": "Apri una segnalazione su GitHub o invia un commento.",
+      "issues": "GitHub Issues",
+      "docs": "Documentazione",
+      "docsDescription": "Leggi le guide su configurazione, associazione, gestione dei download e risoluzione dei problemi.",
+      "copyDiagnostics": "Copia diagnostica",
+      "copied": "Copiato",
+      "diagnostics": "Diagnostica",
+      "diagnosticsDescription": "Regola la registrazione e copia le informazioni utili per risolvere i problemi."
+    },
+    "about": {
+      "subtitle": "Collega il browser al gestore di download Motrix",
+      "website": "Sito ufficiale"
+    },
+    "title": "Impostazioni dell’estensione Motrix"
+  },
+  "popup": {
+    "backend": {
+      "app": "Motrix App",
+      "appDescription": "Questo computer",
+      "choose": "Scegli servizio Motrix",
+      "configureServer": "Gestisci Motrix Server",
+      "notConfigured": "Non configurato",
+      "server": "Motrix Server",
+      "version": "v{{version}}"
+    },
+    "controlPanel": {
+      "engineState": "motore: {{state}}",
+      "noDownloads": "Nessun download",
+      "pause": "Pausa",
+      "remove": "Rimuovi",
+      "resume": "Riprendi",
+      "statsSummary": "Attivi: {{active}} · In attesa: {{waiting}}"
+    },
+    "dashboard": {
+      "activity": "Attività",
+      "resources": "Risorse",
+      "showResources": "Mostra risorse di questa pagina",
+      "showTasks": "Mostra attività in corso",
+      "title": "Panoramica trasferimenti"
+    },
+    "loading": "Caricamento…",
+    "quickSettings": {
+      "fullSettings": "Tutte le impostazioni",
+      "fullSettingsDescription": "Generali, aspetto, servizio e aiuto",
+      "loadError": "Impossibile caricare le impostazioni rapide.",
+      "notificationsDescription": "Gestisci le notifiche di sistema dell’estensione",
+      "retry": "Riprova",
+      "saveError": "Impossibile salvare l’impostazione. Riprova.",
+      "takeoverDescription": "Invia i download del browser al servizio Motrix attuale"
+    },
+    "quickAdd": {
+      "title": "Nuova attività",
+      "description": "Incolla un link HTTP, HTTPS o magnet.",
+      "inputLabel": "Indirizzo di download",
+      "placeholder": "https://example.com/file.zip",
+      "cancel": "Annulla",
+      "add": "Aggiungi",
+      "submitting": "Aggiunta…",
+      "error": {
+        "empty": "Inserisci un indirizzo di download.",
+        "unsupported": "Sono supportati solo link HTTP, HTTPS o magnet.",
+        "invalid": "L’indirizzo di download non è valido.",
+        "submitFailed": "Impossibile aggiungere l’attività. Riprova."
+      }
+    },
+    "reconnect": "Connetti",
+    "settings": "Apri impostazioni",
+    "sniffer": {
+      "clearFilters": "Cancella filtri",
+      "detected": "Elementi: {{count}}",
+      "downloadCount": "Scarica ({{count}})",
+      "downloadSelected": "Scarica selezionati",
+      "downloadedResource": "Inviato: {{name}}",
+      "downloadingResource": "Download di {{name}}",
+      "emptyDescription": "Riproduci un contenuto multimediale, poi riprova.",
+      "emptyFilter": "Nessuna risorsa corrisponde al filtro",
+      "emptyTitle": "Nessun contenuto multimediale trovato",
+      "filteredCount": "{{matched}} / {{total}} immagini",
+      "filters": {
+        "all": "Tutti",
+        "audio": "Audio",
+        "image": "Immagini",
+        "video": "Video"
+      },
+      "imageFilters": {
+        "activeCount": "Filtri attivi: {{count}}",
+        "dimensions": "Dimensioni e peso",
+        "done": "Fine",
+        "fields": {
+          "height": "Altezza",
+          "size": "Dimensione",
+          "width": "Larghezza"
+        },
+        "formatOptionLabel": "Filtra immagini {{format}}",
+        "formats": "Formato immagine",
+        "operatorLabel": "Confronto per {{label}}",
+        "reset": "Reimposta",
+        "result": "{{matched}} / {{total}}",
+        "sizeUnitLabel": "Unità di dimensione del file",
+        "title": "Filtri rapidi",
+        "trigger": "Filtra",
+        "valueLabel": "Valore di {{label}}"
+      },
+      "imageCount": "Immagini: {{count}}",
+      "noImageMatches": "Nessuna immagine corrispondente",
+      "pageAction": {
+        "bilibili": "Invia questo video bilibili",
+        "youtube": "Invia questo video YouTube"
+      },
+      "pageSubmitted": "Video inviato a Motrix {{taskId}}",
+      "pageResources": "Risorse della pagina",
+      "quickDownloadResource": "Download rapido di {{name}}",
+      "connectToSubmit": "Connettiti a Motrix per inviare risorse.",
+      "scan": "Ripeti scansione",
+      "scanning": "Scansione…",
+      "selectAll": "Seleziona tutto",
+      "selected": "Selezionati: {{count}}",
+      "selectResource": "Seleziona {{name}}",
+      "sourceHost": "Origine: {{host}}",
+      "sendResource": "Invia {{name}} a Motrix",
+      "sent": "Inviato",
+      "sending": "Invio",
+      "submitFailed": "Impossibile inviare la risorsa. Riprova.",
+      "title": "Rilevatore risorse",
+      "unavailableDescription": "Cambia pagina o riprova più tardi.",
+      "unavailableTitle": "Impossibile analizzare questa pagina",
+      "unsupported": "Richiede ffmpeg",
+      "unsupportedReason": "Il servizio selezionato non può inviare risorse {{kind}} perché il supporto ffmpeg non è disponibile.",
+      "unsupportedSelectionReason": "Il servizio selezionato non può inviare uno o più tipi di risorse selezionati.",
+      "unsupportedResource": "Impossibile inviare {{name}}. {{reason}}"
+    },
+    "speed": {
+      "download": "Download",
+      "upload": "Caricamento"
+    },
+    "status": {
+      "bootstrapping": "Ricerca di Motrix…",
+      "connected": "Connesso",
+      "connecting": "Connessione…",
+      "denied": "Associazione rifiutata",
+      "disconnected": "Disconnesso",
+      "handshaking": "Negoziazione in corso",
+      "awaiting-code": "In attesa del codice di associazione…"
+    },
+    "tabs": {
+      "settings": "Impostazioni",
+      "sniffer": "Rilevatore risorse",
+      "tasks": "Attività"
+    },
+    "takeover": {
+      "aria": "Attiva o disattiva la gestione dei download",
+      "label": "Gestione download"
+    },
+    "tasks": {
+      "actions": "Azioni per {{name}}",
+      "openFolder": "Apri cartella contenente il file in Motrix",
+      "openFolderError": "Impossibile aprire la cartella dell’attività. Riprova.",
+      "openFolderMetadataPending": "Attendi i metadati dell’attività prima di aprire la cartella",
+      "openFolderTask": "Apri la cartella contenente {{name}}",
+      "openFolderUnsupported": "Aggiorna Motrix per aprire le cartelle",
+      "pauseTask": "Metti in pausa {{name}}",
+      "removeTask": "Rimuovi {{name}}",
+      "removeConfirmTitle": "Rimuovere l’attività?",
+      "removeConfirmDescription": "«{{name}}» verrà rimosso dall’elenco dei download.",
+      "removeDeleteFilesLabel": "Elimina i file scaricati",
+      "removeConfirmAction": "Rimuovi",
+      "resumeTask": "Riprendi {{name}}",
+      "bytes": "{{done}} di {{total}}",
+      "disconnectedDescription": "Connettiti per visualizzare le attività.",
+      "disconnectedTitle": "Motrix è offline",
+      "empty": {
+        "active": "Nessuna attività in corso",
+        "failed": "Nessuna attività non riuscita",
+        "recent": "Nessuna attività completata"
+      },
+      "filters": {
+        "active": "In corso",
+        "failed": "Non riuscite",
+        "recent": "Completate"
+      },
+      "loading": "Caricamento attività",
+      "status": {
+        "completed": "Completate",
+        "downloading": "Download in corso",
+        "error": "Non riuscite",
+        "fetching_metadata": "Recupero metadati",
+        "finalizing": "Finalizzazione",
+        "paused": "In pausa",
+        "queued": "In coda",
+        "seeding": "Condivisione"
+      },
+      "title": "Attività"
+    },
+    "pairing": {
+      "attemptOf": "Tentativo {{run}} di {{maxRuns}}",
+      "attemptsRemaining": "Tentativi rimanenti: {{attemptsRemaining}}",
+      "codeLabel": "Codice di associazione",
+      "codeDescription": "Inserisci il codice di 8 caratteri mostrato nella finestra di associazione di Motrix.",
+      "codeInvalid": "Inserisci il codice di 8 caratteri mostrato nella finestra di associazione.",
+      "dialogTitle": "Inserisci codice di associazione",
+      "dismissPrompt": "Inseriscilo più tardi e continua a navigare",
+      "enterCode": "Inserisci codice di associazione",
+      "expiresIn": "Scade tra {{time}}",
+      "pairButton": "Associa",
+      "pickerHelp": "Sono state trovate più istanze di Motrix. Scegli quale associare.",
+      "rescan": "Ripeti ricerca",
+      "noCandidates": "Nessuna istanza di Motrix trovata.",
+      "candidatesLabel": "Istanze di Motrix rilevate",
+      "candidatePort": "Porta {{port}}",
+      "candidateDetail": "{{instanceId}} · v{{appVersion}}",
+      "unknownVersion": "versione sconosciuta",
+      "choose": "Scegli",
+      "backoffTitle": "Troppi tentativi di associazione",
+      "backoffBody": "Riprova alle {{time}}.",
+      "retryIn": "Riprova tra {{seconds}} s",
+      "permissionMissingTitle": "Autorizzazione necessaria",
+      "permissionMissingBody": "Consenti l’accesso a localhost per trovare Motrix su questo computer.",
+      "grantPermission": "Concedi autorizzazione",
+      "degradedTitle": "Motrix è connesso",
+      "degradedBody": "Puoi usare Motrix normalmente. Questa connessione dispone solo di una verifica di base. Per una maggiore protezione, aggiorna Motrix e associalo di nuovo.",
+      "recoveryExhaustedTitle": "Riconnessione automatica non riuscita",
+      "recoveryExhaustedBody": "Nessuna associazione Motrix salvata ha funzionato. Premi Connetti per ripetere l’associazione."
+    }
+  },
+  "errors": {
+    "connection": {
+      "generic": "Connessione non riuscita. Riprova.",
+      "backoffLocked": "Troppi tentativi di associazione. Riprova più tardi.",
+      "staleAttempt": "Un tentativo di connessione più recente ha sostituito questo.",
+      "aborted": "L’associazione è stata annullata.",
+      "deadlineExceeded": "Tempo scaduto. Riprova.",
+      "runsExhausted": "Troppi codici errati. Riavvia l’associazione per ottenere un nuovo codice.",
+      "invalidCode": "Il codice non ha il formato previsto. Controlla la finestra di Motrix.",
+      "missingNonce": "Motrix non ha offerto una sessione di associazione. Assicurati che sia in esecuzione e riprova.",
+      "unsupportedBrowser": "L’associazione non è supportata in questo browser.",
+      "ticketPreparationFailed": "Impossibile preparare l’associazione. Riprova.",
+      "protocolViolation": "Motrix ha inviato una risposta imprevista. Riprova.",
+      "unsupportedVersion": "L’estensione e Motrix usano versioni diverse del protocollo. Aggiorna entrambi e riprova.",
+      "backendUpgradeRequired": "Questa versione di Motrix è troppo vecchia per un’associazione sicura. Aggiorna Motrix e riprova.",
+      "extensionUpgradeRequired": "Questa versione dell’estensione è troppo vecchia per questo Motrix. Aggiorna l’estensione Motrix e riprova.",
+      "unsupportedRemote": "Il Motrix autenticato non è l’App o il Server selezionato per questa connessione. Controlla l’endpoint e riprova.",
+      "remoteDiscoveryUnavailable": "Il Motrix Server remoto non è raggiungibile. Controlla indirizzo, servizio in ascolto e rete; per WSS, controlla anche certificato e proxy inverso.",
+      "remotePairingUnavailable": "Il Motrix Server remoto non ha potuto aprire una sessione di associazione sicura. Riprova tra poco.",
+      "remoteTransportUnavailable": "Connessione al Motrix Server remoto non riuscita. Controlla indirizzo, servizio in ascolto, DNS e rete; per WSS, controlla anche certificato e proxy inverso. Il browser non può identificare la causa precisa.",
+      "peerRejected": "Motrix ha rifiutato l’associazione.",
+      "peerBusy": "Motrix sta gestendo troppe richieste di associazione. Riprova tra poco.",
+      "securityCheckFailed": "La connessione non ha superato un controllo di sicurezza ed è stata interrotta.",
+      "peerNotAuthentic": "L’altra parte non ha potuto dimostrare di essere il tuo Motrix. La connessione è stata interrotta.",
+      "credentialPhaseFailed": "Impossibile salvare l’associazione. Riprova ad associare.",
+      "internalError": "Si è verificato un errore nell’estensione. Riprova.",
+      "authFailed": "Motrix non ha riconosciuto questa associazione. Potrebbe essere stata revocata; ripeti l’associazione.",
+      "serverMacMismatch": "La risposta non ha superato la verifica e la connessione è stata interrotta. Potrebbe non essere il tuo Motrix.",
+      "channelClosed": "La connessione è stata chiusa. Riconnettiti per continuare.",
+      "channelUnavailable": "Motrix non è raggiungibile al momento. Assicurati che sia in esecuzione."
+    }
+  }
+}

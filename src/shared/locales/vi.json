@@ -1,0 +1,448 @@
+{
+  "badge": {
+    "tooltip": {
+      "connected": "Motrix: đã kết nối",
+      "disconnected": "Motrix: chưa kết nối",
+      "connecting": "Motrix: đang kết nối…",
+      "downloading": "Motrix: đang tải xuống",
+      "denied": "Motrix: ghép đôi bị từ chối — mở để ghép đôi lại",
+      "error": "Motrix: chuyển giao thất bại — nhấp để xem chi tiết"
+    }
+  },
+  "contextMenu": {
+    "downloadWithMotrix": "Tải xuống bằng Motrix",
+    "pairThenDownload": "Ghép đôi Motrix rồi tải xuống"
+  },
+  "notify": {
+    "browserFallbackBody": "Motrix không khả dụng. Trình duyệt sẽ tải xuống thay thế.",
+    "browserFallbackTitle": "Đang tải bằng trình duyệt",
+    "downloadComplete": "Tải xuống hoàn tất",
+    "downloadFailed": "Tải xuống thất bại",
+    "handedToMotrix": "Đã gửi tới Motrix",
+    "notConnectedBody": "Ghép đôi Motrix để tiếp quản tải xuống.",
+    "notConnectedTitle": "Motrix chưa kết nối",
+    "notReachableBody": "Ghép đôi Motrix rồi thử tải xuống lại.",
+    "notReachableTitle": "Không thể truy cập Motrix",
+    "pairNudgeBody": "Mở Motrix để hoàn tất ghép đôi.",
+    "pairNudgeTitle": "Ghép đôi Motrix",
+    "pairRevokedBody": "Motrix đã thu hồi ghép đôi của trình duyệt này.",
+    "pairRevokedTitle": "Đã thu hồi ghép đôi",
+    "sensitiveSkippedBody": "Nội dung từ trang nhạy cảm được tải bằng trình duyệt.",
+    "sensitiveSkippedTitle": "Đã bỏ qua",
+    "submitFailedBody": "Đang tải lại bằng trình duyệt.",
+    "submitFailedTitle": "Gửi tới Motrix thất bại"
+  },
+  "options": {
+    "diagnostics": {
+      "adapters": "Bộ điều hợp",
+      "extensionId": "ID tiện ích",
+      "logLevel": "Mức ghi nhật ký",
+      "logLevels": {
+        "silent": "Không ghi",
+        "error": "Lỗi",
+        "warn": "Cảnh báo",
+        "info": "Thông tin",
+        "debug": "Gỡ lỗi"
+      },
+      "noneRegistered": "Chưa đăng ký bộ nào",
+      "title": "Chẩn đoán",
+      "version": "Phiên bản"
+    },
+    "endpoint": {
+      "activate": "Sử dụng",
+      "activateAria": "Sử dụng {{name}}",
+      "connection": {
+        "bootstrapping": "Đang khởi động",
+        "connected": "Đã kết nối",
+        "connecting": "Đang kết nối",
+        "denied": "Bị từ chối",
+        "disconnected": "Đã ngắt kết nối",
+        "handshaking": "Đang cấp quyền",
+        "awaiting-code": "Đang chờ mã"
+      },
+      "currentDescription": "Chọn một App hoặc Server cho lượt tải xuống, tác vụ và tài nguyên được phát hiện trên trang.",
+      "currentTitle": "Dịch vụ Motrix",
+      "listLabel": "Dịch vụ Motrix khả dụng",
+      "localDescription": "Máy tính này, được tìm thấy qua Motrix App",
+      "localName": "Motrix App",
+      "selectLabel": "Gửi lượt tải xuống tới"
+    },
+    "language": {
+      "label": "Ngôn ngữ",
+      "system": "Theo hệ thống"
+    },
+    "notifications": {
+      "title": "Thông báo hệ thống",
+      "masterLabel": "Bật thông báo hệ thống",
+      "masterAria": "Bật thông báo hệ thống",
+      "confirmLabel": "Thành công / xác nhận",
+      "confirmDesc": "Đã gửi tới Motrix, tải xuống hoàn tất",
+      "errorLabel": "Thất bại / lỗi",
+      "errorDesc": "Gửi thất bại, không thể truy cập, tải xuống thất bại",
+      "reminderLabel": "Lời nhắc",
+      "reminderDesc": "Yêu cầu ghép đôi, ghép đôi bị thu hồi, trang bị bỏ qua"
+    },
+    "pairing": {
+      "backendTitle": "Đang ghép đôi {{name}}",
+      "forget": "Quên ghép đôi",
+      "loading": "Đang tải trạng thái ghép đôi…",
+      "localHelp": "Nhấp Ghép đôi để tìm Motrix trên máy tính này rồi nhập mã ghép đôi.",
+      "localTitle": "Ghép đôi qua Motrix App",
+      "remoteTitle": "Ghép đôi với Motrix Server",
+      "remoteHelp": "Nhấp Ghép đôi, xác nhận yêu cầu trong giao diện quản trị Server rồi nhập mã hiển thị vào đây. Hỗ trợ cả điểm cuối WS và WSS; nên dùng WSS.",
+      "serverRequiredTitle": "Cần có Motrix Server",
+      "serverRequiredHelp": "Firefox cho Android kết nối qua Motrix Server. Thêm Server ở trên rồi chọn để ghép đôi.",
+      "remoteConsentTitle": "Tải xuống từ xa",
+      "remoteConsentBody": "Tải xuống từ xa gửi URL đích, URL và tiêu đề trang nguồn, tên tệp, nội dung được chọn và lệnh điều khiển tác vụ tới Server này. Cookie và tiêu đề yêu cầu chỉ được gửi khi bật riêng.",
+      "remoteConsentOffline": "Quyền dữ liệu gắn với Server đã xác thực. Hãy kết nối trước khi thay đổi.",
+      "remoteHeadersLabel": "Gửi tiêu đề yêu cầu",
+      "remoteHeadersHelp": "Cho phép các tiêu đề lấy từ trang như Referer và tiêu đề phát nội dung đa phương tiện. Tiêu đề xác thực vẫn cần quyền thông tin xác thực bên dưới.",
+      "remoteCredentialsLabel": "Gửi cookie và thông tin xác thực",
+      "remoteCredentialsHelp": "Chỉ cho phép cookie và tiêu đề chứa thông tin xác thực đối với Server này. Chỉ bật cho Server do bạn kiểm soát.",
+      "notPaired": "Chưa ghép đôi",
+      "paired": "Đã ghép đôi với Motrix",
+      "pairedHelp": "Thông tin xác thực MBP1 đã xác nhận được lưu cho dịch vụ này. Trạng thái kết nối hiện tại được hiển thị riêng.",
+      "pairedTitle": "Ghép đôi sẵn sàng",
+      "reconnect": "Kết nối lại",
+      "scopedHelp": "Độ tin cậy và thông tin xác thực ghép đôi được tách riêng cho từng dịch vụ. Chuyển dịch vụ không sử dụng lại độ tin cậy của dịch vụ khác.",
+      "pair": "Ghép đôi",
+      "pairDialogTitle": "Ghép đôi với Motrix"
+    },
+    "servers": {
+      "add": "Thêm máy chủ",
+      "addTitle": "Thêm Motrix Server",
+      "current": "Hiện tại",
+      "delete": "Xóa máy chủ",
+      "deleteActiveDescription": "Xóa {{name}} cùng thông tin xác thực ghép đôi và chấp thuận được lưu cục bộ? Dịch vụ hiện tại sẽ chuyển về Motrix App nhưng không kết nối hay khởi chạy ứng dụng.",
+      "deleteActiveServerOnlyDescription": "Xóa {{name}} cùng thông tin xác thực ghép đôi và chấp thuận được lưu cục bộ? Bạn cần thêm hoặc chọn Motrix Server khác trước khi tải xuống.",
+      "deleteAria": "Xóa {{name}}",
+      "deleteDescription": "Xóa {{name}} cùng thông tin xác thực ghép đôi và chấp thuận được lưu cục bộ? Thao tác này không thu hồi bất kỳ mục nào trên máy chủ.",
+      "deleteTitle": "Xóa Motrix Server?",
+      "description": "Lưu nhiều địa chỉ Motrix Server và chuyển đổi trong phần cài đặt hoặc cửa sổ bật lên.",
+      "dialogDescription": "Đặt tên dễ nhận biết cho dịch vụ này và nhập URL cơ sở WebSocket.",
+      "editAria": "Sửa {{name}}",
+      "editTitle": "Sửa Motrix Server",
+      "emptyDescription": "Thêm máy chủ để kết nối tới Motrix ngoài máy tính này.",
+      "emptyTitle": "Chưa có Motrix Server",
+      "footer": "Thay đổi địa chỉ máy chủ yêu cầu ghép đôi lại. Thông tin ghép đôi không bao giờ được chia sẻ giữa các địa chỉ.",
+      "nameLabel": "Tên máy chủ",
+      "namePlaceholder": "Máy chủ tại nhà",
+      "nameRequired": "Cần nhập tên máy chủ",
+      "save": "Lưu máy chủ",
+      "statusAuthority": "Địa chỉ máy chủ: {{value}}",
+      "statusRuntime": "Phiên bản Motrix: {{name}} {{version}}",
+      "statusTitle": "Thông tin máy chủ",
+      "statusTransportSecure": "Bảo mật kết nối: đang dùng WSS và TLS xác minh danh tính máy chủ",
+      "statusTransportPlain": "Bảo mật kết nối: được mã hóa, nhưng WS không xác minh được danh tính máy chủ và có thể làm lộ thông tin kết nối. Nên dùng WSS",
+      "title": "Máy chủ Motrix",
+      "urlDescription": "Dùng URL cơ sở ws:// hoặc wss://. Đường dẫn tùy chọn được giữ nguyên làm tiền tố proxy ngược; nên dùng WSS.",
+      "urlDuplicate": "Địa chỉ Motrix Server này đã được lưu",
+      "urlInvalid": "Nhập URL cơ sở ws:// hoặc wss:// hợp lệ, không chứa khoảng trắng, thông tin xác thực, truy vấn hay đoạn định danh",
+      "urlLabel": "URL WebSocket",
+      "urlPlaceholder": "ws(s)://host[:port][/base-path]",
+      "transportWarningTitle": "Kết nối này không dùng WSS",
+      "transportWarningBody": "Nội dung trao đổi với Motrix vẫn được mã hóa, nhưng WS không xác minh được danh tính máy chủ và có thể làm lộ thông tin kết nối. Hãy dùng WSS nếu NAS hỗ trợ.",
+      "urlRequired": "Cần nhập URL WebSocket"
+    },
+    "takeover": {
+      "consentBody": "Motrix nhận cookie đăng nhập của trang để tải tệp. Tải xuống từ trang nhạy cảm vẫn do trình duyệt xử lý.",
+      "consentCancel": "Hủy",
+      "consentConfirm": "Bật",
+      "consentDialogLabel": "Gửi lượt tải xuống tới Motrix?",
+      "denylistLabel": "Danh sách loại trừ (mỗi dòng một máy chủ — luôn để trình duyệt xử lý)",
+      "enableAria": "Bật tiếp quản",
+      "enableLabel": "Gửi các lượt tải xuống phù hợp tới Motrix",
+      "loading": "Đang tải cài đặt tiếp quản…",
+      "minSizeLabel": "Kích thước tối thiểu (MB)",
+      "minSizePlaceholder": "0 = tất cả",
+      "thresholdInvalid": "Kích thước tối thiểu phải là số không âm",
+      "save": "Lưu",
+      "saved": "Đã lưu",
+      "title": "Tiếp quản tải xuống",
+      "remoteUnavailable": "Tiếp quản tự động hiện yêu cầu Motrix App cục bộ. Tải xuống từ xa và quyền tiêu đề hoặc cookie không bật tính năng này. Bạn vẫn có thể gửi lượt tải xuống tới Server này theo cách thủ công hoặc qua menu chuột phải.",
+      "availabilityUnknown": "Chưa thể tiếp quản cho đến khi kiểm tra được dịch vụ đã chọn.",
+      "remoteUnavailableShort": "Chỉ App cục bộ. Gửi qua chuột phải vẫn dùng được với Server."
+    },
+    "tabs": {
+      "general": "Chung",
+      "appearance": "Giao diện",
+      "integration": "Tích hợp",
+      "help": "Trợ giúp"
+    },
+    "common": {
+      "apply": "Áp dụng",
+      "cancel": "Hủy",
+      "loadError": "Không thể tải cài đặt vì tiến trình nền của tiện ích không khởi động được. Hãy tải lại tiện ích và thử lại.",
+      "saved": "Đã lưu",
+      "saving": "Đang lưu…",
+      "saveError": "Lưu thất bại"
+    },
+    "appearance": {
+      "theme": {
+        "label": "Chủ đề",
+        "system": "Theo hệ thống",
+        "light": "Sáng",
+        "dark": "Tối"
+      }
+    },
+    "help": {
+      "title": "Trợ giúp và hỗ trợ",
+      "description": "Đọc hướng dẫn, nhận hỗ trợ và xem thông tin chẩn đoán của tiện ích.",
+      "reportBug": "Báo cáo sự cố",
+      "reportBugDescription": "Mở một issue trên GitHub hoặc gửi phản hồi.",
+      "issues": "GitHub Issues",
+      "docs": "Tài liệu",
+      "docsDescription": "Đọc hướng dẫn thiết lập, ghép đôi, tiếp quản tải xuống và khắc phục sự cố.",
+      "copyDiagnostics": "Sao chép chẩn đoán",
+      "copied": "Đã sao chép",
+      "diagnostics": "Chẩn đoán",
+      "diagnosticsDescription": "Điều chỉnh nhật ký và sao chép thông tin hữu ích để khắc phục sự cố."
+    },
+    "about": {
+      "subtitle": "Kết nối trình duyệt với trình quản lý tải xuống Motrix",
+      "website": "Trang web chính thức"
+    },
+    "title": "Cài đặt tiện ích Motrix"
+  },
+  "popup": {
+    "backend": {
+      "app": "Motrix App",
+      "appDescription": "Máy tính này",
+      "choose": "Chọn dịch vụ Motrix",
+      "configureServer": "Quản lý Motrix Server",
+      "notConfigured": "Chưa cấu hình",
+      "server": "Motrix Server",
+      "version": "v{{version}}"
+    },
+    "controlPanel": {
+      "engineState": "bộ máy: {{state}}",
+      "noDownloads": "Không có lượt tải xuống",
+      "pause": "Tạm dừng",
+      "remove": "Gỡ bỏ",
+      "resume": "Tiếp tục",
+      "statsSummary": "Đang chạy: {{active}} · Đang chờ: {{waiting}}"
+    },
+    "dashboard": {
+      "activity": "Hoạt động",
+      "resources": "Tài nguyên",
+      "showResources": "Hiện tài nguyên của trang này",
+      "showTasks": "Hiện tác vụ đang chạy",
+      "title": "Tổng quan truyền dữ liệu"
+    },
+    "loading": "Đang tải…",
+    "quickSettings": {
+      "fullSettings": "Tất cả cài đặt",
+      "fullSettingsDescription": "Chung, giao diện, dịch vụ và trợ giúp",
+      "loadError": "Không thể tải cài đặt nhanh.",
+      "notificationsDescription": "Quản lý thông báo hệ thống từ tiện ích",
+      "retry": "Thử lại",
+      "saveError": "Không thể lưu cài đặt. Hãy thử lại.",
+      "takeoverDescription": "Gửi lượt tải xuống của trình duyệt tới dịch vụ Motrix hiện tại"
+    },
+    "quickAdd": {
+      "title": "Tác vụ mới",
+      "description": "Dán liên kết HTTP, HTTPS hoặc magnet.",
+      "inputLabel": "Địa chỉ tải xuống",
+      "placeholder": "https://example.com/file.zip",
+      "cancel": "Hủy",
+      "add": "Thêm",
+      "submitting": "Đang thêm…",
+      "error": {
+        "empty": "Nhập địa chỉ tải xuống.",
+        "unsupported": "Chỉ hỗ trợ liên kết HTTP, HTTPS hoặc magnet.",
+        "invalid": "Địa chỉ tải xuống không hợp lệ.",
+        "submitFailed": "Không thể thêm tác vụ. Hãy thử lại."
+      }
+    },
+    "reconnect": "Kết nối",
+    "settings": "Mở cài đặt",
+    "sniffer": {
+      "clearFilters": "Xóa bộ lọc",
+      "detected": "{{count}} mục",
+      "downloadCount": "Tải xuống {{count}} mục",
+      "downloadSelected": "Tải mục đã chọn",
+      "downloadedResource": "Đã gửi {{name}}",
+      "downloadingResource": "Đang tải {{name}}",
+      "emptyDescription": "Phát nội dung đa phương tiện rồi thử lại.",
+      "emptyFilter": "Không có tài nguyên khớp với bộ lọc này",
+      "emptyTitle": "Không tìm thấy nội dung đa phương tiện",
+      "filteredCount": "{{matched}} / {{total}} hình ảnh",
+      "filters": {
+        "all": "Tất cả",
+        "audio": "Âm thanh",
+        "image": "Hình ảnh",
+        "video": "Video"
+      },
+      "imageFilters": {
+        "activeCount": "{{count}} bộ lọc đang bật",
+        "dimensions": "Kích thước và dung lượng",
+        "done": "Xong",
+        "fields": {
+          "height": "Chiều cao",
+          "size": "Dung lượng",
+          "width": "Chiều rộng"
+        },
+        "formatOptionLabel": "Lọc hình ảnh {{format}}",
+        "formats": "Định dạng hình ảnh",
+        "operatorLabel": "So sánh {{label}}",
+        "reset": "Đặt lại",
+        "result": "{{matched}} / {{total}}",
+        "sizeUnitLabel": "Đơn vị dung lượng tệp",
+        "title": "Bộ lọc nhanh",
+        "trigger": "Lọc",
+        "valueLabel": "Giá trị {{label}}"
+      },
+      "imageCount": "{{count}} hình ảnh",
+      "noImageMatches": "Không có hình ảnh phù hợp",
+      "pageAction": {
+        "bilibili": "Gửi video bilibili này",
+        "youtube": "Gửi video YouTube này"
+      },
+      "pageSubmitted": "Đã gửi video tới Motrix {{taskId}}",
+      "pageResources": "Tài nguyên trang",
+      "quickDownloadResource": "Tải nhanh {{name}}",
+      "connectToSubmit": "Kết nối tới Motrix để gửi tài nguyên.",
+      "scan": "Quét lại",
+      "scanning": "Đang quét…",
+      "selectAll": "Chọn tất cả",
+      "selected": "Đã chọn {{count}} mục",
+      "selectResource": "Chọn {{name}}",
+      "sourceHost": "Nguồn: {{host}}",
+      "sendResource": "Gửi {{name}} tới Motrix",
+      "sent": "Đã gửi",
+      "sending": "Đang gửi",
+      "submitFailed": "Không thể gửi tài nguyên. Hãy thử lại.",
+      "title": "Dò tài nguyên",
+      "unavailableDescription": "Chuyển trang hoặc thử lại sau.",
+      "unavailableTitle": "Không thể quét trang này",
+      "unsupported": "Cần có ffmpeg",
+      "unsupportedReason": "Dịch vụ đã chọn không thể gửi tài nguyên {{kind}} vì không có hỗ trợ ffmpeg.",
+      "unsupportedSelectionReason": "Dịch vụ đã chọn không thể gửi một hoặc nhiều loại tài nguyên đã chọn.",
+      "unsupportedResource": "Không thể gửi {{name}}. {{reason}}"
+    },
+    "speed": {
+      "download": "Tải xuống",
+      "upload": "Tải lên"
+    },
+    "status": {
+      "bootstrapping": "Đang tìm Motrix…",
+      "connected": "Đã kết nối",
+      "connecting": "Đang kết nối…",
+      "denied": "Ghép đôi bị từ chối",
+      "disconnected": "Đã ngắt kết nối",
+      "handshaking": "Đang bắt tay kết nối",
+      "awaiting-code": "Đang chờ mã ghép đôi…"
+    },
+    "tabs": {
+      "settings": "Cài đặt",
+      "sniffer": "Dò tài nguyên",
+      "tasks": "Tác vụ"
+    },
+    "takeover": {
+      "aria": "Bật/tắt tiếp quản tải xuống",
+      "label": "Tiếp quản"
+    },
+    "tasks": {
+      "actions": "Thao tác cho {{name}}",
+      "openFolder": "Mở thư mục chứa tệp trong Motrix",
+      "openFolderError": "Không thể mở thư mục tác vụ. Hãy thử lại.",
+      "openFolderMetadataPending": "Chờ siêu dữ liệu tác vụ trước khi mở thư mục",
+      "openFolderTask": "Mở thư mục chứa {{name}}",
+      "openFolderUnsupported": "Cập nhật Motrix để mở thư mục",
+      "pauseTask": "Tạm dừng {{name}}",
+      "removeTask": "Gỡ bỏ {{name}}",
+      "removeConfirmTitle": "Gỡ bỏ tác vụ?",
+      "removeConfirmDescription": "“{{name}}” sẽ bị gỡ khỏi danh sách tải xuống.",
+      "removeDeleteFilesLabel": "Xóa các tệp đã tải xuống",
+      "removeConfirmAction": "Gỡ bỏ",
+      "resumeTask": "Tiếp tục {{name}}",
+      "bytes": "{{done}} / {{total}}",
+      "disconnectedDescription": "Kết nối để xem tác vụ.",
+      "disconnectedTitle": "Motrix đang ngoại tuyến",
+      "empty": {
+        "active": "Không có tác vụ đang chạy",
+        "failed": "Không có tác vụ thất bại",
+        "recent": "Không có tác vụ hoàn tất"
+      },
+      "filters": {
+        "active": "Đang chạy",
+        "failed": "Thất bại",
+        "recent": "Hoàn tất"
+      },
+      "loading": "Đang tải tác vụ",
+      "status": {
+        "completed": "Hoàn tất",
+        "downloading": "Đang tải xuống",
+        "error": "Thất bại",
+        "fetching_metadata": "Đang lấy siêu dữ liệu",
+        "finalizing": "Đang hoàn tất",
+        "paused": "Đã tạm dừng",
+        "queued": "Trong hàng đợi",
+        "seeding": "Đang chia sẻ"
+      },
+      "title": "Tác vụ"
+    },
+    "pairing": {
+      "attemptOf": "Lần thử {{run}} / {{maxRuns}}",
+      "attemptsRemaining": "Còn {{attemptsRemaining}} lần thử",
+      "codeLabel": "Mã ghép đôi",
+      "codeDescription": "Nhập mã 8 ký tự hiển thị trong hộp thoại ghép đôi Motrix.",
+      "codeInvalid": "Nhập mã 8 ký tự hiển thị trong hộp thoại ghép đôi.",
+      "dialogTitle": "Nhập mã ghép đôi",
+      "dismissPrompt": "Nhập sau và tiếp tục duyệt web",
+      "enterCode": "Nhập mã ghép đôi",
+      "expiresIn": "Hết hạn sau {{time}}",
+      "pairButton": "Ghép đôi",
+      "pickerHelp": "Tìm thấy nhiều phiên bản Motrix đang chạy. Chọn một phiên bản để ghép đôi.",
+      "rescan": "Tìm lại",
+      "noCandidates": "Không tìm thấy phiên bản Motrix đang chạy.",
+      "candidatesLabel": "Các phiên bản Motrix được phát hiện",
+      "candidatePort": "Cổng {{port}}",
+      "candidateDetail": "{{instanceId}} · v{{appVersion}}",
+      "unknownVersion": "không rõ phiên bản",
+      "choose": "Chọn",
+      "backoffTitle": "Quá nhiều lần thử ghép đôi",
+      "backoffBody": "Thử lại lúc {{time}}.",
+      "retryIn": "Thử lại sau {{seconds}} giây",
+      "permissionMissingTitle": "Cần cấp quyền",
+      "permissionMissingBody": "Cho phép truy cập localhost để tìm Motrix trên máy tính này.",
+      "grantPermission": "Cấp quyền",
+      "degradedTitle": "Motrix đã kết nối",
+      "degradedBody": "Bạn có thể dùng Motrix bình thường. Kết nối này chỉ có xác minh cơ bản. Để được bảo vệ tốt hơn, hãy cập nhật Motrix và ghép đôi lại.",
+      "recoveryExhaustedTitle": "Không thể tự động kết nối lại",
+      "recoveryExhaustedBody": "Không có ghép đôi Motrix đã lưu nào hoạt động. Nhấn Kết nối để ghép đôi lại."
+    }
+  },
+  "errors": {
+    "connection": {
+      "generic": "Kết nối thất bại. Hãy thử lại.",
+      "backoffLocked": "Quá nhiều lần thử ghép đôi. Hãy thử lại sau.",
+      "staleAttempt": "Một lần thử kết nối mới hơn đã thay thế lần này.",
+      "aborted": "Đã hủy ghép đôi.",
+      "deadlineExceeded": "Lần thử đã hết thời gian chờ. Hãy thử lại.",
+      "runsExhausted": "Nhập sai mã quá nhiều lần. Bắt đầu ghép đôi lại để lấy mã mới.",
+      "invalidCode": "Mã không đúng định dạng. Hãy kiểm tra hộp thoại Motrix.",
+      "missingNonce": "Motrix không cung cấp phiên ghép đôi. Đảm bảo Motrix đang chạy rồi thử lại.",
+      "unsupportedBrowser": "Trình duyệt này không hỗ trợ ghép đôi.",
+      "ticketPreparationFailed": "Không thể chuẩn bị ghép đôi. Hãy thử lại.",
+      "protocolViolation": "Motrix gửi phản hồi không mong đợi. Hãy thử lại.",
+      "unsupportedVersion": "Tiện ích này và Motrix dùng phiên bản giao thức khác nhau. Hãy cập nhật cả hai rồi thử lại.",
+      "backendUpgradeRequired": "Phiên bản Motrix này quá cũ để ghép đôi an toàn. Hãy cập nhật Motrix rồi thử lại.",
+      "extensionUpgradeRequired": "Phiên bản tiện ích này quá cũ so với Motrix này. Hãy cập nhật tiện ích Motrix rồi thử lại.",
+      "unsupportedRemote": "Motrix đã xác thực không phải App hoặc Server được chọn cho kết nối này. Kiểm tra điểm cuối rồi thử lại.",
+      "remoteDiscoveryUnavailable": "Không thể truy cập Motrix Server từ xa. Kiểm tra địa chỉ, dịch vụ lắng nghe và mạng; với WSS, kiểm tra cả chứng chỉ và proxy ngược.",
+      "remotePairingUnavailable": "Motrix Server từ xa không thể mở phiên ghép đôi an toàn. Hãy thử lại sau ít phút.",
+      "remoteTransportUnavailable": "Kết nối Motrix Server từ xa thất bại. Kiểm tra địa chỉ, dịch vụ lắng nghe, DNS và mạng; với WSS, kiểm tra cả chứng chỉ và proxy ngược. Trình duyệt không xác định được thành phần nào gặp lỗi.",
+      "peerRejected": "Motrix đã từ chối ghép đôi.",
+      "peerBusy": "Motrix đang xử lý quá nhiều yêu cầu ghép đôi. Hãy thử lại sau ít phút.",
+      "securityCheckFailed": "Kết nối không vượt qua kiểm tra bảo mật và đã bị dừng.",
+      "peerNotAuthentic": "Đầu bên kia không chứng minh được đó là Motrix của bạn. Kết nối đã bị dừng.",
+      "credentialPhaseFailed": "Không thể lưu ghép đôi. Hãy thử ghép đôi lại.",
+      "internalError": "Tiện ích gặp lỗi. Hãy thử lại.",
+      "authFailed": "Motrix không nhận ra ghép đôi này. Có thể nó đã bị thu hồi — hãy ghép đôi lại.",
+      "serverMacMismatch": "Phản hồi không vượt qua xác minh nên kết nối đã bị dừng. Đó có thể không phải Motrix của bạn.",
+      "channelClosed": "Kết nối đã đóng. Kết nối lại để tiếp tục.",
+      "channelUnavailable": "Hiện không thể truy cập Motrix. Đảm bảo ứng dụng đang chạy."
+    }
+  }
+}

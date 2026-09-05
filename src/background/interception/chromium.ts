@@ -2,6 +2,7 @@ import type { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionManager } from '@/background/ConnectionManager'
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import { probeSize } from '@/background/capture/probeSize'
+import type { HandoffGuard } from '@/background/handoff/guard'
 import { makeOps } from '@/background/handoff/makeOps'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import {
@@ -16,6 +17,7 @@ import type { Notify } from '@/shared/notifications'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 export interface ChromiumInterceptionDeps {
+  captureGuard: () => Promise<HandoffGuard | null>
   getConfig: () => Promise<TakeoverConfig>
   manager: ConnectionManager
   /** `PairingEndpointService.isActivePaired` — see `OpsDeps.isPaired`. */
@@ -102,6 +104,8 @@ async function handleHeld(
   try {
     const cfg = await deps.getConfig()
     if (!cfg.enabled) return
+    const guard = await deps.captureGuard()
+    if (guard === null) return
 
     let sizeBytes: number | null =
       typeof item.totalBytes === 'number' && item.totalBytes > 0
@@ -143,6 +147,7 @@ async function handleHeld(
 
     const ops = makeOps({
       manager: deps.manager,
+      guard,
       isPaired: deps.isPaired,
       gate: deps.gate,
       nudge: deps.nudge,

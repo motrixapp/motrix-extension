@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
+import { HandoffEndpointChangedError } from '@/background/handoff/guard'
 import { type HandoffOps, runHandoff } from '@/background/handoff/runHandoff'
+import { RemoteDataBoundaryConsentRequiredError } from '@/background/remote-submit-policy'
 import type { TakeoverTarget } from '@/shared/takeover'
 
 function target(over: Partial<TakeoverTarget> = {}): TakeoverTarget {
@@ -18,6 +20,7 @@ function target(over: Partial<TakeoverTarget> = {}): TakeoverTarget {
 
 function ops(over: Partial<HandoffOps> = {}): HandoffOps {
   return {
+    assertCurrent: vi.fn(),
     getState: () => 'connected',
     connectWithLaunch: vi.fn(async () => {}),
     waitForConnected: vi.fn(async () => true),
@@ -37,6 +40,34 @@ function ops(over: Partial<HandoffOps> = {}): HandoffOps {
 }
 
 describe('runHandoff', () => {
+  it('keeps the native download when the endpoint changes during data preparation', async () => {
+    let changed = false
+    const o = ops({
+      assertCurrent: () => {
+        if (changed) throw new HandoffEndpointChangedError()
+      },
+      captureCookies: vi.fn(async () => {
+        changed = true
+        return []
+      }),
+    })
+    await runHandoff(target(), o)
+    expect(o.cancelNative).not.toHaveBeenCalled()
+    expect(o.submit).not.toHaveBeenCalled()
+    expect(o.fallbackToBrowser).not.toHaveBeenCalled()
+  })
+
+  it('does not retry a remote consent rejection', async () => {
+    const o = ops({
+      submit: vi.fn(async () => {
+        throw new RemoteDataBoundaryConsentRequiredError()
+      }),
+    })
+    await runHandoff(target({ origin: 'context-menu' }), o)
+    expect(o.submit).toHaveBeenCalledOnce()
+    expect(o.waitForConnected).not.toHaveBeenCalled()
+    expect(o.fallbackToBrowser).toHaveBeenCalledOnce()
+  })
   it('connected + non-sensitive: cancels native then submits', async () => {
     const o = ops()
     await runHandoff(target(), o)

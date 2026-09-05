@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { i18n, initI18n, resolveDefaultLocale } from '@/shared/i18n'
+import { SUPPORTED_LOCALES } from '@/shared/supportedLocales'
 
 declare const browser: {
   i18n: { getUILanguage: () => string }
@@ -27,17 +28,40 @@ beforeEach(() => {
 })
 
 describe('resolveDefaultLocale', () => {
-  it('maps zh* to zh-CN', () => {
-    for (const lng of ['zh', 'zh-CN', 'zh-TW', 'zh-Hans']) {
-      browser.i18n.getUILanguage = () => lng
-      expect(resolveDefaultLocale()).toBe('zh-CN')
-    }
-  })
-  it('maps everything else to en-US', () => {
-    for (const lng of ['en', 'en-US', 'fr', 'de-DE']) {
-      browser.i18n.getUILanguage = () => lng
-      expect(resolveDefaultLocale()).toBe('en-US')
-    }
+  it.each([
+    ['zh', 'zh-CN'],
+    ['zh-CN', 'zh-CN'],
+    ['zh-SG', 'zh-CN'],
+    ['zh-Hans', 'zh-CN'],
+    ['zh-TW', 'zh-TW'],
+    ['zh-HK', 'zh-TW'],
+    ['zh-MO', 'zh-TW'],
+    ['zh-Hant', 'zh-TW'],
+    ['zh-Hant-CN', 'zh-TW'],
+    ['zh-Hans-TW', 'zh-CN'],
+    ['ZH_tw', 'zh-TW'],
+    ['pt_BR', 'pt-BR'],
+    ['pt-PT', 'pt-BR'],
+    ['pt', 'pt-BR'],
+    ['de-DE', 'de'],
+    ['es-MX', 'es'],
+    ['fr-CA', 'fr'],
+    ['hi-IN', 'hi'],
+    ['id-ID', 'id'],
+    ['it-IT', 'it'],
+    ['ja-JP', 'ja'],
+    ['ko-KR', 'ko'],
+    ['ru-RU', 'ru'],
+    ['th-TH', 'th'],
+    ['tr-TR', 'tr'],
+    ['vi-VN', 'vi'],
+    ['en', 'en-US'],
+    ['en-GB', 'en-US'],
+    ['ar', 'en-US'],
+    ['', 'en-US'],
+  ])('maps %s to %s', (language, expected) => {
+    browser.i18n.getUILanguage = () => language
+    expect(resolveDefaultLocale()).toBe(expected)
   })
 })
 
@@ -57,4 +81,22 @@ describe('initI18n', () => {
       'Download with Motrix'
     )
   })
+})
+
+describe('registered translations', () => {
+  it.each(SUPPORTED_LOCALES)(
+    'loads %s without English fallback',
+    async (locale) => {
+      await browser.storage.local.set({ 'motrix.locale': locale })
+      await initI18n()
+      expect(i18n.language).toBe(locale)
+      expect(i18n.hasResourceBundle(locale, 'translation')).toBe(true)
+      const translated = i18n.t('contextMenu.downloadWithMotrix', {
+        fallbackLng: false,
+      })
+      expect(translated).not.toBe('contextMenu.downloadWithMotrix')
+      if (locale !== 'en-US')
+        expect(translated).not.toBe('Download with Motrix')
+    }
+  )
 })

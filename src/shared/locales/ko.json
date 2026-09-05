@@ -1,0 +1,448 @@
+{
+  "badge": {
+    "tooltip": {
+      "connected": "Motrix: 연결됨",
+      "disconnected": "Motrix: 연결되지 않음",
+      "connecting": "Motrix: 연결 중…",
+      "downloading": "Motrix: 다운로드 중",
+      "denied": "Motrix: 페어링 거부됨 — 열어서 다시 페어링하세요",
+      "error": "Motrix: 전송 실패 — 클릭하여 세부 정보 확인"
+    }
+  },
+  "contextMenu": {
+    "downloadWithMotrix": "Motrix로 다운로드",
+    "pairThenDownload": "Motrix를 페어링한 후 다운로드"
+  },
+  "notify": {
+    "browserFallbackBody": "Motrix를 사용할 수 없어 브라우저에서 다운로드합니다.",
+    "browserFallbackTitle": "브라우저에서 다운로드 중",
+    "downloadComplete": "다운로드 완료",
+    "downloadFailed": "다운로드 실패",
+    "handedToMotrix": "Motrix로 전송됨",
+    "notConnectedBody": "Motrix를 페어링하여 다운로드를 넘겨주세요.",
+    "notConnectedTitle": "Motrix가 연결되지 않음",
+    "notReachableBody": "Motrix를 페어링한 후 다운로드를 다시 시도하세요.",
+    "notReachableTitle": "Motrix에 연결할 수 없음",
+    "pairNudgeBody": "Motrix를 열어 페어링을 완료하세요.",
+    "pairNudgeTitle": "Motrix 페어링",
+    "pairRevokedBody": "Motrix가 이 브라우저의 페어링을 해제했습니다.",
+    "pairRevokedTitle": "페어링 해제됨",
+    "sensitiveSkippedBody": "민감한 사이트의 다운로드는 브라우저에서 처리합니다.",
+    "sensitiveSkippedTitle": "건너뜀",
+    "submitFailedBody": "브라우저에서 다시 다운로드합니다.",
+    "submitFailedTitle": "Motrix 전송 실패"
+  },
+  "options": {
+    "diagnostics": {
+      "adapters": "어댑터",
+      "extensionId": "확장 프로그램 ID",
+      "logLevel": "로그 수준",
+      "logLevels": {
+        "silent": "기록 안 함",
+        "error": "오류",
+        "warn": "경고",
+        "info": "정보",
+        "debug": "디버그"
+      },
+      "noneRegistered": "아직 등록되지 않음",
+      "title": "진단",
+      "version": "버전"
+    },
+    "endpoint": {
+      "activate": "사용",
+      "activateAria": "{{name}} 사용",
+      "connection": {
+        "bootstrapping": "시작 중",
+        "connected": "연결됨",
+        "connecting": "연결 중",
+        "denied": "거부됨",
+        "disconnected": "연결 끊김",
+        "handshaking": "인증 중",
+        "awaiting-code": "코드 대기 중"
+      },
+      "currentDescription": "다운로드, 작업 및 페이지에서 감지한 리소스에 사용할 App 또는 Server를 선택하세요.",
+      "currentTitle": "Motrix 백엔드",
+      "listLabel": "사용 가능한 Motrix 백엔드",
+      "localDescription": "Motrix App으로 감지한 이 컴퓨터",
+      "localName": "Motrix App",
+      "selectLabel": "다운로드 전송 대상"
+    },
+    "language": {
+      "label": "언어",
+      "system": "시스템 설정 따르기"
+    },
+    "notifications": {
+      "title": "시스템 알림",
+      "masterLabel": "시스템 알림 사용",
+      "masterAria": "시스템 알림 사용",
+      "confirmLabel": "성공 / 확인",
+      "confirmDesc": "Motrix로 전송됨, 다운로드 완료",
+      "errorLabel": "실패 / 오류",
+      "errorDesc": "전송 실패, 연결 불가, 다운로드 실패",
+      "reminderLabel": "알림 메시지",
+      "reminderDesc": "페어링 안내, 페어링 해제, 건너뛴 사이트"
+    },
+    "pairing": {
+      "backendTitle": "{{name}} 페어링",
+      "forget": "페어링 정보 삭제",
+      "loading": "페어링 상태 불러오는 중…",
+      "localHelp": "페어링을 클릭하여 이 컴퓨터의 Motrix를 찾고 페어링 코드를 입력하세요.",
+      "localTitle": "Motrix App을 통해 페어링",
+      "remoteTitle": "Motrix Server와 페어링",
+      "remoteHelp": "페어링을 클릭하고 Server 관리 화면에서 요청을 승인한 다음 표시된 코드를 여기에 입력하세요. WS와 WSS 엔드포인트를 모두 지원하며 WSS를 권장합니다.",
+      "serverRequiredTitle": "Motrix Server 필요",
+      "serverRequiredHelp": "Android용 Firefox는 Motrix Server를 통해 연결합니다. 위에서 Server를 추가한 후 선택하여 페어링하세요.",
+      "remoteConsentTitle": "원격 다운로드",
+      "remoteConsentBody": "원격 다운로드는 대상 URL, 원본 페이지의 URL과 제목, 파일명, 선택 내용 및 작업 제어 명령을 이 Server로 전송합니다. 쿠키와 요청 헤더는 별도로 활성화해야 전송됩니다.",
+      "remoteConsentOffline": "데이터 권한은 인증된 Server에 연결됩니다. 변경하기 전에 연결하세요.",
+      "remoteHeadersLabel": "요청 헤더 전송",
+      "remoteHeadersHelp": "Referer 및 미디어 재생 헤더 등 페이지에서 가져온 헤더를 허용합니다. 인증 헤더에는 아래의 자격 증명 권한이 여전히 필요합니다.",
+      "remoteCredentialsLabel": "쿠키 및 인증 정보 전송",
+      "remoteCredentialsHelp": "이 Server에만 쿠키와 자격 증명 헤더를 허용합니다. 직접 관리하는 Server에만 활성화하세요.",
+      "notPaired": "페어링되지 않음",
+      "paired": "Motrix와 페어링됨",
+      "pairedHelp": "이 백엔드에 확정된 MBP1 자격 증명이 저장되어 있습니다. 현재 연결 상태는 별도로 표시됩니다.",
+      "pairedTitle": "페어링 준비 완료",
+      "reconnect": "다시 연결",
+      "scopedHelp": "페어링 신뢰 관계와 자격 증명은 백엔드별로 분리됩니다. 백엔드를 전환해도 다른 백엔드의 신뢰 관계를 재사용하지 않습니다.",
+      "pair": "페어링",
+      "pairDialogTitle": "Motrix와 페어링"
+    },
+    "servers": {
+      "add": "서버 추가",
+      "addTitle": "Motrix Server 추가",
+      "current": "현재 사용 중",
+      "delete": "서버 삭제",
+      "deleteActiveDescription": "{{name}} 및 로컬에 저장된 페어링 자격 증명과 동의 정보를 삭제할까요? 현재 백엔드는 Motrix App으로 돌아가지만 연결하거나 실행하지 않습니다.",
+      "deleteActiveServerOnlyDescription": "{{name}} 및 로컬에 저장된 페어링 자격 증명과 동의 정보를 삭제할까요? 다운로드하려면 다른 Motrix Server를 추가하거나 선택해야 합니다.",
+      "deleteAria": "{{name}} 삭제",
+      "deleteDescription": "{{name}} 및 로컬에 저장된 페어링 자격 증명과 동의 정보를 삭제할까요? 서버의 정보나 권한은 해제되지 않습니다.",
+      "deleteTitle": "Motrix Server를 삭제할까요?",
+      "description": "여러 Motrix Server 주소를 저장하고 설정이나 팝업에서 전환할 수 있습니다.",
+      "dialogDescription": "이 백엔드를 알아보기 쉬운 이름과 WebSocket 기본 URL을 입력하세요.",
+      "editAria": "{{name}} 편집",
+      "editTitle": "Motrix Server 편집",
+      "emptyDescription": "서버를 추가하여 다른 컴퓨터의 Motrix에 연결하세요.",
+      "emptyTitle": "아직 Motrix Server가 없음",
+      "footer": "서버 주소를 변경하면 다시 페어링해야 합니다. 페어링 정보는 주소 간에 공유되지 않습니다.",
+      "nameLabel": "서버 이름",
+      "namePlaceholder": "홈 서버",
+      "nameRequired": "서버 이름을 입력하세요",
+      "save": "서버 저장",
+      "statusAuthority": "서버 주소: {{value}}",
+      "statusRuntime": "Motrix 버전: {{name}} {{version}}",
+      "statusTitle": "서버 정보",
+      "statusTransportSecure": "연결 보안: WSS를 사용하며 TLS로 서버 신원을 확인합니다",
+      "statusTransportPlain": "연결 보안: 암호화되어 있지만 WS는 서버 신원을 확인할 수 없으며 연결 정보가 노출될 수 있습니다. WSS를 권장합니다",
+      "title": "Motrix 서버",
+      "urlDescription": "ws:// 또는 wss:// 기본 URL을 사용하세요. 선택적으로 지정한 경로는 역방향 프록시 접두사로 그대로 유지됩니다. WSS를 권장합니다.",
+      "urlDuplicate": "이미 저장된 Motrix Server 주소입니다",
+      "urlInvalid": "공백, 자격 증명, 쿼리 또는 프래그먼트가 없는 유효한 ws:// 또는 wss:// 기본 URL을 입력하세요",
+      "urlLabel": "WebSocket URL",
+      "urlPlaceholder": "ws(s)://host[:port][/base-path]",
+      "transportWarningTitle": "이 연결은 WSS를 사용하지 않습니다",
+      "transportWarningBody": "Motrix와 주고받는 내용은 암호화되지만 WS는 서버 신원을 확인할 수 없으며 연결 정보가 노출될 수 있습니다. NAS가 지원한다면 WSS를 사용하세요.",
+      "urlRequired": "WebSocket URL을 입력하세요"
+    },
+    "takeover": {
+      "consentBody": "Motrix는 파일을 다운로드하기 위해 사이트의 로그인 쿠키를 받습니다. 민감한 사이트의 다운로드는 브라우저에서 처리합니다.",
+      "consentCancel": "취소",
+      "consentConfirm": "사용",
+      "consentDialogLabel": "다운로드를 Motrix로 보낼까요?",
+      "denylistLabel": "제외 목록(한 줄에 호스트 하나 — 항상 브라우저에서 처리)",
+      "enableAria": "다운로드 인계 사용",
+      "enableLabel": "해당하는 다운로드를 Motrix로 전송",
+      "loading": "다운로드 인계 설정 불러오는 중…",
+      "minSizeLabel": "최소 크기(MB)",
+      "minSizePlaceholder": "0 = 모두",
+      "thresholdInvalid": "최소 크기는 0 이상의 숫자여야 합니다",
+      "save": "저장",
+      "saved": "저장됨",
+      "title": "다운로드 인계",
+      "remoteUnavailable": "자동 인계에는 현재 로컬 Motrix App이 필요합니다. 원격 다운로드 및 헤더나 쿠키 권한으로는 활성화되지 않습니다. 이 Server에는 수동으로 또는 마우스 오른쪽 버튼 메뉴에서 다운로드를 보낼 수 있습니다.",
+      "availabilityUnknown": "선택한 백엔드를 확인할 수 있을 때까지 인계를 사용할 수 없습니다.",
+      "remoteUnavailableShort": "로컬 App 전용. 오른쪽 클릭 전송은 Server에서도 가능합니다."
+    },
+    "tabs": {
+      "general": "일반",
+      "appearance": "모양",
+      "integration": "연동",
+      "help": "도움말"
+    },
+    "common": {
+      "apply": "적용",
+      "cancel": "취소",
+      "loadError": "확장 프로그램의 백그라운드 프로세스가 시작되지 않아 설정을 불러오지 못했습니다. 확장 프로그램을 새로고침한 후 다시 시도하세요.",
+      "saved": "저장됨",
+      "saving": "저장 중…",
+      "saveError": "저장 실패"
+    },
+    "appearance": {
+      "theme": {
+        "label": "테마",
+        "system": "시스템 설정 따르기",
+        "light": "밝게",
+        "dark": "어둡게"
+      }
+    },
+    "help": {
+      "title": "도움말 및 지원",
+      "description": "가이드를 읽고 지원을 받으며 확장 프로그램의 진단 정보를 확인하세요.",
+      "reportBug": "문제 신고",
+      "reportBugDescription": "GitHub 이슈를 등록하거나 의견을 보내주세요.",
+      "issues": "GitHub Issues",
+      "docs": "문서",
+      "docsDescription": "설정, 페어링, 다운로드 인계 및 문제 해결 가이드를 읽어보세요.",
+      "copyDiagnostics": "진단 정보 복사",
+      "copied": "복사됨",
+      "diagnostics": "진단",
+      "diagnosticsDescription": "로그 설정을 조정하고 문제 해결에 도움이 되는 정보를 복사하세요."
+    },
+    "about": {
+      "subtitle": "브라우저와 Motrix 다운로드 관리자를 연결",
+      "website": "공식 웹사이트"
+    },
+    "title": "Motrix 확장 프로그램 설정"
+  },
+  "popup": {
+    "backend": {
+      "app": "Motrix App",
+      "appDescription": "이 컴퓨터",
+      "choose": "Motrix 백엔드 선택",
+      "configureServer": "Motrix Server 관리",
+      "notConfigured": "설정되지 않음",
+      "server": "Motrix Server",
+      "version": "v{{version}}"
+    },
+    "controlPanel": {
+      "engineState": "엔진: {{state}}",
+      "noDownloads": "다운로드 없음",
+      "pause": "일시 정지",
+      "remove": "제거",
+      "resume": "다시 시작",
+      "statsSummary": "진행 중 {{active}} · 대기 중 {{waiting}}"
+    },
+    "dashboard": {
+      "activity": "활동",
+      "resources": "리소스",
+      "showResources": "이 페이지의 리소스 표시",
+      "showTasks": "진행 중인 작업 표시",
+      "title": "전송 개요"
+    },
+    "loading": "불러오는 중…",
+    "quickSettings": {
+      "fullSettings": "전체 설정",
+      "fullSettingsDescription": "일반, 모양, 백엔드 및 도움말",
+      "loadError": "빠른 설정을 불러오지 못했습니다.",
+      "notificationsDescription": "확장 프로그램의 시스템 알림 제어",
+      "retry": "다시 시도",
+      "saveError": "설정을 저장하지 못했습니다. 다시 시도하세요.",
+      "takeoverDescription": "브라우저 다운로드를 현재 Motrix 백엔드로 전송"
+    },
+    "quickAdd": {
+      "title": "새 작업",
+      "description": "HTTP, HTTPS 또는 마그넷 링크를 붙여 넣으세요.",
+      "inputLabel": "다운로드 주소",
+      "placeholder": "https://example.com/file.zip",
+      "cancel": "취소",
+      "add": "추가",
+      "submitting": "추가 중…",
+      "error": {
+        "empty": "다운로드 주소를 입력하세요.",
+        "unsupported": "HTTP, HTTPS 또는 마그넷 링크만 지원합니다.",
+        "invalid": "유효하지 않은 다운로드 주소입니다.",
+        "submitFailed": "작업을 추가하지 못했습니다. 다시 시도하세요."
+      }
+    },
+    "reconnect": "연결",
+    "settings": "설정 열기",
+    "sniffer": {
+      "clearFilters": "필터 지우기",
+      "detected": "항목 {{count}}개",
+      "downloadCount": "{{count}}개 다운로드",
+      "downloadSelected": "선택 항목 다운로드",
+      "downloadedResource": "{{name}} 전송됨",
+      "downloadingResource": "{{name}} 다운로드 중",
+      "emptyDescription": "미디어를 재생한 후 다시 시도하세요.",
+      "emptyFilter": "이 필터에 맞는 리소스가 없습니다",
+      "emptyTitle": "미디어를 찾지 못했습니다",
+      "filteredCount": "이미지 {{matched}} / {{total}}개",
+      "filters": {
+        "all": "모두",
+        "audio": "오디오",
+        "image": "이미지",
+        "video": "비디오"
+      },
+      "imageFilters": {
+        "activeCount": "활성 필터 {{count}}개",
+        "dimensions": "해상도 및 크기",
+        "done": "완료",
+        "fields": {
+          "height": "높이",
+          "size": "크기",
+          "width": "너비"
+        },
+        "formatOptionLabel": "{{format}} 이미지 필터링",
+        "formats": "이미지 형식",
+        "operatorLabel": "{{label}} 비교",
+        "reset": "초기화",
+        "result": "{{matched}} / {{total}}",
+        "sizeUnitLabel": "파일 크기 단위",
+        "title": "빠른 필터",
+        "trigger": "필터",
+        "valueLabel": "{{label}} 값"
+      },
+      "imageCount": "이미지 {{count}}개",
+      "noImageMatches": "일치하는 이미지 없음",
+      "pageAction": {
+        "bilibili": "이 bilibili 동영상 전송",
+        "youtube": "이 YouTube 동영상 전송"
+      },
+      "pageSubmitted": "Motrix로 동영상을 전송했습니다 {{taskId}}",
+      "pageResources": "페이지 리소스",
+      "quickDownloadResource": "{{name}} 빠른 다운로드",
+      "connectToSubmit": "리소스를 보내려면 Motrix에 연결하세요.",
+      "scan": "다시 검색",
+      "scanning": "검색 중…",
+      "selectAll": "모두 선택",
+      "selected": "{{count}}개 선택됨",
+      "selectResource": "{{name}} 선택",
+      "sourceHost": "출처: {{host}}",
+      "sendResource": "{{name}}을(를) Motrix로 전송",
+      "sent": "전송됨",
+      "sending": "전송 중",
+      "submitFailed": "리소스를 전송하지 못했습니다. 다시 시도하세요.",
+      "title": "리소스 감지",
+      "unavailableDescription": "다른 페이지로 이동하거나 나중에 다시 시도하세요.",
+      "unavailableTitle": "이 페이지는 검색할 수 없습니다",
+      "unsupported": "ffmpeg 필요",
+      "unsupportedReason": "선택한 백엔드에서 ffmpeg를 지원하지 않아 {{kind}} 리소스를 전송할 수 없습니다.",
+      "unsupportedSelectionReason": "선택한 백엔드에서 선택된 리소스 유형 중 하나 이상을 전송할 수 없습니다.",
+      "unsupportedResource": "{{name}}을(를) 전송할 수 없습니다. {{reason}}"
+    },
+    "speed": {
+      "download": "다운로드",
+      "upload": "업로드"
+    },
+    "status": {
+      "bootstrapping": "Motrix 찾는 중…",
+      "connected": "연결됨",
+      "connecting": "연결 중…",
+      "denied": "페어링 거부됨",
+      "disconnected": "연결 끊김",
+      "handshaking": "핸드셰이크 진행 중",
+      "awaiting-code": "페어링 코드 대기 중…"
+    },
+    "tabs": {
+      "settings": "설정",
+      "sniffer": "리소스 감지",
+      "tasks": "작업"
+    },
+    "takeover": {
+      "aria": "다운로드 인계 전환",
+      "label": "인계"
+    },
+    "tasks": {
+      "actions": "{{name}} 작업 메뉴",
+      "openFolder": "Motrix에서 파일이 있는 폴더 열기",
+      "openFolderError": "작업 폴더를 열지 못했습니다. 다시 시도하세요.",
+      "openFolderMetadataPending": "작업 메타데이터를 받은 후 폴더를 여세요",
+      "openFolderTask": "{{name}}이(가) 있는 폴더 열기",
+      "openFolderUnsupported": "폴더를 열려면 Motrix를 업데이트하세요",
+      "pauseTask": "{{name}} 일시 정지",
+      "removeTask": "{{name}} 제거",
+      "removeConfirmTitle": "작업을 제거할까요?",
+      "removeConfirmDescription": "다운로드 목록에서 “{{name}}”이(가) 제거됩니다.",
+      "removeDeleteFilesLabel": "다운로드한 파일 삭제",
+      "removeConfirmAction": "제거",
+      "resumeTask": "{{name}} 다시 시작",
+      "bytes": "{{done}} / {{total}}",
+      "disconnectedDescription": "작업을 보려면 연결하세요.",
+      "disconnectedTitle": "Motrix가 오프라인입니다",
+      "empty": {
+        "active": "진행 중인 작업 없음",
+        "failed": "실패한 작업 없음",
+        "recent": "완료된 작업 없음"
+      },
+      "filters": {
+        "active": "진행 중",
+        "failed": "실패",
+        "recent": "완료"
+      },
+      "loading": "작업 불러오는 중",
+      "status": {
+        "completed": "완료",
+        "downloading": "다운로드 중",
+        "error": "실패",
+        "fetching_metadata": "메타데이터 가져오는 중",
+        "finalizing": "마무리 중",
+        "paused": "일시 정지됨",
+        "queued": "대기 중",
+        "seeding": "시딩 중"
+      },
+      "title": "작업"
+    },
+    "pairing": {
+      "attemptOf": "시도 {{run}} / {{maxRuns}}",
+      "attemptsRemaining": "남은 시도 {{attemptsRemaining}}회",
+      "codeLabel": "페어링 코드",
+      "codeDescription": "Motrix 페어링 대화 상자에 표시된 8자리 코드를 입력하세요.",
+      "codeInvalid": "페어링 대화 상자에 표시된 8자리 코드를 입력하세요.",
+      "dialogTitle": "페어링 코드 입력",
+      "dismissPrompt": "나중에 입력하고 계속 탐색",
+      "enterCode": "페어링 코드 입력",
+      "expiresIn": "{{time}} 후 만료",
+      "pairButton": "페어링",
+      "pickerHelp": "여러 Motrix 인스턴스를 찾았습니다. 페어링할 인스턴스를 선택하세요.",
+      "rescan": "다시 찾기",
+      "noCandidates": "Motrix 인스턴스를 찾지 못했습니다.",
+      "candidatesLabel": "검색된 Motrix 인스턴스",
+      "candidatePort": "포트 {{port}}",
+      "candidateDetail": "{{instanceId}} · v{{appVersion}}",
+      "unknownVersion": "알 수 없는 버전",
+      "choose": "선택",
+      "backoffTitle": "페어링 시도 횟수가 너무 많습니다",
+      "backoffBody": "{{time}}에 다시 시도하세요.",
+      "retryIn": "{{seconds}}초 후 다시 시도",
+      "permissionMissingTitle": "권한 필요",
+      "permissionMissingBody": "이 컴퓨터에서 Motrix를 찾으려면 localhost 접근을 허용하세요.",
+      "grantPermission": "권한 허용",
+      "degradedTitle": "Motrix가 연결되었습니다",
+      "degradedBody": "Motrix를 정상적으로 사용할 수 있습니다. 이 연결에는 기본 검증만 적용됩니다. 보안을 강화하려면 Motrix를 업데이트하고 다시 페어링하세요.",
+      "recoveryExhaustedTitle": "자동으로 다시 연결하지 못했습니다",
+      "recoveryExhaustedBody": "저장된 Motrix 페어링이 모두 작동하지 않았습니다. 연결을 눌러 다시 페어링하세요."
+    }
+  },
+  "errors": {
+    "connection": {
+      "generic": "연결에 실패했습니다. 다시 시도하세요.",
+      "backoffLocked": "페어링 시도 횟수가 너무 많습니다. 나중에 다시 시도하세요.",
+      "staleAttempt": "새로운 연결 시도로 전환되었습니다.",
+      "aborted": "페어링이 취소되었습니다.",
+      "deadlineExceeded": "시도 시간이 초과되었습니다. 다시 시도하세요.",
+      "runsExhausted": "잘못된 코드를 너무 많이 입력했습니다. 페어링을 다시 시작하여 새 코드를 받으세요.",
+      "invalidCode": "코드 형식이 올바르지 않습니다. Motrix 대화 상자를 확인하세요.",
+      "missingNonce": "Motrix가 페어링 슬롯을 제공하지 않았습니다. Motrix가 실행 중인지 확인한 후 다시 시도하세요.",
+      "unsupportedBrowser": "이 브라우저에서는 페어링을 지원하지 않습니다.",
+      "ticketPreparationFailed": "페어링을 준비하지 못했습니다. 다시 시도하세요.",
+      "protocolViolation": "Motrix가 예상하지 못한 응답을 보냈습니다. 다시 시도하세요.",
+      "unsupportedVersion": "이 확장 프로그램과 Motrix의 프로토콜 버전이 다릅니다. 둘 다 업데이트한 후 다시 시도하세요.",
+      "backendUpgradeRequired": "이 Motrix 버전은 너무 오래되어 안전하게 페어링할 수 없습니다. Motrix를 업데이트한 후 다시 시도하세요.",
+      "extensionUpgradeRequired": "이 확장 프로그램 버전은 너무 오래되어 이 Motrix와 호환되지 않습니다. Motrix 확장 프로그램을 업데이트한 후 다시 시도하세요.",
+      "unsupportedRemote": "인증된 Motrix가 이 연결에서 선택한 App 또는 Server가 아닙니다. 엔드포인트를 확인한 후 다시 시도하세요.",
+      "remoteDiscoveryUnavailable": "원격 Motrix Server에 연결할 수 없습니다. 주소, 수신 서비스 및 네트워크를 확인하세요. WSS의 경우 인증서와 역방향 프록시도 확인하세요.",
+      "remotePairingUnavailable": "원격 Motrix Server가 안전한 페어링 세션을 열지 못했습니다. 잠시 후 다시 시도하세요.",
+      "remoteTransportUnavailable": "원격 Motrix Server 연결에 실패했습니다. 주소, 수신 서비스, DNS 및 네트워크를 확인하세요. WSS의 경우 인증서와 역방향 프록시도 확인하세요. 브라우저에서는 정확한 실패 원인을 확인할 수 없습니다.",
+      "peerRejected": "Motrix가 페어링을 거부했습니다.",
+      "peerBusy": "Motrix가 너무 많은 페어링 요청을 처리하고 있습니다. 잠시 후 다시 시도하세요.",
+      "securityCheckFailed": "보안 검사를 통과하지 못해 연결을 중단했습니다.",
+      "peerNotAuthentic": "연결 상대가 사용자의 Motrix임을 증명하지 못해 연결을 중단했습니다.",
+      "credentialPhaseFailed": "페어링을 저장하지 못했습니다. 다시 페어링하세요.",
+      "internalError": "확장 프로그램에서 문제가 발생했습니다. 다시 시도하세요.",
+      "authFailed": "Motrix가 이 페어링을 인식하지 못했습니다. 해제되었을 수 있으니 다시 페어링하세요.",
+      "serverMacMismatch": "응답 검증에 실패하여 연결을 중단했습니다. 사용자의 Motrix가 아닐 수 있습니다.",
+      "channelClosed": "연결이 닫혔습니다. 계속하려면 다시 연결하세요.",
+      "channelUnavailable": "현재 Motrix에 연결할 수 없습니다. 실행 중인지 확인하세요."
+    }
+  }
+}

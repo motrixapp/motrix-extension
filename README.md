@@ -156,6 +156,31 @@ pnpm lint                # Code checks
 pnpm build:webstore      # Chrome Web Store-compliant build
 ```
 
+### Localize the store listing
+
+The manifest `name` and `description` come from
+`public/_locales/<code>/messages.json` (`__MSG_appName__`, `__MSG_appDescription__`),
+with `en` as `default_locale`. Every locale directory there is also a language
+the Chrome Web Store listing editor lets you localize, including its own set of
+screenshots and description. To add a language, add a `messages.json` with the
+same keys; `src/__tests__/manifest-locales.test.ts` checks that all locales
+stay complete and in sync. The in-app UI strings are separate
+(`src/shared/locales/*.json`, i18next).
+
+The extension currently ships store metadata for 16 high-coverage, non-RTL
+languages: `de`, `en`, `es`, `fr`, `hi`, `id`, `it`, `ja`, `ko`, `pt_BR`,
+`ru`, `th`, `tr`, `vi`, `zh_CN`, and `zh_TW`. These directory names follow
+the locale codes accepted by Chrome Web Store and Firefox WebExtensions. RTL
+locales should be added only after the extension surfaces and store assets have
+dedicated bidirectional-layout testing.
+
+The same 16 languages are available in the extension UI under **Appearance →
+Language**, with automatic browser-language detection and a saved override.
+UI locale tags use BCP 47 (`en-US`, `pt-BR`, `zh-CN`, `zh-TW`). Traditional
+Chinese is selected for `zh-TW`, `zh-HK`, `zh-MO`, and `zh-Hant`. When adding
+an interface language, register it in `src/shared/supportedLocales.ts` and
+`src/shared/i18n.ts`; locale tests verify every key and interpolation placeholder.
+
 ### Publish a GitHub release
 
 Releases are built by GitHub Actions from an existing `vX.Y.Z` tag. Update the

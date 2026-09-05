@@ -1,0 +1,448 @@
+{
+  "badge": {
+    "tooltip": {
+      "connected": "Motrix: terhubung",
+      "disconnected": "Motrix: tidak terhubung",
+      "connecting": "Motrix: menghubungkan…",
+      "downloading": "Motrix: mengunduh",
+      "denied": "Motrix: penyandingan ditolak — buka untuk menyandingkan ulang",
+      "error": "Motrix: pengiriman gagal — klik untuk detail"
+    }
+  },
+  "contextMenu": {
+    "downloadWithMotrix": "Unduh dengan Motrix",
+    "pairThenDownload": "Sandingkan Motrix, lalu unduh"
+  },
+  "notify": {
+    "browserFallbackBody": "Motrix tidak tersedia. Unduhan akan ditangani oleh browser.",
+    "browserFallbackTitle": "Mengunduh di browser",
+    "downloadComplete": "Unduhan selesai",
+    "downloadFailed": "Unduhan gagal",
+    "handedToMotrix": "Dikirim ke Motrix",
+    "notConnectedBody": "Sandingkan Motrix untuk mengambil alih unduhan.",
+    "notConnectedTitle": "Motrix tidak terhubung",
+    "notReachableBody": "Sandingkan Motrix, lalu coba unduh lagi.",
+    "notReachableTitle": "Motrix tidak dapat dijangkau",
+    "pairNudgeBody": "Buka Motrix untuk menyelesaikan penyandingan.",
+    "pairNudgeTitle": "Sandingkan Motrix",
+    "pairRevokedBody": "Motrix mencabut penyandingan browser ini.",
+    "pairRevokedTitle": "Penyandingan dicabut",
+    "sensitiveSkippedBody": "Unduhan dari situs sensitif tetap ditangani browser.",
+    "sensitiveSkippedTitle": "Dilewati",
+    "submitFailedBody": "Mengunduh ulang di browser.",
+    "submitFailedTitle": "Pengiriman ke Motrix gagal"
+  },
+  "options": {
+    "diagnostics": {
+      "adapters": "Adaptor",
+      "extensionId": "ID ekstensi",
+      "logLevel": "Tingkat log",
+      "logLevels": {
+        "silent": "Tanpa log",
+        "error": "Kesalahan",
+        "warn": "Peringatan",
+        "info": "Informasi",
+        "debug": "Debug"
+      },
+      "noneRegistered": "Belum ada yang terdaftar",
+      "title": "Diagnostik",
+      "version": "Versi"
+    },
+    "endpoint": {
+      "activate": "Gunakan",
+      "activateAria": "Gunakan {{name}}",
+      "connection": {
+        "bootstrapping": "Memulai",
+        "connected": "Terhubung",
+        "connecting": "Menghubungkan",
+        "denied": "Ditolak",
+        "disconnected": "Terputus",
+        "handshaking": "Mengotorisasi",
+        "awaiting-code": "Menunggu kode"
+      },
+      "currentDescription": "Pilih satu App atau Server untuk unduhan, tugas, dan sumber daya yang terdeteksi di halaman.",
+      "currentTitle": "Backend Motrix",
+      "listLabel": "Backend Motrix yang tersedia",
+      "localDescription": "Komputer ini, ditemukan melalui Motrix App",
+      "localName": "Motrix App",
+      "selectLabel": "Kirim unduhan ke"
+    },
+    "language": {
+      "label": "Bahasa",
+      "system": "Ikuti sistem"
+    },
+    "notifications": {
+      "title": "Notifikasi sistem",
+      "masterLabel": "Aktifkan notifikasi sistem",
+      "masterAria": "Aktifkan notifikasi sistem",
+      "confirmLabel": "Keberhasilan / konfirmasi",
+      "confirmDesc": "Dikirim ke Motrix, unduhan selesai",
+      "errorLabel": "Kegagalan / kesalahan",
+      "errorDesc": "Pengiriman gagal, tidak dapat dijangkau, unduhan gagal",
+      "reminderLabel": "Pengingat",
+      "reminderDesc": "Permintaan penyandingan, penyandingan dicabut, situs dilewati"
+    },
+    "pairing": {
+      "backendTitle": "Menyandingkan {{name}}",
+      "forget": "Lupakan penyandingan",
+      "loading": "Memuat status penyandingan…",
+      "localHelp": "Klik Sandingkan untuk menemukan Motrix di komputer ini, lalu masukkan kode penyandingannya.",
+      "localTitle": "Sandingkan melalui Motrix App",
+      "remoteTitle": "Sandingkan dengan Motrix Server",
+      "remoteHelp": "Klik Sandingkan, konfirmasikan permintaan di antarmuka pengelola Server, lalu masukkan kode yang ditampilkan di sini. Endpoint WS dan WSS didukung; WSS disarankan.",
+      "serverRequiredTitle": "Memerlukan Motrix Server",
+      "serverRequiredHelp": "Firefox untuk Android terhubung melalui Motrix Server. Tambahkan Server di atas, lalu pilih untuk menyandingkan.",
+      "remoteConsentTitle": "Unduhan jarak jauh",
+      "remoteConsentBody": "Unduhan jarak jauh mengirim URL tujuan, URL dan judul halaman sumber, nama file, pilihan, serta kontrol tugas ke Server ini. Cookie dan header permintaan tidak dikirim kecuali diaktifkan secara terpisah.",
+      "remoteConsentOffline": "Izin data terikat pada Server yang diautentikasi. Hubungkan sebelum mengubahnya.",
+      "remoteHeadersLabel": "Kirim header permintaan",
+      "remoteHeadersHelp": "Mengizinkan header dari halaman, seperti Referer dan header pemutaran media. Header autentikasi tetap memerlukan izin kredensial di bawah.",
+      "remoteCredentialsLabel": "Kirim cookie dan autentikasi",
+      "remoteCredentialsHelp": "Mengizinkan cookie dan header kredensial hanya untuk Server ini. Aktifkan hanya untuk Server yang Anda kendalikan.",
+      "notPaired": "Belum disandingkan",
+      "paired": "Disandingkan dengan Motrix",
+      "pairedHelp": "Kredensial MBP1 yang telah dikonfirmasi disimpan untuk backend ini. Status koneksi saat ini ditampilkan secara terpisah.",
+      "pairedTitle": "Penyandingan siap",
+      "reconnect": "Hubungkan ulang",
+      "scopedHelp": "Kepercayaan dan kredensial penyandingan dipisahkan untuk setiap backend. Beralih backend tidak pernah menggunakan kepercayaan backend lain.",
+      "pair": "Sandingkan",
+      "pairDialogTitle": "Sandingkan dengan Motrix"
+    },
+    "servers": {
+      "add": "Tambah server",
+      "addTitle": "Tambah Motrix Server",
+      "current": "Saat ini",
+      "delete": "Hapus server",
+      "deleteActiveDescription": "Hapus {{name}} beserta kredensial penyandingan dan persetujuan yang disimpan secara lokal? Backend akan kembali ke Motrix App tanpa menghubungkan atau menjalankannya.",
+      "deleteActiveServerOnlyDescription": "Hapus {{name}} beserta kredensial penyandingan dan persetujuan yang disimpan secara lokal? Anda harus menambah atau memilih Motrix Server lain sebelum mengunduh.",
+      "deleteAria": "Hapus {{name}}",
+      "deleteDescription": "Hapus {{name}} beserta kredensial penyandingan dan persetujuan yang disimpan secara lokal? Tindakan ini tidak mencabut apa pun di server.",
+      "deleteTitle": "Hapus Motrix Server?",
+      "description": "Simpan beberapa alamat Motrix Server dan beralih di antaranya melalui Opsi atau popup.",
+      "dialogDescription": "Beri backend ini nama yang mudah dikenali dan masukkan URL dasar WebSocket-nya.",
+      "editAria": "Edit {{name}}",
+      "editTitle": "Edit Motrix Server",
+      "emptyDescription": "Tambahkan server untuk terhubung ke Motrix di luar komputer ini.",
+      "emptyTitle": "Belum ada Motrix Server",
+      "footer": "Mengubah alamat server memerlukan penyandingan ulang. Informasi penyandingan tidak pernah dibagikan antaralamat.",
+      "nameLabel": "Nama server",
+      "namePlaceholder": "Server rumah",
+      "nameRequired": "Nama server wajib diisi",
+      "save": "Simpan server",
+      "statusAuthority": "Alamat server: {{value}}",
+      "statusRuntime": "Versi Motrix: {{name}} {{version}}",
+      "statusTitle": "Informasi server",
+      "statusTransportSecure": "Keamanan koneksi: menggunakan WSS dan TLS memverifikasi identitas server",
+      "statusTransportPlain": "Keamanan koneksi: terenkripsi, tetapi WS tidak dapat memverifikasi identitas server dan dapat mengekspos informasi koneksi. WSS disarankan",
+      "title": "Server Motrix",
+      "urlDescription": "Gunakan URL dasar ws:// atau wss://. Jalur opsional dipertahankan persis sebagai prefiks reverse proxy; WSS disarankan.",
+      "urlDuplicate": "Alamat Motrix Server ini sudah disimpan",
+      "urlInvalid": "Masukkan URL dasar ws:// atau wss:// yang valid tanpa spasi, kredensial, kueri, atau fragmen",
+      "urlLabel": "URL WebSocket",
+      "urlPlaceholder": "ws(s)://host[:port][/base-path]",
+      "transportWarningTitle": "Koneksi ini tidak menggunakan WSS",
+      "transportWarningBody": "Konten yang dipertukarkan dengan Motrix tetap terenkripsi, tetapi WS tidak dapat memverifikasi identitas server dan dapat mengekspos informasi koneksi. Gunakan WSS jika NAS Anda mendukungnya.",
+      "urlRequired": "URL WebSocket wajib diisi"
+    },
+    "takeover": {
+      "consentBody": "Motrix menerima cookie login situs untuk mengunduh file. Unduhan dari situs sensitif tetap di browser.",
+      "consentCancel": "Batal",
+      "consentConfirm": "Aktifkan",
+      "consentDialogLabel": "Kirim unduhan ke Motrix?",
+      "denylistLabel": "Daftar pengecualian (satu host per baris — selalu ditangani browser)",
+      "enableAria": "Aktifkan pengambilalihan",
+      "enableLabel": "Kirim unduhan yang memenuhi syarat ke Motrix",
+      "loading": "Memuat pengaturan pengambilalihan…",
+      "minSizeLabel": "Ukuran minimum (MB)",
+      "minSizePlaceholder": "0 = semua",
+      "thresholdInvalid": "Ukuran minimum harus berupa angka nonnegatif",
+      "save": "Simpan",
+      "saved": "Disimpan",
+      "title": "Pengambilalihan unduhan",
+      "remoteUnavailable": "Pengambilalihan otomatis saat ini memerlukan Motrix App lokal. Unduhan jarak jauh serta izin header atau cookie tidak mengaktifkannya. Anda tetap dapat mengirim unduhan ke Server ini secara manual atau melalui menu klik kanan.",
+      "availabilityUnknown": "Pengambilalihan tidak tersedia hingga backend yang dipilih dapat diperiksa.",
+      "remoteUnavailableShort": "Hanya App lokal. Pengiriman lewat klik kanan mendukung Server."
+    },
+    "tabs": {
+      "general": "Umum",
+      "appearance": "Tampilan",
+      "integration": "Integrasi",
+      "help": "Bantuan"
+    },
+    "common": {
+      "apply": "Terapkan",
+      "cancel": "Batal",
+      "loadError": "Pengaturan tidak dapat dimuat karena proses latar belakang ekstensi gagal dimulai. Muat ulang ekstensi dan coba lagi.",
+      "saved": "Disimpan",
+      "saving": "Menyimpan…",
+      "saveError": "Gagal menyimpan"
+    },
+    "appearance": {
+      "theme": {
+        "label": "Tema",
+        "system": "Ikuti sistem",
+        "light": "Terang",
+        "dark": "Gelap"
+      }
+    },
+    "help": {
+      "title": "Bantuan dan dukungan",
+      "description": "Baca panduan, dapatkan bantuan, dan periksa diagnostik ekstensi.",
+      "reportBug": "Laporkan masalah",
+      "reportBugDescription": "Buka issue di GitHub atau kirim masukan.",
+      "issues": "GitHub Issues",
+      "docs": "Dokumentasi",
+      "docsDescription": "Baca panduan penyiapan, penyandingan, pengambilalihan unduhan, dan pemecahan masalah.",
+      "copyDiagnostics": "Salin diagnostik",
+      "copied": "Disalin",
+      "diagnostics": "Diagnostik",
+      "diagnosticsDescription": "Atur pencatatan log dan salin informasi yang berguna untuk pemecahan masalah."
+    },
+    "about": {
+      "subtitle": "Penghubung browser untuk pengelola unduhan Motrix",
+      "website": "Situs resmi"
+    },
+    "title": "Pengaturan Ekstensi Motrix"
+  },
+  "popup": {
+    "backend": {
+      "app": "Motrix App",
+      "appDescription": "Komputer ini",
+      "choose": "Pilih backend Motrix",
+      "configureServer": "Kelola Motrix Server",
+      "notConfigured": "Belum dikonfigurasi",
+      "server": "Motrix Server",
+      "version": "v{{version}}"
+    },
+    "controlPanel": {
+      "engineState": "mesin: {{state}}",
+      "noDownloads": "Tidak ada unduhan",
+      "pause": "Jeda",
+      "remove": "Hapus",
+      "resume": "Lanjutkan",
+      "statsSummary": "Aktif: {{active}} · Menunggu: {{waiting}}"
+    },
+    "dashboard": {
+      "activity": "Aktivitas",
+      "resources": "Sumber daya",
+      "showResources": "Tampilkan sumber daya dari halaman ini",
+      "showTasks": "Tampilkan tugas aktif",
+      "title": "Ringkasan transfer"
+    },
+    "loading": "Memuat…",
+    "quickSettings": {
+      "fullSettings": "Semua pengaturan",
+      "fullSettingsDescription": "Umum, tampilan, backend, dan bantuan",
+      "loadError": "Pengaturan cepat tidak dapat dimuat.",
+      "notificationsDescription": "Atur notifikasi sistem dari ekstensi",
+      "retry": "Coba lagi",
+      "saveError": "Pengaturan tidak dapat disimpan. Coba lagi.",
+      "takeoverDescription": "Kirim unduhan browser ke backend Motrix saat ini"
+    },
+    "quickAdd": {
+      "title": "Tugas baru",
+      "description": "Tempel tautan HTTP, HTTPS, atau magnet.",
+      "inputLabel": "Alamat unduhan",
+      "placeholder": "https://example.com/file.zip",
+      "cancel": "Batal",
+      "add": "Tambah",
+      "submitting": "Menambahkan…",
+      "error": {
+        "empty": "Masukkan alamat unduhan.",
+        "unsupported": "Hanya tautan HTTP, HTTPS, atau magnet yang didukung.",
+        "invalid": "Alamat unduhan tidak valid.",
+        "submitFailed": "Tidak dapat menambahkan tugas. Coba lagi."
+      }
+    },
+    "reconnect": "Hubungkan",
+    "settings": "Buka pengaturan",
+    "sniffer": {
+      "clearFilters": "Hapus filter",
+      "detected": "{{count}} item",
+      "downloadCount": "Unduh {{count}}",
+      "downloadSelected": "Unduh pilihan",
+      "downloadedResource": "{{name}} dikirim",
+      "downloadingResource": "Mengunduh {{name}}",
+      "emptyDescription": "Putar media, lalu coba lagi.",
+      "emptyFilter": "Tidak ada sumber daya yang cocok dengan filter ini",
+      "emptyTitle": "Tidak ada media ditemukan",
+      "filteredCount": "{{matched}} / {{total}} gambar",
+      "filters": {
+        "all": "Semua",
+        "audio": "Audio",
+        "image": "Gambar",
+        "video": "Video"
+      },
+      "imageFilters": {
+        "activeCount": "{{count}} filter aktif",
+        "dimensions": "Dimensi dan ukuran",
+        "done": "Selesai",
+        "fields": {
+          "height": "Tinggi",
+          "size": "Ukuran",
+          "width": "Lebar"
+        },
+        "formatOptionLabel": "Filter gambar {{format}}",
+        "formats": "Format gambar",
+        "operatorLabel": "Perbandingan {{label}}",
+        "reset": "Reset",
+        "result": "{{matched}} / {{total}}",
+        "sizeUnitLabel": "Satuan ukuran file",
+        "title": "Filter cepat",
+        "trigger": "Filter",
+        "valueLabel": "Nilai {{label}}"
+      },
+      "imageCount": "{{count}} gambar",
+      "noImageMatches": "Tidak ada gambar yang cocok",
+      "pageAction": {
+        "bilibili": "Kirim video bilibili ini",
+        "youtube": "Kirim video YouTube ini"
+      },
+      "pageSubmitted": "Video dikirim ke Motrix {{taskId}}",
+      "pageResources": "Sumber daya halaman",
+      "quickDownloadResource": "Unduh cepat {{name}}",
+      "connectToSubmit": "Hubungkan ke Motrix untuk mengirim sumber daya.",
+      "scan": "Pindai lagi",
+      "scanning": "Memindai…",
+      "selectAll": "Pilih semua",
+      "selected": "{{count}} dipilih",
+      "selectResource": "Pilih {{name}}",
+      "sourceHost": "Sumber: {{host}}",
+      "sendResource": "Kirim {{name}} ke Motrix",
+      "sent": "Terkirim",
+      "sending": "Mengirim",
+      "submitFailed": "Tidak dapat mengirim sumber daya. Coba lagi.",
+      "title": "Pendeteksi sumber daya",
+      "unavailableDescription": "Pindah halaman atau coba lagi nanti.",
+      "unavailableTitle": "Halaman ini tidak dapat dipindai",
+      "unsupported": "Memerlukan ffmpeg",
+      "unsupportedReason": "Backend yang dipilih tidak dapat mengirim sumber daya {{kind}} karena dukungan ffmpeg tidak tersedia.",
+      "unsupportedSelectionReason": "Backend yang dipilih tidak dapat mengirim satu atau beberapa jenis sumber daya yang dipilih.",
+      "unsupportedResource": "{{name}} tidak dapat dikirim. {{reason}}"
+    },
+    "speed": {
+      "download": "Unduh",
+      "upload": "Unggah"
+    },
+    "status": {
+      "bootstrapping": "Mencari Motrix…",
+      "connected": "Terhubung",
+      "connecting": "Menghubungkan…",
+      "denied": "Penyandingan ditolak",
+      "disconnected": "Terputus",
+      "handshaking": "Negosiasi koneksi berlangsung",
+      "awaiting-code": "Menunggu kode penyandingan…"
+    },
+    "tabs": {
+      "settings": "Pengaturan",
+      "sniffer": "Pendeteksi sumber daya",
+      "tasks": "Tugas"
+    },
+    "takeover": {
+      "aria": "Alihkan pengambilalihan unduhan",
+      "label": "Ambil alih"
+    },
+    "tasks": {
+      "actions": "Tindakan untuk {{name}}",
+      "openFolder": "Buka folder file di Motrix",
+      "openFolderError": "Tidak dapat membuka folder tugas. Coba lagi.",
+      "openFolderMetadataPending": "Tunggu metadata tugas sebelum membuka folder",
+      "openFolderTask": "Buka folder yang berisi {{name}}",
+      "openFolderUnsupported": "Perbarui Motrix untuk membuka folder",
+      "pauseTask": "Jeda {{name}}",
+      "removeTask": "Hapus {{name}}",
+      "removeConfirmTitle": "Hapus tugas?",
+      "removeConfirmDescription": "“{{name}}” akan dihapus dari daftar unduhan.",
+      "removeDeleteFilesLabel": "Hapus file yang diunduh",
+      "removeConfirmAction": "Hapus",
+      "resumeTask": "Lanjutkan {{name}}",
+      "bytes": "{{done}} dari {{total}}",
+      "disconnectedDescription": "Hubungkan untuk melihat tugas.",
+      "disconnectedTitle": "Motrix sedang offline",
+      "empty": {
+        "active": "Tidak ada tugas aktif",
+        "failed": "Tidak ada tugas gagal",
+        "recent": "Tidak ada tugas selesai"
+      },
+      "filters": {
+        "active": "Aktif",
+        "failed": "Gagal",
+        "recent": "Selesai"
+      },
+      "loading": "Memuat tugas",
+      "status": {
+        "completed": "Selesai",
+        "downloading": "Mengunduh",
+        "error": "Gagal",
+        "fetching_metadata": "Mengambil metadata",
+        "finalizing": "Menyelesaikan",
+        "paused": "Dijeda",
+        "queued": "Dalam antrean",
+        "seeding": "Seeding"
+      },
+      "title": "Tugas"
+    },
+    "pairing": {
+      "attemptOf": "Percobaan {{run}} dari {{maxRuns}}",
+      "attemptsRemaining": "{{attemptsRemaining}} percobaan tersisa",
+      "codeLabel": "Kode penyandingan",
+      "codeDescription": "Masukkan kode 8 karakter yang ditampilkan di dialog penyandingan Motrix.",
+      "codeInvalid": "Masukkan kode 8 karakter yang ditampilkan di dialog penyandingan.",
+      "dialogTitle": "Masukkan kode penyandingan",
+      "dismissPrompt": "Masukkan nanti dan lanjutkan menjelajah",
+      "enterCode": "Masukkan kode penyandingan",
+      "expiresIn": "Kedaluwarsa dalam {{time}}",
+      "pairButton": "Sandingkan",
+      "pickerHelp": "Beberapa instans Motrix ditemukan. Pilih satu untuk disandingkan.",
+      "rescan": "Cari ulang",
+      "noCandidates": "Tidak ada instans Motrix ditemukan.",
+      "candidatesLabel": "Instans Motrix yang ditemukan",
+      "candidatePort": "Port {{port}}",
+      "candidateDetail": "{{instanceId}} · v{{appVersion}}",
+      "unknownVersion": "versi tidak diketahui",
+      "choose": "Pilih",
+      "backoffTitle": "Terlalu banyak percobaan penyandingan",
+      "backoffBody": "Coba lagi pada {{time}}.",
+      "retryIn": "Coba lagi dalam {{seconds}} dtk",
+      "permissionMissingTitle": "Memerlukan izin",
+      "permissionMissingBody": "Izinkan akses ke localhost untuk menemukan Motrix di komputer ini.",
+      "grantPermission": "Berikan izin",
+      "degradedTitle": "Motrix terhubung",
+      "degradedBody": "Anda dapat menggunakan Motrix seperti biasa. Koneksi ini hanya memiliki verifikasi dasar. Untuk perlindungan lebih kuat, perbarui Motrix dan sandingkan ulang.",
+      "recoveryExhaustedTitle": "Tidak dapat terhubung ulang secara otomatis",
+      "recoveryExhaustedBody": "Tidak ada penyandingan Motrix tersimpan yang berhasil. Tekan Hubungkan untuk menyandingkan ulang."
+    }
+  },
+  "errors": {
+    "connection": {
+      "generic": "Koneksi gagal. Coba lagi.",
+      "backoffLocked": "Terlalu banyak percobaan penyandingan. Coba lagi nanti.",
+      "staleAttempt": "Percobaan koneksi yang lebih baru telah mengambil alih.",
+      "aborted": "Penyandingan dibatalkan.",
+      "deadlineExceeded": "Waktu percobaan habis. Coba lagi.",
+      "runsExhausted": "Terlalu banyak kode salah. Mulai penyandingan lagi untuk memperoleh kode baru.",
+      "invalidCode": "Format kode tidak sesuai. Periksa dialog Motrix.",
+      "missingNonce": "Motrix tidak menyediakan slot penyandingan. Pastikan Motrix berjalan, lalu coba lagi.",
+      "unsupportedBrowser": "Penyandingan tidak didukung di browser ini.",
+      "ticketPreparationFailed": "Penyandingan tidak dapat disiapkan. Coba lagi.",
+      "protocolViolation": "Motrix mengirim respons yang tidak diharapkan. Coba lagi.",
+      "unsupportedVersion": "Ekstensi ini dan Motrix menggunakan versi protokol yang berbeda. Perbarui keduanya dan coba lagi.",
+      "backendUpgradeRequired": "Versi Motrix ini terlalu lama untuk penyandingan aman. Perbarui Motrix, lalu coba lagi.",
+      "extensionUpgradeRequired": "Versi ekstensi ini terlalu lama untuk Motrix ini. Perbarui ekstensi Motrix, lalu coba lagi.",
+      "unsupportedRemote": "Motrix yang diautentikasi bukan App atau Server yang dipilih untuk koneksi ini. Periksa endpoint dan coba lagi.",
+      "remoteDiscoveryUnavailable": "Motrix Server jarak jauh tidak dapat dijangkau. Periksa alamat, layanan listener, dan jaringan; untuk WSS, periksa juga sertifikat dan reverse proxy.",
+      "remotePairingUnavailable": "Motrix Server jarak jauh tidak dapat membuka sesi penyandingan aman. Coba lagi sebentar lagi.",
+      "remoteTransportUnavailable": "Koneksi ke Motrix Server jarak jauh gagal. Periksa alamat, layanan listener, DNS, dan jaringan; untuk WSS, periksa juga sertifikat dan reverse proxy. Browser tidak dapat menentukan bagian mana yang gagal.",
+      "peerRejected": "Motrix menolak penyandingan.",
+      "peerBusy": "Motrix sedang menangani terlalu banyak permintaan penyandingan. Coba lagi sebentar lagi.",
+      "securityCheckFailed": "Koneksi gagal melewati pemeriksaan keamanan dan dihentikan.",
+      "peerNotAuthentic": "Pihak lain tidak dapat membuktikan bahwa itu Motrix Anda. Koneksi dihentikan.",
+      "credentialPhaseFailed": "Penyandingan tidak dapat disimpan. Coba sandingkan lagi.",
+      "internalError": "Terjadi kesalahan pada ekstensi. Coba lagi.",
+      "authFailed": "Motrix tidak mengenali penyandingan ini. Mungkin telah dicabut — coba sandingkan ulang.",
+      "serverMacMismatch": "Balasan gagal diverifikasi sehingga koneksi dihentikan. Mungkin itu bukan Motrix Anda.",
+      "channelClosed": "Koneksi ditutup. Hubungkan ulang untuk melanjutkan.",
+      "channelUnavailable": "Motrix tidak dapat dijangkau saat ini. Pastikan Motrix berjalan."
+    }
+  }
+}

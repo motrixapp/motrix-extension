@@ -5,6 +5,7 @@ import '@/shared/i18n'
 import { AppearanceTab } from '@/options/tabs/AppearanceTab'
 import { i18n } from '@/shared/i18n'
 import { getLocaleOverride } from '@/shared/localeStore'
+import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@/shared/supportedLocales'
 import { getThemeOverride } from '@/shared/themeStore'
 
 declare const browser: {
@@ -35,6 +36,24 @@ afterEach(async () => {
 })
 
 describe('AppearanceTab', () => {
+  it('offers every language and applies Traditional Chinese', async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 })
+    render(<AppearanceTab />)
+    await user.click(await screen.findByRole('combobox', { name: /language/i }))
+    for (const locale of SUPPORTED_LOCALES) {
+      expect(
+        await screen.findByRole('option', { name: LOCALE_NAMES[locale] })
+      ).toBeTruthy()
+    }
+    await user.click(screen.getByRole('option', { name: '繁體中文' }))
+    await user.click(screen.getByRole('button', { name: /apply/i }))
+    await waitFor(async () => {
+      expect(await getLocaleOverride()).toBe('zh-TW')
+      expect(i18n.language).toBe('zh-TW')
+      expect(screen.getByRole('combobox', { name: '語言' })).toBeTruthy()
+    })
+  })
+
   it('Apply persists theme + language and applies language live', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 })
     render(<AppearanceTab />)
@@ -46,10 +65,10 @@ describe('AppearanceTab', () => {
     ).toContain('Dark')
 
     await user.click(screen.getByRole('combobox', { name: /language/i }))
-    await user.click(await screen.findByRole('option', { name: '中文' }))
+    await user.click(await screen.findByRole('option', { name: '简体中文' }))
     expect(
       screen.getByRole('combobox', { name: /language/i }).textContent
-    ).toContain('中文')
+    ).toContain('简体中文')
 
     await user.click(screen.getByRole('button', { name: /apply/i }))
 

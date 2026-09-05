@@ -158,7 +158,10 @@
       "thresholdInvalid": "Minimum size must be a non-negative number",
       "save": "Save",
       "saved": "Saved",
-      "title": "Download takeover"
+      "title": "Download takeover",
+      "remoteUnavailable": "Automatic takeover currently requires the local Motrix App. Remote downloads and header or cookie permissions do not enable it. You can still send downloads to this Server manually or from the right-click menu.",
+      "availabilityUnknown": "Takeover is unavailable until the selected backend can be checked.",
+      "remoteUnavailableShort": "Local App only. Right-click sending works with Servers."
     },
     "tabs": {
       "general": "General",

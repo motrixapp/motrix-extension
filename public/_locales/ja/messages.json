@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Motrix 拡張機能",
+    "description": "Extension name shown in the browser and in store listings."
+  },
+  "appDescription": {
+    "message": "ダウンロードを Motrix に送信",
+    "description": "Short summary shown under the name in the browser and in store listings."
+  }
+}

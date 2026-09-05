@@ -1,11 +1,18 @@
 import type { Cookie, DownloadSubmitParams } from '@motrix/mdxp'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { buildSubmitParams } from '@/background/capture/buildSubmitParams'
+import {
+  CONNECT_DEADLINE_MS,
+  commitHandoff,
+  notifySafely,
+} from '@/background/handoff/delivery'
+import { HandoffEndpointChangedError } from '@/background/handoff/guard'
 import { i18n } from '@/shared/i18n'
 import type { Notify } from '@/shared/notifications'
 import { hostOf, isMagnetUrl, type TakeoverTarget } from '@/shared/takeover'
 
 export interface HandoffOps {
+  assertCurrent(): void
   getState(): ConnectionState
   /** Explicit user-intent (re)connect that launches Motrix (clearGateAndStart). */
   connectWithLaunch(): Promise<void>
@@ -24,66 +31,6 @@ export interface HandoffOps {
   submit(params: DownloadSubmitParams): Promise<{ taskId: string }>
   notify: Notify
   nudgePair(): Promise<void>
-}
-
-const CONNECT_DEADLINE_MS = 8000
-
-function notifySafely(ops: HandoffOps, input: Parameters<Notify>[0]): void {
-  try {
-    ops.notify(input)
-  } catch {
-    // Notifications are advisory. A renderer/API failure must never change the
-    // already-committed download transaction or trigger a native fallback.
-  }
-}
-
-async function submitOrFallback(
-  params: DownloadSubmitParams,
-  ops: HandoffOps
-): Promise<void> {
-  try {
-    await ops.submit(params)
-  } catch {
-    // A request can reach Motrix even when its response is lost. Re-send the
-    // same logical submission once before restoring the native download; the
-    // stable idempotency key makes this safe across a reconnect.
-    if (ops.getState() !== 'connected') {
-      try {
-        await ops.waitForConnected(CONNECT_DEADLINE_MS)
-      } catch {
-        // The retry below is authoritative; a failed wait simply makes it
-        // reject immediately and continue to the native fallback.
-      }
-    }
-    try {
-      await ops.submit(params)
-    } catch {
-      let fellBack = false
-      try {
-        // A magnet URI is not a browser download. Keep it available for a
-        // later Motrix retry instead of handing it to downloads.download().
-        if (params.selection.kind === 'direct') {
-          await ops.fallbackToBrowser()
-          fellBack = true
-        }
-      } finally {
-        notifySafely(ops, {
-          title: i18n.t('notify.submitFailedTitle'),
-          message: i18n.t(
-            fellBack ? 'notify.submitFailedBody' : 'notify.notReachableBody'
-          ),
-          severity: 'error',
-        })
-      }
-      return
-    }
-  }
-
-  notifySafely(ops, {
-    title: i18n.t('notify.handedToMotrix'),
-    message: params.meta.suggestedFilename,
-    severity: 'confirm',
-  })
 }
 
 function canFallbackExplicitly(target: TakeoverTarget): boolean {
@@ -137,27 +84,23 @@ async function prepareHandoff(
   }
 }
 
-function withIdempotencyKey(
-  params: DownloadSubmitParams
-): DownloadSubmitParams {
-  return params.idempotencyKey
-    ? params
-    : { ...params, idempotencyKey: crypto.randomUUID() }
-}
-
-async function commit(
-  params: DownloadSubmitParams,
-  ops: HandoffOps
-): Promise<void> {
-  const keyedParams = withIdempotencyKey(params)
-  await ops.cancelNative()
-  await submitOrFallback(keyedParams, ops)
-}
-
 export async function runHandoff(
   target: TakeoverTarget,
   ops: HandoffOps
 ): Promise<void> {
+  try {
+    await runCurrentHandoff(target, ops)
+  } catch (error) {
+    // Before cancellation, the original browser download is still intact.
+    if (!(error instanceof HandoffEndpointChangedError)) throw error
+  }
+}
+
+async function runCurrentHandoff(
+  target: TakeoverTarget,
+  ops: HandoffOps
+): Promise<void> {
+  ops.assertCurrent()
   // Step 1 — resolve connection without touching the native download.
   if (ops.getState() !== 'connected') {
     const explicit = target.origin === 'context-menu'
@@ -177,7 +120,8 @@ export async function runHandoff(
     try {
       await ops.connectWithLaunch()
       connected = await ops.waitForConnected(CONNECT_DEADLINE_MS)
-    } catch {
+    } catch (error) {
+      if (error instanceof HandoffEndpointChangedError) throw error
       // The native auto download is still untouched. Explicit HTTP(S) picks
       // have no native item yet, so they are started in the browser below.
     }
@@ -200,8 +144,10 @@ export async function runHandoff(
   // browser when the URL can be downloaded equivalently there.
   let prepared: PreparedHandoff
   try {
+    ops.assertCurrent()
     prepared = await prepareHandoff(target, ops)
   } catch (error) {
+    if (error instanceof HandoffEndpointChangedError) throw error
     if (await fallbackExplicitly(target, ops)) {
       notifyBrowserFallback(ops)
       return
@@ -227,5 +173,6 @@ export async function runHandoff(
   }
 
   // Step 3 — commit. Only now may the auto path cancel its native download.
-  await commit(prepared.params, ops)
+  ops.assertCurrent()
+  await commitHandoff(prepared.params, ops)
 }

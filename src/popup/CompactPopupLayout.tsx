@@ -12,12 +12,14 @@ export function CompactPopupHeader({
   backend,
   takeoverChecked,
   takeoverDisabled,
+  takeoverSupported = true,
   onTakeoverChange,
   onOpenSettings,
 }: {
   backend: ReactNode
   takeoverChecked: boolean
   takeoverDisabled?: boolean
+  takeoverSupported?: boolean
   onTakeoverChange: (checked: boolean) => void
   onOpenSettings: () => void
 }): React.ReactElement {
@@ -27,7 +29,19 @@ export function CompactPopupHeader({
     <header className="flex h-8 items-center justify-between">
       {backend}
       <div className="flex items-center gap-4">
-        <div className="flex h-8 items-center gap-2 text-sm font-normal">
+        <div
+          className="flex h-8 items-center gap-2 text-sm font-normal"
+          title={
+            takeoverSupported
+              ? undefined
+              : t('options.takeover.remoteUnavailable')
+          }
+        >
+          {!takeoverSupported && (
+            <span id="popup-takeover-unavailable" className="sr-only">
+              {t('options.takeover.remoteUnavailable')}
+            </span>
+          )}
           <span>{t('popup.takeover.label')}</span>
           <Switch
             id="popup-takeover-switch"
@@ -36,6 +50,9 @@ export function CompactPopupHeader({
             disabled={takeoverDisabled}
             onCheckedChange={onTakeoverChange}
             aria-label={t('popup.takeover.aria')}
+            aria-describedby={
+              takeoverSupported ? undefined : 'popup-takeover-unavailable'
+            }
           />
         </div>
         <Button
