@@ -61,8 +61,8 @@
         "awaiting-code": "Esperando el código"
       },
       "currentDescription": "Elige una App o un Server para las descargas, las tareas y los recursos detectados en las páginas.",
-      "currentTitle": "Servicios de Motrix",
-      "listLabel": "Servicios de Motrix disponibles",
+      "currentTitle": "Servicios Motrix",
+      "listLabel": "Servicios Motrix disponibles",
       "localDescription": "Este equipo, detectado mediante Motrix App",
       "localName": "Motrix App",
       "selectLabel": "Enviar descargas a"
@@ -123,7 +123,7 @@
       "editAria": "Editar {{name}}",
       "editTitle": "Editar Motrix Server",
       "emptyDescription": "Añade un servidor para conectarte a Motrix fuera de este equipo.",
-      "emptyTitle": "Aún no hay Motrix Servers",
+      "emptyTitle": "Aún sin Motrix Servers",
       "footer": "Cambiar la dirección de un servidor requiere volver a vincularlo. La información de vinculación nunca se comparte entre direcciones.",
       "nameLabel": "Nombre del servidor",
       "namePlaceholder": "Servidor doméstico",
@@ -165,14 +165,14 @@
     },
     "tabs": {
       "general": "General",
-      "appearance": "Apariencia",
+      "download": "Descargas",
       "integration": "Integración",
       "help": "Ayuda"
     },
     "common": {
       "apply": "Aplicar",
       "cancel": "Cancelar",
-      "loadError": "No se pudieron cargar los ajustes porque el proceso en segundo plano de la extensión no se inició. Recarga la extensión e inténtalo de nuevo.",
+      "loadError": "No se pudieron cargar los ajustes porque el proceso en segundo plano de la extensión no se inició. Recarga la extensión e reinténtalo.",
       "saved": "Guardado",
       "saving": "Guardando…",
       "saveError": "Error al guardar"
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "Ayuda y soporte",
-      "description": "Consulta las guías, obtén ayuda y revisa el diagnóstico de la extensión.",
+      "description": "Consulta guías, ayuda y diagnóstico de la extensión.",
       "reportBug": "Informar de un problema",
       "reportBugDescription": "Abre una incidencia en GitHub o envía tus comentarios.",
       "issues": "GitHub Issues",
@@ -232,12 +232,12 @@
     "loading": "Cargando…",
     "quickSettings": {
       "fullSettings": "Todos los ajustes",
-      "fullSettingsDescription": "General, apariencia, servicio y ayuda",
-      "loadError": "No se pudieron cargar los ajustes rápidos.",
-      "notificationsDescription": "Controlar las notificaciones del sistema de la extensión",
+      "fullSettingsDescription": "General, descargas, servicio y ayuda",
+      "loadError": "Error al cargar los ajustes rápidos.",
+      "notificationsDescription": "Gestionar notificaciones del sistema de la extensión",
       "retry": "Reintentar",
-      "saveError": "No se pudo guardar el ajuste. Inténtalo de nuevo.",
-      "takeoverDescription": "Enviar las descargas del navegador al servicio de Motrix actual"
+      "saveError": "Error al guardar el ajuste. Reinténtalo.",
+      "takeoverDescription": "Enviar descargas del navegador al servicio Motrix actual"
     },
     "quickAdd": {
       "title": "Nueva tarea",
@@ -251,7 +251,7 @@
         "empty": "Introduce una dirección de descarga.",
         "unsupported": "Solo se admiten enlaces HTTP, HTTPS o magnet.",
         "invalid": "La dirección de descarga no es válida.",
-        "submitFailed": "No se pudo añadir la tarea. Inténtalo de nuevo."
+        "submitFailed": "No se pudo añadir la tarea. Reinténtalo."
       }
     },
     "reconnect": "Conectar",
@@ -263,9 +263,9 @@
       "downloadSelected": "Descargar selección",
       "downloadedResource": "Enviado: {{name}}",
       "downloadingResource": "Descargando {{name}}",
-      "emptyDescription": "Reproduce contenido multimedia e inténtalo de nuevo.",
-      "emptyFilter": "Ningún recurso coincide con este filtro",
-      "emptyTitle": "No se encontró contenido multimedia",
+      "emptyDescription": "Reproduce multimedia y reinténtalo.",
+      "emptyFilter": "Sin recursos coincidentes",
+      "emptyTitle": "Sin contenido multimedia",
       "filteredCount": "{{matched}} / {{total}} imágenes",
       "filters": {
         "all": "Todo",
@@ -299,7 +299,7 @@
         "youtube": "Enviar este vídeo de YouTube"
       },
       "pageSubmitted": "Vídeo enviado a Motrix {{taskId}}",
-      "pageResources": "Recursos de la página",
+      "pageResources": "Recursos",
       "quickDownloadResource": "Descarga rápida de {{name}}",
       "connectToSubmit": "Conéctate a Motrix para enviar recursos.",
       "scan": "Volver a analizar",
@@ -311,10 +311,10 @@
       "sendResource": "Enviar {{name}} a Motrix",
       "sent": "Enviado",
       "sending": "Enviando",
-      "submitFailed": "No se pudo enviar el recurso. Inténtalo de nuevo.",
-      "title": "Detector de recursos",
+      "submitFailed": "No se pudo enviar el recurso. Reinténtalo.",
+      "title": "Detectar recursos",
       "unavailableDescription": "Cambia de página o inténtalo más tarde.",
-      "unavailableTitle": "No se puede analizar esta página",
+      "unavailableTitle": "No se puede analizar la página",
       "unsupported": "Requiere ffmpeg",
       "unsupportedReason": "El servicio seleccionado no puede enviar recursos de tipo {{kind}} porque no dispone de compatibilidad con ffmpeg.",
       "unsupportedSelectionReason": "El servicio seleccionado no puede enviar uno o más de los tipos de recursos seleccionados.",
@@ -335,18 +335,18 @@
     },
     "tabs": {
       "settings": "Ajustes",
-      "sniffer": "Detector de recursos",
+      "sniffer": "Recursos",
       "tasks": "Tareas"
     },
     "takeover": {
       "aria": "Alternar gestión de descargas",
-      "label": "Gestionar descargas"
+      "label": "Interceptar"
     },
     "tasks": {
       "actions": "Acciones para {{name}}",
       "openFolder": "Abrir carpeta contenedora en Motrix",
-      "openFolderError": "No se pudo abrir la carpeta de la tarea. Inténtalo de nuevo.",
-      "openFolderMetadataPending": "Espera a obtener los metadatos de la tarea antes de abrir la carpeta",
+      "openFolderError": "No se pudo abrir la carpeta de la tarea. Reinténtalo.",
+      "openFolderMetadataPending": "Espera los metadatos de la tarea antes de abrir la carpeta",
       "openFolderTask": "Abrir la carpeta que contiene {{name}}",
       "openFolderUnsupported": "Actualiza Motrix para abrir carpetas",
       "pauseTask": "Pausar {{name}}",
@@ -360,9 +360,9 @@
       "disconnectedDescription": "Conéctate para ver las tareas.",
       "disconnectedTitle": "Motrix está sin conexión",
       "empty": {
-        "active": "No hay tareas activas",
-        "failed": "No hay tareas fallidas",
-        "recent": "No hay tareas completadas"
+        "active": "Sin tareas activas",
+        "failed": "Sin tareas fallidas",
+        "recent": "Sin tareas completadas"
       },
       "filters": {
         "active": "En curso",
@@ -386,10 +386,10 @@
       "attemptOf": "Intento {{run}} de {{maxRuns}}",
       "attemptsRemaining": "Intentos restantes: {{attemptsRemaining}}",
       "codeLabel": "Código de vinculación",
-      "codeDescription": "Introduce el código de 8 caracteres que aparece en el diálogo de vinculación de Motrix.",
-      "codeInvalid": "Introduce el código de 8 caracteres que aparece en el diálogo de vinculación.",
+      "codeDescription": "Introduce el código de 8 caracteres del diálogo de vinculación de Motrix.",
+      "codeInvalid": "Introduce el código de 8 caracteres del diálogo de vinculación.",
       "dialogTitle": "Introducir código de vinculación",
-      "dismissPrompt": "Introducirlo más tarde y seguir navegando",
+      "dismissPrompt": "Introducir después y seguir navegando",
       "enterCode": "Introducir código de vinculación",
       "expiresIn": "Caduca en {{time}}",
       "pairButton": "Vincular",
@@ -415,21 +415,21 @@
   },
   "errors": {
     "connection": {
-      "generic": "La conexión falló. Inténtalo de nuevo.",
+      "generic": "La conexión falló. Reinténtalo.",
       "backoffLocked": "Demasiados intentos de vinculación. Inténtalo más tarde.",
       "staleAttempt": "Un intento de conexión más reciente sustituyó a este.",
       "aborted": "Se canceló la vinculación.",
-      "deadlineExceeded": "Se agotó el tiempo de espera. Inténtalo de nuevo.",
+      "deadlineExceeded": "Se agotó el tiempo de espera. Reinténtalo.",
       "runsExhausted": "Demasiados códigos incorrectos. Inicia de nuevo la vinculación para obtener otro código.",
       "invalidCode": "El código no tiene el formato esperado. Revisa el diálogo de Motrix.",
-      "missingNonce": "Motrix no ofreció una sesión de vinculación. Comprueba que esté en ejecución e inténtalo de nuevo.",
+      "missingNonce": "Motrix no ofreció una sesión de vinculación. Comprueba que esté en ejecución e reinténtalo.",
       "unsupportedBrowser": "Este navegador no admite la vinculación.",
-      "ticketPreparationFailed": "No se pudo preparar la vinculación. Inténtalo de nuevo.",
-      "protocolViolation": "Motrix envió una respuesta inesperada. Inténtalo de nuevo.",
-      "unsupportedVersion": "La extensión y Motrix usan versiones distintas del protocolo. Actualiza ambos e inténtalo de nuevo.",
-      "backendUpgradeRequired": "Esta versión de Motrix es demasiado antigua para una vinculación segura. Actualiza Motrix e inténtalo de nuevo.",
-      "extensionUpgradeRequired": "Esta versión de la extensión es demasiado antigua para este Motrix. Actualiza la extensión Motrix e inténtalo de nuevo.",
-      "unsupportedRemote": "El Motrix autenticado no es la App ni el Server seleccionado para esta conexión. Revisa el destino e inténtalo de nuevo.",
+      "ticketPreparationFailed": "No se pudo preparar la vinculación. Reinténtalo.",
+      "protocolViolation": "Motrix envió una respuesta inesperada. Reinténtalo.",
+      "unsupportedVersion": "La extensión y Motrix usan versiones distintas del protocolo. Actualiza ambos e reinténtalo.",
+      "backendUpgradeRequired": "Esta versión de Motrix es demasiado antigua para una vinculación segura. Actualiza Motrix e reinténtalo.",
+      "extensionUpgradeRequired": "Esta versión de la extensión es demasiado antigua para este Motrix. Actualiza la extensión Motrix e reinténtalo.",
+      "unsupportedRemote": "El Motrix autenticado no es la App ni el Server seleccionado para esta conexión. Revisa el destino e reinténtalo.",
       "remoteDiscoveryUnavailable": "No se pudo acceder al Motrix Server remoto. Revisa la dirección, el servicio de escucha y la red; para WSS, revisa también el certificado y el proxy inverso.",
       "remotePairingUnavailable": "El Motrix Server remoto no pudo abrir una sesión de vinculación segura. Inténtalo en unos instantes.",
       "remoteTransportUnavailable": "Falló la conexión con el Motrix Server remoto. Revisa la dirección, el servicio de escucha, el DNS y la red; para WSS, revisa también el certificado y el proxy inverso. El navegador no puede identificar cuál falló.",
@@ -438,7 +438,7 @@
       "securityCheckFailed": "La conexión no superó una comprobación de seguridad y se detuvo.",
       "peerNotAuthentic": "El otro extremo no pudo demostrar que es tu Motrix. Se detuvo la conexión.",
       "credentialPhaseFailed": "No se pudo guardar la vinculación. Intenta vincular de nuevo.",
-      "internalError": "Se produjo un error en la extensión. Inténtalo de nuevo.",
+      "internalError": "Se produjo un error en la extensión. Reinténtalo.",
       "authFailed": "Motrix no reconoció esta vinculación. Es posible que se haya revocado; vuelve a vincularlo.",
       "serverMacMismatch": "La respuesta no superó la verificación y se detuvo la conexión. Puede que no sea tu Motrix.",
       "channelClosed": "Se cerró la conexión. Vuelve a conectarte para continuar.",

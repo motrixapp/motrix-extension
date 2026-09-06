@@ -62,7 +62,7 @@
       },
       "currentDescription": "選擇用於下載、任務與網頁資源偵測的 App 或 Server。",
       "currentTitle": "Motrix 後端",
-      "listLabel": "可用的 Motrix 後端",
+      "listLabel": "可用 Motrix 後端",
       "localDescription": "透過 Motrix App 偵測到的這台電腦",
       "localName": "Motrix App",
       "selectLabel": "下載傳送至"
@@ -85,7 +85,7 @@
     "pairing": {
       "backendTitle": "正在配對 {{name}}",
       "forget": "忘記配對",
-      "loading": "正在載入配對狀態…",
+      "loading": "載入配對狀態…",
       "localHelp": "點選「配對」以尋找這台電腦上的 Motrix，並輸入配對碼。",
       "localTitle": "透過 Motrix App 配對",
       "remoteTitle": "與 Motrix Server 配對",
@@ -123,7 +123,7 @@
       "editAria": "編輯 {{name}}",
       "editTitle": "編輯 Motrix Server",
       "emptyDescription": "新增伺服器以連線至其他電腦上的 Motrix。",
-      "emptyTitle": "尚未新增 Motrix Server",
+      "emptyTitle": "尚無 Motrix Server",
       "footer": "變更伺服器位址後需要重新配對。配對資訊不會在不同位址間共用。",
       "nameLabel": "伺服器名稱",
       "namePlaceholder": "家用伺服器",
@@ -152,7 +152,7 @@
       "denylistLabel": "排除清單（每行一個主機名稱，一律交由瀏覽器處理）",
       "enableAria": "啟用下載接管",
       "enableLabel": "將符合條件的下載傳送至 Motrix",
-      "loading": "正在載入接管設定…",
+      "loading": "載入接管設定…",
       "minSizeLabel": "最小大小（MB）",
       "minSizePlaceholder": "0 = 全部",
       "thresholdInvalid": "最小大小必須為非負數",
@@ -165,14 +165,14 @@
     },
     "tabs": {
       "general": "一般",
-      "appearance": "外觀",
+      "download": "下載",
       "integration": "整合",
       "help": "說明"
     },
     "common": {
       "apply": "套用",
       "cancel": "取消",
-      "loadError": "擴充功能的背景程序未能啟動，因此無法載入設定。請重新載入擴充功能後再試一次。",
+      "loadError": "擴充功能的背景程序未能啟動，因此無法載入設定。請重新載入擴充功能後重試。",
       "saved": "已儲存",
       "saving": "正在儲存…",
       "saveError": "儲存失敗"
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "說明與支援",
-      "description": "瀏覽指南、取得支援，並查看擴充功能的診斷資訊。",
+      "description": "瀏覽指南、取得支援、查看擴充功能診斷資訊。",
       "reportBug": "回報問題",
       "reportBugDescription": "在 GitHub 建立議題或提供意見回饋。",
       "issues": "GitHub Issues",
@@ -232,11 +232,11 @@
     "loading": "載入中…",
     "quickSettings": {
       "fullSettings": "完整設定",
-      "fullSettingsDescription": "一般、外觀、後端與說明",
+      "fullSettingsDescription": "一般、下載、後端與說明",
       "loadError": "無法載入快速設定。",
       "notificationsDescription": "控制擴充功能的系統通知",
       "retry": "重試",
-      "saveError": "無法儲存設定，請再試一次。",
+      "saveError": "設定儲存失敗，請重試。",
       "takeoverDescription": "將瀏覽器下載傳送至目前的 Motrix 後端"
     },
     "quickAdd": {
@@ -251,7 +251,7 @@
         "empty": "請輸入下載網址。",
         "unsupported": "僅支援 HTTP、HTTPS 或磁力連結。",
         "invalid": "下載網址無效。",
-        "submitFailed": "無法新增任務，請再試一次。"
+        "submitFailed": "無法新增任務，請重試。"
       }
     },
     "reconnect": "連線",
@@ -263,8 +263,8 @@
       "downloadSelected": "下載所選項目",
       "downloadedResource": "已傳送 {{name}}",
       "downloadingResource": "正在下載 {{name}}",
-      "emptyDescription": "請播放媒體後再試一次。",
-      "emptyFilter": "沒有符合此篩選條件的資源",
+      "emptyDescription": "播放媒體後重試。",
+      "emptyFilter": "無符合條件的資源",
       "emptyTitle": "找不到媒體",
       "filteredCount": "{{matched}} / {{total}} 張圖片",
       "filters": {
@@ -301,7 +301,7 @@
       "pageSubmitted": "影片已傳送至 Motrix {{taskId}}",
       "pageResources": "網頁資源",
       "quickDownloadResource": "快速下載 {{name}}",
-      "connectToSubmit": "請連線至 Motrix 以傳送資源。",
+      "connectToSubmit": "連線至 Motrix 以傳送資源。",
       "scan": "重新掃描",
       "scanning": "正在掃描…",
       "selectAll": "全選",
@@ -311,7 +311,7 @@
       "sendResource": "將 {{name}} 傳送至 Motrix",
       "sent": "已傳送",
       "sending": "傳送中",
-      "submitFailed": "無法傳送資源，請再試一次。",
+      "submitFailed": "無法傳送資源，請重試。",
       "title": "資源偵測",
       "unavailableDescription": "請切換頁面或稍後再試。",
       "unavailableTitle": "無法掃描此頁面",
@@ -335,7 +335,7 @@
     },
     "tabs": {
       "settings": "設定",
-      "sniffer": "資源偵測",
+      "sniffer": "資源",
       "tasks": "任務"
     },
     "takeover": {
@@ -345,8 +345,8 @@
     "tasks": {
       "actions": "{{name}} 的操作",
       "openFolder": "在 Motrix 開啟所在資料夾",
-      "openFolderError": "無法開啟任務資料夾，請再試一次。",
-      "openFolderMetadataPending": "請等待取得任務中繼資料後再開啟資料夾",
+      "openFolderError": "無法開啟任務資料夾，請重試。",
+      "openFolderMetadataPending": "取得任務中繼資料後再開啟資料夾",
       "openFolderTask": "開啟 {{name}} 所在的資料夾",
       "openFolderUnsupported": "請更新 Motrix 以開啟資料夾",
       "pauseTask": "暫停 {{name}}",
@@ -360,9 +360,9 @@
       "disconnectedDescription": "連線後即可查看任務。",
       "disconnectedTitle": "Motrix 已離線",
       "empty": {
-        "active": "沒有進行中的任務",
-        "failed": "沒有失敗的任務",
-        "recent": "沒有已完成的任務"
+        "active": "無進行中的任務",
+        "failed": "無失敗任務",
+        "recent": "無已完成任務"
       },
       "filters": {
         "active": "進行中",
@@ -386,8 +386,8 @@
       "attemptOf": "第 {{run}} / {{maxRuns}} 次嘗試",
       "attemptsRemaining": "還可嘗試 {{attemptsRemaining}} 次",
       "codeLabel": "配對碼",
-      "codeDescription": "請輸入 Motrix 配對對話方塊中顯示的 8 字元配對碼。",
-      "codeInvalid": "請輸入配對對話方塊中顯示的 8 字元配對碼。",
+      "codeDescription": "輸入 Motrix 配對對話方塊中的 8 字元配對碼。",
+      "codeInvalid": "輸入配對對話方塊中的 8 字元配對碼。",
       "dialogTitle": "輸入配對碼",
       "dismissPrompt": "稍後輸入，繼續瀏覽",
       "enterCode": "輸入配對碼",
@@ -415,21 +415,21 @@
   },
   "errors": {
     "connection": {
-      "generic": "連線失敗，請再試一次。",
+      "generic": "連線失敗，請重試。",
       "backoffLocked": "配對嘗試次數過多，請稍後再試。",
       "staleAttempt": "已由較新的連線嘗試接手。",
       "aborted": "配對已取消。",
-      "deadlineExceeded": "嘗試逾時，請再試一次。",
+      "deadlineExceeded": "嘗試逾時，請重試。",
       "runsExhausted": "輸入錯誤配對碼的次數過多，請重新配對以取得新配對碼。",
       "invalidCode": "配對碼格式不符，請查看 Motrix 對話方塊。",
-      "missingNonce": "Motrix 未提供配對名額。請確認 Motrix 正在執行後再試一次。",
+      "missingNonce": "Motrix 未提供配對名額。請確認 Motrix 正在執行後重試。",
       "unsupportedBrowser": "此瀏覽器不支援配對。",
-      "ticketPreparationFailed": "無法準備配對，請再試一次。",
-      "protocolViolation": "Motrix 傳回非預期的回應，請再試一次。",
-      "unsupportedVersion": "此擴充功能與 Motrix 使用不同的通訊協定版本。請更新兩者後再試一次。",
-      "backendUpgradeRequired": "此 Motrix 版本過舊，無法安全配對。請更新 Motrix 後再試一次。",
-      "extensionUpgradeRequired": "此擴充功能版本過舊，無法搭配目前的 Motrix。請更新 Motrix 擴充功能後再試一次。",
-      "unsupportedRemote": "通過驗證的 Motrix 並非此次連線所選的 App 或 Server。請檢查端點後再試一次。",
+      "ticketPreparationFailed": "無法準備配對，請重試。",
+      "protocolViolation": "Motrix 傳回非預期的回應，請重試。",
+      "unsupportedVersion": "此擴充功能與 Motrix 使用不同的通訊協定版本。請更新兩者後重試。",
+      "backendUpgradeRequired": "此 Motrix 版本過舊，無法安全配對。請更新 Motrix 後重試。",
+      "extensionUpgradeRequired": "此擴充功能版本過舊，無法搭配目前的 Motrix。請更新 Motrix 擴充功能後重試。",
+      "unsupportedRemote": "通過驗證的 Motrix 並非此次連線所選的 App 或 Server。請檢查端點後重試。",
       "remoteDiscoveryUnavailable": "無法連線至遠端 Motrix Server。請檢查位址、監聽服務與網路；使用 WSS 時，也請檢查憑證與反向代理。",
       "remotePairingUnavailable": "遠端 Motrix Server 無法建立安全的配對工作階段，請稍後再試。",
       "remoteTransportUnavailable": "遠端 Motrix Server 連線失敗。請檢查位址、監聽服務、DNS 與網路；使用 WSS 時，也請檢查憑證與反向代理。瀏覽器無法判斷是哪個環節失敗。",
@@ -438,7 +438,7 @@
       "securityCheckFailed": "連線未通過安全檢查，已停止。",
       "peerNotAuthentic": "對方無法證明是您的 Motrix，連線已停止。",
       "credentialPhaseFailed": "無法儲存配對，請重新配對。",
-      "internalError": "擴充功能發生錯誤，請再試一次。",
+      "internalError": "擴充功能發生錯誤，請重試。",
       "authFailed": "Motrix 無法辨識此配對，可能已遭撤銷。請重新配對。",
       "serverMacMismatch": "回應未通過驗證，連線已停止。對方可能不是您的 Motrix。",
       "channelClosed": "連線已關閉，請重新連線以繼續。",

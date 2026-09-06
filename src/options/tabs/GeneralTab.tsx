@@ -6,26 +6,26 @@ import { send } from '@/background/MessageBus'
 import { Separator } from '@/components/ui/separator'
 import { SettingsTabForm } from '@/options/components/SettingsTabForm'
 import { SettingPanel } from '@/options/SettingPanel'
+import { AppearanceSection } from '@/options/sections/AppearanceSection'
 import { NotificationsSection } from '@/options/sections/NotificationsSection'
-import { TakeoverSection } from '@/options/sections/TakeoverSection'
 import {
   type GeneralFormValues,
   generalFormSchema,
 } from '@/options/tabs/schemas'
-import { configToForm, formToConfig } from '@/options/takeoverForm'
 import { zodFormResolver } from '@/options/zodFormResolver'
+import { i18n, resolveDefaultLocale } from '@/shared/i18n'
+import { getLocaleOverride, setLocaleOverride } from '@/shared/localeStore'
 import { NOTIFICATIONS_DEFAULT } from '@/shared/notifications'
+import { getThemeOverride, setThemeOverride } from '@/shared/themeStore'
 
 export function GeneralTab(): React.ReactElement {
   const { t } = useTranslation()
-  const [consentAck, setConsentAck] = useState(0)
   const [loadFailed, setLoadFailed] = useState(false)
   const form = useForm<GeneralFormValues>({
     resolver: zodFormResolver(generalFormSchema),
     defaultValues: {
-      enabled: false,
-      thresholdMB: '',
-      denylist: '',
+      theme: 'system',
+      language: 'system',
       notifyMaster: NOTIFICATIONS_DEFAULT.master,
       notifyConfirm: NOTIFICATIONS_DEFAULT.confirm,
       notifyError: NOTIFICATIONS_DEFAULT.error,
@@ -37,20 +37,21 @@ export function GeneralTab(): React.ReactElement {
     let cancelled = false
     void (async () => {
       try {
-        const [takeover, notif] = await Promise.all([
-          send('bg.getTakeoverConfig', undefined),
+        const [theme, locale, notif] = await Promise.all([
+          getThemeOverride(),
+          getLocaleOverride(),
           send('bg.getNotificationsConfig', undefined),
         ])
         if (cancelled) return
         const n = notif ?? NOTIFICATIONS_DEFAULT
         form.reset({
-          ...configToForm(takeover),
+          theme: theme ?? 'system',
+          language: locale ?? 'system',
           notifyMaster: n.master,
           notifyConfirm: n.confirm,
           notifyError: n.error,
           notifyReminder: n.reminder,
         })
-        setConsentAck(takeover.consentAckVersion)
         setLoadFailed(false)
       } catch {
         if (!cancelled) setLoadFailed(true)
@@ -62,23 +63,19 @@ export function GeneralTab(): React.ReactElement {
   }, [form])
 
   const onSubmit = async (values: GeneralFormValues): Promise<void> => {
-    await send(
-      'bg.setTakeoverConfig',
-      formToConfig(
-        {
-          enabled: values.enabled,
-          thresholdMB: values.thresholdMB,
-          denylist: values.denylist,
-        },
-        consentAck
-      )
-    )
     await send('bg.setNotificationsConfig', {
       master: values.notifyMaster,
       confirm: values.notifyConfirm,
       error: values.notifyError,
       reminder: values.notifyReminder,
     })
+    await setThemeOverride(values.theme === 'system' ? null : values.theme)
+    await setLocaleOverride(
+      values.language === 'system' ? null : values.language
+    )
+    await i18n.changeLanguage(
+      values.language === 'system' ? resolveDefaultLocale() : values.language
+    )
   }
 
   return (
@@ -93,11 +90,7 @@ export function GeneralTab(): React.ReactElement {
       )}
       {!loadFailed && (
         <SettingsTabForm form={form} onSubmit={onSubmit}>
-          <TakeoverSection
-            form={form}
-            consentAck={consentAck}
-            setConsentAck={setConsentAck}
-          />
+          <AppearanceSection form={form} />
 
           <Separator className="my-5" />
 

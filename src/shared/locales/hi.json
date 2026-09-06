@@ -85,7 +85,7 @@
     "pairing": {
       "backendTitle": "{{name}} से पेयरिंग",
       "forget": "पेयरिंग भूलें",
-      "loading": "पेयरिंग की स्थिति लोड हो रही है…",
+      "loading": "पेयरिंग स्थिति लोड हो रही है…",
       "localHelp": "इस कंप्यूटर पर Motrix खोजने के लिए पेयर करें पर क्लिक करें और उसका पेयरिंग कोड डालें।",
       "localTitle": "Motrix App के ज़रिए पेयर करें",
       "remoteTitle": "Motrix Server से पेयर करें",
@@ -123,7 +123,7 @@
       "editAria": "{{name}} संपादित करें",
       "editTitle": "Motrix Server संपादित करें",
       "emptyDescription": "इस कंप्यूटर से बाहर Motrix से कनेक्ट करने के लिए सर्वर जोड़ें।",
-      "emptyTitle": "अभी कोई Motrix Server नहीं है",
+      "emptyTitle": "अभी कोई Motrix Server नहीं",
       "footer": "सर्वर का पता बदलने पर दोबारा पेयरिंग ज़रूरी है। पेयरिंग जानकारी कभी भी अलग-अलग पतों के बीच साझा नहीं होती।",
       "nameLabel": "सर्वर का नाम",
       "namePlaceholder": "घर का सर्वर",
@@ -165,7 +165,7 @@
     },
     "tabs": {
       "general": "सामान्य",
-      "appearance": "दिखावट",
+      "download": "डाउनलोड",
       "integration": "एकीकरण",
       "help": "मदद"
     },
@@ -227,16 +227,16 @@
       "resources": "संसाधन",
       "showResources": "इस पेज के संसाधन दिखाएँ",
       "showTasks": "सक्रिय कार्य दिखाएँ",
-      "title": "ट्रांसफ़र का अवलोकन"
+      "title": "ट्रांसफ़र सारांश"
     },
     "loading": "लोड हो रहा है…",
     "quickSettings": {
       "fullSettings": "सभी सेटिंग",
-      "fullSettingsDescription": "सामान्य, दिखावट, बैकएंड और मदद",
-      "loadError": "त्वरित सेटिंग लोड नहीं हो सकीं।",
+      "fullSettingsDescription": "सामान्य, डाउनलोड, बैकएंड और मदद",
+      "loadError": "त्वरित सेटिंग लोड नहीं हुईं।",
       "notificationsDescription": "एक्सटेंशन की सिस्टम सूचनाएँ नियंत्रित करें",
       "retry": "फिर कोशिश करें",
-      "saveError": "सेटिंग सहेजी नहीं जा सकी। फिर कोशिश करें।",
+      "saveError": "सेटिंग सहेजना विफल। फिर कोशिश करें।",
       "takeoverDescription": "ब्राउज़र के डाउनलोड मौजूदा Motrix बैकएंड को भेजें"
     },
     "quickAdd": {
@@ -260,12 +260,12 @@
       "clearFilters": "फ़िल्टर साफ़ करें",
       "detected": "{{count}} आइटम",
       "downloadCount": "{{count}} डाउनलोड करें",
-      "downloadSelected": "चुने गए आइटम डाउनलोड करें",
+      "downloadSelected": "चयनित आइटम डाउनलोड करें",
       "downloadedResource": "{{name}} भेज दिया गया",
       "downloadingResource": "{{name}} डाउनलोड हो रहा है",
       "emptyDescription": "मीडिया चलाएँ, फिर कोशिश करें।",
-      "emptyFilter": "इस फ़िल्टर से मेल खाने वाला कोई संसाधन नहीं है",
-      "emptyTitle": "कोई मीडिया नहीं मिला",
+      "emptyFilter": "कोई मेल खाता संसाधन नहीं",
+      "emptyTitle": "मीडिया नहीं मिला",
       "filteredCount": "{{matched}} / {{total}} चित्र",
       "filters": {
         "all": "सभी",
@@ -314,7 +314,7 @@
       "submitFailed": "संसाधन भेजा नहीं जा सका। फिर कोशिश करें।",
       "title": "संसाधन खोज",
       "unavailableDescription": "पेज बदलें या बाद में कोशिश करें।",
-      "unavailableTitle": "यह पेज स्कैन नहीं किया जा सकता",
+      "unavailableTitle": "यह पेज स्कैन नहीं हो सकता",
       "unsupported": "ffmpeg ज़रूरी है",
       "unsupportedReason": "ffmpeg समर्थन उपलब्ध नहीं है, इसलिए चुना गया बैकएंड {{kind}} संसाधन नहीं भेज सकता।",
       "unsupportedSelectionReason": "चुना गया बैकएंड चयनित संसाधनों में से एक या अधिक प्रकार नहीं भेज सकता।",
@@ -335,7 +335,7 @@
     },
     "tabs": {
       "settings": "सेटिंग",
-      "sniffer": "संसाधन खोज",
+      "sniffer": "संसाधन",
       "tasks": "कार्य"
     },
     "takeover": {
@@ -362,16 +362,16 @@
       "empty": {
         "active": "कोई सक्रिय कार्य नहीं",
         "failed": "कोई विफल कार्य नहीं",
-        "recent": "कोई पूरा हुआ कार्य नहीं"
+        "recent": "कोई पूर्ण कार्य नहीं"
       },
       "filters": {
         "active": "सक्रिय",
         "failed": "विफल",
-        "recent": "पूरे हुए"
+        "recent": "पूर्ण"
       },
       "loading": "कार्य लोड हो रहे हैं",
       "status": {
-        "completed": "पूरे हुए",
+        "completed": "पूर्ण",
         "downloading": "डाउनलोड हो रहा है",
         "error": "विफल",
         "fetching_metadata": "मेटाडेटा मिल रहा है",
@@ -386,8 +386,8 @@
       "attemptOf": "प्रयास {{run}} / {{maxRuns}}",
       "attemptsRemaining": "{{attemptsRemaining}} प्रयास बाकी हैं",
       "codeLabel": "पेयरिंग कोड",
-      "codeDescription": "Motrix के पेयरिंग डायलॉग में दिखाया गया 8-अक्षर का कोड डालें।",
-      "codeInvalid": "पेयरिंग डायलॉग में दिखाया गया 8-अक्षर का कोड डालें।",
+      "codeDescription": "Motrix पेयरिंग डायलॉग का 8-अक्षर का कोड डालें।",
+      "codeInvalid": "पेयरिंग डायलॉग का 8-अक्षर का कोड डालें।",
       "dialogTitle": "पेयरिंग कोड डालें",
       "dismissPrompt": "बाद में डालें और ब्राउज़िंग जारी रखें",
       "enterCode": "पेयरिंग कोड डालें",

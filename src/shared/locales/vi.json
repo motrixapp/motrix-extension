@@ -165,7 +165,7 @@
     },
     "tabs": {
       "general": "Chung",
-      "appearance": "Giao diện",
+      "download": "Tải xuống",
       "integration": "Tích hợp",
       "help": "Trợ giúp"
     },
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "Trợ giúp và hỗ trợ",
-      "description": "Đọc hướng dẫn, nhận hỗ trợ và xem thông tin chẩn đoán của tiện ích.",
+      "description": "Xem hướng dẫn, hỗ trợ và chẩn đoán tiện ích.",
       "reportBug": "Báo cáo sự cố",
       "reportBugDescription": "Mở một issue trên GitHub hoặc gửi phản hồi.",
       "issues": "GitHub Issues",
@@ -232,12 +232,12 @@
     "loading": "Đang tải…",
     "quickSettings": {
       "fullSettings": "Tất cả cài đặt",
-      "fullSettingsDescription": "Chung, giao diện, dịch vụ và trợ giúp",
+      "fullSettingsDescription": "Chung, tải xuống, dịch vụ và trợ giúp",
       "loadError": "Không thể tải cài đặt nhanh.",
       "notificationsDescription": "Quản lý thông báo hệ thống từ tiện ích",
       "retry": "Thử lại",
-      "saveError": "Không thể lưu cài đặt. Hãy thử lại.",
-      "takeoverDescription": "Gửi lượt tải xuống của trình duyệt tới dịch vụ Motrix hiện tại"
+      "saveError": "Không lưu được cài đặt. Thử lại.",
+      "takeoverDescription": "Gửi tải xuống từ trình duyệt tới dịch vụ Motrix hiện tại"
     },
     "quickAdd": {
       "title": "Tác vụ mới",
@@ -264,13 +264,13 @@
       "downloadedResource": "Đã gửi {{name}}",
       "downloadingResource": "Đang tải {{name}}",
       "emptyDescription": "Phát nội dung đa phương tiện rồi thử lại.",
-      "emptyFilter": "Không có tài nguyên khớp với bộ lọc này",
-      "emptyTitle": "Không tìm thấy nội dung đa phương tiện",
+      "emptyFilter": "Không có tài nguyên phù hợp",
+      "emptyTitle": "Không thấy nội dung đa phương tiện",
       "filteredCount": "{{matched}} / {{total}} hình ảnh",
       "filters": {
         "all": "Tất cả",
         "audio": "Âm thanh",
-        "image": "Hình ảnh",
+        "image": "Ảnh",
         "video": "Video"
       },
       "imageFilters": {
@@ -278,12 +278,12 @@
         "dimensions": "Kích thước và dung lượng",
         "done": "Xong",
         "fields": {
-          "height": "Chiều cao",
+          "height": "Cao",
           "size": "Dung lượng",
-          "width": "Chiều rộng"
+          "width": "Rộng"
         },
-        "formatOptionLabel": "Lọc hình ảnh {{format}}",
-        "formats": "Định dạng hình ảnh",
+        "formatOptionLabel": "Lọc ảnh {{format}}",
+        "formats": "Định dạng ảnh",
         "operatorLabel": "So sánh {{label}}",
         "reset": "Đặt lại",
         "result": "{{matched}} / {{total}}",
@@ -299,7 +299,7 @@
         "youtube": "Gửi video YouTube này"
       },
       "pageSubmitted": "Đã gửi video tới Motrix {{taskId}}",
-      "pageResources": "Tài nguyên trang",
+      "pageResources": "Tài nguyên",
       "quickDownloadResource": "Tải nhanh {{name}}",
       "connectToSubmit": "Kết nối tới Motrix để gửi tài nguyên.",
       "scan": "Quét lại",
@@ -335,7 +335,7 @@
     },
     "tabs": {
       "settings": "Cài đặt",
-      "sniffer": "Dò tài nguyên",
+      "sniffer": "Tài nguyên",
       "tasks": "Tác vụ"
     },
     "takeover": {
@@ -386,10 +386,10 @@
       "attemptOf": "Lần thử {{run}} / {{maxRuns}}",
       "attemptsRemaining": "Còn {{attemptsRemaining}} lần thử",
       "codeLabel": "Mã ghép đôi",
-      "codeDescription": "Nhập mã 8 ký tự hiển thị trong hộp thoại ghép đôi Motrix.",
-      "codeInvalid": "Nhập mã 8 ký tự hiển thị trong hộp thoại ghép đôi.",
+      "codeDescription": "Nhập mã 8 ký tự trong hộp thoại ghép đôi Motrix.",
+      "codeInvalid": "Nhập mã 8 ký tự trong hộp thoại ghép đôi.",
       "dialogTitle": "Nhập mã ghép đôi",
-      "dismissPrompt": "Nhập sau và tiếp tục duyệt web",
+      "dismissPrompt": "Nhập sau và duyệt web tiếp",
       "enterCode": "Nhập mã ghép đôi",
       "expiresIn": "Hết hạn sau {{time}}",
       "pairButton": "Ghép đôi",

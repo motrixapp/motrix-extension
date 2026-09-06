@@ -165,9 +165,9 @@
     },
     "tabs": {
       "general": "ทั่วไป",
-      "appearance": "รูปลักษณ์",
+      "download": "การดาวน์โหลด",
       "integration": "การผสานรวม",
-      "help": "ความช่วยเหลือ"
+      "help": "ช่วยเหลือ"
     },
     "common": {
       "apply": "นำไปใช้",
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "ความช่วยเหลือและการสนับสนุน",
-      "description": "อ่านคู่มือ รับความช่วยเหลือ และตรวจสอบข้อมูลวินิจฉัยของส่วนขยาย",
+      "description": "ดูคู่มือ ความช่วยเหลือ และข้อมูลวินิจฉัยส่วนขยาย",
       "reportBug": "รายงานปัญหา",
       "reportBugDescription": "เปิด issue บน GitHub หรือส่งข้อเสนอแนะ",
       "issues": "GitHub Issues",
@@ -231,12 +231,12 @@
     },
     "loading": "กำลังโหลด…",
     "quickSettings": {
-      "fullSettings": "การตั้งค่าทั้งหมด",
-      "fullSettingsDescription": "ทั่วไป รูปลักษณ์ แบ็กเอนด์ และความช่วยเหลือ",
+      "fullSettings": "ตั้งค่าทั้งหมด",
+      "fullSettingsDescription": "ทั่วไป การดาวน์โหลด แบ็กเอนด์ และความช่วยเหลือ",
       "loadError": "โหลดการตั้งค่าด่วนไม่ได้",
       "notificationsDescription": "ควบคุมการแจ้งเตือนของระบบจากส่วนขยาย",
       "retry": "ลองอีกครั้ง",
-      "saveError": "บันทึกการตั้งค่าไม่ได้ โปรดลองอีกครั้ง",
+      "saveError": "บันทึกการตั้งค่าไม่ได้ ลองอีกครั้ง",
       "takeoverDescription": "ส่งการดาวน์โหลดของเบราว์เซอร์ไปยังแบ็กเอนด์ Motrix ปัจจุบัน"
     },
     "quickAdd": {
@@ -264,17 +264,17 @@
       "downloadedResource": "ส่ง {{name}} แล้ว",
       "downloadingResource": "กำลังดาวน์โหลด {{name}}",
       "emptyDescription": "เล่นสื่อแล้วลองอีกครั้ง",
-      "emptyFilter": "ไม่มีทรัพยากรที่ตรงกับตัวกรองนี้",
+      "emptyFilter": "ไม่มีทรัพยากรตรงตัวกรอง",
       "emptyTitle": "ไม่พบสื่อ",
       "filteredCount": "รูปภาพ {{matched}} / {{total}} รูป",
       "filters": {
         "all": "ทั้งหมด",
         "audio": "เสียง",
-        "image": "รูปภาพ",
+        "image": "ภาพ",
         "video": "วิดีโอ"
       },
       "imageFilters": {
-        "activeCount": "ตัวกรองที่เปิดใช้ {{count}} รายการ",
+        "activeCount": "ใช้ตัวกรอง {{count}} รายการ",
         "dimensions": "มิติและขนาดไฟล์",
         "done": "เสร็จสิ้น",
         "fields": {
@@ -284,7 +284,7 @@
         },
         "formatOptionLabel": "กรองรูปภาพ {{format}}",
         "formats": "รูปแบบภาพ",
-        "operatorLabel": "การเปรียบเทียบ {{label}}",
+        "operatorLabel": "เปรียบเทียบ {{label}}",
         "reset": "รีเซ็ต",
         "result": "{{matched}} / {{total}}",
         "sizeUnitLabel": "หน่วยขนาดไฟล์",
@@ -299,7 +299,7 @@
         "youtube": "ส่งวิดีโอ YouTube นี้"
       },
       "pageSubmitted": "ส่งวิดีโอไปยัง Motrix แล้ว {{taskId}}",
-      "pageResources": "ทรัพยากรของหน้าเว็บ",
+      "pageResources": "ทรัพยากร",
       "quickDownloadResource": "ดาวน์โหลด {{name}} แบบด่วน",
       "connectToSubmit": "เชื่อมต่อกับ Motrix เพื่อส่งทรัพยากร",
       "scan": "สแกนอีกครั้ง",
@@ -312,7 +312,7 @@
       "sent": "ส่งแล้ว",
       "sending": "กำลังส่ง",
       "submitFailed": "ส่งทรัพยากรไม่ได้ โปรดลองอีกครั้ง",
-      "title": "ตรวจหาทรัพยากร",
+      "title": "ค้นหาทรัพยากร",
       "unavailableDescription": "เปลี่ยนหน้าหรือลองอีกครั้งภายหลัง",
       "unavailableTitle": "สแกนหน้านี้ไม่ได้",
       "unsupported": "ต้องใช้ ffmpeg",
@@ -334,8 +334,8 @@
       "awaiting-code": "กำลังรอรหัสจับคู่…"
     },
     "tabs": {
-      "settings": "การตั้งค่า",
-      "sniffer": "ตรวจหาทรัพยากร",
+      "settings": "ตั้งค่า",
+      "sniffer": "ทรัพยากร",
       "tasks": "งาน"
     },
     "takeover": {
@@ -360,9 +360,9 @@
       "disconnectedDescription": "เชื่อมต่อเพื่อดูงาน",
       "disconnectedTitle": "Motrix ออฟไลน์",
       "empty": {
-        "active": "ไม่มีงานที่กำลังทำงาน",
-        "failed": "ไม่มีงานที่ล้มเหลว",
-        "recent": "ไม่มีงานที่เสร็จแล้ว"
+        "active": "ไม่มีงานกำลังทำงาน",
+        "failed": "ไม่มีงานล้มเหลว",
+        "recent": "ไม่มีงานเสร็จแล้ว"
       },
       "filters": {
         "active": "กำลังทำงาน",
@@ -386,8 +386,8 @@
       "attemptOf": "ครั้งที่ {{run}} จาก {{maxRuns}}",
       "attemptsRemaining": "เหลือ {{attemptsRemaining}} ครั้ง",
       "codeLabel": "รหัสจับคู่",
-      "codeDescription": "ป้อนรหัส 8 อักขระที่แสดงในกล่องโต้ตอบจับคู่ของ Motrix",
-      "codeInvalid": "ป้อนรหัส 8 อักขระที่แสดงในกล่องโต้ตอบจับคู่",
+      "codeDescription": "ป้อนรหัส 8 อักขระจากหน้าต่างจับคู่ Motrix",
+      "codeInvalid": "ป้อนรหัส 8 อักขระจากหน้าต่างจับคู่",
       "dialogTitle": "ป้อนรหัสจับคู่",
       "dismissPrompt": "ป้อนภายหลังและท่องเว็บต่อ",
       "enterCode": "ป้อนรหัสจับคู่",

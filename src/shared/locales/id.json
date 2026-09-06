@@ -62,7 +62,7 @@
       },
       "currentDescription": "Pilih satu App atau Server untuk unduhan, tugas, dan sumber daya yang terdeteksi di halaman.",
       "currentTitle": "Backend Motrix",
-      "listLabel": "Backend Motrix yang tersedia",
+      "listLabel": "Backend Motrix tersedia",
       "localDescription": "Komputer ini, ditemukan melalui Motrix App",
       "localName": "Motrix App",
       "selectLabel": "Kirim unduhan ke"
@@ -152,7 +152,7 @@
       "denylistLabel": "Daftar pengecualian (satu host per baris — selalu ditangani browser)",
       "enableAria": "Aktifkan pengambilalihan",
       "enableLabel": "Kirim unduhan yang memenuhi syarat ke Motrix",
-      "loading": "Memuat pengaturan pengambilalihan…",
+      "loading": "Memuat setelan pengambilalihan…",
       "minSizeLabel": "Ukuran minimum (MB)",
       "minSizePlaceholder": "0 = semua",
       "thresholdInvalid": "Ukuran minimum harus berupa angka nonnegatif",
@@ -165,14 +165,14 @@
     },
     "tabs": {
       "general": "Umum",
-      "appearance": "Tampilan",
+      "download": "Unduhan",
       "integration": "Integrasi",
       "help": "Bantuan"
     },
     "common": {
       "apply": "Terapkan",
       "cancel": "Batal",
-      "loadError": "Pengaturan tidak dapat dimuat karena proses latar belakang ekstensi gagal dimulai. Muat ulang ekstensi dan coba lagi.",
+      "loadError": "Setelan tidak dapat dimuat karena proses latar belakang ekstensi gagal dimulai. Muat ulang ekstensi dan coba lagi.",
       "saved": "Disimpan",
       "saving": "Menyimpan…",
       "saveError": "Gagal menyimpan"
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "Bantuan dan dukungan",
-      "description": "Baca panduan, dapatkan bantuan, dan periksa diagnostik ekstensi.",
+      "description": "Lihat panduan, bantuan, dan diagnostik ekstensi.",
       "reportBug": "Laporkan masalah",
       "reportBugDescription": "Buka issue di GitHub atau kirim masukan.",
       "issues": "GitHub Issues",
@@ -202,7 +202,7 @@
       "subtitle": "Penghubung browser untuk pengelola unduhan Motrix",
       "website": "Situs resmi"
     },
-    "title": "Pengaturan Ekstensi Motrix"
+    "title": "Setelan Ekstensi Motrix"
   },
   "popup": {
     "backend": {
@@ -231,12 +231,12 @@
     },
     "loading": "Memuat…",
     "quickSettings": {
-      "fullSettings": "Semua pengaturan",
-      "fullSettingsDescription": "Umum, tampilan, backend, dan bantuan",
-      "loadError": "Pengaturan cepat tidak dapat dimuat.",
+      "fullSettings": "Semua setelan",
+      "fullSettingsDescription": "Umum, unduhan, backend, dan bantuan",
+      "loadError": "Gagal memuat setelan cepat.",
       "notificationsDescription": "Atur notifikasi sistem dari ekstensi",
       "retry": "Coba lagi",
-      "saveError": "Pengaturan tidak dapat disimpan. Coba lagi.",
+      "saveError": "Gagal menyimpan setelan. Coba lagi.",
       "takeoverDescription": "Kirim unduhan browser ke backend Motrix saat ini"
     },
     "quickAdd": {
@@ -255,7 +255,7 @@
       }
     },
     "reconnect": "Hubungkan",
-    "settings": "Buka pengaturan",
+    "settings": "Buka setelan",
     "sniffer": {
       "clearFilters": "Hapus filter",
       "detected": "{{count}} item",
@@ -264,8 +264,8 @@
       "downloadedResource": "{{name}} dikirim",
       "downloadingResource": "Mengunduh {{name}}",
       "emptyDescription": "Putar media, lalu coba lagi.",
-      "emptyFilter": "Tidak ada sumber daya yang cocok dengan filter ini",
-      "emptyTitle": "Tidak ada media ditemukan",
+      "emptyFilter": "Tidak ada sumber daya yang cocok",
+      "emptyTitle": "Media tidak ditemukan",
       "filteredCount": "{{matched}} / {{total}} gambar",
       "filters": {
         "all": "Semua",
@@ -299,9 +299,9 @@
         "youtube": "Kirim video YouTube ini"
       },
       "pageSubmitted": "Video dikirim ke Motrix {{taskId}}",
-      "pageResources": "Sumber daya halaman",
+      "pageResources": "Sumber daya",
       "quickDownloadResource": "Unduh cepat {{name}}",
-      "connectToSubmit": "Hubungkan ke Motrix untuk mengirim sumber daya.",
+      "connectToSubmit": "Hubungkan Motrix untuk mengirim sumber daya.",
       "scan": "Pindai lagi",
       "scanning": "Memindai…",
       "selectAll": "Pilih semua",
@@ -312,9 +312,9 @@
       "sent": "Terkirim",
       "sending": "Mengirim",
       "submitFailed": "Tidak dapat mengirim sumber daya. Coba lagi.",
-      "title": "Pendeteksi sumber daya",
+      "title": "Deteksi sumber daya",
       "unavailableDescription": "Pindah halaman atau coba lagi nanti.",
-      "unavailableTitle": "Halaman ini tidak dapat dipindai",
+      "unavailableTitle": "Halaman ini tak bisa dipindai",
       "unsupported": "Memerlukan ffmpeg",
       "unsupportedReason": "Backend yang dipilih tidak dapat mengirim sumber daya {{kind}} karena dukungan ffmpeg tidak tersedia.",
       "unsupportedSelectionReason": "Backend yang dipilih tidak dapat mengirim satu atau beberapa jenis sumber daya yang dipilih.",
@@ -334,8 +334,8 @@
       "awaiting-code": "Menunggu kode penyandingan…"
     },
     "tabs": {
-      "settings": "Pengaturan",
-      "sniffer": "Pendeteksi sumber daya",
+      "settings": "Setelan",
+      "sniffer": "Sumber daya",
       "tasks": "Tugas"
     },
     "takeover": {
@@ -386,10 +386,10 @@
       "attemptOf": "Percobaan {{run}} dari {{maxRuns}}",
       "attemptsRemaining": "{{attemptsRemaining}} percobaan tersisa",
       "codeLabel": "Kode penyandingan",
-      "codeDescription": "Masukkan kode 8 karakter yang ditampilkan di dialog penyandingan Motrix.",
-      "codeInvalid": "Masukkan kode 8 karakter yang ditampilkan di dialog penyandingan.",
+      "codeDescription": "Masukkan kode 8 karakter di dialog penyandingan Motrix.",
+      "codeInvalid": "Masukkan kode 8 karakter di dialog penyandingan.",
       "dialogTitle": "Masukkan kode penyandingan",
-      "dismissPrompt": "Masukkan nanti dan lanjutkan menjelajah",
+      "dismissPrompt": "Isi nanti dan lanjut menjelajah",
       "enterCode": "Masukkan kode penyandingan",
       "expiresIn": "Kedaluwarsa dalam {{time}}",
       "pairButton": "Sandingkan",

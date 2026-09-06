@@ -803,14 +803,14 @@ export const MediaPanel = memo(function MediaPanel({
     <Tabs
       value={filter}
       onValueChange={(value) => setFilter(value as ResourceFilter)}
-      className="block"
+      className="block min-w-0"
     >
-      <TabsList className="h-8 w-40 gap-0 rounded-[10px] bg-tab-background p-0.5 group-data-horizontal/tabs:h-8">
+      <TabsList className="h-auto min-h-8 w-full min-w-0 flex-wrap items-stretch gap-0 rounded-[10px] bg-tab-background p-0.5 group-data-horizontal/tabs:h-auto">
         {RESOURCE_FILTERS.map((candidate) => (
           <TabsTrigger
             key={candidate}
             value={candidate}
-            className="h-7 w-[39px] flex-none rounded-[8px] border-0 px-0 py-0 text-[11px] font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
+            className="h-auto min-h-7 min-w-0 max-w-full flex-auto rounded-[8px] border-0 px-2 py-1 whitespace-normal text-[11px] [overflow-wrap:anywhere] font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
           >
             {t(`popup.sniffer.filters.${candidate}`)}
           </TabsTrigger>
@@ -850,7 +850,7 @@ export const MediaPanel = memo(function MediaPanel({
         : t('popup.sniffer.detected', { count: visibleMedia.length })
 
   return (
-    <section>
+    <section className="flex h-full min-h-0 min-w-0 flex-col">
       <CompactSectionToolbar
         title={t('popup.sniffer.pageResources')}
         controls={controls}
@@ -869,8 +869,8 @@ export const MediaPanel = memo(function MediaPanel({
           />
         )}
         {error && !hasMedia ? (
-          <Empty className="flex-1 gap-2 p-3">
-            <EmptyHeader className="gap-1">
+          <Empty className="min-h-0 flex-1 gap-2 overflow-y-auto p-3 [overflow-wrap:anywhere]">
+            <EmptyHeader className="w-full min-w-0 gap-1">
               <EmptyTitle className="text-sm">
                 {t('popup.sniffer.unavailableTitle')}
               </EmptyTitle>
@@ -880,8 +880,8 @@ export const MediaPanel = memo(function MediaPanel({
             </EmptyHeader>
           </Empty>
         ) : scanning && !hasMedia ? (
-          <Empty className="flex-1 gap-2 p-3">
-            <EmptyHeader className="gap-1">
+          <Empty className="min-h-0 flex-1 gap-2 overflow-y-auto p-3 [overflow-wrap:anywhere]">
+            <EmptyHeader className="w-full min-w-0 gap-1">
               <EmptyMedia>
                 <Spinner className="size-5" />
               </EmptyMedia>
@@ -891,8 +891,8 @@ export const MediaPanel = memo(function MediaPanel({
             </EmptyHeader>
           </Empty>
         ) : !hasMedia ? (
-          <Empty className="flex-1 gap-2 p-3">
-            <EmptyHeader className="gap-1">
+          <Empty className="min-h-0 flex-1 gap-2 overflow-y-auto p-3 [overflow-wrap:anywhere]">
+            <EmptyHeader className="w-full min-w-0 gap-1">
               <EmptyTitle className="text-sm">
                 {t('popup.sniffer.emptyTitle')}
               </EmptyTitle>
@@ -920,7 +920,7 @@ export const MediaPanel = memo(function MediaPanel({
                   ))}
                 </ul>
               ) : (
-                <div className="flex h-full flex-col items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                <div className="flex min-h-full flex-col items-center justify-center gap-1.5 p-3 text-center text-xs [overflow-wrap:anywhere] text-muted-foreground">
                   <span>
                     {filter === 'image' && activeImageFilterCount > 0
                       ? t('popup.sniffer.noImageMatches')
@@ -941,14 +941,14 @@ export const MediaPanel = memo(function MediaPanel({
             </ScrollArea>
             <div
               data-testid="media-panel-footer"
-              className="relative flex h-11 shrink-0 items-center gap-1.5 border-t border-border px-3"
+              className="relative flex min-h-11 shrink-0 flex-wrap items-center gap-1.5 border-t border-border px-3 py-2"
             >
               <span
                 ref={quickFilterAnchorRef}
                 aria-hidden="true"
                 className="pointer-events-none absolute -top-px bottom-0 inset-x-[7px]"
               />
-              <div className="flex h-7 shrink-0 items-center gap-1 text-[11px] text-muted-foreground">
+              <div className="flex min-h-7 min-w-0 max-w-full items-center gap-1 text-[11px] [overflow-wrap:anywhere] text-muted-foreground">
                 <SelectionCheckbox
                   checked={allVisibleSelected}
                   indeterminate={someVisibleSelected && !allVisibleSelected}
@@ -980,6 +980,7 @@ export const MediaPanel = memo(function MediaPanel({
               <Button
                 type="button"
                 size="xs"
+                className="h-auto min-h-6 max-w-full whitespace-normal [overflow-wrap:anywhere]"
                 aria-label={t('popup.sniffer.downloadSelected')}
                 disabled={
                   batchSubmitting ||

@@ -174,7 +174,7 @@ the locale codes accepted by Chrome Web Store and Firefox WebExtensions. RTL
 locales should be added only after the extension surfaces and store assets have
 dedicated bidirectional-layout testing.
 
-The same 16 languages are available in the extension UI under **Appearance →
+The same 16 languages are available in the extension UI under **General →
 Language**, with automatic browser-language detection and a saved override.
 UI locale tags use BCP 47 (`en-US`, `pt-BR`, `zh-CN`, `zh-TW`). Traditional
 Chinese is selected for `zh-TW`, `zh-HK`, `zh-MO`, and `zh-Hant`. When adding

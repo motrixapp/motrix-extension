@@ -123,7 +123,7 @@
       "editAria": "Modifier {{name}}",
       "editTitle": "Modifier Motrix Server",
       "emptyDescription": "Ajoutez un serveur pour vous connecter à Motrix sur une autre machine.",
-      "emptyTitle": "Aucun Motrix Server pour le moment",
+      "emptyTitle": "Aucun Motrix Server ajouté",
       "footer": "Changer l’adresse d’un serveur nécessite une nouvelle association. Les informations d’association ne sont jamais partagées entre les adresses.",
       "nameLabel": "Nom du serveur",
       "namePlaceholder": "Serveur domestique",
@@ -137,7 +137,7 @@
       "title": "Serveurs Motrix",
       "urlDescription": "Utilisez une URL de base ws:// ou wss://. Le chemin facultatif est conservé comme préfixe exact du proxy inverse ; WSS est recommandé.",
       "urlDuplicate": "Cette adresse Motrix Server est déjà enregistrée",
-      "urlInvalid": "Saisissez une URL de base ws:// ou wss:// valide, sans espace, identifiants, paramètres de requête ni fragment",
+      "urlInvalid": "Saisissez une URL de base ws:// ou wss:// valide, sans espace, identifiants, réglages de requête ni fragment",
       "urlLabel": "URL WebSocket",
       "urlPlaceholder": "ws(s)://host[:port][/base-path]",
       "transportWarningTitle": "Cette connexion n’utilise pas WSS",
@@ -152,7 +152,7 @@
       "denylistLabel": "Liste d’exclusion (un hôte par ligne — toujours laissé au navigateur)",
       "enableAria": "Activer la prise en charge",
       "enableLabel": "Envoyer les téléchargements compatibles à Motrix",
-      "loading": "Chargement des paramètres de prise en charge…",
+      "loading": "Chargement des réglages de prise en charge…",
       "minSizeLabel": "Taille minimale (Mo)",
       "minSizePlaceholder": "0 = tous",
       "thresholdInvalid": "La taille minimale doit être un nombre positif ou nul",
@@ -165,14 +165,14 @@
     },
     "tabs": {
       "general": "Général",
-      "appearance": "Apparence",
+      "download": "Téléchargements",
       "integration": "Intégration",
       "help": "Aide"
     },
     "common": {
       "apply": "Appliquer",
       "cancel": "Annuler",
-      "loadError": "Impossible de charger les paramètres : le processus d’arrière-plan de l’extension n’a pas démarré. Rechargez l’extension et réessayez.",
+      "loadError": "Impossible de charger les réglages : le processus d’arrière-plan de l’extension n’a pas démarré. Rechargez l’extension et réessayez.",
       "saved": "Enregistré",
       "saving": "Enregistrement…",
       "saveError": "Échec de l’enregistrement"
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "Aide et assistance",
-      "description": "Consultez les guides, obtenez de l’aide et examinez le diagnostic de l’extension.",
+      "description": "Consultez guides, aide et diagnostic de l’extension.",
       "reportBug": "Signaler un problème",
       "reportBugDescription": "Ouvrez un ticket sur GitHub ou partagez vos commentaires.",
       "issues": "GitHub Issues",
@@ -202,7 +202,7 @@
       "subtitle": "Passerelle du navigateur vers le gestionnaire de téléchargements Motrix",
       "website": "Site officiel"
     },
-    "title": "Paramètres de l’extension Motrix"
+    "title": "Réglages de l’extension Motrix"
   },
   "popup": {
     "backend": {
@@ -231,12 +231,12 @@
     },
     "loading": "Chargement…",
     "quickSettings": {
-      "fullSettings": "Tous les paramètres",
-      "fullSettingsDescription": "Général, apparence, service et aide",
-      "loadError": "Impossible de charger les paramètres rapides.",
+      "fullSettings": "Tous les réglages",
+      "fullSettingsDescription": "Général, téléchargements, service et aide",
+      "loadError": "Échec du chargement des réglages rapides.",
       "notificationsDescription": "Gérer les notifications système de l’extension",
       "retry": "Réessayer",
-      "saveError": "Impossible d’enregistrer ce paramètre. Réessayez.",
+      "saveError": "Échec de l’enregistrement du réglage. Réessayez.",
       "takeoverDescription": "Envoyer les téléchargements du navigateur au service Motrix actuel"
     },
     "quickAdd": {
@@ -255,7 +255,7 @@
       }
     },
     "reconnect": "Connecter",
-    "settings": "Ouvrir les paramètres",
+    "settings": "Ouvrir les réglages",
     "sniffer": {
       "clearFilters": "Effacer les filtres",
       "detected": "Éléments : {{count}}",
@@ -263,9 +263,9 @@
       "downloadSelected": "Télécharger la sélection",
       "downloadedResource": "{{name}} envoyé",
       "downloadingResource": "Téléchargement de {{name}}",
-      "emptyDescription": "Lancez la lecture d’un média, puis réessayez.",
-      "emptyFilter": "Aucune ressource ne correspond à ce filtre",
-      "emptyTitle": "Aucun média trouvé",
+      "emptyDescription": "Lisez un média, puis réessayez.",
+      "emptyFilter": "Aucune ressource correspondante",
+      "emptyTitle": "Aucun média",
       "filteredCount": "{{matched}} / {{total}} images",
       "filters": {
         "all": "Tout",
@@ -299,7 +299,7 @@
         "youtube": "Envoyer cette vidéo YouTube"
       },
       "pageSubmitted": "Vidéo envoyée à Motrix {{taskId}}",
-      "pageResources": "Ressources de la page",
+      "pageResources": "Ressources",
       "quickDownloadResource": "Téléchargement rapide de {{name}}",
       "connectToSubmit": "Connectez-vous à Motrix pour envoyer des ressources.",
       "scan": "Analyser à nouveau",
@@ -312,7 +312,7 @@
       "sent": "Envoyé",
       "sending": "Envoi",
       "submitFailed": "Impossible d’envoyer la ressource. Réessayez.",
-      "title": "Détecteur de ressources",
+      "title": "Détection de ressources",
       "unavailableDescription": "Changez de page ou réessayez plus tard.",
       "unavailableTitle": "Impossible d’analyser cette page",
       "unsupported": "Nécessite ffmpeg",
@@ -334,13 +334,13 @@
       "awaiting-code": "En attente du code d’association…"
     },
     "tabs": {
-      "settings": "Paramètres",
-      "sniffer": "Détecteur de ressources",
+      "settings": "Réglages",
+      "sniffer": "Ressources",
       "tasks": "Tâches"
     },
     "takeover": {
       "aria": "Basculer la prise en charge des téléchargements",
-      "label": "Prise en charge"
+      "label": "Intercepter"
     },
     "tasks": {
       "actions": "Actions pour {{name}}",
@@ -386,10 +386,10 @@
       "attemptOf": "Tentative {{run}} sur {{maxRuns}}",
       "attemptsRemaining": "Tentatives restantes : {{attemptsRemaining}}",
       "codeLabel": "Code d’association",
-      "codeDescription": "Saisissez le code de 8 caractères affiché dans la boîte de dialogue d’association de Motrix.",
-      "codeInvalid": "Saisissez le code de 8 caractères affiché dans la boîte de dialogue d’association.",
+      "codeDescription": "Saisissez le code à 8 caractères du dialogue d’association Motrix.",
+      "codeInvalid": "Saisissez le code à 8 caractères du dialogue d’association.",
       "dialogTitle": "Saisir le code d’association",
-      "dismissPrompt": "Le saisir plus tard et continuer à naviguer",
+      "dismissPrompt": "Saisir plus tard et continuer à naviguer",
       "enterCode": "Saisir le code d’association",
       "expiresIn": "Expire dans {{time}}",
       "pairButton": "Associer",

@@ -132,7 +132,8 @@ describe('ControlPanel task views', () => {
       )
     }
     const card = screen.getByTestId('task-card')
-    expect(card.className).toContain('h-[340px]')
+    expect(card.className).toContain('flex-1')
+    expect(card.className).toContain('min-h-48')
     expect(card.className).toContain('rounded-[12px]')
     expect(card.className).toContain('border-border')
     expect(card.className).toContain('shadow-card')

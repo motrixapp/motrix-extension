@@ -40,20 +40,22 @@ function DashboardTileContent({
 }: DashboardTileCommonProps): React.ReactElement {
   return (
     <>
-      <span className="absolute top-[7px] left-2 text-[9px]/3 font-medium text-muted-foreground">
-        {label}
+      <span className="flex min-w-0 items-start justify-between gap-1">
+        <span className="min-w-0 text-[9px]/3 font-medium text-muted-foreground [overflow-wrap:anywhere]">
+          {label}
+        </span>
+        {Icon ? (
+          <Icon
+            aria-hidden="true"
+            data-slot="dashboard-tile-icon"
+            className={cn('size-4 shrink-0', iconClassName)}
+            strokeWidth={2}
+          />
+        ) : null}
       </span>
-      {Icon ? (
-        <Icon
-          aria-hidden="true"
-          data-slot="dashboard-tile-icon"
-          className={cn('absolute top-2 right-2 size-4', iconClassName)}
-          strokeWidth={2}
-        />
-      ) : null}
       <span
         data-slot="dashboard-tile-value-row"
-        className="absolute top-7 left-2 flex h-[22px] max-w-[66px] items-baseline gap-0.5 whitespace-nowrap"
+        className="flex min-h-[22px] min-w-0 items-baseline gap-0.5 whitespace-nowrap"
       >
         <span
           data-slot="dashboard-tile-value"
@@ -76,7 +78,7 @@ function DashboardTileContent({
 }
 
 const TILE_CLASS_NAME =
-  'relative size-20 shrink-0 overflow-hidden rounded-[10px] border border-border bg-card text-left shadow-card'
+  'relative row-span-3 grid min-h-20 min-w-0 grid-rows-subgrid gap-y-2 overflow-hidden p-2 pb-4 rounded-[10px] border border-border bg-card text-left shadow-card'
 
 export function DashboardTile(props: DashboardTileProps): React.ReactElement {
   const {
@@ -120,12 +122,14 @@ export function DashboardTile(props: DashboardTileProps): React.ReactElement {
   }
 
   return (
-    <fieldset
+    // biome-ignore lint/a11y/useSemanticElements: A fieldset creates an internal box that prevents metric tiles from sharing subgrid rows.
+    <div
+      role="group"
       data-testid={testId}
       aria-label={ariaLabel ?? label}
       className={cn(TILE_CLASS_NAME, className)}
     >
       <DashboardTileContent {...contentProps} />
-    </fieldset>
+    </div>
   )
 }

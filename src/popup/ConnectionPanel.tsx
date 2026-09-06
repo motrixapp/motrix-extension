@@ -22,9 +22,9 @@ export function ConnectionPanel({
   const { t } = useTranslation()
 
   return (
-    <section aria-label={title}>
+    <section aria-label={title} className="flex h-full min-h-0 flex-col">
       <CompactSectionToolbar title={title || t('popup.tasks.title')} />
-      <CompactContentCard>
+      <CompactContentCard className="overflow-y-auto [overflow-wrap:anywhere]">
         <ConnectionStatusPanel
           state={state}
           onReconnect={onReconnect}

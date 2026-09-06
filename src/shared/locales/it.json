@@ -165,7 +165,7 @@
     },
     "tabs": {
       "general": "Generali",
-      "appearance": "Aspetto",
+      "download": "Download",
       "integration": "Integrazione",
       "help": "Aiuto"
     },
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "Aiuto e supporto",
-      "description": "Consulta le guide, ricevi assistenza ed esamina la diagnostica dell’estensione.",
+      "description": "Consulta guide, assistenza e diagnostica dell’estensione.",
       "reportBug": "Segnala un problema",
       "reportBugDescription": "Apri una segnalazione su GitHub o invia un commento.",
       "issues": "GitHub Issues",
@@ -232,9 +232,9 @@
     "loading": "Caricamento…",
     "quickSettings": {
       "fullSettings": "Tutte le impostazioni",
-      "fullSettingsDescription": "Generali, aspetto, servizio e aiuto",
+      "fullSettingsDescription": "Generali, download, servizio e aiuto",
       "loadError": "Impossibile caricare le impostazioni rapide.",
-      "notificationsDescription": "Gestisci le notifiche di sistema dell’estensione",
+      "notificationsDescription": "Gestisci notifiche di sistema dell’estensione",
       "retry": "Riprova",
       "saveError": "Impossibile salvare l’impostazione. Riprova.",
       "takeoverDescription": "Invia i download del browser al servizio Motrix attuale"
@@ -263,9 +263,9 @@
       "downloadSelected": "Scarica selezionati",
       "downloadedResource": "Inviato: {{name}}",
       "downloadingResource": "Download di {{name}}",
-      "emptyDescription": "Riproduci un contenuto multimediale, poi riprova.",
-      "emptyFilter": "Nessuna risorsa corrisponde al filtro",
-      "emptyTitle": "Nessun contenuto multimediale trovato",
+      "emptyDescription": "Riproduci un media e riprova.",
+      "emptyFilter": "Nessuna risorsa corrispondente",
+      "emptyTitle": "Nessun media trovato",
       "filteredCount": "{{matched}} / {{total}} immagini",
       "filters": {
         "all": "Tutti",
@@ -299,7 +299,7 @@
         "youtube": "Invia questo video YouTube"
       },
       "pageSubmitted": "Video inviato a Motrix {{taskId}}",
-      "pageResources": "Risorse della pagina",
+      "pageResources": "Risorse",
       "quickDownloadResource": "Download rapido di {{name}}",
       "connectToSubmit": "Connettiti a Motrix per inviare risorse.",
       "scan": "Ripeti scansione",
@@ -312,9 +312,9 @@
       "sent": "Inviato",
       "sending": "Invio",
       "submitFailed": "Impossibile inviare la risorsa. Riprova.",
-      "title": "Rilevatore risorse",
+      "title": "Rileva risorse",
       "unavailableDescription": "Cambia pagina o riprova più tardi.",
-      "unavailableTitle": "Impossibile analizzare questa pagina",
+      "unavailableTitle": "Pagina non analizzabile",
       "unsupported": "Richiede ffmpeg",
       "unsupportedReason": "Il servizio selezionato non può inviare risorse {{kind}} perché il supporto ffmpeg non è disponibile.",
       "unsupportedSelectionReason": "Il servizio selezionato non può inviare uno o più tipi di risorse selezionati.",
@@ -335,12 +335,12 @@
     },
     "tabs": {
       "settings": "Impostazioni",
-      "sniffer": "Rilevatore risorse",
+      "sniffer": "Risorse",
       "tasks": "Attività"
     },
     "takeover": {
       "aria": "Attiva o disattiva la gestione dei download",
-      "label": "Gestione download"
+      "label": "Intercetta"
     },
     "tasks": {
       "actions": "Azioni per {{name}}",
@@ -361,13 +361,13 @@
       "disconnectedTitle": "Motrix è offline",
       "empty": {
         "active": "Nessuna attività in corso",
-        "failed": "Nessuna attività non riuscita",
-        "recent": "Nessuna attività completata"
+        "failed": "Nessuna attività fallita",
+        "recent": "Nessuna attività conclusa"
       },
       "filters": {
         "active": "In corso",
-        "failed": "Non riuscite",
-        "recent": "Completate"
+        "failed": "Fallite",
+        "recent": "Concluse"
       },
       "loading": "Caricamento attività",
       "status": {
@@ -386,10 +386,10 @@
       "attemptOf": "Tentativo {{run}} di {{maxRuns}}",
       "attemptsRemaining": "Tentativi rimanenti: {{attemptsRemaining}}",
       "codeLabel": "Codice di associazione",
-      "codeDescription": "Inserisci il codice di 8 caratteri mostrato nella finestra di associazione di Motrix.",
-      "codeInvalid": "Inserisci il codice di 8 caratteri mostrato nella finestra di associazione.",
+      "codeDescription": "Inserisci il codice di 8 caratteri nella finestra di associazione Motrix.",
+      "codeInvalid": "Inserisci il codice di 8 caratteri nella finestra di associazione.",
       "dialogTitle": "Inserisci codice di associazione",
-      "dismissPrompt": "Inseriscilo più tardi e continua a navigare",
+      "dismissPrompt": "Inserisci dopo e continua a navigare",
       "enterCode": "Inserisci codice di associazione",
       "expiresIn": "Scade tra {{time}}",
       "pairButton": "Associa",

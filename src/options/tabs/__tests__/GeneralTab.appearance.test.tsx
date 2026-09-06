@@ -2,13 +2,16 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/shared/i18n'
-import { AppearanceTab } from '@/options/tabs/AppearanceTab'
+import { GeneralTab } from '@/options/tabs/GeneralTab'
 import { i18n } from '@/shared/i18n'
 import { getLocaleOverride } from '@/shared/localeStore'
 import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@/shared/supportedLocales'
 import { getThemeOverride } from '@/shared/themeStore'
 
 declare const browser: {
+  runtime: {
+    sendMessage: (env: { kind: string; payload: unknown }) => Promise<unknown>
+  }
   storage: {
     local: {
       get: (k: string) => Promise<Record<string, unknown>>
@@ -19,6 +22,12 @@ declare const browser: {
 }
 
 beforeEach(() => {
+  browser.runtime.sendMessage = vi.fn(async (env) => {
+    if (env.kind === 'bg.getNotificationsConfig')
+      return { master: true, confirm: false, error: true, reminder: true }
+    if (env.kind === 'bg.setNotificationsConfig') return { ok: true }
+    throw new Error(`unexpected ${env.kind}`)
+  })
   let bag: Record<string, unknown> = {}
   browser.storage.local.get = vi.fn(async (k: string) =>
     k in bag ? { [k]: bag[k] } : {}
@@ -35,10 +44,10 @@ afterEach(async () => {
   await i18n.changeLanguage('en-US')
 })
 
-describe('AppearanceTab', () => {
+describe('GeneralTab appearance settings', () => {
   it('offers every language and applies Traditional Chinese', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 })
-    render(<AppearanceTab />)
+    render(<GeneralTab />)
     await user.click(await screen.findByRole('combobox', { name: /language/i }))
     for (const locale of SUPPORTED_LOCALES) {
       expect(
@@ -56,7 +65,7 @@ describe('AppearanceTab', () => {
 
   it('Apply persists theme + language and applies language live', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 })
-    render(<AppearanceTab />)
+    render(<GeneralTab />)
 
     await user.click(await screen.findByRole('combobox', { name: /theme/i }))
     await user.click(await screen.findByRole('option', { name: /dark/i }))
