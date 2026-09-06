@@ -7,7 +7,7 @@ Send downloads from your browser to [Motrix](https://motrix.app), then check the
 I think of it as a bridge between the browser and Motrix. The browser is good at finding resources; Motrix is good at downloading them reliably. That division of labor is simple, and it feels right in daily use.
 
 > [!IMPORTANT]
-> `v0.1.2` is still in development and has not been released publicly. It is not ready to be your everyday download tool. YouTube support, in particular, is only placeholder code for integration testing and cannot perform a real download. Store-facing Chrome/Edge and Firefox builds remove that code entirely.
+> Motrix Extension is available from the Chrome Web Store and Microsoft Edge Add-ons. YouTube downloads are not supported; store-facing Chrome/Edge and Firefox builds remove the placeholder YouTube adapter entirely.
 
 ## What you can do
 
@@ -24,14 +24,27 @@ This is useful, but websites are messy. Login state, expiring URLs, hotlink prot
 
 You will need:
 
-- Chrome 120 or later, or Firefox 142 or later;
+- Chrome 120 or later, a current Microsoft Edge release, or Firefox 142 or later;
 - a Motrix App or Motrix Server compatible with the current MDXP / MBP1 protocol;
 - for a local connection, a running Motrix App with its browser integration component installed correctly.
 
 Firefox for Android connects through Motrix Server. Native Messaging is not
 available there, so the local Motrix App backend is shown only on desktop.
 
-There is no store release or stable installer yet. Early testing requires a source build. If you simply want a quiet, dependable download tool, I would wait for the first public release. It will save you a fair amount of friction.
+## Install
+
+Install [Motrix 2](https://motrix.app/download?channel=beta), then add the extension from your browser's store:
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
+- [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)
+
+Store installations do not require Developer mode or a manually added trusted extension ID. Follow [Connect for the first time](#connect-for-the-first-time) below to pair with Motrix, or read the [browser extension guide](https://motrix.app/manual/browser-extension/).
+
+Local browser integration is not currently available in the Motrix AppImage package. On Linux, use the DEB or RPM package for local pairing.
+
+The Firefox store release is coming soon. Use the development workflow below to build and temporarily load it.
+
+## Manual browser workflow (development)
 
 <details>
 <summary>Install a test build from source</summary>
@@ -44,16 +57,16 @@ pnpm build:chromium
 pnpm build:firefox
 ```
 
-Chrome: open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `dist/chromium/`.
+Chrome or Edge: open `chrome://extensions` or `edge://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `dist/chromium/`.
 
-A Chrome development build needs one more setup step. The extension has not been published to the Chrome Web Store, so the ID assigned to a locally loaded copy is not in Motrix's built-in trust list. Without adding it, Motrix rejects the connection before it shows a pairing code.
+An unpacked Chrome or Edge development build may receive an ID outside Motrix's built-in trust list. If its ID is not already trusted, add it before pairing; otherwise Motrix rejects the connection before it shows a pairing code.
 
-1. Stay on `chrome://extensions`, find Motrix Extension, and copy the ID shown on its card.
+1. Stay on `chrome://extensions` or `edge://extensions`, find Motrix Extension, and copy the ID shown on its card.
 2. In Motrix, open **Settings → Integration → Browser extensions** and make sure **Send downloads from browser extensions** is enabled.
 3. Expand **Trusted extensions**, choose **Add extension**, paste the ID, select **Chrome / Edge**, and choose **Add**. The label is optional.
 4. Return to the extension, connect to Motrix again, and complete pairing when prompted.
 
-Only add the ID you copied from your browser's extension-management page. Chrome may assign a different ID if you move the unpacked build to another directory or install it on another computer. If that happens, remove the old entry from Motrix and add the new one.
+Only add the ID you copied from your browser's extension-management page. Chrome or Edge may assign a different ID if you move the unpacked build to another directory or install it on another computer. If that happens, remove the old entry from Motrix and add the new one.
 
 Firefox: open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `dist/firefox/manifest.json`. Firefox removes temporary extensions when it restarts.
 
@@ -126,9 +139,9 @@ Remote Server permissions start at the narrowest scope. Unless you explicitly en
 
 ## Common questions
 
-### Why can't the Chrome development build connect to Motrix?
+### Why can't the Chrome or Edge development build connect to Motrix?
 
-Check that its extension ID appears under **Settings → Integration → Browser extensions → Trusted extensions** in Motrix. You can copy the ID from the Motrix Extension card on `chrome://extensions`. If you loaded the build from a different directory, Chrome may have assigned a new ID, so update the Motrix entry as well.
+Check that its extension ID appears under **Settings → Integration → Browser extensions → Trusted extensions** in Motrix. You can copy the ID from the Motrix Extension card on `chrome://extensions` or `edge://extensions`. If you loaded the build from a different directory, the browser may have assigned a new ID, so update the Motrix entry as well.
 
 ### Why can't the extension find Motrix on this computer?
 

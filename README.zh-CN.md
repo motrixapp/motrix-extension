@@ -19,14 +19,27 @@
 
 你需要：
 
-- Chrome 120 或更高版本，或者 Firefox 142 或更高版本；
+- Chrome 120 或更高版本、当前版本的 Microsoft Edge，或者 Firefox 142 或更高版本；
 - 支持当前 MDXP / MBP1 协议的 Motrix App 或 Motrix Server；
 - 如果要连接本机 Motrix App，请先启动 Motrix，并确保它的浏览器连接组件已经正确安装。
 
 Firefox Android 通过 Motrix Server 连接。Android 不支持 Native Messaging，
 因此本机 Motrix App 后端只会在桌面浏览器中显示。
 
-目前还没有可供普通用户直接安装的商店版本或稳定安装包。想提前试用，需要从源码构建扩展；如果你只想安静地下载文件，我建议等第一个公开版本，这会少踩不少坑。
+## 安装
+
+先安装 [Motrix 2](https://motrix.app/zh/download?channel=beta)，再从浏览器商店安装扩展：
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
+- [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)
+
+商店版无需开启开发者模式，也无需手动添加受信任的扩展 ID。按下方[第一次连接](#第一次连接)完成配对，或参阅[浏览器扩展指南](https://motrix.app/zh/manual/browser-extension/)。
+
+Motrix AppImage 安装包目前不支持本机浏览器集成。在 Linux 上需要本机配对时，请使用 DEB 或 RPM 安装包。
+
+Firefox 商店版即将推出，目前可以按下方开发流程构建并临时加载。扩展暂不支持 YouTube 下载，面向商店的 Chrome/Edge 与 Firefox 构建均已移除占位用的 YouTube 适配器。
+
+## 手动加载开发版
 
 <details>
 <summary>从源码安装测试版</summary>
@@ -39,16 +52,16 @@ pnpm build:chromium
 pnpm build:firefox
 ```
 
-Chrome：打开 `chrome://extensions`，启用“开发者模式”，点击“加载已解压的扩展程序”，选择 `dist/chromium/`。
+Chrome 或 Edge：打开 `chrome://extensions` 或 `edge://extensions`，启用“开发者模式”，点击“加载已解压的扩展程序”，选择 `dist/chromium/`。
 
-Chrome 开发版还要登记一次扩展 ID。现在扩展尚未发布到 Chrome 应用商店，本地加载得到的 ID 不在 Motrix 的内置信任名单中；少了这一步，Motrix 会拒绝连接，配对码也不会出现。
+本地加载的 Chrome 或 Edge 开发版可能获得不在 Motrix 内置信任名单中的 ID。如果该 ID 尚未受信任，请先添加再配对；否则 Motrix 会拒绝连接，配对码也不会出现。
 
-1. 留在 `chrome://extensions`，找到 Motrix Extension，复制卡片上的 ID。
+1. 留在 `chrome://extensions` 或 `edge://extensions`，找到 Motrix Extension，复制卡片上的 ID。
 2. 打开 Motrix 的“设置 → 集成 → 浏览器扩展”，确认“用浏览器扩展发送下载到 Motrix”已经开启。
 3. 展开“受信任的扩展”，点击“添加扩展”，粘贴刚才复制的 ID，浏览器选择“Chrome / Edge”，然后点击“添加”。备注可以不填。
 4. 回到扩展，重新连接 Motrix，再按提示完成配对。
 
-只添加你刚刚从浏览器扩展管理页复制的 ID。如果换了电脑，或者从另一个目录重新加载开发版，Chrome 可能分配新的 ID；这时要在 Motrix 中移除旧记录，再添加新 ID。
+只添加你刚刚从浏览器扩展管理页复制的 ID。如果换了电脑，或者从另一个目录重新加载开发版，Chrome 或 Edge 可能分配新的 ID；这时要在 Motrix 中移除旧记录，再添加新 ID。
 
 Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入附加组件”，选择 `dist/firefox/manifest.json`。临时扩展会在 Firefox 重启后被移除。
 
