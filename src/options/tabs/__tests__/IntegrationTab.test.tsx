@@ -264,7 +264,7 @@ describe('IntegrationTab', () => {
       expect(within(backendList).getAllByRole('listitem')).toHaveLength(2)
       expect(
         await screen.findByRole('heading', {
-          level: 3,
+          level: 2,
           name: 'Pairing Motrix Server',
         })
       ).toBeTruthy()
@@ -276,22 +276,20 @@ describe('IntegrationTab', () => {
     }
   })
 
-  it('renders one Integration panel with backends and pairing as sections', async () => {
+  it('renders backends and pairing as peers without a duplicate tab heading', async () => {
     render(<IntegrationTab />)
     await screen.findByRole('list', { name: 'Available Motrix backends' })
 
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'Integration' })
-    ).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Integration' })).toBeNull()
     const backendHeading = screen.getByRole('heading', {
-      level: 3,
+      level: 2,
       name: 'Motrix backends',
     })
     expect(backendHeading).toBeTruthy()
     expect(backendHeading.parentElement?.className).toContain('gap-1')
     expect(
       await screen.findByRole('heading', {
-        level: 3,
+        level: 2,
         name: 'Pairing Motrix App',
       })
     ).toBeTruthy()

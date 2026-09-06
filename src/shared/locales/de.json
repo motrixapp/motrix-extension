@@ -178,6 +178,7 @@
       "saveError": "Speichern fehlgeschlagen"
     },
     "appearance": {
+      "title": "Darstellung",
       "theme": {
         "label": "Design",
         "system": "Systemeinstellung",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "Passen Sie die Protokollierung an und kopieren Sie hilfreiche Informationen zur Fehlerbehebung."
     },
     "about": {
-      "subtitle": "Browser-Anbindung für den Download-Manager Motrix",
+      "subtitle": "Dateien aus dem Web mit Motrix herunterladen",
       "website": "Offizielle Website"
     },
     "title": "Einstellungen der Motrix-Erweiterung"

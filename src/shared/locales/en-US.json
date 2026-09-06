@@ -178,6 +178,7 @@
       "saveError": "Save failed"
     },
     "appearance": {
+      "title": "Appearance",
       "theme": {
         "label": "Theme",
         "system": "Follow system",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "Adjust logging and copy details useful for troubleshooting."
     },
     "about": {
-      "subtitle": "Browser bridge for the Motrix download manager",
+      "subtitle": "Download files from the web with Motrix",
       "website": "Official website"
     },
     "title": "Motrix Extension Settings"

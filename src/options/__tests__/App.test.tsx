@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/shared/i18n'
@@ -77,7 +77,9 @@ describe('options App', () => {
     expect(
       screen.getByRole('switch', { name: /send eligible downloads|启用接管/i })
     ).toBeTruthy()
-    expect(screen.queryByRole('combobox')).toBeNull()
+    await waitFor(() =>
+      expect(screen.queryAllByRole('combobox')).toHaveLength(0)
+    )
     expect(
       screen.queryByRole('switch', {
         name: /system notifications|启用系统通知/i,

@@ -109,61 +109,60 @@ export function HelpTab(): React.ReactElement {
   }
 
   return (
-    <SettingPanel
-      title={t('options.help.title')}
-      description={t('options.help.description')}
-    >
-      <ItemGroup className="gap-0 overflow-hidden rounded-xl">
-        <Item
-          variant="muted"
-          className="rounded-none transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.995] motion-reduce:transform-none"
-          render={<a href={LINKS.docs} target="_blank" rel="noreferrer" />}
-        >
-          <ItemMedia
-            variant="icon"
-            className="size-9 border rounded-lg bg-background text-foreground shadow-xs"
+    <SettingPanel>
+      <SettingSection title={t('options.help.title')}>
+        <ItemGroup className="gap-0 overflow-hidden rounded-xl">
+          <Item
+            variant="muted"
+            className="rounded-none transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.995] motion-reduce:transform-none"
+            render={<a href={LINKS.docs} target="_blank" rel="noreferrer" />}
           >
-            <BookOpenTextIcon />
-          </ItemMedia>
-          <ItemContent>
-            <ItemTitle>{t('options.help.docs')}</ItemTitle>
-            <ItemDescription>
-              {t('options.help.docsDescription')}
-            </ItemDescription>
-          </ItemContent>
-          <ItemActions>
-            <ChevronRightIcon
-              aria-hidden="true"
-              className="text-muted-foreground"
-            />
-          </ItemActions>
-        </Item>
-        <ItemSeparator className="my-0 ml-16" />
-        <Item
-          variant="muted"
-          className="rounded-none transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.995] motion-reduce:transform-none"
-          render={<a href={LINKS.issues} target="_blank" rel="noreferrer" />}
-        >
-          <ItemMedia
-            variant="icon"
-            className="size-9 border rounded-lg bg-background text-foreground shadow-xs"
+            <ItemMedia
+              variant="icon"
+              className="size-9 border rounded-lg bg-background text-foreground shadow-xs"
+            >
+              <BookOpenTextIcon />
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>{t('options.help.docs')}</ItemTitle>
+              <ItemDescription>
+                {t('options.help.docsDescription')}
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <ChevronRightIcon
+                aria-hidden="true"
+                className="text-muted-foreground"
+              />
+            </ItemActions>
+          </Item>
+          <ItemSeparator className="my-0 ml-16" />
+          <Item
+            variant="muted"
+            className="rounded-none transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.995] motion-reduce:transform-none"
+            render={<a href={LINKS.issues} target="_blank" rel="noreferrer" />}
           >
-            <BugIcon />
-          </ItemMedia>
-          <ItemContent>
-            <ItemTitle>{t('options.help.reportBug')}</ItemTitle>
-            <ItemDescription>
-              {t('options.help.reportBugDescription')}
-            </ItemDescription>
-          </ItemContent>
-          <ItemActions>
-            <ChevronRightIcon
-              aria-hidden="true"
-              className="text-muted-foreground"
-            />
-          </ItemActions>
-        </Item>
-      </ItemGroup>
+            <ItemMedia
+              variant="icon"
+              className="size-9 border rounded-lg bg-background text-foreground shadow-xs"
+            >
+              <BugIcon />
+            </ItemMedia>
+            <ItemContent>
+              <ItemTitle>{t('options.help.reportBug')}</ItemTitle>
+              <ItemDescription>
+                {t('options.help.reportBugDescription')}
+              </ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <ChevronRightIcon
+                aria-hidden="true"
+                className="text-muted-foreground"
+              />
+            </ItemActions>
+          </Item>
+        </ItemGroup>
+      </SettingSection>
 
       <Separator className="my-5" />
       <SettingSection

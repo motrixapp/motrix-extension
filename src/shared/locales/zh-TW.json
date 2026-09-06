@@ -178,6 +178,7 @@
       "saveError": "儲存失敗"
     },
     "appearance": {
+      "title": "外觀",
       "theme": {
         "label": "佈景主題",
         "system": "跟隨系統",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "調整記錄設定，並複製有助於疑難排解的資訊。"
     },
     "about": {
-      "subtitle": "連結瀏覽器與 Motrix 下載管理員",
+      "subtitle": "使用 Motrix 下載網頁中的檔案",
       "website": "官方網站"
     },
     "title": "Motrix 擴充功能設定"

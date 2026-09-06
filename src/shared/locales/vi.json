@@ -178,6 +178,7 @@
       "saveError": "Lưu thất bại"
     },
     "appearance": {
+      "title": "Giao diện",
       "theme": {
         "label": "Chủ đề",
         "system": "Theo hệ thống",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "Điều chỉnh nhật ký và sao chép thông tin hữu ích để khắc phục sự cố."
     },
     "about": {
-      "subtitle": "Kết nối trình duyệt với trình quản lý tải xuống Motrix",
+      "subtitle": "Tải tệp từ web bằng Motrix",
       "website": "Trang web chính thức"
     },
     "title": "Cài đặt tiện ích Motrix"

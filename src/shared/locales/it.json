@@ -178,6 +178,7 @@
       "saveError": "Salvataggio non riuscito"
     },
     "appearance": {
+      "title": "Aspetto",
       "theme": {
         "label": "Tema",
         "system": "Segui il sistema",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "Regola la registrazione e copia le informazioni utili per risolvere i problemi."
     },
     "about": {
-      "subtitle": "Collega il browser al gestore di download Motrix",
+      "subtitle": "Scarica file dal web con Motrix",
       "website": "Sito ufficiale"
     },
     "title": "Impostazioni dell’estensione Motrix"

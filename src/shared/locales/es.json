@@ -178,6 +178,7 @@
       "saveError": "Error al guardar"
     },
     "appearance": {
+      "title": "Apariencia",
       "theme": {
         "label": "Tema",
         "system": "Seguir al sistema",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "Ajusta el registro y copia información útil para resolver problemas."
     },
     "about": {
-      "subtitle": "Conecta el navegador con el gestor de descargas Motrix",
+      "subtitle": "Descarga archivos de la web con Motrix",
       "website": "Sitio web oficial"
     },
     "title": "Ajustes de la extensión Motrix"

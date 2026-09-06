@@ -178,6 +178,7 @@
       "saveError": "保存失败"
     },
     "appearance": {
+      "title": "外观",
       "theme": {
         "label": "主题",
         "system": "跟随系统",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "调整日志级别并复制排障所需信息。"
     },
     "about": {
-      "subtitle": "Motrix 下载管理器的浏览器桥接",
+      "subtitle": "使用 Motrix 下载网页中的文件",
       "website": "官方网站"
     },
     "title": "Motrix 扩展设置"

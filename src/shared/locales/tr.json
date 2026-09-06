@@ -178,6 +178,7 @@
       "saveError": "Kaydedilemedi"
     },
     "appearance": {
+      "title": "Görünüm",
       "theme": {
         "label": "Tema",
         "system": "Sistemi izle",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "Günlük kaydını ayarlayın ve sorun gidermeye yardımcı bilgileri kopyalayın."
     },
     "about": {
-      "subtitle": "Motrix indirme yöneticisi için tarayıcı bağlantısı",
+      "subtitle": "Motrix ile web’den dosya indirin",
       "website": "Resmî web sitesi"
     },
     "title": "Motrix Uzantısı Ayarları"

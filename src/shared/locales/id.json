@@ -178,6 +178,7 @@
       "saveError": "Gagal menyimpan"
     },
     "appearance": {
+      "title": "Tampilan",
       "theme": {
         "label": "Tema",
         "system": "Ikuti sistem",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "Atur pencatatan log dan salin informasi yang berguna untuk pemecahan masalah."
     },
     "about": {
-      "subtitle": "Penghubung browser untuk pengelola unduhan Motrix",
+      "subtitle": "Unduh file dari web dengan Motrix",
       "website": "Situs resmi"
     },
     "title": "Setelan Ekstensi Motrix"

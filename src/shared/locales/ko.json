@@ -178,6 +178,7 @@
       "saveError": "저장 실패"
     },
     "appearance": {
+      "title": "화면 설정",
       "theme": {
         "label": "테마",
         "system": "시스템 설정 따르기",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "로그 설정을 조정하고 문제 해결에 도움이 되는 정보를 복사하세요."
     },
     "about": {
-      "subtitle": "브라우저와 Motrix 다운로드 관리자를 연결",
+      "subtitle": "Motrix로 웹에서 파일 다운로드",
       "website": "공식 웹사이트"
     },
     "title": "Motrix 확장 프로그램 설정"

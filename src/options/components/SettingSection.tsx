@@ -17,9 +17,9 @@ export function SettingSection({
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
             {title != null && (
-              <h3 className="text-sm font-semibold tracking-tight text-foreground">
+              <h2 className="text-sm font-semibold tracking-tight text-foreground">
                 {title}
-              </h3>
+              </h2>
             )}
             {description != null && (
               <p className="text-xs text-muted-foreground">{description}</p>

@@ -178,6 +178,7 @@
       "saveError": "保存に失敗しました"
     },
     "appearance": {
+      "title": "外観",
       "theme": {
         "label": "テーマ",
         "system": "システムに合わせる",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "ログ設定を調整し、問題の解決に役立つ情報をコピーできます。"
     },
     "about": {
-      "subtitle": "ブラウザーとダウンロードマネージャー Motrix を連携",
+      "subtitle": "ウェブ上のファイルを Motrix でダウンロード",
       "website": "公式サイト"
     },
     "title": "Motrix 拡張機能の設定"

@@ -49,7 +49,7 @@ export function DownloadTab(): React.ReactElement {
   }
 
   return (
-    <SettingPanel title={t('options.tabs.download')}>
+    <SettingPanel>
       {loadFailed && (
         <p
           className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive"

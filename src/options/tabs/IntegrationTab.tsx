@@ -69,7 +69,7 @@ export function IntegrationTab(): React.ReactElement {
 
   return (
     <>
-      <SettingPanel title={t('options.tabs.integration')}>
+      <SettingPanel>
         {error !== null && (
           <Alert variant="destructive" className="gap-y-1">
             <CircleAlertIcon />

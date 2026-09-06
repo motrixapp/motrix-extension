@@ -178,6 +178,7 @@
       "saveError": "Échec de l’enregistrement"
     },
     "appearance": {
+      "title": "Apparence",
       "theme": {
         "label": "Thème",
         "system": "Suivre le système",
@@ -199,7 +200,7 @@
       "diagnosticsDescription": "Réglez la journalisation et copiez les informations utiles au dépannage."
     },
     "about": {
-      "subtitle": "Passerelle du navigateur vers le gestionnaire de téléchargements Motrix",
+      "subtitle": "Téléchargez des fichiers du Web avec Motrix",
       "website": "Site officiel"
     },
     "title": "Réglages de l’extension Motrix"
