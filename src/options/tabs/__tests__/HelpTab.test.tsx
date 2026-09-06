@@ -50,7 +50,7 @@ describe('HelpTab', () => {
     expect(links.map((link) => link.getAttribute('href'))).toEqual(
       expect.arrayContaining([LINKS.issues, LINKS.docs])
     )
-    expect(LINKS.docs).toBe('https://motrix.app/manual/')
+    expect(LINKS.docs).toBe('https://motrix.app/manual/browser-extension/')
     expect(links.every((link) => link.getAttribute('role') === null)).toBe(true)
     expect(container.querySelector('.lucide-external-link')).toBeNull()
     expect(container.querySelectorAll('.lucide-chevron-right')).toHaveLength(2)
