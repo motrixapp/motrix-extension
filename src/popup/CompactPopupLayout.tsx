@@ -26,11 +26,11 @@ export function CompactPopupHeader({
   const { t } = useTranslation()
 
   return (
-    <header className="flex h-8 items-center justify-between">
-      {backend}
-      <div className="flex items-center gap-4">
+    <header className="flex min-h-8 shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="min-w-0 flex-[1_1_9rem]">{backend}</div>
+      <div className="flex min-w-0 max-w-full flex-[1_1_auto] items-center justify-end gap-4">
         <div
-          className="flex h-8 items-center gap-2 text-sm font-normal"
+          className="flex min-h-8 min-w-0 flex-1 items-center justify-end gap-2 text-sm font-normal"
           title={
             takeoverSupported
               ? undefined
@@ -42,7 +42,9 @@ export function CompactPopupHeader({
               {t('options.takeover.remoteUnavailable')}
             </span>
           )}
-          <span>{t('popup.takeover.label')}</span>
+          <span className="min-w-0 [overflow-wrap:anywhere]">
+            {t('popup.takeover.label')}
+          </span>
           <Switch
             id="popup-takeover-switch"
             data-testid="takeover-switch"
@@ -59,7 +61,7 @@ export function CompactPopupHeader({
           type="button"
           variant="outline"
           size="icon-sm"
-          className="size-8 text-muted-foreground"
+          className="size-8 shrink-0 text-muted-foreground"
           aria-label={t('popup.settings')}
           title={t('popup.settings')}
           onClick={onOpenSettings}
@@ -85,15 +87,24 @@ export function CompactSectionToolbar({
   return (
     <div
       data-testid="compact-section-toolbar"
-      className={cn('flex h-8 items-center', className)}
+      className={cn(
+        'flex min-h-8 shrink-0 flex-wrap items-center gap-x-3 gap-y-2',
+        className
+      )}
     >
-      <h1 className="w-40 min-w-0 truncate text-lg/6 font-medium">{title}</h1>
-      {controls}
-      {action !== undefined && action !== null ? (
-        <div className="ml-4 flex size-8 shrink-0 items-center justify-center">
-          {action}
+      <h1 className="min-w-0 flex-[1_1_auto] text-lg/6 font-medium [overflow-wrap:anywhere]">
+        {title}
+      </h1>
+      {(controls || action) && (
+        <div className="flex min-w-0 max-w-full flex-[1_1_auto] items-center justify-end gap-3">
+          {controls && <div className="min-w-0 flex-1">{controls}</div>}
+          {action !== undefined && action !== null ? (
+            <div className="flex size-8 shrink-0 items-center justify-center">
+              {action}
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      )}
     </div>
   )
 }
@@ -107,7 +118,7 @@ export function CompactContentCard({
     <div
       {...props}
       className={cn(
-        'mt-3 h-[340px] overflow-hidden rounded-[12px] border border-border bg-card shadow-card',
+        'mt-3 min-h-48 min-w-0 flex-1 overflow-hidden rounded-[12px] border border-border bg-card shadow-card',
         className
       )}
     >
@@ -122,31 +133,40 @@ export function PopupBottomNavigation(): React.ReactElement {
   return (
     <TabsList
       data-testid="bottom-tabs"
-      className="mx-auto mt-2 grid h-9 w-[264px] grid-cols-3 gap-[3px] rounded-[12px] bg-tab-background p-[3px] group-data-horizontal/tabs:h-9"
+      className="mx-auto mt-2 grid min-h-9 w-max min-w-0 max-w-full shrink-0 grid-cols-3 items-stretch gap-[3px] rounded-[12px] bg-tab-background p-[3px] group-data-horizontal/tabs:h-auto"
     >
       <TabsTrigger
         value="tasks"
         aria-label={t('popup.tabs.tasks')}
-        className="h-[30px] w-full flex-none gap-1 rounded-[8px] px-1 text-xs font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
+        title={t('popup.tabs.tasks')}
+        className="h-auto min-h-[30px] min-w-0 w-full flex-none flex-wrap gap-1 rounded-[8px] px-2 whitespace-normal text-xs font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
       >
         <ListTodo className="size-3.5" aria-hidden="true" />
-        {t('popup.tabs.tasks')}
+        <span className="min-w-0 [overflow-wrap:anywhere]">
+          {t('popup.tabs.tasks')}
+        </span>
       </TabsTrigger>
       <TabsTrigger
         value="sniffer"
         aria-label={t('popup.tabs.sniffer')}
-        className="h-[30px] w-full flex-none gap-1 rounded-[8px] px-1 text-xs font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
+        title={t('popup.tabs.sniffer')}
+        className="h-auto min-h-[30px] min-w-0 w-full flex-none flex-wrap gap-1 rounded-[8px] px-2 whitespace-normal text-xs font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
       >
         <Radio className="size-3.5" aria-hidden="true" />
-        {t('popup.tabs.sniffer')}
+        <span className="min-w-0 [overflow-wrap:anywhere]">
+          {t('popup.tabs.sniffer')}
+        </span>
       </TabsTrigger>
       <TabsTrigger
         value="settings"
         aria-label={t('popup.tabs.settings')}
-        className="h-[30px] w-full flex-none gap-1 rounded-[8px] px-1 text-xs font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
+        title={t('popup.tabs.settings')}
+        className="h-auto min-h-[30px] min-w-0 w-full flex-none flex-wrap gap-1 rounded-[8px] px-2 whitespace-normal text-xs font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
       >
         <Settings className="size-3.5" aria-hidden="true" />
-        {t('popup.tabs.settings')}
+        <span className="min-w-0 [overflow-wrap:anywhere]">
+          {t('popup.tabs.settings')}
+        </span>
       </TabsTrigger>
     </TabsList>
   )

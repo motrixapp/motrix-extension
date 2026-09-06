@@ -61,8 +61,8 @@
         "awaiting-code": "Aguardando código"
       },
       "currentDescription": "Escolha um App ou Server para downloads, tarefas e recursos detectados nas páginas.",
-      "currentTitle": "Serviços do Motrix",
-      "listLabel": "Serviços do Motrix disponíveis",
+      "currentTitle": "Serviços Motrix",
+      "listLabel": "Serviços Motrix disponíveis",
       "localDescription": "Este computador, detectado pelo Motrix App",
       "localName": "Motrix App",
       "selectLabel": "Enviar downloads para"
@@ -165,7 +165,7 @@
     },
     "tabs": {
       "general": "Geral",
-      "appearance": "Aparência",
+      "download": "Downloads",
       "integration": "Integração",
       "help": "Ajuda"
     },
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "Ajuda e suporte",
-      "description": "Consulte guias, obtenha suporte e examine o diagnóstico da extensão.",
+      "description": "Consulte guias, suporte e diagnóstico da extensão.",
       "reportBug": "Relatar um problema",
       "reportBugDescription": "Abra uma issue no GitHub ou envie seus comentários.",
       "issues": "GitHub Issues",
@@ -231,12 +231,12 @@
     },
     "loading": "Carregando…",
     "quickSettings": {
-      "fullSettings": "Todas as configurações",
-      "fullSettingsDescription": "Geral, aparência, serviço e ajuda",
-      "loadError": "Não foi possível carregar as configurações rápidas.",
-      "notificationsDescription": "Controlar as notificações do sistema da extensão",
-      "retry": "Tentar novamente",
-      "saveError": "Não foi possível salvar a configuração. Tente novamente.",
+      "fullSettings": "Todos os ajustes",
+      "fullSettingsDescription": "Geral, downloads, serviço e ajuda",
+      "loadError": "Falha ao carregar ajustes rápidos.",
+      "notificationsDescription": "Gerenciar notificações do sistema da extensão",
+      "retry": "Tentar de novo",
+      "saveError": "Falha ao salvar o ajuste. Tente novamente.",
       "takeoverDescription": "Enviar downloads do navegador ao serviço atual do Motrix"
     },
     "quickAdd": {
@@ -264,8 +264,8 @@
       "downloadedResource": "Enviado: {{name}}",
       "downloadingResource": "Baixando {{name}}",
       "emptyDescription": "Reproduza uma mídia e tente novamente.",
-      "emptyFilter": "Nenhum recurso corresponde a este filtro",
-      "emptyTitle": "Nenhuma mídia encontrada",
+      "emptyFilter": "Nenhum recurso correspondente",
+      "emptyTitle": "Nenhuma mídia",
       "filteredCount": "{{matched}} / {{total}} imagens",
       "filters": {
         "all": "Todos",
@@ -299,7 +299,7 @@
         "youtube": "Enviar este vídeo do YouTube"
       },
       "pageSubmitted": "Vídeo enviado ao Motrix {{taskId}}",
-      "pageResources": "Recursos da página",
+      "pageResources": "Recursos",
       "quickDownloadResource": "Download rápido de {{name}}",
       "connectToSubmit": "Conecte-se ao Motrix para enviar recursos.",
       "scan": "Verificar novamente",
@@ -312,9 +312,9 @@
       "sent": "Enviado",
       "sending": "Enviando",
       "submitFailed": "Não foi possível enviar o recurso. Tente novamente.",
-      "title": "Detector de recursos",
+      "title": "Detectar recursos",
       "unavailableDescription": "Mude de página ou tente mais tarde.",
-      "unavailableTitle": "Não é possível verificar esta página",
+      "unavailableTitle": "Não é possível verificar a página",
       "unsupported": "Requer ffmpeg",
       "unsupportedReason": "O serviço selecionado não pode enviar recursos {{kind}} porque o suporte a ffmpeg está indisponível.",
       "unsupportedSelectionReason": "O serviço selecionado não pode enviar um ou mais tipos de recursos selecionados.",
@@ -334,8 +334,8 @@
       "awaiting-code": "Aguardando código de pareamento…"
     },
     "tabs": {
-      "settings": "Configurações",
-      "sniffer": "Detector de recursos",
+      "settings": "Ajustes",
+      "sniffer": "Recursos",
       "tasks": "Tarefas"
     },
     "takeover": {
@@ -386,8 +386,8 @@
       "attemptOf": "Tentativa {{run}} de {{maxRuns}}",
       "attemptsRemaining": "Tentativas restantes: {{attemptsRemaining}}",
       "codeLabel": "Código de pareamento",
-      "codeDescription": "Digite o código de 8 caracteres exibido na janela de pareamento do Motrix.",
-      "codeInvalid": "Digite o código de 8 caracteres exibido na janela de pareamento.",
+      "codeDescription": "Digite o código de 8 caracteres da janela de pareamento do Motrix.",
+      "codeInvalid": "Digite o código de 8 caracteres da janela de pareamento.",
       "dialogTitle": "Inserir código de pareamento",
       "dismissPrompt": "Inserir depois e continuar navegando",
       "enterCode": "Inserir código de pareamento",

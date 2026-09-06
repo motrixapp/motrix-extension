@@ -408,8 +408,11 @@ const TaskRow = memo(function TaskRow({
 function EmptyTasks({ view }: { view: TaskView }): React.ReactElement {
   const { t } = useTranslation()
   return (
-    <Empty role="status" className="h-full px-4 py-6">
-      <EmptyHeader className="gap-2.5">
+    <Empty
+      role="status"
+      className="h-full overflow-y-auto px-4 py-6 [overflow-wrap:anywhere]"
+    >
+      <EmptyHeader className="w-full min-w-0 gap-2.5">
         <EmptyMedia className="mb-0 text-muted-foreground/55">
           <Inbox className="size-7" strokeWidth={1.5} aria-hidden="true" />
         </EmptyMedia>
@@ -540,13 +543,13 @@ export const ControlPanel = memo(function ControlPanel({
   }, [controller.remove, deleteTaskFiles, removingTask, taskToRemove])
 
   const filter = (
-    <TabsList className="h-8 min-w-0 flex-1 gap-0 rounded-[10px] bg-tab-background p-0.5 group-data-horizontal/tabs:h-8">
+    <TabsList className="h-auto min-h-8 w-full min-w-0 flex-1 flex-wrap items-stretch gap-0 rounded-[10px] bg-tab-background p-0.5 group-data-horizontal/tabs:h-auto">
       {TASK_VIEWS.map((candidate) => (
         <TabsTrigger
           key={candidate}
           value={candidate}
           disabled={controller.loading}
-          className="h-7 w-auto min-w-0 flex-auto border-0 px-2 py-0 text-[11px] font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
+          className="h-auto min-h-7 w-auto min-w-0 max-w-full flex-auto border-0 px-2 py-1 whitespace-normal [overflow-wrap:anywhere] text-[11px] font-normal shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-xs"
         >
           {t(`popup.tasks.filters.${candidate}`)}
         </TabsTrigger>
@@ -581,10 +584,7 @@ export const ControlPanel = memo(function ControlPanel({
           controls={connection === 'connected' ? filter : undefined}
           action={quickAddAction}
         />
-        <CompactContentCard
-          data-testid="task-card"
-          className="flex min-h-0 flex-col"
-        >
+        <CompactContentCard data-testid="task-card" className="flex flex-col">
           {notice !== undefined && notice !== null ? (
             <div className="shrink-0">{notice}</div>
           ) : null}
@@ -598,8 +598,8 @@ export const ControlPanel = memo(function ControlPanel({
           <div className="min-h-0 flex-1">
             {connectionPending ||
             (connection === 'connected' && controller.loading) ? (
-              <Empty className="h-full p-4">
-                <EmptyHeader className="gap-2.5">
+              <Empty className="h-full overflow-y-auto p-4 [overflow-wrap:anywhere]">
+                <EmptyHeader className="w-full min-w-0 gap-2.5">
                   <EmptyMedia className="mb-0 text-muted-foreground/60">
                     <Spinner
                       className="size-5"
@@ -620,8 +620,8 @@ export const ControlPanel = memo(function ControlPanel({
                 </EmptyHeader>
               </Empty>
             ) : connection !== 'connected' ? (
-              <Empty className="h-full gap-2 p-3">
-                <EmptyHeader className="gap-1">
+              <Empty className="h-full gap-2 overflow-y-auto p-3 [overflow-wrap:anywhere]">
+                <EmptyHeader className="w-full min-w-0 gap-1">
                   <EmptyTitle className="text-sm leading-5 font-medium tracking-normal">
                     {t('popup.tasks.disconnectedTitle')}
                   </EmptyTitle>
@@ -643,7 +643,7 @@ export const ControlPanel = memo(function ControlPanel({
                     <EmptyTasks view={candidate} />
                   ) : (
                     <ScrollArea className="h-full w-full">
-                      <ul className="flex min-h-0 flex-col">
+                      <ul className="flex flex-col">
                         {tasksByView[candidate].map((task) => (
                           <TaskRow
                             key={task.id}

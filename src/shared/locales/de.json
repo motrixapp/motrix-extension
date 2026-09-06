@@ -85,7 +85,7 @@
     "pairing": {
       "backendTitle": "Kopplung mit {{name}}",
       "forget": "Kopplung vergessen",
-      "loading": "Kopplungsstatus wird geladen…",
+      "loading": "Kopplungsstatus laden…",
       "localHelp": "Klicken Sie auf „Koppeln“, um Motrix auf diesem Computer zu finden, und geben Sie den Kopplungscode ein.",
       "localTitle": "Über Motrix App koppeln",
       "remoteTitle": "Mit Motrix Server koppeln",
@@ -152,7 +152,7 @@
       "denylistLabel": "Sperrliste (ein Host pro Zeile – Downloads bleiben immer im Browser)",
       "enableAria": "Download-Übernahme aktivieren",
       "enableLabel": "Geeignete Downloads an Motrix senden",
-      "loading": "Einstellungen zur Download-Übernahme werden geladen…",
+      "loading": "Übernahmeeinstellungen laden…",
       "minSizeLabel": "Mindestgröße (MB)",
       "minSizePlaceholder": "0 = alle",
       "thresholdInvalid": "Die Mindestgröße muss eine nicht negative Zahl sein",
@@ -165,7 +165,7 @@
     },
     "tabs": {
       "general": "Allgemein",
-      "appearance": "Darstellung",
+      "download": "Downloads",
       "integration": "Integration",
       "help": "Hilfe"
     },
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "Hilfe und Support",
-      "description": "Lesen Sie Anleitungen, erhalten Sie Hilfe und prüfen Sie die Diagnosedaten der Erweiterung.",
+      "description": "Anleitungen, Hilfe und Diagnosedaten der Erweiterung ansehen.",
       "reportBug": "Problem melden",
       "reportBugDescription": "Erstellen Sie ein GitHub-Issue oder geben Sie Feedback.",
       "issues": "GitHub Issues",
@@ -232,11 +232,11 @@
     "loading": "Wird geladen…",
     "quickSettings": {
       "fullSettings": "Alle Einstellungen",
-      "fullSettingsDescription": "Allgemein, Darstellung, Backend und Hilfe",
-      "loadError": "Die Schnelleinstellungen konnten nicht geladen werden.",
+      "fullSettingsDescription": "Allgemein, Downloads, Backend und Hilfe",
+      "loadError": "Schnelleinstellungen nicht geladen.",
       "notificationsDescription": "Systembenachrichtigungen der Erweiterung steuern",
       "retry": "Erneut versuchen",
-      "saveError": "Die Einstellung konnte nicht gespeichert werden. Versuchen Sie es erneut.",
+      "saveError": "Einstellung nicht gespeichert. Erneut versuchen.",
       "takeoverDescription": "Browser-Downloads an das aktuelle Motrix-Backend senden"
     },
     "quickAdd": {
@@ -251,7 +251,7 @@
         "empty": "Geben Sie eine Download-Adresse ein.",
         "unsupported": "Es werden nur HTTP-, HTTPS- und Magnet-Links unterstützt.",
         "invalid": "Die Download-Adresse ist ungültig.",
-        "submitFailed": "Die Aufgabe konnte nicht hinzugefügt werden. Versuchen Sie es erneut."
+        "submitFailed": "Die Aufgabe konnte nicht hinzugefügt werden. Bitte erneut versuchen."
       }
     },
     "reconnect": "Verbinden",
@@ -263,9 +263,9 @@
       "downloadSelected": "Auswahl herunterladen",
       "downloadedResource": "{{name}} gesendet",
       "downloadingResource": "{{name}} wird heruntergeladen",
-      "emptyDescription": "Spielen Sie Medien ab und versuchen Sie es erneut.",
-      "emptyFilter": "Keine Ressourcen entsprechen diesem Filter",
-      "emptyTitle": "Keine Medien gefunden",
+      "emptyDescription": "Medien abspielen und erneut versuchen.",
+      "emptyFilter": "Keine passenden Ressourcen",
+      "emptyTitle": "Keine Medien",
       "filteredCount": "{{matched}} / {{total}} Bilder",
       "filters": {
         "all": "Alle",
@@ -275,7 +275,7 @@
       },
       "imageFilters": {
         "activeCount": "Aktive Filter: {{count}}",
-        "dimensions": "Abmessungen und Größe",
+        "dimensions": "Maße und Größe",
         "done": "Fertig",
         "fields": {
           "height": "Höhe",
@@ -284,13 +284,13 @@
         },
         "formatOptionLabel": "{{format}}-Bilder filtern",
         "formats": "Bildformat",
-        "operatorLabel": "Vergleich für {{label}}",
+        "operatorLabel": "{{label}} vergleichen",
         "reset": "Zurücksetzen",
         "result": "{{matched}} / {{total}}",
-        "sizeUnitLabel": "Einheit der Dateigröße",
+        "sizeUnitLabel": "Dateigrößeneinheit",
         "title": "Schnellfilter",
         "trigger": "Filtern",
-        "valueLabel": "Wert für {{label}}"
+        "valueLabel": "{{label}}-Wert"
       },
       "imageCount": "Bilder: {{count}}",
       "noImageMatches": "Keine passenden Bilder",
@@ -301,7 +301,7 @@
       "pageSubmitted": "Video an Motrix gesendet {{taskId}}",
       "pageResources": "Seitenressourcen",
       "quickDownloadResource": "{{name}} schnell herunterladen",
-      "connectToSubmit": "Verbinden Sie sich mit Motrix, um Ressourcen zu senden.",
+      "connectToSubmit": "Zum Senden von Ressourcen mit Motrix verbinden.",
       "scan": "Erneut scannen",
       "scanning": "Scan läuft…",
       "selectAll": "Alle auswählen",
@@ -311,10 +311,10 @@
       "sendResource": "{{name}} an Motrix senden",
       "sent": "Gesendet",
       "sending": "Wird gesendet",
-      "submitFailed": "Die Ressource konnte nicht gesendet werden. Versuchen Sie es erneut.",
-      "title": "Ressourcenerkennung",
-      "unavailableDescription": "Wechseln Sie die Seite oder versuchen Sie es später erneut.",
-      "unavailableTitle": "Diese Seite kann nicht gescannt werden",
+      "submitFailed": "Die Ressource konnte nicht gesendet werden. Bitte erneut versuchen.",
+      "title": "Ressourcen erkennen",
+      "unavailableDescription": "Seite wechseln oder später erneut versuchen.",
+      "unavailableTitle": "Seite nicht scanbar",
       "unsupported": "Erfordert ffmpeg",
       "unsupportedReason": "Das ausgewählte Backend kann keine Ressourcen vom Typ {{kind}} übermitteln, da ffmpeg nicht verfügbar ist.",
       "unsupportedSelectionReason": "Das ausgewählte Backend kann einen oder mehrere der ausgewählten Ressourcentypen nicht übermitteln.",
@@ -335,7 +335,7 @@
     },
     "tabs": {
       "settings": "Einstellungen",
-      "sniffer": "Ressourcenerkennung",
+      "sniffer": "Ressourcen",
       "tasks": "Aufgaben"
     },
     "takeover": {
@@ -345,8 +345,8 @@
     "tasks": {
       "actions": "Aktionen für {{name}}",
       "openFolder": "Enthaltenden Ordner in Motrix öffnen",
-      "openFolderError": "Der Aufgabenordner konnte nicht geöffnet werden. Versuchen Sie es erneut.",
-      "openFolderMetadataPending": "Warten Sie auf die Aufgabenmetadaten, bevor Sie den Ordner öffnen",
+      "openFolderError": "Der Aufgabenordner konnte nicht geöffnet werden. Bitte erneut versuchen.",
+      "openFolderMetadataPending": "Vor dem Öffnen des Ordners auf Aufgabenmetadaten warten",
       "openFolderTask": "Ordner mit {{name}} öffnen",
       "openFolderUnsupported": "Aktualisieren Sie Motrix, um Ordner zu öffnen",
       "pauseTask": "{{name}} pausieren",
@@ -361,13 +361,13 @@
       "disconnectedTitle": "Motrix ist offline",
       "empty": {
         "active": "Keine aktiven Aufgaben",
-        "failed": "Keine fehlgeschlagenen Aufgaben",
-        "recent": "Keine abgeschlossenen Aufgaben"
+        "failed": "Keine gescheiterten Aufgaben",
+        "recent": "Keine fertigen Aufgaben"
       },
       "filters": {
         "active": "Aktiv",
-        "failed": "Fehlgeschlagen",
-        "recent": "Abgeschlossen"
+        "failed": "Gescheitert",
+        "recent": "Fertig"
       },
       "loading": "Aufgaben werden geladen",
       "status": {
@@ -386,10 +386,10 @@
       "attemptOf": "Versuch {{run}} von {{maxRuns}}",
       "attemptsRemaining": "Verbleibende Versuche: {{attemptsRemaining}}",
       "codeLabel": "Kopplungscode",
-      "codeDescription": "Geben Sie den 8-stelligen Code aus dem Motrix-Kopplungsdialog ein.",
-      "codeInvalid": "Geben Sie den 8-stelligen Code aus dem Kopplungsdialog ein.",
+      "codeDescription": "8-stelligen Code aus dem Motrix-Kopplungsdialog eingeben.",
+      "codeInvalid": "8-stelligen Code aus dem Kopplungsdialog eingeben.",
       "dialogTitle": "Kopplungscode eingeben",
-      "dismissPrompt": "Später eingeben und weiter surfen",
+      "dismissPrompt": "Später eingeben und weitersurfen",
       "enterCode": "Kopplungscode eingeben",
       "expiresIn": "Läuft in {{time}} ab",
       "pairButton": "Koppeln",
@@ -415,17 +415,17 @@
   },
   "errors": {
     "connection": {
-      "generic": "Die Verbindung ist fehlgeschlagen. Versuchen Sie es erneut.",
+      "generic": "Die Verbindung ist fehlgeschlagen. Bitte erneut versuchen.",
       "backoffLocked": "Zu viele Kopplungsversuche. Versuchen Sie es später erneut.",
       "staleAttempt": "Ein neuerer Verbindungsversuch hat diesen ersetzt.",
       "aborted": "Die Kopplung wurde abgebrochen.",
-      "deadlineExceeded": "Zeitüberschreitung. Versuchen Sie es erneut.",
+      "deadlineExceeded": "Zeitüberschreitung. Bitte erneut versuchen.",
       "runsExhausted": "Zu viele falsche Codes. Starten Sie die Kopplung neu, um einen neuen Code zu erhalten.",
       "invalidCode": "Der Code hat nicht das erwartete Format. Prüfen Sie den Motrix-Dialog.",
       "missingNonce": "Motrix hat keinen Kopplungsplatz angeboten. Stellen Sie sicher, dass Motrix läuft, und versuchen Sie es erneut.",
       "unsupportedBrowser": "Dieser Browser unterstützt keine Kopplung.",
-      "ticketPreparationFailed": "Die Kopplung konnte nicht vorbereitet werden. Versuchen Sie es erneut.",
-      "protocolViolation": "Motrix hat eine unerwartete Antwort gesendet. Versuchen Sie es erneut.",
+      "ticketPreparationFailed": "Die Kopplung konnte nicht vorbereitet werden. Bitte erneut versuchen.",
+      "protocolViolation": "Motrix hat eine unerwartete Antwort gesendet. Bitte erneut versuchen.",
       "unsupportedVersion": "Diese Erweiterung und Motrix verwenden unterschiedliche Protokollversionen. Aktualisieren Sie beide und versuchen Sie es erneut.",
       "backendUpgradeRequired": "Diese Motrix-Version ist für eine sichere Kopplung zu alt. Aktualisieren Sie Motrix und versuchen Sie es erneut.",
       "extensionUpgradeRequired": "Diese Erweiterungsversion ist für dieses Motrix zu alt. Aktualisieren Sie die Motrix-Erweiterung und versuchen Sie es erneut.",
@@ -438,7 +438,7 @@
       "securityCheckFailed": "Die Verbindung hat eine Sicherheitsprüfung nicht bestanden und wurde beendet.",
       "peerNotAuthentic": "Die Gegenstelle konnte nicht nachweisen, dass sie Ihr Motrix ist. Die Verbindung wurde beendet.",
       "credentialPhaseFailed": "Die Kopplung konnte nicht gespeichert werden. Koppeln Sie erneut.",
-      "internalError": "In der Erweiterung ist ein Fehler aufgetreten. Versuchen Sie es erneut.",
+      "internalError": "In der Erweiterung ist ein Fehler aufgetreten. Bitte erneut versuchen.",
       "authFailed": "Motrix hat diese Kopplung nicht erkannt. Sie wurde möglicherweise widerrufen. Koppeln Sie erneut.",
       "serverMacMismatch": "Die Antwort konnte nicht verifiziert werden. Die Verbindung wurde beendet, da es möglicherweise nicht Ihr Motrix ist.",
       "channelClosed": "Die Verbindung wurde geschlossen. Verbinden Sie sich erneut, um fortzufahren.",

@@ -52,7 +52,7 @@ describe('locale parity', () => {
     const k = new Set(keys(en))
     for (const t of [
       'options.tabs.general',
-      'options.tabs.appearance',
+      'options.tabs.download',
       'options.tabs.integration',
       'options.tabs.help',
       'options.common.apply',

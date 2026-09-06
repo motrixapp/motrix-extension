@@ -123,7 +123,7 @@
       "editAria": "{{name}} を編集",
       "editTitle": "Motrix Server を編集",
       "emptyDescription": "サーバーを追加すると、別のコンピューター上の Motrix に接続できます。",
-      "emptyTitle": "Motrix Server はまだありません",
+      "emptyTitle": "Motrix Server は未登録",
       "footer": "サーバーのアドレスを変更すると、再ペアリングが必要です。ペアリング情報はアドレス間で共有されません。",
       "nameLabel": "サーバー名",
       "namePlaceholder": "自宅サーバー",
@@ -165,14 +165,14 @@
     },
     "tabs": {
       "general": "一般",
-      "appearance": "外観",
+      "download": "ダウンロード",
       "integration": "連携",
       "help": "ヘルプ"
     },
     "common": {
       "apply": "適用",
       "cancel": "キャンセル",
-      "loadError": "拡張機能のバックグラウンド処理が起動しなかったため、設定を読み込めませんでした。拡張機能を再読み込みして、もう一度お試しください。",
+      "loadError": "拡張機能のバックグラウンド処理が起動しなかったため、設定を読み込めませんでした。拡張機能を再読み込みして、再試行してください。",
       "saved": "保存しました",
       "saving": "保存中…",
       "saveError": "保存に失敗しました"
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "ヘルプとサポート",
-      "description": "ガイドの閲覧、サポートの利用、拡張機能の診断情報の確認ができます。",
+      "description": "ガイド、サポート、拡張機能の診断情報を確認できます。",
       "reportBug": "問題を報告",
       "reportBugDescription": "GitHub で Issue を作成するか、フィードバックをお寄せください。",
       "issues": "GitHub Issues",
@@ -232,11 +232,11 @@
     "loading": "読み込み中…",
     "quickSettings": {
       "fullSettings": "すべての設定",
-      "fullSettingsDescription": "一般、外観、バックエンド、ヘルプ",
-      "loadError": "クイック設定を読み込めませんでした。",
+      "fullSettingsDescription": "一般、ダウンロード、バックエンド、ヘルプ",
+      "loadError": "クイック設定を読み込めません。",
       "notificationsDescription": "拡張機能のシステム通知を設定",
       "retry": "再試行",
-      "saveError": "設定を保存できませんでした。もう一度お試しください。",
+      "saveError": "設定の保存に失敗しました。再試行してください。",
       "takeoverDescription": "ブラウザーのダウンロードを現在の Motrix バックエンドに送信"
     },
     "quickAdd": {
@@ -251,7 +251,7 @@
         "empty": "ダウンロードアドレスを入力してください。",
         "unsupported": "HTTP、HTTPS、マグネットリンクのみに対応しています。",
         "invalid": "ダウンロードアドレスが無効です。",
-        "submitFailed": "タスクを追加できませんでした。もう一度お試しください。"
+        "submitFailed": "タスクを追加できませんでした。再試行してください。"
       }
     },
     "reconnect": "接続",
@@ -260,12 +260,12 @@
       "clearFilters": "フィルターをクリア",
       "detected": "{{count}} 件",
       "downloadCount": "{{count}} 件をダウンロード",
-      "downloadSelected": "選択した項目をダウンロード",
+      "downloadSelected": "選択項目をダウンロード",
       "downloadedResource": "{{name}} を送信しました",
       "downloadingResource": "{{name}} をダウンロード中",
-      "emptyDescription": "メディアを再生してから、もう一度お試しください。",
-      "emptyFilter": "このフィルターに一致するリソースはありません",
-      "emptyTitle": "メディアが見つかりませんでした",
+      "emptyDescription": "メディアを再生して再試行してください。",
+      "emptyFilter": "一致するリソースなし",
+      "emptyTitle": "メディアが見つかりません",
       "filteredCount": "画像 {{matched}} / {{total}} 件",
       "filters": {
         "all": "すべて",
@@ -274,7 +274,7 @@
         "video": "動画"
       },
       "imageFilters": {
-        "activeCount": "{{count}} 個のフィルターが有効",
+        "activeCount": "有効なフィルター：{{count}} 個",
         "dimensions": "寸法とサイズ",
         "done": "完了",
         "fields": {
@@ -299,7 +299,7 @@
         "youtube": "この YouTube 動画を送信"
       },
       "pageSubmitted": "動画を Motrix に送信しました {{taskId}}",
-      "pageResources": "ページのリソース",
+      "pageResources": "リソース",
       "quickDownloadResource": "{{name}} をクイックダウンロード",
       "connectToSubmit": "リソースを送信するには Motrix に接続してください。",
       "scan": "再スキャン",
@@ -311,10 +311,10 @@
       "sendResource": "{{name}} を Motrix に送信",
       "sent": "送信済み",
       "sending": "送信中",
-      "submitFailed": "リソースを送信できませんでした。もう一度お試しください。",
+      "submitFailed": "リソースを送信できませんでした。再試行してください。",
       "title": "リソース検出",
-      "unavailableDescription": "別のページに移動するか、後でもう一度お試しください。",
-      "unavailableTitle": "このページはスキャンできません",
+      "unavailableDescription": "ページを変えるか、後で再試行してください。",
+      "unavailableTitle": "このページはスキャン不可",
       "unsupported": "ffmpeg が必要です",
       "unsupportedReason": "選択したバックエンドは ffmpeg に対応していないため、{{kind}} リソースを送信できません。",
       "unsupportedSelectionReason": "選択したバックエンドでは、選択されたリソースの一部またはすべての種類を送信できません。",
@@ -335,7 +335,7 @@
     },
     "tabs": {
       "settings": "設定",
-      "sniffer": "リソース検出",
+      "sniffer": "リソース",
       "tasks": "タスク"
     },
     "takeover": {
@@ -345,8 +345,8 @@
     "tasks": {
       "actions": "{{name}} の操作",
       "openFolder": "保存先フォルダーを Motrix で開く",
-      "openFolderError": "タスクのフォルダーを開けませんでした。もう一度お試しください。",
-      "openFolderMetadataPending": "タスクのメタデータを取得してからフォルダーを開いてください",
+      "openFolderError": "タスクのフォルダーを開けませんでした。再試行してください。",
+      "openFolderMetadataPending": "タスクのメタデータ取得後にフォルダーを開いてください",
       "openFolderTask": "{{name}} があるフォルダーを開く",
       "openFolderUnsupported": "フォルダーを開くには Motrix を更新してください",
       "pauseTask": "{{name}} を一時停止",
@@ -360,9 +360,9 @@
       "disconnectedDescription": "タスクを表示するには接続してください。",
       "disconnectedTitle": "Motrix はオフラインです",
       "empty": {
-        "active": "実行中のタスクはありません",
-        "failed": "失敗したタスクはありません",
-        "recent": "完了したタスクはありません"
+        "active": "実行中のタスクなし",
+        "failed": "失敗したタスクなし",
+        "recent": "完了したタスクなし"
       },
       "filters": {
         "active": "実行中",
@@ -386,8 +386,8 @@
       "attemptOf": "試行 {{run}} / {{maxRuns}} 回",
       "attemptsRemaining": "残り {{attemptsRemaining}} 回",
       "codeLabel": "ペアリングコード",
-      "codeDescription": "Motrix のペアリングダイアログに表示されている 8 文字のコードを入力してください。",
-      "codeInvalid": "ペアリングダイアログに表示されている 8 文字のコードを入力してください。",
+      "codeDescription": "Motrix のペアリング画面にある 8 文字のコードを入力してください。",
+      "codeInvalid": "ペアリング画面にある 8 文字のコードを入力してください。",
       "dialogTitle": "ペアリングコードを入力",
       "dismissPrompt": "後で入力して閲覧を続ける",
       "enterCode": "ペアリングコードを入力",
@@ -402,7 +402,7 @@
       "unknownVersion": "バージョン不明",
       "choose": "選択",
       "backoffTitle": "ペアリングの試行回数が多すぎます",
-      "backoffBody": "{{time}} にもう一度お試しください。",
+      "backoffBody": "{{time}} に再試行してください。",
       "retryIn": "{{seconds}} 秒後に再試行",
       "permissionMissingTitle": "権限が必要です",
       "permissionMissingBody": "このコンピューター上の Motrix を検出するには、localhost へのアクセスを許可してください。",
@@ -415,21 +415,21 @@
   },
   "errors": {
     "connection": {
-      "generic": "接続に失敗しました。もう一度お試しください。",
-      "backoffLocked": "ペアリングの試行回数が多すぎます。後でもう一度お試しください。",
+      "generic": "接続に失敗しました。再試行してください。",
+      "backoffLocked": "ペアリングの試行回数が多すぎます。後で再試行してください。",
       "staleAttempt": "新しい接続試行に切り替わりました。",
       "aborted": "ペアリングはキャンセルされました。",
-      "deadlineExceeded": "試行がタイムアウトしました。もう一度お試しください。",
+      "deadlineExceeded": "試行がタイムアウトしました。再試行してください。",
       "runsExhausted": "コードの入力間違いが多すぎます。ペアリングをやり直して、新しいコードを取得してください。",
       "invalidCode": "コードの形式が正しくありません。Motrix のダイアログを確認してください。",
-      "missingNonce": "Motrix がペアリング枠を提供しませんでした。Motrix が起動していることを確認して、もう一度お試しください。",
+      "missingNonce": "Motrix がペアリング枠を提供しませんでした。Motrix が起動していることを確認して、再試行してください。",
       "unsupportedBrowser": "このブラウザーはペアリングに対応していません。",
-      "ticketPreparationFailed": "ペアリングを準備できませんでした。もう一度お試しください。",
-      "protocolViolation": "Motrix から予期しない応答がありました。もう一度お試しください。",
-      "unsupportedVersion": "この拡張機能と Motrix のプロトコルバージョンが異なります。両方を更新して、もう一度お試しください。",
-      "backendUpgradeRequired": "この Motrix は古すぎるため、安全にペアリングできません。Motrix を更新して、もう一度お試しください。",
-      "extensionUpgradeRequired": "この拡張機能は古すぎるため、この Motrix に対応していません。Motrix 拡張機能を更新して、もう一度お試しください。",
-      "unsupportedRemote": "認証された Motrix は、この接続で選択した App または Server ではありません。接続先を確認して、もう一度お試しください。",
+      "ticketPreparationFailed": "ペアリングを準備できませんでした。再試行してください。",
+      "protocolViolation": "Motrix から予期しない応答がありました。再試行してください。",
+      "unsupportedVersion": "この拡張機能と Motrix のプロトコルバージョンが異なります。両方を更新して、再試行してください。",
+      "backendUpgradeRequired": "この Motrix は古すぎるため、安全にペアリングできません。Motrix を更新して、再試行してください。",
+      "extensionUpgradeRequired": "この拡張機能は古すぎるため、この Motrix に対応していません。Motrix 拡張機能を更新して、再試行してください。",
+      "unsupportedRemote": "認証された Motrix は、この接続で選択した App または Server ではありません。接続先を確認して、再試行してください。",
       "remoteDiscoveryUnavailable": "リモートの Motrix Server に接続できません。アドレス、待ち受けサービス、ネットワークを確認してください。WSS の場合は証明書とリバースプロキシも確認してください。",
       "remotePairingUnavailable": "リモートの Motrix Server が安全なペアリングセッションを開始できませんでした。しばらくしてから再試行してください。",
       "remoteTransportUnavailable": "リモートの Motrix Server への接続に失敗しました。アドレス、待ち受けサービス、DNS、ネットワークを確認してください。WSS の場合は証明書とリバースプロキシも確認してください。ブラウザーでは原因を特定できません。",
@@ -438,7 +438,7 @@
       "securityCheckFailed": "接続がセキュリティチェックに失敗したため、停止しました。",
       "peerNotAuthentic": "接続先があなたの Motrix であることを確認できなかったため、接続を停止しました。",
       "credentialPhaseFailed": "ペアリングを保存できませんでした。もう一度ペアリングしてください。",
-      "internalError": "拡張機能で問題が発生しました。もう一度お試しください。",
+      "internalError": "拡張機能で問題が発生しました。再試行してください。",
       "authFailed": "Motrix がこのペアリングを認識しませんでした。解除された可能性があります。再ペアリングしてください。",
       "serverMacMismatch": "応答を検証できなかったため、接続を停止しました。あなたの Motrix ではない可能性があります。",
       "channelClosed": "接続が閉じられました。続行するには再接続してください。",

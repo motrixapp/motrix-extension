@@ -165,7 +165,7 @@
     },
     "tabs": {
       "general": "Genel",
-      "appearance": "Görünüm",
+      "download": "İndirmeler",
       "integration": "Entegrasyon",
       "help": "Yardım"
     },
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "Yardım ve destek",
-      "description": "Kılavuzlara göz atın, destek alın ve uzantının tanılama bilgilerini inceleyin.",
+      "description": "Kılavuz, destek ve uzantı tanılama bilgilerini inceleyin.",
       "reportBug": "Sorun bildir",
       "reportBugDescription": "GitHub’da bir sorun kaydı açın veya geri bildirim paylaşın.",
       "issues": "GitHub Issues",
@@ -232,12 +232,12 @@
     "loading": "Yükleniyor…",
     "quickSettings": {
       "fullSettings": "Tüm ayarlar",
-      "fullSettingsDescription": "Genel, görünüm, arka uç ve yardım",
+      "fullSettingsDescription": "Genel, indirmeler, arka uç ve yardım",
       "loadError": "Hızlı ayarlar yüklenemedi.",
       "notificationsDescription": "Uzantının sistem bildirimlerini yönet",
       "retry": "Yeniden dene",
       "saveError": "Ayar kaydedilemedi. Tekrar deneyin.",
-      "takeoverDescription": "Tarayıcı indirmelerini geçerli Motrix arka ucuna gönder"
+      "takeoverDescription": "Tarayıcı indirmelerini mevcut Motrix arka ucuna gönder"
     },
     "quickAdd": {
       "title": "Yeni görev",
@@ -264,7 +264,7 @@
       "downloadedResource": "{{name}} gönderildi",
       "downloadingResource": "{{name}} indiriliyor",
       "emptyDescription": "Medyayı oynatıp tekrar deneyin.",
-      "emptyFilter": "Bu filtreyle eşleşen kaynak yok",
+      "emptyFilter": "Eşleşen kaynak yok",
       "emptyTitle": "Medya bulunamadı",
       "filteredCount": "{{matched}} / {{total}} görsel",
       "filters": {
@@ -299,7 +299,7 @@
         "youtube": "Bu YouTube videosunu gönder"
       },
       "pageSubmitted": "Video Motrix’e gönderildi {{taskId}}",
-      "pageResources": "Sayfa kaynakları",
+      "pageResources": "Kaynaklar",
       "quickDownloadResource": "{{name}} hızlı indir",
       "connectToSubmit": "Kaynak göndermek için Motrix’e bağlanın.",
       "scan": "Yeniden tara",
@@ -312,8 +312,8 @@
       "sent": "Gönderildi",
       "sending": "Gönderiliyor",
       "submitFailed": "Kaynak gönderilemedi. Tekrar deneyin.",
-      "title": "Kaynak algılayıcı",
-      "unavailableDescription": "Sayfayı değiştirin veya daha sonra tekrar deneyin.",
+      "title": "Kaynak algılama",
+      "unavailableDescription": "Sayfayı değiştirin veya sonra tekrar deneyin.",
       "unavailableTitle": "Bu sayfa taranamıyor",
       "unsupported": "ffmpeg gerekli",
       "unsupportedReason": "ffmpeg desteği olmadığından seçili arka uç {{kind}} kaynaklarını gönderemez.",
@@ -335,7 +335,7 @@
     },
     "tabs": {
       "settings": "Ayarlar",
-      "sniffer": "Kaynak algılayıcı",
+      "sniffer": "Kaynaklar",
       "tasks": "Görevler"
     },
     "takeover": {
@@ -362,12 +362,12 @@
       "empty": {
         "active": "Etkin görev yok",
         "failed": "Başarısız görev yok",
-        "recent": "Tamamlanmış görev yok"
+        "recent": "Biten görev yok"
       },
       "filters": {
         "active": "Etkin",
         "failed": "Başarısız",
-        "recent": "Tamamlandı"
+        "recent": "Bitenler"
       },
       "loading": "Görevler yükleniyor",
       "status": {
@@ -386,10 +386,10 @@
       "attemptOf": "Deneme {{run}} / {{maxRuns}}",
       "attemptsRemaining": "{{attemptsRemaining}} deneme kaldı",
       "codeLabel": "Eşleştirme kodu",
-      "codeDescription": "Motrix eşleştirme penceresinde gösterilen 8 karakterli kodu girin.",
-      "codeInvalid": "Eşleştirme penceresinde gösterilen 8 karakterli kodu girin.",
+      "codeDescription": "Motrix eşleştirme penceresindeki 8 karakterli kodu girin.",
+      "codeInvalid": "Eşleştirme penceresindeki 8 karakterli kodu girin.",
       "dialogTitle": "Eşleştirme kodunu gir",
-      "dismissPrompt": "Daha sonra gir ve gezinmeye devam et",
+      "dismissPrompt": "Sonra gir ve gezinmeye devam et",
       "enterCode": "Eşleştirme kodunu gir",
       "expiresIn": "{{time}} sonra sona erer",
       "pairButton": "Eşleştir",

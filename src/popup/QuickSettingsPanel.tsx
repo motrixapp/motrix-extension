@@ -54,14 +54,14 @@ export function QuickSettingRow({
     <div
       data-slot="quick-setting-row"
       data-disabled={disabled ? 'true' : undefined}
-      className="flex h-[55px] shrink-0 items-center justify-between gap-3 px-3 transition-colors hover:bg-muted/30 data-[disabled=true]:opacity-55"
+      className="flex min-h-[55px] shrink-0 items-center justify-between gap-3 px-3 py-2 transition-colors hover:bg-muted/30 data-[disabled=true]:opacity-55"
     >
       <span className="min-w-0">
         <label
           id={`${id}-label`}
           htmlFor={id}
           className={cn(
-            'block truncate text-xs/4 font-medium',
+            'block text-xs/4 [overflow-wrap:anywhere] font-medium',
             disabled ? 'cursor-not-allowed' : 'cursor-pointer'
           )}
         >
@@ -69,7 +69,7 @@ export function QuickSettingRow({
         </label>
         <span
           id={`${id}-description`}
-          className="block truncate text-[10px]/4 text-muted-foreground"
+          className="block whitespace-normal text-[10px]/4 [overflow-wrap:anywhere] text-muted-foreground"
           title={description}
         >
           {description}
@@ -104,10 +104,13 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
   const controlsDisabled = controller.loading || controller.saving
 
   return (
-    <section className={cn('mt-4', className)}>
+    <section className={cn('mt-4 flex h-full min-h-0 flex-col', className)}>
       <CompactSectionToolbar title={t(QUICK_SETTINGS_I18N_KEYS.title)} />
 
-      <CompactContentCard data-testid="quick-settings-card">
+      <CompactContentCard
+        data-testid="quick-settings-card"
+        className="overflow-y-auto"
+      >
         {unavailable ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
             {controller.loading ? (
@@ -200,7 +203,7 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
               data-testid="full-settings-row"
               type="button"
               variant="ghost"
-              className="h-[63px] w-full justify-start rounded-none border-x-0 border-t border-b-0 border-border px-3 text-left hover:bg-muted/40"
+              className="h-auto min-h-[63px] w-full justify-start whitespace-normal rounded-none border-x-0 border-t border-b-0 border-border px-3 py-2 text-left hover:bg-muted/40"
               onClick={onOpenFullSettings}
             >
               <Settings
@@ -211,7 +214,7 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
                 <span className="block text-xs/4 font-medium">
                   {t(QUICK_SETTINGS_I18N_KEYS.fullSettings)}
                 </span>
-                <span className="block truncate text-[10px]/4 font-normal text-muted-foreground">
+                <span className="block whitespace-normal text-[10px]/4 [overflow-wrap:anywhere] font-normal text-muted-foreground">
                   {t(QUICK_SETTINGS_I18N_KEYS.fullSettingsDescription)}
                 </span>
               </span>
@@ -227,7 +230,7 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
       {controller.error?.operation === 'save' && (
         <p
           role="alert"
-          className="mt-1 truncate px-1 text-[10px]/4 text-destructive"
+          className="mt-1 shrink-0 px-1 [overflow-wrap:anywhere] text-[10px]/4 text-destructive"
         >
           {t(QUICK_SETTINGS_I18N_KEYS.saveError)}
         </p>

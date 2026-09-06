@@ -5,7 +5,7 @@ import { GitHubMark } from '@/components/github-mark'
 import { buttonVariants } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { AppearanceTab } from '@/options/tabs/AppearanceTab'
+import { DownloadTab } from '@/options/tabs/DownloadTab'
 import { GeneralTab } from '@/options/tabs/GeneralTab'
 import { HelpTab } from '@/options/tabs/HelpTab'
 import { IntegrationTab } from '@/options/tabs/IntegrationTab'
@@ -72,8 +72,8 @@ export function App(): React.ReactElement {
                 <TabsTrigger value="general">
                   {t('options.tabs.general')}
                 </TabsTrigger>
-                <TabsTrigger value="appearance">
-                  {t('options.tabs.appearance')}
+                <TabsTrigger value="download">
+                  {t('options.tabs.download')}
                 </TabsTrigger>
                 <TabsTrigger value="integration">
                   {t('options.tabs.integration')}
@@ -84,8 +84,8 @@ export function App(): React.ReactElement {
               <TabsContent value="general" className="">
                 <GeneralTab />
               </TabsContent>
-              <TabsContent value="appearance" className="">
-                <AppearanceTab />
+              <TabsContent value="download" className="">
+                <DownloadTab />
               </TabsContent>
               <TabsContent value="integration" className="">
                 <IntegrationTab />

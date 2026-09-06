@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/shared/i18n'
 import { App } from '@/options/App'
@@ -49,17 +50,39 @@ beforeEach(() => {
 })
 
 describe('options App', () => {
-  it('renders four tab triggers with about merged into help', () => {
+  it('groups appearance and notifications in General and takeover in Downloads', async () => {
+    const user = userEvent.setup()
     render(<App />)
     for (const name of [
       /general|通用/i,
-      /appearance|外观/i,
+      /downloads|下载/i,
       /integration|集成/i,
       /help|帮助/i,
     ]) {
       expect(screen.getByRole('tab', { name })).toBeTruthy()
     }
     expect(screen.queryByRole('tab', { name: /about|关于/i })).toBeNull()
+    expect(screen.queryByRole('tab', { name: /appearance|外观/i })).toBeNull()
+    expect(screen.getByRole('combobox', { name: /theme|主题/i })).toBeTruthy()
+    expect(
+      screen.getByRole('combobox', { name: /language|语言/i })
+    ).toBeTruthy()
+    expect(
+      screen.getByRole('switch', { name: /system notifications|启用系统通知/i })
+    ).toBeTruthy()
+    expect(screen.queryByRole('spinbutton')).toBeNull()
+
+    await user.click(screen.getByRole('tab', { name: /downloads|下载/i }))
+    expect(await screen.findByRole('spinbutton')).toBeTruthy()
+    expect(
+      screen.getByRole('switch', { name: /send eligible downloads|启用接管/i })
+    ).toBeTruthy()
+    expect(screen.queryByRole('combobox')).toBeNull()
+    expect(
+      screen.queryByRole('switch', {
+        name: /system notifications|启用系统通知/i,
+      })
+    ).toBeNull()
   })
 
   it('keeps the website and GitHub links in the page header', () => {

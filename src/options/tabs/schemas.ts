@@ -11,19 +11,15 @@ export const takeoverFormSchema = z.object({
 })
 export type TakeoverFormValues = z.infer<typeof takeoverFormSchema>
 
-export const generalFormSchema = takeoverFormSchema.extend({
+export const generalFormSchema = z.object({
+  theme: z.enum(['system', 'light', 'dark']),
+  language: z.enum(['system', ...SUPPORTED_LOCALES]),
   notifyMaster: z.boolean(),
   notifyConfirm: z.boolean(),
   notifyError: z.boolean(),
   notifyReminder: z.boolean(),
 })
 export type GeneralFormValues = z.infer<typeof generalFormSchema>
-
-export const appearanceFormSchema = z.object({
-  theme: z.enum(['system', 'light', 'dark']),
-  language: z.enum(['system', ...SUPPORTED_LOCALES]),
-})
-export type AppearanceFormValues = z.infer<typeof appearanceFormSchema>
 
 export const serverFormSchema = z.object({
   name: z.string().trim().min(1, {

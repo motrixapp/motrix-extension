@@ -111,7 +111,7 @@ const PopupDashboard = memo(function PopupDashboard({
     <section
       data-testid="dashboard-tiles"
       aria-label={t('popup.dashboard.title')}
-      className="mt-4 grid h-20 grid-cols-4 gap-4"
+      className="mt-4 grid min-h-20 shrink-0 grid-cols-4 grid-rows-[auto_auto_1fr] gap-x-4 gap-y-2"
     >
       <SpeedTile
         kind="upload"
@@ -181,9 +181,12 @@ const PopupContent = memo(function PopupContent({
     <Tabs
       value={tab}
       onValueChange={(value) => onTabChange(value as PopupTab)}
-      className="mt-4 h-[428px] min-h-0 gap-0"
+      className="mt-4 min-h-0 flex-1 gap-0"
     >
-      <TabsContent value="tasks" className="h-[384px] min-h-0 shrink-0">
+      <TabsContent
+        value="tasks"
+        className="min-h-0 min-w-0 overflow-x-hidden overflow-y-auto"
+      >
         {connected && !state.loading ? (
           <ControlPanel
             connection={state.connection}
@@ -206,7 +209,7 @@ const PopupContent = memo(function PopupContent({
       <TabsContent
         value="sniffer"
         keepMounted
-        className="h-[384px] min-h-0 shrink-0"
+        className="min-h-0 min-w-0 overflow-x-hidden overflow-y-auto"
       >
         <MediaPanel
           active={tab === 'sniffer'}
@@ -215,7 +218,10 @@ const PopupContent = memo(function PopupContent({
           onMediaCountChange={onMediaCountChange}
         />
       </TabsContent>
-      <TabsContent value="settings" className="h-[384px] min-h-0 shrink-0">
+      <TabsContent
+        value="settings"
+        className="min-h-0 min-w-0 overflow-x-hidden overflow-y-auto"
+      >
         <QuickSettingsPanel
           controller={quickSettings}
           onOpenFullSettings={onOpenOptions}
@@ -357,7 +363,7 @@ export function App(): React.ReactElement {
   return (
     <main
       data-testid="compact-popup"
-      className="box-border h-[600px] w-[400px] overflow-hidden bg-background p-4 font-sans text-foreground"
+      className="box-border flex h-[600px] w-[400px] flex-col overflow-hidden bg-background p-4 font-sans text-foreground"
     >
       <PopupHeaderSection
         connection={state.loading ? 'connecting' : state.connection}

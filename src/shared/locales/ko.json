@@ -123,7 +123,7 @@
       "editAria": "{{name}} 편집",
       "editTitle": "Motrix Server 편집",
       "emptyDescription": "서버를 추가하여 다른 컴퓨터의 Motrix에 연결하세요.",
-      "emptyTitle": "아직 Motrix Server가 없음",
+      "emptyTitle": "아직 Motrix Server 없음",
       "footer": "서버 주소를 변경하면 다시 페어링해야 합니다. 페어링 정보는 주소 간에 공유되지 않습니다.",
       "nameLabel": "서버 이름",
       "namePlaceholder": "홈 서버",
@@ -165,7 +165,7 @@
     },
     "tabs": {
       "general": "일반",
-      "appearance": "모양",
+      "download": "다운로드",
       "integration": "연동",
       "help": "도움말"
     },
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "도움말 및 지원",
-      "description": "가이드를 읽고 지원을 받으며 확장 프로그램의 진단 정보를 확인하세요.",
+      "description": "가이드, 지원 및 확장 프로그램 진단 정보를 확인하세요.",
       "reportBug": "문제 신고",
       "reportBugDescription": "GitHub 이슈를 등록하거나 의견을 보내주세요.",
       "issues": "GitHub Issues",
@@ -232,11 +232,11 @@
     "loading": "불러오는 중…",
     "quickSettings": {
       "fullSettings": "전체 설정",
-      "fullSettingsDescription": "일반, 모양, 백엔드 및 도움말",
-      "loadError": "빠른 설정을 불러오지 못했습니다.",
+      "fullSettingsDescription": "일반, 다운로드, 백엔드 및 도움말",
+      "loadError": "빠른 설정을 불러올 수 없습니다.",
       "notificationsDescription": "확장 프로그램의 시스템 알림 제어",
       "retry": "다시 시도",
-      "saveError": "설정을 저장하지 못했습니다. 다시 시도하세요.",
+      "saveError": "설정 저장 실패. 다시 시도하세요.",
       "takeoverDescription": "브라우저 다운로드를 현재 Motrix 백엔드로 전송"
     },
     "quickAdd": {
@@ -264,8 +264,8 @@
       "downloadedResource": "{{name}} 전송됨",
       "downloadingResource": "{{name}} 다운로드 중",
       "emptyDescription": "미디어를 재생한 후 다시 시도하세요.",
-      "emptyFilter": "이 필터에 맞는 리소스가 없습니다",
-      "emptyTitle": "미디어를 찾지 못했습니다",
+      "emptyFilter": "일치하는 리소스 없음",
+      "emptyTitle": "미디어 없음",
       "filteredCount": "이미지 {{matched}} / {{total}}개",
       "filters": {
         "all": "모두",
@@ -299,7 +299,7 @@
         "youtube": "이 YouTube 동영상 전송"
       },
       "pageSubmitted": "Motrix로 동영상을 전송했습니다 {{taskId}}",
-      "pageResources": "페이지 리소스",
+      "pageResources": "리소스",
       "quickDownloadResource": "{{name}} 빠른 다운로드",
       "connectToSubmit": "리소스를 보내려면 Motrix에 연결하세요.",
       "scan": "다시 검색",
@@ -313,8 +313,8 @@
       "sending": "전송 중",
       "submitFailed": "리소스를 전송하지 못했습니다. 다시 시도하세요.",
       "title": "리소스 감지",
-      "unavailableDescription": "다른 페이지로 이동하거나 나중에 다시 시도하세요.",
-      "unavailableTitle": "이 페이지는 검색할 수 없습니다",
+      "unavailableDescription": "페이지를 바꾸거나 나중에 다시 시도하세요.",
+      "unavailableTitle": "이 페이지는 검색 불가",
       "unsupported": "ffmpeg 필요",
       "unsupportedReason": "선택한 백엔드에서 ffmpeg를 지원하지 않아 {{kind}} 리소스를 전송할 수 없습니다.",
       "unsupportedSelectionReason": "선택한 백엔드에서 선택된 리소스 유형 중 하나 이상을 전송할 수 없습니다.",
@@ -335,7 +335,7 @@
     },
     "tabs": {
       "settings": "설정",
-      "sniffer": "리소스 감지",
+      "sniffer": "리소스",
       "tasks": "작업"
     },
     "takeover": {
@@ -360,9 +360,9 @@
       "disconnectedDescription": "작업을 보려면 연결하세요.",
       "disconnectedTitle": "Motrix가 오프라인입니다",
       "empty": {
-        "active": "진행 중인 작업 없음",
-        "failed": "실패한 작업 없음",
-        "recent": "완료된 작업 없음"
+        "active": "진행 중 작업 없음",
+        "failed": "실패 작업 없음",
+        "recent": "완료 작업 없음"
       },
       "filters": {
         "active": "진행 중",
@@ -386,8 +386,8 @@
       "attemptOf": "시도 {{run}} / {{maxRuns}}",
       "attemptsRemaining": "남은 시도 {{attemptsRemaining}}회",
       "codeLabel": "페어링 코드",
-      "codeDescription": "Motrix 페어링 대화 상자에 표시된 8자리 코드를 입력하세요.",
-      "codeInvalid": "페어링 대화 상자에 표시된 8자리 코드를 입력하세요.",
+      "codeDescription": "Motrix 페어링 창의 8자리 코드를 입력하세요.",
+      "codeInvalid": "페어링 창의 8자리 코드를 입력하세요.",
       "dialogTitle": "페어링 코드 입력",
       "dismissPrompt": "나중에 입력하고 계속 탐색",
       "enterCode": "페어링 코드 입력",

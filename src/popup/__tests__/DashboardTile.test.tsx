@@ -7,7 +7,7 @@ import { DashboardTile } from '@/popup/DashboardTile'
 import { SpeedTile } from '@/popup/SpeedTile'
 
 describe('DashboardTile', () => {
-  it('uses the calibrated 80px geometry and Motrix number baseline', () => {
+  it('keeps a minimum tile height and shares rows for aligned values', () => {
     render(<DashboardTile label="Activity" value={3} />)
 
     const tile = screen.getByRole('group', { name: 'Activity' })
@@ -16,9 +16,10 @@ describe('DashboardTile', () => {
     )
     const value = tile.querySelector('[data-slot="dashboard-tile-value"]')
 
-    expect(tile.className).toContain('size-20')
+    expect(tile.className).toContain('min-h-20')
+    expect(tile.className).toContain('grid-rows-subgrid')
     expect(tile.className).toContain('rounded-[10px]')
-    expect(valueRow?.className).toContain('top-7')
+    expect(valueRow?.className).not.toContain('absolute')
     expect(valueRow?.className).toContain('items-baseline')
     expect(valueRow?.className).toContain('gap-0.5')
     expect(value?.className).toContain('text-[20px]')

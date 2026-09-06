@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { SettingSection } from '@/options/components/SettingSection'
-import type { GeneralFormValues } from '@/options/tabs/schemas'
+import type { TakeoverFormValues } from '@/options/tabs/schemas'
 import { useTakeoverAvailability } from '@/options/useTakeoverAvailability'
 import { CONSENT_VERSION } from '@/shared/takeover'
 
@@ -25,7 +25,7 @@ export function TakeoverSection({
   consentAck,
   setConsentAck,
 }: {
-  form: UseFormReturn<GeneralFormValues>
+  form: UseFormReturn<TakeoverFormValues>
   consentAck: number
   setConsentAck: (version: number) => void
 }): React.ReactElement {
@@ -45,11 +45,11 @@ export function TakeoverSection({
             render={({ field }) => (
               <Field orientation="horizontal">
                 <FieldContent>
-                  <FieldLabel htmlFor="general-enabled">
+                  <FieldLabel htmlFor="download-enabled">
                     {t('options.takeover.enableLabel')}
                   </FieldLabel>
                   {availability !== 'local' && (
-                    <FieldDescription id="general-takeover-unavailable">
+                    <FieldDescription id="download-takeover-unavailable">
                       {t(
                         availability === 'remote'
                           ? 'options.takeover.remoteUnavailable'
@@ -59,12 +59,12 @@ export function TakeoverSection({
                   )}
                 </FieldContent>
                 <Switch
-                  id="general-enabled"
+                  id="download-enabled"
                   checked={availability === 'local' && field.value}
                   disabled={availability !== 'local'}
                   aria-describedby={
                     availability !== 'local'
-                      ? 'general-takeover-unavailable'
+                      ? 'download-takeover-unavailable'
                       : undefined
                   }
                   aria-label={t('options.takeover.enableAria')}
@@ -86,12 +86,12 @@ export function TakeoverSection({
             render={({ field, fieldState }) => (
               <Field orientation="responsive">
                 <FieldContent>
-                  <FieldLabel htmlFor="general-threshold">
+                  <FieldLabel htmlFor="download-threshold">
                     {t('options.takeover.minSizeLabel')}
                   </FieldLabel>
                 </FieldContent>
                 <Input
-                  id="general-threshold"
+                  id="download-threshold"
                   type="number"
                   className="bg-background @md/field-group:w-40"
                   placeholder={t('options.takeover.minSizePlaceholder')}
@@ -111,11 +111,11 @@ export function TakeoverSection({
             name="denylist"
             render={({ field }) => (
               <Field orientation="vertical">
-                <FieldLabel htmlFor="general-denylist">
+                <FieldLabel htmlFor="download-denylist">
                   {t('options.takeover.denylistLabel')}
                 </FieldLabel>
                 <Textarea
-                  id="general-denylist"
+                  id="download-denylist"
                   className="min-h-20"
                   {...field}
                 />

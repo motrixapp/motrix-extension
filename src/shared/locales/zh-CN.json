@@ -62,7 +62,7 @@
       },
       "currentDescription": "选择一个 App 或 Server，用于下载、任务和页面资源嗅探。",
       "currentTitle": "Motrix 后端",
-      "listLabel": "可用的 Motrix 后端",
+      "listLabel": "可用 Motrix 后端",
       "localDescription": "这台电脑 通过 Motrix App 自动发现",
       "localName": "Motrix App",
       "selectLabel": "下载提交到"
@@ -85,7 +85,7 @@
     "pairing": {
       "backendTitle": "配对 {{name}}",
       "forget": "忘记配对",
-      "loading": "正在加载配对状态…",
+      "loading": "加载配对状态…",
       "localHelp": "点击“配对”即可发现这台电脑上的 Motrix，并输入配对码完成授权。",
       "localTitle": "通过 Motrix App 配对",
       "remoteTitle": "与 Motrix Server 配对",
@@ -123,7 +123,7 @@
       "editAria": "编辑 {{name}}",
       "editTitle": "编辑 Motrix Server",
       "emptyDescription": "添加一个 Server，即可连接这台电脑之外的 Motrix。",
-      "emptyTitle": "还没有 Motrix Server",
+      "emptyTitle": "尚无 Motrix Server",
       "footer": "修改 Server 地址后需要重新配对；不同地址的配对信息不会共用。",
       "nameLabel": "Server 名称",
       "namePlaceholder": "家庭服务器",
@@ -152,7 +152,7 @@
       "denylistLabel": "黑名单（每行一个域名——始终交由浏览器处理）",
       "enableAria": "启用接管",
       "enableLabel": "将符合条件的下载发送到 Motrix",
-      "loading": "正在加载接管设置…",
+      "loading": "加载接管设置…",
       "minSizeLabel": "最小体积（MB）",
       "minSizePlaceholder": "0 = 全部",
       "thresholdInvalid": "最小体积必须是非负数字",
@@ -165,7 +165,7 @@
     },
     "tabs": {
       "general": "通用",
-      "appearance": "外观",
+      "download": "下载",
       "integration": "集成",
       "help": "帮助"
     },
@@ -187,7 +187,7 @@
     },
     "help": {
       "title": "帮助与支持",
-      "description": "查阅使用文档、获取支持，并检查扩展运行信息。",
+      "description": "查阅文档、获取支持、检查扩展运行信息。",
       "reportBug": "报告问题",
       "reportBugDescription": "在 GitHub 提交问题或反馈建议。",
       "issues": "GitHub Issues",
@@ -232,12 +232,12 @@
     "loading": "加载中…",
     "quickSettings": {
       "fullSettings": "完整设置",
-      "fullSettingsDescription": "常规、外观、Backend 与帮助",
+      "fullSettingsDescription": "通用、下载、后端与帮助",
       "loadError": "无法读取快速设置。",
       "notificationsDescription": "控制扩展发送的系统通知",
       "retry": "重试",
       "saveError": "设置保存失败，请重试。",
-      "takeoverDescription": "将浏览器下载交给当前 Motrix Backend"
+      "takeoverDescription": "将浏览器下载交给当前 Motrix 后端"
     },
     "quickAdd": {
       "title": "新建任务",
@@ -264,7 +264,7 @@
       "downloadedResource": "已发送 {{name}}",
       "downloadingResource": "正在下载 {{name}}",
       "emptyDescription": "播放媒体后重试。",
-      "emptyFilter": "此筛选条件下没有资源",
+      "emptyFilter": "无匹配资源",
       "emptyTitle": "未发现媒体",
       "filteredCount": "{{matched}} / {{total}} 张",
       "filters": {
@@ -313,7 +313,7 @@
       "sending": "正在提交",
       "submitFailed": "资源提交失败，请重试。",
       "title": "嗅探",
-      "unavailableDescription": "请切换页面或稍后重试。",
+      "unavailableDescription": "切换页面或稍后重试。",
       "unavailableTitle": "当前页面不可扫描",
       "unsupported": "需要 ffmpeg",
       "unsupportedReason": "所选后端不支持提交 {{kind}} 资源，因为当前没有 ffmpeg 能力。",
@@ -386,8 +386,8 @@
       "attemptOf": "第 {{run}} 次尝试，共 {{maxRuns}} 次",
       "attemptsRemaining": "剩余 {{attemptsRemaining}} 次尝试",
       "codeLabel": "配对码",
-      "codeDescription": "输入 Motrix 配对对话框中显示的 8 位字符配对码进行配对。",
-      "codeInvalid": "请输入配对对话框中显示的 8 位字符配对码。",
+      "codeDescription": "输入 Motrix 配对对话框中的 8 位字符配对码。",
+      "codeInvalid": "输入配对对话框中的 8 位字符配对码。",
       "dialogTitle": "输入配对码",
       "dismissPrompt": "稍后输入，继续浏览",
       "enterCode": "输入配对码",

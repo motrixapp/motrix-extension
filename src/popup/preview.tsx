@@ -1,11 +1,12 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
 import type { NotificationsConfig } from '@/shared/notifications'
+import { resolveLocale } from '@/shared/supportedLocales'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 const previewParams = new URLSearchParams(globalThis.location.search)
 const previewScan = previewParams.get('scan')
-const previewLocale = previewParams.get('lang') === 'zh-CN' ? 'zh-CN' : 'en-US'
+const previewLocale = resolveLocale(previewParams.get('lang') ?? 'en-US')
 let previewConnection =
   previewParams.get('connection') === 'offline' ? 'disconnected' : 'connected'
 

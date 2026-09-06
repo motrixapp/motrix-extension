@@ -66,7 +66,8 @@ export function BackendSelector({
             type="button"
             variant="outline"
             size="sm"
-            className="h-8 w-36 min-w-0 justify-start gap-2 rounded-[8px] px-2.5 text-sm shadow-xs"
+            className="h-8 w-full min-w-0 justify-start gap-2 rounded-[8px] px-2.5 text-sm shadow-xs"
+            title={backendName}
             aria-label={`${t('popup.backend.choose')}: ${backendName}, ${statusLabel}`}
             disabled={busy}
           />
