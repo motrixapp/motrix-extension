@@ -7,7 +7,7 @@ Send downloads from your browser to [Motrix](https://motrix.app), then check the
 I think of it as a bridge between the browser and Motrix. The browser is good at finding resources; Motrix is good at downloading them reliably. That division of labor is simple, and it feels right in daily use.
 
 > [!IMPORTANT]
-> Motrix Extension is available from the Chrome Web Store and Microsoft Edge Add-ons. YouTube downloads are not supported; store-facing Chrome/Edge and Firefox builds remove the placeholder YouTube adapter entirely.
+> Motrix Extension is available from the Chrome Web Store, Microsoft Edge Add-ons, and Firefox Add-ons. YouTube downloads are not supported; store-facing Chrome/Edge and Firefox builds remove the placeholder YouTube adapter entirely.
 
 ## What you can do
 
@@ -37,12 +37,11 @@ Install [Motrix 2](https://motrix.app/download?channel=beta), then add the exten
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
 - [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)
+- [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/motrix-extension/)
 
 Store installations do not require Developer mode or a manually added trusted extension ID. Follow [Connect for the first time](#connect-for-the-first-time) below to pair with Motrix, or read the [browser extension guide](https://motrix.app/manual/browser-extension/).
 
 Local browser integration is not currently available in the Motrix AppImage package. On Linux, use the DEB or RPM package for local pairing.
-
-The Firefox store release is coming soon. Use the development workflow below to build and temporarily load it.
 
 ## Manual browser workflow (development)
 

@@ -32,12 +32,13 @@ Firefox Android 通过 Motrix Server 连接。Android 不支持 Native Messaging
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
 - [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)
+- [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/motrix-extension/)
 
 商店版无需开启开发者模式，也无需手动添加受信任的扩展 ID。按下方[第一次连接](#第一次连接)完成配对，或参阅[浏览器扩展指南](https://motrix.app/zh/manual/browser-extension/)。
 
 Motrix AppImage 安装包目前不支持本机浏览器集成。在 Linux 上需要本机配对时，请使用 DEB 或 RPM 安装包。
 
-Firefox 商店版即将推出，目前可以按下方开发流程构建并临时加载。扩展暂不支持 YouTube 下载，面向商店的 Chrome/Edge 与 Firefox 构建均已移除占位用的 YouTube 适配器。
+扩展暂不支持 YouTube 下载，面向商店的 Chrome/Edge 与 Firefox 构建均已移除占位用的 YouTube 适配器。
 
 ## 手动加载开发版
 
