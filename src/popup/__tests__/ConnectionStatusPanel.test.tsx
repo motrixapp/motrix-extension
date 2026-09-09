@@ -277,7 +277,7 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
     expect(writeText.mock.calls.at(-1)?.[0]).not.toContain('old failure')
   })
 
-  it('shows local allowlist guidance and runs only on demand', async () => {
+  it('shows local setup guidance and runs only on demand', async () => {
     const user = userEvent.setup()
     render(
       <ConnectionStatusPanel
@@ -296,6 +296,16 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
     expect(
       screen.getByText(i18n.t('popup.diagnostics.allowlistHint'))
     ).toBeTruthy()
+    expect(
+      screen.getByText(i18n.t('popup.diagnostics.firstLaunchHint'))
+    ).toBeTruthy()
+    expect(
+      screen
+        .getByRole('link', {
+          name: i18n.t('popup.diagnostics.appReleases'),
+        })
+        .getAttribute('href')
+    ).toBe('https://github.com/agalwood/Motrix/releases')
     expect(send).not.toHaveBeenCalled()
     expect(
       screen.queryByRole('button', {
@@ -349,6 +359,14 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
     )
     expect(
       screen.queryByText(i18n.t('popup.diagnostics.allowlistHint'))
+    ).toBeNull()
+    expect(
+      screen.queryByText(i18n.t('popup.diagnostics.firstLaunchHint'))
+    ).toBeNull()
+    expect(
+      screen.queryByRole('link', {
+        name: i18n.t('popup.diagnostics.appReleases'),
+      })
     ).toBeNull()
     await act(async () => complete(result))
     expect(

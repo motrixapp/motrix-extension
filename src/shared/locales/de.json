@@ -212,6 +212,9 @@
       "rerun": "Erneut prüfen",
       "title": "Diagnoseergebnisse",
       "runningHelp": "Debug-Protokollierung wird aktiviert und die Verbindung geprüft. Dies dauert meist einige Sekunden.",
+      "firstLaunchHint": "Öffne Motrix manuell, lies die Bedingungen beim ersten Start und akzeptiere sie, wenn du zustimmst. Versuche die Kopplung erneut, sobald das Hauptfenster erscheint.",
+      "homebrewHint": "Über Homebrew installiert? Ein Nutzer konnte nach der Installation eines offiziellen Releases und dem Abschluss der Ersteinrichtung wieder koppeln.",
+      "appReleases": "Offizielle Motrix-Releases",
       "allowlistHint": "Bei Entwicklungs- oder entpackten Versionen: Prüfe die Erweiterungs-ID in Motrix unter Einstellungen → Integration → vertrauenswürdige Erweiterungen und in der Native-Host-Freigabeliste."
     },
     "backend": {

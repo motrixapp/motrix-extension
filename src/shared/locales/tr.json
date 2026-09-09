@@ -212,6 +212,9 @@
       "rerun": "Yeniden denetle",
       "title": "Tanılama sonuçları",
       "runningHelp": "Debug günlükleri açılıyor ve bağlantı denetleniyor. Genellikle birkaç saniye sürer.",
+      "firstLaunchHint": "Motrix’i elle açın, ilk açılış koşullarını okuyup kabul ediyorsanız onaylayın. Ana pencere açıldığında eşleştirmeyi yeniden deneyin.",
+      "homebrewHint": "Homebrew ile mi kurdunuz? Bir kullanıcı, resmî Releases sürümünü kurup ilk kurulumu tamamladıktan sonra yeniden eşleştirebildiğini bildirdi.",
+      "appReleases": "Resmî Motrix sürümleri",
       "allowlistHint": "Geliştirme veya paketlenmemiş sürümlerde uzantı kimliğini Motrix: Ayarlar → Entegrasyon → güvenilen uzantılar ve Native Host izin listesinde kontrol edin."
     },
     "backend": {

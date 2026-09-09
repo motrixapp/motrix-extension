@@ -212,6 +212,9 @@
       "rerun": "Periksa lagi",
       "title": "Hasil diagnosis",
       "runningHelp": "Mengaktifkan log debug dan memeriksa koneksi. Biasanya perlu beberapa detik.",
+      "firstLaunchHint": "Buka Motrix secara manual, baca dan setujui ketentuan saat pertama kali dibuka jika Anda setuju, lalu coba pasangkan lagi setelah jendela utama tampil.",
+      "homebrewHint": "Dipasang melalui Homebrew? Seorang pengguna berhasil memasangkan kembali setelah memasang dari Releases resmi dan menyelesaikan penyiapan awal.",
+      "appReleases": "Rilis resmi Motrix",
       "allowlistHint": "Untuk versi pengembangan atau unpacked, periksa ID ekstensi di Motrix: Pengaturan → Integrasi → ekstensi tepercaya dan daftar izin Native Host."
     },
     "backend": {
