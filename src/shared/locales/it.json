@@ -212,6 +212,9 @@
       "rerun": "Ripeti diagnosi",
       "title": "Risultati diagnostici",
       "runningHelp": "Attivazione dei log debug e verifica della connessione. Di solito richiede pochi secondi.",
+      "firstLaunchHint": "Apri Motrix manualmente, leggi i termini del primo avvio e accettali se sei d’accordo, poi riprova l’associazione quando appare la finestra principale.",
+      "homebrewHint": "Installato tramite Homebrew? Un utente ha ripristinato l’associazione installando una versione ufficiale da Releases e completando la configurazione iniziale.",
+      "appReleases": "Versioni ufficiali di Motrix",
       "allowlistHint": "Per versioni di sviluppo o non compresse, verifica l’ID in Motrix: Impostazioni → Integrazione → estensioni attendibili e nell’elenco consentito del Native Host."
     },
     "backend": {

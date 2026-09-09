@@ -13,6 +13,7 @@ import {
   diagnosticDeadline,
   redactDiagnosticError,
 } from '@/shared/connectionDiagnostics'
+import { LINKS } from '@/shared/links'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 
 export function ConnectionDiagnosis({
@@ -90,9 +91,21 @@ export function ConnectionDiagnosis({
   return (
     <div className="mt-2 min-w-0 space-y-2 text-left">
       {state.endpoint?.activeEndpointId === 'local' && (
-        <p className="text-xs leading-relaxed">
-          {t('popup.diagnostics.allowlistHint')}
-        </p>
+        <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
+          <p>{t('popup.diagnostics.firstLaunchHint')}</p>
+          <p>
+            {t('popup.diagnostics.homebrewHint')}{' '}
+            <a
+              href={LINKS.appReleases}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground underline underline-offset-2"
+            >
+              {t('popup.diagnostics.appReleases')}
+            </a>
+          </p>
+          <p>{t('popup.diagnostics.allowlistHint')}</p>
+        </div>
       )}
       <Button
         type="button"
