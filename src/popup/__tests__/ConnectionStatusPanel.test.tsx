@@ -409,11 +409,9 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
         await vi.advanceTimersByTimeAsync(15000)
       })
       expect(
-        (
-          screen.getByRole('textbox', {
-            name: i18n.t('popup.diagnostics.title'),
-          }) as HTMLTextAreaElement
-        ).value
+        screen.getByRole('region', {
+          name: i18n.t('popup.diagnostics.title'),
+        }).textContent
       ).toContain('Diagnostic check timed out')
       expect(
         screen.getByRole('button', {

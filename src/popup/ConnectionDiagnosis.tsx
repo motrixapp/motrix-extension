@@ -22,9 +22,10 @@ export function ConnectionDiagnosis({
   const { t, i18n } = useTranslation()
   const [running, setRunning] = useState(false)
   const [report, setReport] = useState<string | null>(null)
-  const reportBox = useRef<HTMLElement>(null)
+  const reportHeader = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (report !== null) reportBox.current?.scrollIntoView({ block: 'nearest' })
+    if (report !== null)
+      reportHeader.current?.scrollIntoView({ block: 'start' })
   }, [report])
   const alive = useRef(true)
   useEffect(() => {
@@ -115,22 +116,21 @@ export function ConnectionDiagnosis({
       )}
       {report !== null && (
         <section
-          ref={reportBox}
           aria-label={t('popup.diagnostics.title')}
-          className="min-w-0 rounded-md border border-border bg-background text-foreground"
+          className="min-w-0 text-foreground"
         >
-          <div className="flex items-center justify-between gap-2 border-b border-border px-2 py-1">
+          <div
+            ref={reportHeader}
+            className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border bg-card py-1"
+          >
             <span className="text-xs font-medium">
               {t('popup.diagnostics.title')}
             </span>
             <CopyConnectionDiagnostics key={report} text={report} />
           </div>
-          <textarea
-            aria-label={t('popup.diagnostics.title')}
-            readOnly
-            value={report}
-            className="block h-48 w-full resize-none overflow-auto whitespace-pre-wrap rounded-b-md bg-transparent p-2 font-mono text-[11px] leading-relaxed [overflow-wrap:anywhere] focus-visible:outline-2 focus-visible:outline-ring"
-          />
+          <pre className="m-0 whitespace-pre-wrap py-2 font-mono text-[11px] leading-relaxed [overflow-wrap:anywhere]">
+            {report}
+          </pre>
         </section>
       )}
     </div>

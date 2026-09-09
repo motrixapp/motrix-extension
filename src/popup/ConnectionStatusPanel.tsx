@@ -102,8 +102,8 @@ export function ConnectionStatusPanel({
 
   return (
     <Card className="h-full min-w-0 rounded-none border-0 py-0 shadow-none ring-0">
-      <CardContent className="flex h-full min-h-0 flex-col gap-3 px-8 py-6 text-center">
-        <div className="min-h-0 flex-1 overflow-y-auto">
+      <CardContent className="flex h-full min-h-0 flex-col gap-3 px-4 py-4 text-center">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <div className="flex min-h-full flex-col gap-3">
             <div className="mt-auto flex items-center justify-center gap-2">
               <span

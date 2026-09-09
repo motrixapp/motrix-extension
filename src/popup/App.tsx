@@ -185,7 +185,7 @@ const PopupContent = memo(function PopupContent({
     >
       <TabsContent
         value="tasks"
-        className="min-h-0 min-w-0 overflow-x-hidden overflow-y-auto"
+        className={`min-h-0 min-w-0 overflow-x-hidden ${connected && !state.loading ? 'overflow-y-auto' : 'overflow-y-hidden'}`}
       >
         {connected && !state.loading ? (
           <ControlPanel
