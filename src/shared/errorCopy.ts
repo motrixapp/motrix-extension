@@ -18,9 +18,11 @@ export const REASON_KEYS: Record<
   | PairingFailureReason
   | ReconnectFailureReason
   | BackendCompatibilityFailureReason
-  | RemoteConnectionFailureReason,
+  | RemoteConnectionFailureReason
+  | 'storedPairingUnavailable',
   string
 > = {
+  storedPairingUnavailable: 'errors.connection.storedPairingUnavailable',
   backoffLocked: 'errors.connection.backoffLocked',
   staleAttempt: 'errors.connection.staleAttempt',
   aborted: 'errors.connection.aborted',

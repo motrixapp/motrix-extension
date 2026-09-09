@@ -1138,3 +1138,46 @@ describe('DiscoveryService', () => {
     })
   })
 })
+
+describe('wakeForReconnect', () => {
+  it('discards the v1 nonce and routes only the matching pinned identity', async () => {
+    const nm = bootstrapPort({ port: 35001, nonce: 'unused-nonce' })
+    const pins: PinReader = {
+      get: vi.fn(async (id) => ({ port: 16802, instanceId: id })),
+    }
+    const service = make({
+      pins,
+      nativeBootstrap: nm,
+      fetchImpl: discoveryFetch(() => liveBody('known')),
+    })
+    const results = await service.wakeForReconnect(['known', 'other'])
+    expect([...results.keys()]).toEqual(['known'])
+    expect(results.get('known')).toMatchObject({
+      wsPort: 35001,
+      instanceId: 'known',
+    })
+    expect(results.get('known')).not.toHaveProperty('nonce')
+    expect(nm.bootstrap).toHaveBeenCalledExactlyOnceWith({ allowLaunch: true })
+    expect(requests).toHaveLength(1)
+    expect(requests[0]?.url).toMatch(/discovery$/)
+  })
+
+  it('does not guess an identity for an unpinned credential when multiple apps are live', async () => {
+    const service = make({
+      nativeBootstrap: bootstrapPort({ port: 35001, nonce: 'unused' }),
+      fetchImpl: discoveryFetch(() => liveBody('known')),
+    })
+    expect((await service.wakeForReconnect(['uncommitted'])).size).toBe(0)
+    expect(requests.every((r) => r.url.endsWith('/discovery'))).toBe(true)
+  })
+
+  it('propagates a failed host attempt without scanning or taking another nonce', async () => {
+    const service = make({
+      nativeBootstrap: bootstrapPort(new Error('host failed')),
+    })
+    await expect(service.wakeForReconnect(['known'])).rejects.toThrow(
+      'host failed'
+    )
+    expect(requests).toHaveLength(0)
+  })
+})

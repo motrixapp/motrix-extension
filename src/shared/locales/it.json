@@ -422,7 +422,7 @@
       "degradedTitle": "Motrix è connesso",
       "degradedBody": "Puoi usare Motrix normalmente. Questa connessione dispone solo di una verifica di base. Per una maggiore protezione, aggiorna Motrix e associalo di nuovo.",
       "recoveryExhaustedTitle": "Riconnessione automatica non riuscita",
-      "recoveryExhaustedBody": "Nessuna associazione Motrix salvata ha funzionato. Premi Connetti per ripetere l’associazione."
+      "recoveryExhaustedBody": "Impossibile ripristinare l’associazione salvata. Riprova la connessione oppure elimina l’associazione in Impostazioni → Integrazione prima di ripeterla."
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "La risposta non ha superato la verifica e la connessione è stata interrotta. Potrebbe non essere il tuo Motrix.",
       "channelClosed": "La connessione è stata chiusa. Riconnettiti per continuare.",
       "channelUnavailable": "Motrix non è raggiungibile al momento. Assicurati che sia in esecuzione.",
-      "diagnosticsCopyFailed": "Impossibile copiare le informazioni diagnostiche. Riprova."
+      "diagnosticsCopyFailed": "Impossibile copiare le informazioni diagnostiche. Riprova.",
+      "storedPairingUnavailable": "Impossibile ripristinare l’associazione salvata. Riprova la connessione oppure elimina l’associazione in Impostazioni → Integrazione prima di ripeterla."
     }
   }
 }

@@ -422,7 +422,7 @@
       "degradedTitle": "Motrix đã kết nối",
       "degradedBody": "Bạn có thể dùng Motrix bình thường. Kết nối này chỉ có xác minh cơ bản. Để được bảo vệ tốt hơn, hãy cập nhật Motrix và ghép đôi lại.",
       "recoveryExhaustedTitle": "Không thể tự động kết nối lại",
-      "recoveryExhaustedBody": "Không có ghép đôi Motrix đã lưu nào hoạt động. Nhấn Kết nối để ghép đôi lại."
+      "recoveryExhaustedBody": "Không thể kết nối lại bằng ghép đôi đã lưu. Hãy thử kết nối lại hoặc chọn Quên ghép đôi trong Cài đặt → Tích hợp trước khi ghép đôi lại."
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "Phản hồi không vượt qua xác minh nên kết nối đã bị dừng. Đó có thể không phải Motrix của bạn.",
       "channelClosed": "Kết nối đã đóng. Kết nối lại để tiếp tục.",
       "channelUnavailable": "Hiện không thể truy cập Motrix. Đảm bảo ứng dụng đang chạy.",
-      "diagnosticsCopyFailed": "Không thể sao chép thông tin chẩn đoán. Hãy thử lại."
+      "diagnosticsCopyFailed": "Không thể sao chép thông tin chẩn đoán. Hãy thử lại.",
+      "storedPairingUnavailable": "Không thể kết nối lại bằng ghép đôi đã lưu. Hãy thử kết nối lại hoặc chọn Quên ghép đôi trong Cài đặt → Tích hợp trước khi ghép đôi lại."
     }
   }
 }

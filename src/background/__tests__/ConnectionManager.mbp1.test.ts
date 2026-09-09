@@ -126,6 +126,7 @@ function makeFakePinStore(pins: Record<string, Pin | null> = {}): PinStore {
 }
 
 function makeFakeDiscoveryService(overrides: {
+  wakeForReconnect?: (ids: string[]) => Promise<Map<string, DiscoveryResult>>
   discoverForReconnect?: (
     credentialId: string
   ) => Promise<DiscoveryResult | null>
@@ -137,6 +138,9 @@ function makeFakeDiscoveryService(overrides: {
   ensureNonce?: (result: DiscoveryResult) => Promise<DiscoveryResult | null>
 }): DiscoveryService {
   return {
+    wakeForReconnect: vi.fn(
+      overrides.wakeForReconnect ?? (async () => new Map())
+    ),
     discoverForReconnect: vi.fn(
       overrides.discoverForReconnect ?? (async () => null)
     ),
@@ -1519,7 +1523,7 @@ describe('ConnectionManager MBP1 — recovery-order walk', () => {
     expect(mgr.getState()).toBe('disconnected')
   })
 
-  it('falls back to first-pair once the recovery order is exhausted — user-initiated', async () => {
+  it('retains pairing after explicit reconnect authentication fails', async () => {
     const credA = makeStoredCredential('cred-a')
     let firstPairAttempted = false
     const mgr = makeManager({
@@ -1540,11 +1544,9 @@ describe('ConnectionManager MBP1 — recovery-order walk', () => {
 
     await mgr.connect({ allowLaunch: true, userInitiated: true })
 
-    expect(firstPairAttempted).toBe(true)
-    expect(mgr.getState()).toBe('connected')
-    expect(mgr.lastConnectUrl).toBe(
-      'ws://127.0.0.1:16805/pair?nonce=fresh-nonce'
-    )
+    expect(firstPairAttempted).toBe(false)
+    expect(mgr.getState()).toBe('disconnected')
+    expect(mgr.lastConnectUrl).toBe('ws://127.0.0.1:16802/v1')
   })
 
   // H1: the exact scenario an unattended MV3 wake reproduces — a stored
@@ -2833,5 +2835,54 @@ describe('ConnectionManager MBP1 — §6.7 store housekeeping runs on every loca
     )
     expect(ids.sort()).toEqual(['committed-1', 'rotation-successor'])
     vi.restoreAllMocks()
+  })
+})
+
+describe('explicit wake for a retained local pairing', () => {
+  it('wakes once, reconnects with the original credential, and never enters first-pair', async () => {
+    const wake = vi.fn(
+      async () =>
+        new Map([['cred-1', makeDiscoveryResult({ instanceId: 'known' })]])
+    )
+    const firstPair = vi.fn(async () => [])
+    const mgr = makeManager({
+      credentials: [makeStoredCredential('cred-1')],
+      discovery: { wakeForReconnect: wake, discoverForFirstPair: firstPair },
+      reconnectOutcomes: { 'cred-1': { envelope: fakeEnvelope() } },
+    })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    expect(wake).toHaveBeenCalledExactlyOnceWith(['cred-1'])
+    expect(firstPair).not.toHaveBeenCalled()
+    expect(mgr.getState()).toBe('connected')
+    expect(mgr.lastConnectUrl).toContain('/v1')
+  })
+
+  it.each([
+    { allowLaunch: false, userInitiated: true },
+    { allowLaunch: true, userInitiated: false },
+  ])('does not wake without an explicit launch request: %j', async (flags) => {
+    const wake = vi.fn(async () => new Map())
+    const firstPair = vi.fn(async () => [])
+    const mgr = makeManager({
+      credentials: [makeStoredCredential('cred-1')],
+      discovery: { wakeForReconnect: wake, discoverForFirstPair: firstPair },
+    })
+    await mgr.connect(flags)
+    expect(wake).not.toHaveBeenCalled()
+    expect(firstPair).not.toHaveBeenCalled()
+    expect(mgr.getState()).toBe('disconnected')
+  })
+
+  it('keeps the retained pairing when wake returns no matching instance', async () => {
+    const wake = vi.fn(async () => new Map())
+    const firstPair = vi.fn(async () => [])
+    const mgr = makeManager({
+      credentials: [makeStoredCredential('cred-1')],
+      discovery: { wakeForReconnect: wake, discoverForFirstPair: firstPair },
+    })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    expect(wake).toHaveBeenCalledOnce()
+    expect(firstPair).not.toHaveBeenCalled()
+    expect(mgr.getState()).toBe('disconnected')
   })
 })

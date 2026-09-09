@@ -422,7 +422,7 @@
       "degradedTitle": "Motrix ist verbunden",
       "degradedBody": "Sie können Motrix normal nutzen. Diese Verbindung wurde nur grundlegend überprüft. Aktualisieren Sie Motrix und koppeln Sie es erneut, um den Schutz zu verbessern.",
       "recoveryExhaustedTitle": "Automatische Wiederverbindung fehlgeschlagen",
-      "recoveryExhaustedBody": "Keine der gespeicherten Motrix-Kopplungen hat funktioniert. Klicken Sie auf „Verbinden“, um erneut zu koppeln."
+      "recoveryExhaustedBody": "Die gespeicherte Kopplung konnte nicht wiederhergestellt werden. Versuche die Verbindung erneut oder entferne die Kopplung unter Einstellungen → Integration, bevor du erneut koppelst."
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "Die Antwort konnte nicht verifiziert werden. Die Verbindung wurde beendet, da es möglicherweise nicht Ihr Motrix ist.",
       "channelClosed": "Die Verbindung wurde geschlossen. Verbinden Sie sich erneut, um fortzufahren.",
       "channelUnavailable": "Motrix ist derzeit nicht erreichbar. Stellen Sie sicher, dass es läuft.",
-      "diagnosticsCopyFailed": "Diagnoseinformationen konnten nicht kopiert werden. Versuche es erneut."
+      "diagnosticsCopyFailed": "Diagnoseinformationen konnten nicht kopiert werden. Versuche es erneut.",
+      "storedPairingUnavailable": "Die gespeicherte Kopplung konnte nicht wiederhergestellt werden. Versuche die Verbindung erneut oder entferne die Kopplung unter Einstellungen → Integration, bevor du erneut koppelst."
     }
   }
 }

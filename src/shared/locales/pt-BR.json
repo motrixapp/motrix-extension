@@ -422,7 +422,7 @@
       "degradedTitle": "O Motrix está conectado",
       "degradedBody": "Você pode usar o Motrix normalmente. Esta conexão tem apenas verificação básica. Para maior proteção, atualize o Motrix e pareie novamente.",
       "recoveryExhaustedTitle": "Não foi possível reconectar automaticamente",
-      "recoveryExhaustedBody": "Nenhum pareamento salvo do Motrix funcionou. Pressione Conectar para parear novamente."
+      "recoveryExhaustedBody": "Não foi possível reconectar o pareamento salvo. Tente novamente ou escolha Esquecer pareamento em Configurações → Integração antes de parear novamente."
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "A resposta falhou na verificação e a conexão foi interrompida. Pode não ser o seu Motrix.",
       "channelClosed": "A conexão foi fechada. Reconecte-se para continuar.",
       "channelUnavailable": "O Motrix está inacessível no momento. Verifique se ele está em execução.",
-      "diagnosticsCopyFailed": "Não foi possível copiar as informações de diagnóstico. Tente novamente."
+      "diagnosticsCopyFailed": "Não foi possível copiar as informações de diagnóstico. Tente novamente.",
+      "storedPairingUnavailable": "Não foi possível reconectar o pareamento salvo. Tente novamente ou escolha Esquecer pareamento em Configurações → Integração antes de parear novamente."
     }
   }
 }

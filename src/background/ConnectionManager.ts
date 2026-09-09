@@ -328,6 +328,15 @@ class StaleConnectionAttemptError extends Error {
   }
 }
 
+class StoredPairingUnavailableError extends Error {
+  readonly reason = 'storedPairingUnavailable'
+  constructor() {
+    super(
+      'Stored pairing could not reconnect; retry or explicitly forget it before pairing again'
+    )
+  }
+}
+
 /**
  * `connectLocalMbp1`'s recovery-order walk exhausted every stored credential
  * during an attempt nobody asked for (`autostart()`, or the automatic
@@ -1634,109 +1643,136 @@ export class ConnectionManager {
     await scope.credentials.cleanupFirstPairOrphans(principal, now)
     this.ensureCurrentAttempt(generation)
 
-    // §6.7/§12: recoverOrder is a total, ordered list to WALK — not "if a
-    // credential exists" — falling back to fresh pairing only once every
-    // candidate has been tried (or the list is empty to begin with), AND
-    // only when `userInitiated` — see the exhaustion check below.
+    // §6.7/§12: walk the full recovery order. Retained credentials never
+    // fall through to fresh pairing; the user must explicitly remove that
+    // pairing first.
     const order = await scope.credentials.recoverOrder(principal)
     this.ensureCurrentAttempt(generation)
 
     this.setState('connecting')
 
-    for (const credential of order) {
-      const discovered = await this.discoveryService.discoverForReconnect(
-        credential.credentialId
-      )
-      this.ensureCurrentAttempt(generation)
-      if (discovered === null) {
-        // §4.1 discovery found no live endpoint for this candidate at all —
-        // an unauthenticated, replayable GET, not a WS upgrade attempt, so
-        // none of §8's throttle concerns apply. Ordinary "try the next one".
-        continue
-      }
-
-      // §12: prefer the pin's instanceId (proven by an earlier verified
-      // confirmB/reconnectAccept) over the untrusted §4.1 discovery hint —
-      // the hint is only a fallback for when no pin exists yet.
-      const pin = await this.pinStore.get(credential.credentialId)
-      this.ensureCurrentAttempt(generation)
-      const instanceId = pin?.instanceId ?? discovered.instanceId
-      if (instanceId === undefined) continue
-
-      const url = reconnectUrl(discovered.wsPort)
-      this.lastConnectUrl = url
-      log.info(
-        `[connect#${seq}] MBP1 reconnect attempt port=${discovered.wsPort}`
-      )
-
-      const channel = this.createFrameChannel()
-      this.ownPreAuthChannel(channel, generation)
-
-      let result: ReconnectFlowResult
-      try {
-        const flow = this.createReconnectFlow({
-          channel,
-          creds: scope.credentials,
-          pins: this.pinStore,
-          isCurrent: () => this.isCurrentAttempt(generation),
-        })
-        result = await flow.run({
-          credential,
-          discovery: discovered,
-          principal,
-          instanceId,
-        })
-      } catch (error) {
-        this.closePreAuthChannel(channel)
-        // If THIS attempt is already stale, bail immediately rather than
-        // trying another candidate on a superseded generation — this is
-        // also what correctly handles a `superseded` ReconnectFlowError,
-        // since it can only have been thrown because isCurrent() (exactly
-        // this check) already returned false.
+    let awakened: Map<string, DiscoveryResult> | null = null
+    let foundEndpoint = false
+    for (let pass = 0; pass < 2; pass++) {
+      for (const credential of order) {
+        const discovered =
+          awakened === null
+            ? await this.discoveryService.discoverForReconnect(
+                credential.credentialId
+              )
+            : (awakened.get(credential.credentialId) ?? null)
         this.ensureCurrentAttempt(generation)
-        if (error instanceof ReconnectFlowError) {
-          if (
-            error.reason === 'channelUnavailable' ||
-            error.reason === 'internalError'
-          ) {
-            // §8's per-origin/global reconnect throttle rejects the
-            // WebSocket upgrade itself, indistinguishable on the wire from
-            // "nothing is listening" — walking the recovery order against a
-            // real throttle would make it worse while learning nothing. Fail
-            // this whole attempt instead (connect() never auto-retries, so
-            // this IS the backoff).
-            throw error
-          }
-          log.info(
-            `[connect#${seq}] MBP1 reconnect candidate failed ` +
-              `(${error.reason}); trying next stored credential`
-          )
+        if (discovered === null) {
+          // §4.1 discovery found no live endpoint for this candidate at all —
+          // an unauthenticated, replayable GET, not a WS upgrade attempt, so
+          // none of §8's throttle concerns apply. Ordinary "try the next one".
           continue
         }
-        throw error
-      }
-      // `flow.run()` just succeeded, so nothing has closed `channel` yet —
-      // it only ever does that on its own failure (see
-      // `WebSocketFrameChannel`'s own doc). A throw from here on (a
-      // superseded generation, or `release()` itself rejecting a queued
-      // text frame) would otherwise leave a live, unowned `WebSocket` open
-      // with nothing to close it until the MV3 worker tears down.
-      // `channel.close()` is always safe to call: it no-ops once
-      // `release()` has already handed the socket to the envelope layer.
-      try {
+
+        foundEndpoint = true
+
+        // §12: prefer the pin's instanceId (proven by an earlier verified
+        // confirmB/reconnectAccept) over the untrusted §4.1 discovery hint —
+        // the hint is only a fallback for when no pin exists yet.
+        const pin = await this.pinStore.get(credential.credentialId)
         this.ensureCurrentAttempt(generation)
-        await this.finishMbp1Connection(
-          channel,
-          result.envelope,
-          scope,
-          seq,
-          false
+        const instanceId = pin?.instanceId ?? discovered.instanceId
+        if (instanceId === undefined) continue
+
+        const url = reconnectUrl(discovered.wsPort)
+        this.lastConnectUrl = url
+        log.info(
+          `[connect#${seq}] MBP1 reconnect attempt port=${discovered.wsPort}`
         )
-      } catch (error) {
-        this.closePreAuthChannel(channel)
-        throw error
+
+        const channel = this.createFrameChannel()
+        this.ownPreAuthChannel(channel, generation)
+
+        let result: ReconnectFlowResult
+        try {
+          const flow = this.createReconnectFlow({
+            channel,
+            creds: scope.credentials,
+            pins: this.pinStore,
+            isCurrent: () => this.isCurrentAttempt(generation),
+          })
+          result = await flow.run({
+            credential,
+            discovery: discovered,
+            principal,
+            instanceId,
+          })
+        } catch (error) {
+          this.closePreAuthChannel(channel)
+          // If THIS attempt is already stale, bail immediately rather than
+          // trying another candidate on a superseded generation — this is
+          // also what correctly handles a `superseded` ReconnectFlowError,
+          // since it can only have been thrown because isCurrent() (exactly
+          // this check) already returned false.
+          this.ensureCurrentAttempt(generation)
+          if (error instanceof ReconnectFlowError) {
+            if (
+              error.reason === 'channelUnavailable' ||
+              error.reason === 'internalError'
+            ) {
+              // §8's per-origin/global reconnect throttle rejects the
+              // WebSocket upgrade itself, indistinguishable on the wire from
+              // "nothing is listening" — walking the recovery order against a
+              // real throttle would make it worse while learning nothing. Fail
+              // this whole attempt instead (connect() never auto-retries, so
+              // this IS the backoff).
+              throw error
+            }
+            log.info(
+              `[connect#${seq}] MBP1 reconnect candidate failed ` +
+                `(${error.reason}); trying next stored credential`
+            )
+            continue
+          }
+          throw error
+        }
+        // `flow.run()` just succeeded, so nothing has closed `channel` yet —
+        // it only ever does that on its own failure (see
+        // `WebSocketFrameChannel`'s own doc). A throw from here on (a
+        // superseded generation, or `release()` itself rejecting a queued
+        // text frame) would otherwise leave a live, unowned `WebSocket` open
+        // with nothing to close it until the MV3 worker tears down.
+        // `channel.close()` is always safe to call: it no-ops once
+        // `release()` has already handed the socket to the envelope layer.
+        try {
+          this.ensureCurrentAttempt(generation)
+          await this.finishMbp1Connection(
+            channel,
+            result.envelope,
+            scope,
+            seq,
+            false
+          )
+        } catch (error) {
+          this.closePreAuthChannel(channel)
+          throw error
+        }
+        return
       }
-      return
+
+      // Only an explicit click may wake an offline paired app. Complete the
+      // ordinary recovery walk first, and never launch after an auth failure.
+      if (
+        pass !== 0 ||
+        foundEndpoint ||
+        order.length === 0 ||
+        !userInitiated ||
+        !allowLaunch
+      )
+        break
+      awakened = await this.discoveryService.wakeForReconnect(
+        order.map((c) => c.credentialId)
+      )
+      this.ensureCurrentAttempt(generation)
+      if (awakened.size === 0) break
+    }
+    if (order.length > 0 && userInitiated) {
+      throw new StoredPairingUnavailableError()
     }
 
     // §6.7/§12: exhausting the recovery order is not, by itself, a licence
@@ -1762,8 +1798,8 @@ export class ConnectionManager {
 
   /**
    * §6: fresh code-entry pairing. Reached only when `connectLocalMbp1`'s
-   * caller was `userInitiated` AND `recoverOrder`'s list is exhausted (or
-   * was empty to begin with) — never on the first reconnect failure, and
+   * caller was `userInitiated` AND `recoverOrder` has no retained credentials
+   * (including after an explicit Forget) — never on a reconnect failure, and
    * never for an unattended attempt (see `RecoveryExhaustedUnattendedError`).
    */
   private async connectFirstPairMbp1(
@@ -2410,6 +2446,8 @@ export function classifyConnectError(e: unknown): {
       reason: 'pairing not authorized (denied or revoked)',
     }
   }
+  if (e instanceof StoredPairingUnavailableError)
+    return { level: 'warn', reason: e.message }
   if (e instanceof RecoveryExhaustedUnattendedError) {
     // Expected disposition, not a fault — every stored credential simply
     // failed during an attempt nobody asked for. See the class doc.
