@@ -443,7 +443,8 @@
       "authFailed": "O Motrix não reconheceu este pareamento. Ele pode ter sido revogado; tente parear novamente.",
       "serverMacMismatch": "A resposta falhou na verificação e a conexão foi interrompida. Pode não ser o seu Motrix.",
       "channelClosed": "A conexão foi fechada. Reconecte-se para continuar.",
-      "channelUnavailable": "O Motrix está inacessível no momento. Verifique se ele está em execução."
+      "channelUnavailable": "O Motrix está inacessível no momento. Verifique se ele está em execução.",
+      "diagnosticsCopyFailed": "Não foi possível copiar as informações de diagnóstico. Tente novamente."
     }
   }
 }

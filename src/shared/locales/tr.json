@@ -443,7 +443,8 @@
       "authFailed": "Motrix bu eşleştirmeyi tanımadı. İptal edilmiş olabilir; yeniden eşleştirin.",
       "serverMacMismatch": "Yanıt doğrulanamadığı için bağlantı durduruldu. Sizin Motrix’iniz olmayabilir.",
       "channelClosed": "Bağlantı kapatıldı. Devam etmek için yeniden bağlanın.",
-      "channelUnavailable": "Şu anda Motrix’e ulaşılamıyor. Çalıştığından emin olun."
+      "channelUnavailable": "Şu anda Motrix’e ulaşılamıyor. Çalıştığından emin olun.",
+      "diagnosticsCopyFailed": "Tanılama bilgileri kopyalanamadı. Tekrar deneyin."
     }
   }
 }

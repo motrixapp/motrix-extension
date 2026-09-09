@@ -443,7 +443,8 @@
       "authFailed": "Motrix tidak mengenali penyandingan ini. Mungkin telah dicabut — coba sandingkan ulang.",
       "serverMacMismatch": "Balasan gagal diverifikasi sehingga koneksi dihentikan. Mungkin itu bukan Motrix Anda.",
       "channelClosed": "Koneksi ditutup. Hubungkan ulang untuk melanjutkan.",
-      "channelUnavailable": "Motrix tidak dapat dijangkau saat ini. Pastikan Motrix berjalan."
+      "channelUnavailable": "Motrix tidak dapat dijangkau saat ini. Pastikan Motrix berjalan.",
+      "diagnosticsCopyFailed": "Informasi diagnostik tidak dapat disalin. Coba lagi."
     }
   }
 }

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConnectionStatusPanel } from '@/popup/ConnectionStatusPanel'
 import type { PopupState } from '@/popup/usePopupState'
 import { i18n } from '@/shared/i18n'
@@ -75,6 +75,11 @@ describe('ConnectionStatusPanel error copy', () => {
   it('shows no error alert when there is no error', () => {
     render(<ConnectionStatusPanel state={baseState()} onReconnect={vi.fn()} />)
     expect(screen.queryByText(i18n.t('errors.connection.generic'))).toBeNull()
+    expect(
+      screen.queryByRole('button', {
+        name: i18n.t('options.help.copyDiagnostics'),
+      })
+    ).toBeNull()
   })
 
   it('disables the connect button and counts down while the §7.3 backoff is active', () => {
@@ -135,5 +140,106 @@ describe('ConnectionStatusPanel error copy', () => {
     )
     expect(onShowPairing).toHaveBeenCalledOnce()
     expect(onReconnect).not.toHaveBeenCalled()
+  })
+})
+
+describe('ConnectionStatusPanel diagnostic copy', () => {
+  beforeEach(() => {
+    browser.runtime.getManifest = vi.fn(() => ({
+      manifest_version: 3,
+      name: 'Motrix',
+      version: '0.1.7',
+    }))
+  })
+
+  it('copies the full error with environment data without reconnecting', async () => {
+    const user = userEvent.setup()
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText')
+    const onReconnect = vi.fn()
+    render(
+      <ConnectionStatusPanel
+        state={baseState({
+          lastError: 'ECONNREFUSED 127.0.0.1:16802',
+          lastErrorReason: 'channelUnavailable',
+        })}
+        onReconnect={onReconnect}
+      />
+    )
+
+    await user.click(
+      screen.getByRole('button', {
+        name: i18n.t('options.help.copyDiagnostics'),
+      })
+    )
+
+    const text = writeText.mock.calls[0]?.[0] ?? ''
+    expect(text).toContain('ECONNREFUSED 127.0.0.1:16802')
+    expect(text).toContain('channelUnavailable')
+    expect(text).toContain('0.1.7')
+    expect(text).toContain(navigator.userAgent)
+    expect(text).toContain('test-extension-id')
+    expect(
+      screen.getByRole('button', { name: i18n.t('options.help.copied') })
+    ).toBeTruthy()
+    expect(onReconnect).not.toHaveBeenCalled()
+  })
+
+  it('reports clipboard denial and lets the user retry', async () => {
+    const user = userEvent.setup()
+    const writeText = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockRejectedValueOnce(new DOMException('Denied', 'NotAllowedError'))
+      .mockResolvedValue(undefined)
+    render(
+      <ConnectionStatusPanel
+        state={baseState({ lastError: 'NM bootstrap timeout' })}
+        onReconnect={vi.fn()}
+      />
+    )
+    const button = screen.getByRole('button', {
+      name: i18n.t('options.help.copyDiagnostics'),
+    })
+    await user.click(button)
+    expect(
+      screen.getByText(i18n.t('errors.connection.diagnosticsCopyFailed'))
+    ).toBeTruthy()
+    expect(screen.queryByText(i18n.t('options.help.copied'))).toBeNull()
+
+    await user.click(button)
+    expect(writeText).toHaveBeenCalledTimes(2)
+    expect(screen.getByText(i18n.t('options.help.copied'))).toBeTruthy()
+    expect(
+      screen.queryByText(i18n.t('errors.connection.diagnosticsCopyFailed'))
+    ).toBeNull()
+  })
+
+  it('resets copied feedback and copies the new error when the failure changes', async () => {
+    const user = userEvent.setup()
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText')
+    const { rerender } = render(
+      <ConnectionStatusPanel
+        state={baseState({ lastError: 'old failure' })}
+        onReconnect={vi.fn()}
+      />
+    )
+    await user.click(
+      screen.getByRole('button', {
+        name: i18n.t('options.help.copyDiagnostics'),
+      })
+    )
+
+    rerender(
+      <ConnectionStatusPanel
+        state={baseState({ lastError: 'new failure' })}
+        onReconnect={vi.fn()}
+      />
+    )
+    await user.click(
+      screen.getByRole('button', {
+        name: i18n.t('options.help.copyDiagnostics'),
+      })
+    )
+    expect(writeText.mock.calls.at(-1)?.[0]).toContain('new failure')
+    expect(writeText.mock.calls.at(-1)?.[0]).not.toContain('old failure')
   })
 })

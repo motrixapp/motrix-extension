@@ -443,7 +443,8 @@
       "authFailed": "Motrix hat diese Kopplung nicht erkannt. Sie wurde möglicherweise widerrufen. Koppeln Sie erneut.",
       "serverMacMismatch": "Die Antwort konnte nicht verifiziert werden. Die Verbindung wurde beendet, da es möglicherweise nicht Ihr Motrix ist.",
       "channelClosed": "Die Verbindung wurde geschlossen. Verbinden Sie sich erneut, um fortzufahren.",
-      "channelUnavailable": "Motrix ist derzeit nicht erreichbar. Stellen Sie sicher, dass es läuft."
+      "channelUnavailable": "Motrix ist derzeit nicht erreichbar. Stellen Sie sicher, dass es läuft.",
+      "diagnosticsCopyFailed": "Diagnoseinformationen konnten nicht kopiert werden. Versuche es erneut."
     }
   }
 }

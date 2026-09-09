@@ -443,7 +443,8 @@
       "authFailed": "Motrix가 이 페어링을 인식하지 못했습니다. 해제되었을 수 있으니 다시 페어링하세요.",
       "serverMacMismatch": "응답 검증에 실패하여 연결을 중단했습니다. 사용자의 Motrix가 아닐 수 있습니다.",
       "channelClosed": "연결이 닫혔습니다. 계속하려면 다시 연결하세요.",
-      "channelUnavailable": "현재 Motrix에 연결할 수 없습니다. 실행 중인지 확인하세요."
+      "channelUnavailable": "현재 Motrix에 연결할 수 없습니다. 실행 중인지 확인하세요.",
+      "diagnosticsCopyFailed": "진단 정보를 복사하지 못했습니다. 다시 시도하세요."
     }
   }
 }

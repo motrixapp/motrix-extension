@@ -443,7 +443,8 @@
       "authFailed": "Motrix didn't recognize this pairing. It may have been revoked — try pairing again.",
       "serverMacMismatch": "The reply failed verification, so the connection was stopped. It may not be your Motrix.",
       "channelClosed": "The connection was closed. Reconnect to continue.",
-      "channelUnavailable": "Motrix isn't reachable right now. Make sure it's running."
+      "channelUnavailable": "Motrix isn't reachable right now. Make sure it's running.",
+      "diagnosticsCopyFailed": "Couldn’t copy diagnostics. Try again."
     }
   }
 }
