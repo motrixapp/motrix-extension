@@ -24,7 +24,7 @@ export function ConnectionPanel({
   return (
     <section aria-label={title} className="flex h-full min-h-0 flex-col">
       <CompactSectionToolbar title={title || t('popup.tasks.title')} />
-      <CompactContentCard className="overflow-y-auto [overflow-wrap:anywhere]">
+      <CompactContentCard className="overflow-hidden [overflow-wrap:anywhere]">
         <ConnectionStatusPanel
           state={state}
           onReconnect={onReconnect}

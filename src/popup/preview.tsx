@@ -90,6 +90,44 @@ const previewRuntime = {
     const request = message as { kind?: string; payload?: unknown }
     const kind = request.kind
     switch (kind) {
+      case 'bg.runConnectionDiagnostics':
+        await new Promise((resolve) => setTimeout(resolve, 800))
+        return {
+          startedAt: new Date().toISOString(),
+          durationMs: 800,
+          backend:
+            previewEndpoint.activeEndpointId === 'local' ? 'local' : 'remote',
+          checks: [
+            {
+              id: 'debug-log',
+              status: 'pass',
+              durationMs: 2,
+              detail:
+                'Debug logging enabled. Reproduce the connection failure to collect subsequent background-console logs. Restore the log level in Settings > Help when finished.',
+            },
+            {
+              id: 'installation',
+              status: 'warn',
+              durationMs: 1,
+              detail:
+                'installType=development; unpackedDevelopmentInstall=true.',
+            },
+            {
+              id: 'native-host',
+              status: 'fail',
+              durationMs: 12,
+              detail:
+                'Access to the specified native messaging host is forbidden.\nCheck this extension ID in the native-host allowlist and browser/enterprise policy.\nNative host: app.motrix.bridge\nallowed_origins must include "chrome-extension://motrix-popup-preview/"',
+            },
+            {
+              id: 'discovery:16802',
+              status: 'pass',
+              durationMs: 8,
+              detail:
+                'Motrix discovery: appVersion="2.0.0", compatibility=compatible. Unauthenticated hint; pairing has not been tested.',
+            },
+          ],
+        }
       case 'bg.getTakeoverConfig':
         return previewTakeover
       case 'bg.setTakeoverConfig':

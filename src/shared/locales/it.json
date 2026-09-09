@@ -206,6 +206,14 @@
     "title": "Impostazioni dell’estensione Motrix"
   },
   "popup": {
+    "diagnostics": {
+      "run": "Diagnostica",
+      "running": "Diagnosi in corso…",
+      "rerun": "Ripeti diagnosi",
+      "title": "Risultati diagnostici",
+      "runningHelp": "Attivazione dei log debug e verifica della connessione. Di solito richiede pochi secondi.",
+      "allowlistHint": "Per versioni di sviluppo o non compresse, verifica l’ID in Motrix: Impostazioni → Integrazione → estensioni attendibili e nell’elenco consentito del Native Host."
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "Questo computer",

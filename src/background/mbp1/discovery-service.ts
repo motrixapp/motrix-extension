@@ -282,7 +282,10 @@ function readCompatibility(doc: Record<string, unknown>): {
   return { compatibility: 'backendUpgradeRequired' }
 }
 
-function readDiscoveryDoc(port: number, body: unknown): LiveCandidate | null {
+export function readDiscoveryDoc(
+  port: number,
+  body: unknown
+): LiveCandidate | null {
   // An array needs no separate guard: it has no `app`, so the gate below
   // rejects it.
   if (!body || typeof body !== 'object') return null

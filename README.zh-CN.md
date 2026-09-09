@@ -133,6 +133,14 @@ Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入
 
 ## 常见问题
 
+### 连接失败时如何自助诊断？
+
+点击报错框中的“诊断”。扩展会启用 debug 日志，检查安装类型、权限、已有配对凭据、Native Host 和桥接端口；远程 Server 则检查所选地址的 discovery 接口。完成后，报错框显示各项结果、耗时和开发者排查建议，右上角的小复制按钮可复制完整报告。后台不可用或超时时，也会保留可复制的错误与环境信息。
+
+`management.getSelf().installType` 可以识别未打包的开发安装，无需新增 `management` 权限；它不能判断 DevTools 是否打开。扩展无法直接读取本地白名单，报告会区分 Native Host 访问被拒、Host 未注册与 App 未运行。诊断不会启动 Motrix、重新配对或清除凭据；Native Host 的现有探测协议可能产生一个未使用的 nonce，扩展会丢弃它。报告不包含配对密钥、nonce、ticket 或完整后端配置。
+
+诊断后可点击“连接”复现问题，在扩展后台控制台查看后续 debug 日志。排查完毕后，到扩展“设置 → 帮助”恢复日志级别。
+
 ### 为什么 Chrome 开发版无法连接 Motrix？
 
 先检查扩展 ID 是否已经加入 Motrix 的“设置 → 集成 → 浏览器扩展 → 受信任的扩展”。ID 可以在 `chrome://extensions` 的 Motrix Extension 卡片上找到。开发版换了加载目录后，ID 可能与之前不同，Motrix 里的记录也要跟着更新。

@@ -206,6 +206,14 @@
     "title": "Motrix Uzantısı Ayarları"
   },
   "popup": {
+    "diagnostics": {
+      "run": "Tanıla",
+      "running": "Tanılanıyor…",
+      "rerun": "Yeniden denetle",
+      "title": "Tanılama sonuçları",
+      "runningHelp": "Debug günlükleri açılıyor ve bağlantı denetleniyor. Genellikle birkaç saniye sürer.",
+      "allowlistHint": "Geliştirme veya paketlenmemiş sürümlerde uzantı kimliğini Motrix: Ayarlar → Entegrasyon → güvenilen uzantılar ve Native Host izin listesinde kontrol edin."
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "Bu bilgisayar",

@@ -138,6 +138,14 @@ Remote Server permissions start at the narrowest scope. Unless you explicitly en
 
 ## Common questions
 
+### How do I diagnose a failed connection?
+
+Click **Diagnose** in the error panel. The extension enables debug logging and checks installation type, permissions, stored pairing, Native Host access, and bridge discovery ports. For a remote Server it checks the selected discovery endpoint. Results, timings, and developer guidance appear inside the error panel; the small button at the report's top right copies the full report. Background failures and timeouts still leave copyable error and environment information.
+
+`management.getSelf().installType` identifies unpacked development installations without an extra `management` permission; it cannot detect whether DevTools is open. The extension cannot read local allowlists directly, so findings distinguish denied Native Host access, missing host registration, and a stopped App. Diagnostics do not launch Motrix, re-pair, or clear credentials. The existing Native Host probe protocol may issue one unused nonce, which is discarded. Reports exclude pairing keys, nonces, tickets, and complete backend profiles.
+
+After diagnosis, use **Connect** to reproduce the failure and inspect subsequent debug logs in the extension background console. Restore the log level under the extension's **Settings → Help** when finished.
+
 ### Why can't the Chrome or Edge development build connect to Motrix?
 
 Check that its extension ID appears under **Settings → Integration → Browser extensions → Trusted extensions** in Motrix. You can copy the ID from the Motrix Extension card on `chrome://extensions` or `edge://extensions`. If you loaded the build from a different directory, the browser may have assigned a new ID, so update the Motrix entry as well.

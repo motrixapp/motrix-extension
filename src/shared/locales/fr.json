@@ -206,6 +206,14 @@
     "title": "Réglages de l’extension Motrix"
   },
   "popup": {
+    "diagnostics": {
+      "run": "Diagnostiquer",
+      "running": "Diagnostic en cours…",
+      "rerun": "Relancer",
+      "title": "Résultats du diagnostic",
+      "runningHelp": "Activation des journaux debug et vérification de la connexion. Cela prend généralement quelques secondes.",
+      "allowlistHint": "Pour une version de développement ou non empaquetée, vérifiez son ID dans Motrix : Paramètres → Intégration → extensions de confiance et dans la liste autorisée du Native Host."
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "Cet ordinateur",

@@ -51,6 +51,10 @@ export const MEDIA_SUBMIT_ERROR = {
  */
 export interface MessageMap {
   // popup / options → background
+  'bg.runConnectionDiagnostics': {
+    request: { endpointId: string | null }
+    response: import('@/shared/connectionDiagnostics').ConnectionDiagnosticResult
+  }
   'bg.getState': {
     request: undefined
     response: {

@@ -1,9 +1,34 @@
-import { render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { send } from '@/background/MessageBus'
 import { ConnectionStatusPanel } from '@/popup/ConnectionStatusPanel'
 import type { PopupState } from '@/popup/usePopupState'
 import { i18n } from '@/shared/i18n'
+
+vi.mock('@/background/MessageBus', () => ({ send: vi.fn() }))
+const result = {
+  startedAt: '2026-09-09T00:00:00Z',
+  durationMs: 8,
+  backend: 'local' as const,
+  checks: [
+    {
+      id: 'native-host',
+      status: 'fail' as const,
+      detail: 'Native-host allowlist check: forbidden',
+      durationMs: 2,
+    },
+  ],
+}
+
+async function diagnose(
+  user: ReturnType<typeof userEvent.setup>
+): Promise<void> {
+  await user.click(
+    screen.getByRole('button', { name: i18n.t('popup.diagnostics.run') })
+  )
+  await screen.findByRole('region', { name: i18n.t('popup.diagnostics.title') })
+}
 
 function baseState(overrides: Partial<PopupState> = {}): PopupState {
   return {
@@ -145,6 +170,7 @@ describe('ConnectionStatusPanel error copy', () => {
 
 describe('ConnectionStatusPanel diagnostic copy', () => {
   beforeEach(() => {
+    vi.mocked(send).mockResolvedValue(result)
     browser.runtime.getManifest = vi.fn(() => ({
       manifest_version: 3,
       name: 'Motrix',
@@ -166,6 +192,7 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
       />
     )
 
+    await diagnose(user)
     await user.click(
       screen.getByRole('button', {
         name: i18n.t('options.help.copyDiagnostics'),
@@ -178,6 +205,7 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
     expect(text).toContain('0.1.7')
     expect(text).toContain(navigator.userAgent)
     expect(text).toContain('test-extension-id')
+    expect(text).toContain('Native-host allowlist check: forbidden')
     expect(
       screen.getByRole('button', { name: i18n.t('options.help.copied') })
     ).toBeTruthy()
@@ -196,6 +224,7 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
         onReconnect={vi.fn()}
       />
     )
+    await diagnose(user)
     const button = screen.getByRole('button', {
       name: i18n.t('options.help.copyDiagnostics'),
     })
@@ -222,6 +251,7 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
         onReconnect={vi.fn()}
       />
     )
+    await diagnose(user)
     await user.click(
       screen.getByRole('button', {
         name: i18n.t('options.help.copyDiagnostics'),
@@ -234,6 +264,10 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
         onReconnect={vi.fn()}
       />
     )
+    expect(
+      screen.queryByRole('region', { name: i18n.t('popup.diagnostics.title') })
+    ).toBeNull()
+    await diagnose(user)
     await user.click(
       screen.getByRole('button', {
         name: i18n.t('options.help.copyDiagnostics'),
@@ -241,5 +275,151 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
     )
     expect(writeText.mock.calls.at(-1)?.[0]).toContain('new failure')
     expect(writeText.mock.calls.at(-1)?.[0]).not.toContain('old failure')
+  })
+
+  it('shows local allowlist guidance and runs only on demand', async () => {
+    const user = userEvent.setup()
+    render(
+      <ConnectionStatusPanel
+        state={baseState({
+          lastError: 'connection failed',
+          endpoint: {
+            version: 3,
+            activeEndpointId: 'local',
+            servers: [],
+            cleanupTombstones: [],
+          },
+        })}
+        onReconnect={vi.fn()}
+      />
+    )
+    expect(
+      screen.getByText(i18n.t('popup.diagnostics.allowlistHint'))
+    ).toBeTruthy()
+    expect(send).not.toHaveBeenCalled()
+    expect(
+      screen.queryByRole('button', {
+        name: i18n.t('options.help.copyDiagnostics'),
+      })
+    ).toBeNull()
+    await diagnose(user)
+    expect(send).toHaveBeenCalledWith('bg.runConnectionDiagnostics', {
+      endpointId: 'local',
+    })
+  })
+
+  it('disables diagnosis while running and ignores results after the backend changes', async () => {
+    let complete!: (value: typeof result) => void
+    vi.mocked(send).mockReturnValueOnce(
+      new Promise((resolve) => {
+        complete = resolve
+      })
+    )
+    const user = userEvent.setup()
+    const state = baseState({
+      lastError: 'failed',
+      endpoint: {
+        version: 3,
+        activeEndpointId: 'local',
+        servers: [],
+        cleanupTombstones: [],
+      },
+    })
+    const { rerender } = render(
+      <ConnectionStatusPanel state={state} onReconnect={vi.fn()} />
+    )
+    await user.click(
+      screen.getByRole('button', { name: i18n.t('popup.diagnostics.run') })
+    )
+    expect(
+      (
+        screen.getByRole('button', {
+          name: i18n.t('popup.diagnostics.running'),
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true)
+    rerender(
+      <ConnectionStatusPanel
+        state={{
+          ...state,
+          endpoint: { ...state.endpoint!, activeEndpointId: 'remote' },
+        }}
+        onReconnect={vi.fn()}
+      />
+    )
+    expect(
+      screen.queryByText(i18n.t('popup.diagnostics.allowlistHint'))
+    ).toBeNull()
+    await act(async () => complete(result))
+    expect(
+      screen.queryByRole('region', { name: i18n.t('popup.diagnostics.title') })
+    ).toBeNull()
+  })
+
+  it('provides a copyable fallback if the background cannot respond', async () => {
+    vi.mocked(send).mockRejectedValueOnce(
+      new Error('Could not establish connection. Receiving end does not exist.')
+    )
+    const user = userEvent.setup()
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText')
+    render(
+      <ConnectionStatusPanel
+        state={baseState({ lastError: 'original failure' })}
+        onReconnect={vi.fn()}
+      />
+    )
+    await diagnose(user)
+    await user.click(
+      screen.getByRole('button', {
+        name: i18n.t('options.help.copyDiagnostics'),
+      })
+    )
+    expect(writeText.mock.calls[0]?.[0]).toContain(
+      'Receiving end does not exist'
+    )
+    expect(writeText.mock.calls[0]?.[0]).toContain('original failure')
+  })
+
+  it('offers diagnosis after unattended recovery is exhausted', async () => {
+    render(
+      <ConnectionStatusPanel
+        state={baseState({ recoveryExhaustedUnattended: true })}
+        onReconnect={vi.fn()}
+      />
+    )
+    expect(
+      screen.getByRole('button', { name: i18n.t('popup.diagnostics.run') })
+    ).toBeTruthy()
+  })
+
+  it('leaves a readable report after the background response times out', async () => {
+    vi.useFakeTimers()
+    try {
+      vi.mocked(send).mockReturnValueOnce(new Promise(() => {}))
+      render(
+        <ConnectionStatusPanel
+          state={baseState({ lastError: 'original error' })}
+          onReconnect={vi.fn()}
+        />
+      )
+      fireEvent.click(
+        screen.getByRole('button', { name: i18n.t('popup.diagnostics.run') })
+      )
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(15000)
+      })
+      expect(
+        screen.getByRole('region', {
+          name: i18n.t('popup.diagnostics.title'),
+        }).textContent
+      ).toContain('Diagnostic check timed out')
+      expect(
+        screen.getByRole('button', {
+          name: i18n.t('options.help.copyDiagnostics'),
+        })
+      ).toBeTruthy()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

@@ -206,6 +206,14 @@
     "title": "Motrix 擴充功能設定"
   },
   "popup": {
+    "diagnostics": {
+      "run": "診斷",
+      "running": "診斷中…",
+      "rerun": "重新診斷",
+      "title": "診斷結果",
+      "runningHelp": "正在啟用 debug 日誌並檢查連線環境，通常需要數秒。",
+      "allowlistHint": "開發版或未封裝擴充功能請檢查：目前的擴充功能 ID 是否已加入 Motrix「設定 → 整合 → 信任的擴充功能」及 Native Host 允許清單。"
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "這台電腦",
