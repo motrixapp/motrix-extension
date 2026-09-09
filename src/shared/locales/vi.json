@@ -443,7 +443,8 @@
       "authFailed": "Motrix không nhận ra ghép đôi này. Có thể nó đã bị thu hồi — hãy ghép đôi lại.",
       "serverMacMismatch": "Phản hồi không vượt qua xác minh nên kết nối đã bị dừng. Đó có thể không phải Motrix của bạn.",
       "channelClosed": "Kết nối đã đóng. Kết nối lại để tiếp tục.",
-      "channelUnavailable": "Hiện không thể truy cập Motrix. Đảm bảo ứng dụng đang chạy."
+      "channelUnavailable": "Hiện không thể truy cập Motrix. Đảm bảo ứng dụng đang chạy.",
+      "diagnosticsCopyFailed": "Không thể sao chép thông tin chẩn đoán. Hãy thử lại."
     }
   }
 }

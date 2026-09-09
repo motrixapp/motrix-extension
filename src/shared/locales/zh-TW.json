@@ -443,7 +443,8 @@
       "authFailed": "Motrix 無法辨識此配對，可能已遭撤銷。請重新配對。",
       "serverMacMismatch": "回應未通過驗證，連線已停止。對方可能不是您的 Motrix。",
       "channelClosed": "連線已關閉，請重新連線以繼續。",
-      "channelUnavailable": "目前無法連線至 Motrix，請確認它正在執行。"
+      "channelUnavailable": "目前無法連線至 Motrix，請確認它正在執行。",
+      "diagnosticsCopyFailed": "複製診斷資訊失敗，請重試。"
     }
   }
 }

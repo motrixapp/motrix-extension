@@ -443,7 +443,8 @@
       "authFailed": "Motrix n’a pas reconnu cette association. Elle a peut-être été révoquée ; associez-le à nouveau.",
       "serverMacMismatch": "La réponse n’a pas pu être vérifiée et la connexion a été interrompue. Il ne s’agit peut-être pas de votre Motrix.",
       "channelClosed": "La connexion a été fermée. Reconnectez-vous pour continuer.",
-      "channelUnavailable": "Motrix est actuellement inaccessible. Vérifiez qu’il est en cours d’exécution."
+      "channelUnavailable": "Motrix est actuellement inaccessible. Vérifiez qu’il est en cours d’exécution.",
+      "diagnosticsCopyFailed": "Impossible de copier les informations de diagnostic. Réessayez."
     }
   }
 }

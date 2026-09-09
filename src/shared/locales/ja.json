@@ -443,7 +443,8 @@
       "authFailed": "Motrix がこのペアリングを認識しませんでした。解除された可能性があります。再ペアリングしてください。",
       "serverMacMismatch": "応答を検証できなかったため、接続を停止しました。あなたの Motrix ではない可能性があります。",
       "channelClosed": "接続が閉じられました。続行するには再接続してください。",
-      "channelUnavailable": "現在 Motrix に接続できません。起動していることを確認してください。"
+      "channelUnavailable": "現在 Motrix に接続できません。起動していることを確認してください。",
+      "diagnosticsCopyFailed": "診断情報をコピーできませんでした。もう一度お試しください。"
     }
   }
 }

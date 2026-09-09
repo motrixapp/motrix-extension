@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
+import { CopyConnectionDiagnostics } from '@/popup/CopyConnectionDiagnostics'
 import type { PopupState } from '@/popup/usePopupState'
 import { connectionErrorKey } from '@/shared/errorCopy'
 
@@ -125,6 +126,15 @@ export function ConnectionStatusPanel({
           <Alert variant="destructive" title={state.lastError}>
             <AlertDescription>
               {t(connectionErrorKey(state.lastErrorReason))}
+              <CopyConnectionDiagnostics
+                key={JSON.stringify([
+                  state.connection,
+                  state.lastError,
+                  state.lastErrorReason,
+                  state.endpoint?.activeEndpointId,
+                ])}
+                state={state}
+              />
             </AlertDescription>
           </Alert>
         )}
