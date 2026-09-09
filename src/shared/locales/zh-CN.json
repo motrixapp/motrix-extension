@@ -206,6 +206,14 @@
     "title": "Motrix 扩展设置"
   },
   "popup": {
+    "diagnostics": {
+      "run": "诊断",
+      "running": "诊断中…",
+      "rerun": "重新诊断",
+      "title": "诊断结果",
+      "runningHelp": "正在启用 debug 日志并检查连接环境，通常需要数秒。",
+      "allowlistHint": "开发版或未打包扩展请检查：当前扩展 ID 是否已加入 Motrix「设置 → 集成 → 受信任的扩展」及 Native Host 白名单。"
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "这台电脑",

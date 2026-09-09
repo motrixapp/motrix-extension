@@ -206,6 +206,14 @@
     "title": "Configurações da extensão Motrix"
   },
   "popup": {
+    "diagnostics": {
+      "run": "Diagnosticar",
+      "running": "Diagnosticando…",
+      "rerun": "Diagnosticar novamente",
+      "title": "Resultados do diagnóstico",
+      "runningHelp": "Ativando logs debug e verificando a conexão. Isso costuma levar alguns segundos.",
+      "allowlistHint": "Para versões de desenvolvimento ou descompactadas, confira o ID em Motrix: Configurações → Integração → extensões confiáveis e na lista de permissões do Native Host."
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "Este computador",

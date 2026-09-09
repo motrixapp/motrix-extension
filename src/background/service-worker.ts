@@ -16,6 +16,7 @@ import {
   makeBadgeNotify,
 } from '@/background/badge/BadgeController'
 import { BadgeErrorStore } from '@/background/badge/BadgeErrorStore'
+import { createConnectionDiagnosticsHandler } from '@/background/ConnectionDiagnostics'
 import { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { ConnectionManager } from '@/background/ConnectionManager'
@@ -244,6 +245,14 @@ void badge.refresh() // initial paint / re-apply a persisted error after SW rest
 const bus = new MessageBus({
   beforeDispatch: () => endpointLifecycleReady,
 })
+bus.on(
+  'bg.runConnectionDiagnostics',
+  createConnectionDiagnosticsHandler({
+    getConfig: () => endpointConfigStore.get(),
+    getPairingStatus: (endpointId) =>
+      pairingEndpointService.getStatus(endpointId),
+  })
+)
 bus.on('bg.getState', async () => {
   const lastError = manager.getLastError()
   const server = manager.getServerIdentity()

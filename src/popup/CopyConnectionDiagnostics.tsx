@@ -2,18 +2,13 @@ import { CheckIcon, CopyIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { buildConnectionDiagnostics } from '@/popup/connectionDiagnostics'
-import type { PopupState } from '@/popup/usePopupState'
-import { extensionBrowser } from '@/shared/browser'
-import { BUILD_VARIANT } from '@/shared/buildFlags'
-import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 
 export function CopyConnectionDiagnostics({
-  state,
+  text,
 }: {
-  state: PopupState
+  text: string
 }): React.ReactElement {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [status, setStatus] = useState<
     'idle' | 'copying' | 'copied' | 'failed'
   >('idle')
@@ -31,15 +26,6 @@ export function CopyConnectionDiagnostics({
   const copy = async (): Promise<void> => {
     setStatus('copying')
     try {
-      const text = buildConnectionDiagnostics(state, {
-        capturedAt: new Date().toISOString(),
-        extensionId: extensionBrowser.runtime.id,
-        extensionVersion: extensionBrowser.runtime.getManifest().version,
-        build: BUILD_VARIANT,
-        userAgent: navigator.userAgent,
-        language: i18n.resolvedLanguage ?? i18n.language,
-        nativeMessagingApi: hasNativeMessagingSupport(),
-      })
       // Call in the click handler before any await to retain user activation.
       await navigator.clipboard.writeText(text)
       setStatus('copied')
@@ -49,13 +35,14 @@ export function CopyConnectionDiagnostics({
   }
 
   return (
-    <div className="mt-2 flex flex-col items-start gap-1">
+    <div className="flex shrink-0 flex-col items-end gap-1">
       <Button
         type="button"
         size="sm"
         variant="outline"
-        className="h-auto min-h-8 max-w-full whitespace-normal text-left"
+        className="size-7 p-0"
         aria-label={label}
+        title={label}
         disabled={status === 'copying'}
         onClick={() => void copy()}
       >
@@ -64,10 +51,12 @@ export function CopyConnectionDiagnostics({
         ) : (
           <CopyIcon data-icon="inline-start" aria-hidden="true" />
         )}
-        <span role="status">{label}</span>
+        <span role="status" className="sr-only">
+          {label}
+        </span>
       </Button>
       {status === 'failed' && (
-        <span role="status" className="text-xs text-destructive">
+        <span role="status" className="max-w-44 text-xs text-destructive">
           {t('errors.connection.diagnosticsCopyFailed')}
         </span>
       )}

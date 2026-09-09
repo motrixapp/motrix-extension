@@ -206,6 +206,14 @@
     "title": "Motrix 拡張機能の設定"
   },
   "popup": {
+    "diagnostics": {
+      "run": "診断",
+      "running": "診断中…",
+      "rerun": "再診断",
+      "title": "診断結果",
+      "runningHelp": "debug ログを有効にして接続環境を確認しています。通常は数秒かかります。",
+      "allowlistHint": "開発版やパッケージ化されていない拡張機能では、現在の拡張機能 ID が Motrix の「設定 → 統合 → 信頼する拡張機能」と Native Host の許可リストに登録されているか確認してください。"
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "このコンピューター",

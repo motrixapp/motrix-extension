@@ -206,6 +206,14 @@
     "title": "Cài đặt tiện ích Motrix"
   },
   "popup": {
+    "diagnostics": {
+      "run": "Chẩn đoán",
+      "running": "Đang chẩn đoán…",
+      "rerun": "Kiểm tra lại",
+      "title": "Kết quả chẩn đoán",
+      "runningHelp": "Đang bật nhật ký debug và kiểm tra kết nối. Thường mất vài giây.",
+      "allowlistHint": "Với bản phát triển hoặc tiện ích chưa đóng gói, hãy kiểm tra ID trong Motrix: Cài đặt → Tích hợp → tiện ích đáng tin cậy và danh sách cho phép của Native Host."
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "Máy tính này",

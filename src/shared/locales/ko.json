@@ -206,6 +206,14 @@
     "title": "Motrix 확장 프로그램 설정"
   },
   "popup": {
+    "diagnostics": {
+      "run": "진단",
+      "running": "진단 중…",
+      "rerun": "다시 진단",
+      "title": "진단 결과",
+      "runningHelp": "debug 로그를 켜고 연결 환경을 확인합니다. 보통 몇 초 걸립니다.",
+      "allowlistHint": "개발 버전이나 압축 해제된 확장 프로그램은 현재 ID가 Motrix의 설정 → 통합 → 신뢰하는 확장 프로그램 및 Native Host 허용 목록에 등록되어 있는지 확인하세요."
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "이 컴퓨터",

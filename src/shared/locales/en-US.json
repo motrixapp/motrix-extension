@@ -206,6 +206,14 @@
     "title": "Motrix Extension Settings"
   },
   "popup": {
+    "diagnostics": {
+      "run": "Diagnose",
+      "running": "Diagnosing…",
+      "rerun": "Run again",
+      "title": "Diagnostic results",
+      "runningHelp": "Enabling debug logging and checking the connection environment. This usually takes a few seconds.",
+      "allowlistHint": "For development or unpacked installs, check that this extension ID is in Motrix Settings → Integration → trusted extensions and the Native Host allowlist."
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "This computer",

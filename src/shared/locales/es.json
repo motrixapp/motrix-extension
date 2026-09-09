@@ -206,6 +206,14 @@
     "title": "Ajustes de la extensión Motrix"
   },
   "popup": {
+    "diagnostics": {
+      "run": "Diagnosticar",
+      "running": "Diagnosticando…",
+      "rerun": "Repetir diagnóstico",
+      "title": "Resultados del diagnóstico",
+      "runningHelp": "Activando los registros debug y comprobando la conexión. Suele tardar unos segundos.",
+      "allowlistHint": "Si instalaste una versión de desarrollo o sin empaquetar, comprueba que su ID esté en Motrix: Ajustes → Integración → extensiones de confianza y en la lista permitida del Native Host."
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "Este equipo",

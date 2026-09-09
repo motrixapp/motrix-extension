@@ -206,6 +206,14 @@
     "title": "Setelan Ekstensi Motrix"
   },
   "popup": {
+    "diagnostics": {
+      "run": "Diagnosis",
+      "running": "Mendiagnosis…",
+      "rerun": "Periksa lagi",
+      "title": "Hasil diagnosis",
+      "runningHelp": "Mengaktifkan log debug dan memeriksa koneksi. Biasanya perlu beberapa detik.",
+      "allowlistHint": "Untuk versi pengembangan atau unpacked, periksa ID ekstensi di Motrix: Pengaturan → Integrasi → ekstensi tepercaya dan daftar izin Native Host."
+    },
     "backend": {
       "app": "Motrix App",
       "appDescription": "Komputer ini",

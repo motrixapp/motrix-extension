@@ -1,4 +1,5 @@
 import type { PopupState } from '@/popup/usePopupState'
+import { redactDiagnosticError } from '@/shared/connectionDiagnostics'
 
 interface DiagnosticEnvironment {
   capturedAt: string
@@ -10,27 +11,12 @@ interface DiagnosticEnvironment {
   nativeMessagingApi: boolean
 }
 
-/** Keep the address useful without sharing URL credentials or pairing nonces. */
-function redactErrorUrls(message: string): string {
-  return message.replace(/\b(?:https?|wss?):\/\/[^\s"'<>]+/gi, (text) => {
-    try {
-      const url = new URL(text)
-      url.username = ''
-      url.password = ''
-      url.search = ''
-      url.hash = ''
-      return url.href
-    } catch {
-      return '[invalid URL omitted]'
-    }
-  })
-}
-
 export function buildConnectionDiagnostics(
   state: Pick<
     PopupState,
     'connection' | 'lastError' | 'lastErrorReason' | 'endpoint' | 'server'
-  >,
+  > &
+    Partial<Pick<PopupState, 'backoff' | 'recoveryExhaustedUnattended'>>,
   environment: DiagnosticEnvironment
 ): string {
   // Select fields explicitly: endpoint profiles and unrelated popup data do
@@ -55,6 +41,10 @@ export function buildConnectionDiagnostics(
             ? 'local'
             : 'remote',
       state: state.connection,
+      ...(state.backoff ? { retryAtMs: state.backoff.retryAtMs } : {}),
+      ...(state.recoveryExhaustedUnattended
+        ? { recoveryExhaustedUnattended: true }
+        : {}),
       protocol: 'MBP1',
       app: state.server
         ? { version: state.server.version, runtime: state.server.runtime }
@@ -62,7 +52,9 @@ export function buildConnectionDiagnostics(
       error: {
         reason: state.lastErrorReason,
         message:
-          state.lastError === null ? null : redactErrorUrls(state.lastError),
+          state.lastError === null
+            ? null
+            : redactDiagnosticError(state.lastError),
       },
     },
   }
