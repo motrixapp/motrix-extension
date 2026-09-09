@@ -1,3 +1,4 @@
+import { Bug } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { send } from '@/background/MessageBus'
@@ -97,10 +98,15 @@ export function ConnectionDiagnosis({
         type="button"
         size="sm"
         variant="outline"
+        className="text-foreground"
         disabled={running}
         onClick={() => void run()}
       >
-        {running && <Spinner aria-hidden="true" />}
+        {running ? (
+          <Spinner data-icon="inline-start" aria-hidden="true" />
+        ) : (
+          <Bug data-icon="inline-start" aria-hidden="true" />
+        )}
         {t(
           running
             ? 'popup.diagnostics.running'
