@@ -1,6 +1,6 @@
 {
   "name": "@motrix/extension",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "description": "Motrix browser extension for Chrome, Microsoft Edge, and Firefox (Manifest V3)",
   "type": "module",
