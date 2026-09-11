@@ -213,8 +213,9 @@
       "title": "Kết quả chẩn đoán",
       "runningHelp": "Đang bật nhật ký debug và kiểm tra kết nối. Thường mất vài giây.",
       "firstLaunchHint": "Mở Motrix thủ công, đọc và chấp nhận điều khoản lần đầu khởi chạy nếu bạn đồng ý, rồi thử ghép đôi lại khi cửa sổ chính xuất hiện.",
-      "homebrewHint": "Cài qua Homebrew? Một người dùng đã ghép đôi lại được sau khi cài từ Releases chính thức và hoàn tất thiết lập ban đầu.",
-      "appReleases": "Bản phát hành Motrix chính thức",
+      "latestVersionHint": "Hãy thử tải và cài đặt phiên bản Motrix mới nhất, hoàn tất thiết lập ban đầu, rồi thử ghép đôi lại.",
+      "appReleases": "Tải Motrix phiên bản mới nhất",
+      "advanced": "Khắc phục sự cố nâng cao",
       "allowlistHint": "Với bản phát triển hoặc tiện ích chưa đóng gói, hãy kiểm tra ID trong Motrix: Cài đặt → Tích hợp → tiện ích đáng tin cậy và danh sách cho phép của Native Host."
     },
     "backend": {

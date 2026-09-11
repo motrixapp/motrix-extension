@@ -100,104 +100,117 @@ export function ConnectionStatusPanel({
   const canShowPairing =
     state.pairingCode !== null && onShowPairing !== undefined
 
+  const showDiagnosis =
+    state.lastError !== null || state.recoveryExhaustedUnattended
+  const errorKey = connectionErrorKey(state.lastErrorReason)
+  const notices = (
+    <>
+      {/* §7.3: the retry time is always the client's own FirstPairBackoff
+       *  value — bg.getState never forwards anything the peer reported. */}
+      {state.backoff && (
+        <Alert>
+          <AlertTitle>{t('popup.pairing.backoffTitle')}</AlertTitle>
+          <AlertDescription>
+            {t('popup.pairing.backoffBody', {
+              time: new Date(state.backoff.retryAtMs).toLocaleTimeString(),
+            })}
+          </AlertDescription>
+        </Alert>
+      )}
+      {permissionMissing && (
+        <Alert>
+          <AlertTitle>{t('popup.pairing.permissionMissingTitle')}</AlertTitle>
+          <AlertDescription>
+            {t('popup.pairing.permissionMissingBody')}
+          </AlertDescription>
+        </Alert>
+      )}
+      {/* Only shown while actually connected — this describes the live
+       *  session's pairing, not an error condition. Not a warning about
+       *  Motrix's authenticity: the pairing was still mutually
+       *  authenticated by the code, only the host's own corroboration of
+       *  *which* Motrix answered is missing. */}
+      {isOk && state.degraded && (
+        <Alert>
+          <AlertTitle>{t('popup.pairing.degradedTitle')}</AlertTitle>
+          <AlertDescription>{t('popup.pairing.degradedBody')}</AlertDescription>
+        </Alert>
+      )}
+    </>
+  )
+
   return (
     <Card className="h-full min-w-0 rounded-none border-0 py-0 shadow-none ring-0">
       <CardContent className="flex h-full min-h-0 flex-col gap-3 px-4 py-4 text-center">
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <div className="flex min-h-full flex-col gap-3">
-            <div className="mt-auto flex items-center justify-center gap-2">
-              <span
-                data-testid="status-dot"
-                data-state={conn}
-                className={cn(
-                  'h-2.5 w-2.5 rounded-full',
-                  DOT_COLOR[conn] ?? 'bg-muted-foreground'
-                )}
-              />
-              <span className="text-sm text-foreground">
-                {t(`popup.status.${conn}`, { defaultValue: conn })}
-              </span>
-            </div>
-            {/* A reason never arrives without its message (they are set and
-             *  suppressed together in bg.getState), so presence keys off the
-             *  message alone; the reason picks the copy. */}
-            {state.lastError !== null && (
-              // Locale copy keyed by the stable reason code — the raw
-              // `lastError` sentence is developer-facing (it also goes to
-              // logs) and surfaces only as a hover title for diagnosis.
-              <Alert variant="destructive" title={state.lastError}>
-                <AlertDescription>
-                  {t(connectionErrorKey(state.lastErrorReason))}
-                  <ConnectionDiagnosis
-                    key={JSON.stringify([
-                      state.lastError,
-                      state.lastErrorReason,
-                      state.endpoint,
-                    ])}
-                    state={state}
-                  />
-                </AlertDescription>
-              </Alert>
+        <div
+          className={cn(
+            'flex min-h-0 flex-1 flex-col gap-3',
+            !showDiagnosis && 'overflow-y-auto overscroll-contain'
+          )}
+        >
+          <div
+            className={cn(
+              'flex shrink-0 items-center justify-center gap-2',
+              !showDiagnosis && 'mt-auto'
             )}
-            {/* §6.7/§12: an unattended attempt (autostart, or the automatic
-             *  post-close probe-reconnect) correctly refused to fall back to
-             *  fresh code-entry pairing on its own. Connect retries retained
-             *  credentials; the settings page offers an explicit Forget. `bg.getState`
-             *  never sends `lastError` alongside this flag (see its own doc),
-             *  so this replaces that alert rather than joining it. */}
-            {state.recoveryExhaustedUnattended && (
-              <Alert>
-                <AlertTitle>
-                  {t('popup.pairing.recoveryExhaustedTitle')}
-                </AlertTitle>
-                <AlertDescription>
-                  {t('popup.pairing.recoveryExhaustedBody')}
-                  <ConnectionDiagnosis
-                    key={JSON.stringify(state.endpoint)}
-                    state={state}
-                  />
-                </AlertDescription>
-              </Alert>
-            )}
-            {/* §7.3: the retry time is always the client's own FirstPairBackoff
-             *  value — bg.getState never forwards anything the peer reported. */}
-            {state.backoff && (
-              <Alert>
-                <AlertTitle>{t('popup.pairing.backoffTitle')}</AlertTitle>
-                <AlertDescription>
-                  {t('popup.pairing.backoffBody', {
-                    time: new Date(
-                      state.backoff.retryAtMs
-                    ).toLocaleTimeString(),
-                  })}
-                </AlertDescription>
-              </Alert>
-            )}
-            {permissionMissing && (
-              <Alert>
-                <AlertTitle>
-                  {t('popup.pairing.permissionMissingTitle')}
-                </AlertTitle>
-                <AlertDescription>
-                  {t('popup.pairing.permissionMissingBody')}
-                </AlertDescription>
-              </Alert>
-            )}
-            {/* Only shown while actually connected — this describes the live
-             *  session's pairing, not an error condition. Not a warning about
-             *  Motrix's authenticity: the pairing was still mutually
-             *  authenticated by the code, only the host's own corroboration of
-             *  *which* Motrix answered is missing. */}
-            {isOk && state.degraded && (
-              <Alert>
-                <AlertTitle>{t('popup.pairing.degradedTitle')}</AlertTitle>
-                <AlertDescription>
-                  {t('popup.pairing.degradedBody')}
-                </AlertDescription>
-              </Alert>
-            )}
-            <div className="mb-auto" />
+          >
+            <span
+              data-testid="status-dot"
+              data-state={conn}
+              className={cn(
+                'h-2.5 w-2.5 rounded-full',
+                DOT_COLOR[conn] ?? 'bg-muted-foreground'
+              )}
+            />
+            <span className="text-sm text-foreground">
+              {t(`popup.status.${conn}`, { defaultValue: conn })}
+            </span>
           </div>
+          {/* A reason never arrives without its message (they are set and
+           *  suppressed together in bg.getState), so presence keys off the
+           *  message alone; the reason picks the copy. */}
+          {state.lastError !== null && (
+            // Locale copy keyed by the stable reason code — the raw
+            // `lastError` sentence is developer-facing (it also goes to
+            // logs) and surfaces only as a hover title for diagnosis.
+            <ConnectionDiagnosis
+              key={JSON.stringify([
+                state.lastError,
+                state.lastErrorReason,
+                state.endpoint,
+              ])}
+              state={state}
+              heading={t('errors.connection.generic')}
+              {...(errorKey !== 'errors.connection.generic'
+                ? { description: t(errorKey) }
+                : {})}
+              variant="destructive"
+            >
+              {notices}
+            </ConnectionDiagnosis>
+          )}
+          {/* §6.7/§12: an unattended attempt (autostart, or the automatic
+           *  post-close probe-reconnect) correctly refused to fall back to
+           *  fresh code-entry pairing on its own. Connect retries retained
+           *  credentials; the settings page offers an explicit Forget. `bg.getState`
+           *  never sends `lastError` alongside this flag (see its own doc),
+           *  so this replaces that alert rather than joining it. */}
+          {state.lastError === null && state.recoveryExhaustedUnattended && (
+            <ConnectionDiagnosis
+              key={JSON.stringify(state.endpoint)}
+              state={state}
+              heading={t('popup.pairing.recoveryExhaustedTitle')}
+              description={t('popup.pairing.recoveryExhaustedBody')}
+            >
+              {notices}
+            </ConnectionDiagnosis>
+          )}
+          {!showDiagnosis && (
+            <>
+              {notices}
+              <div className="mb-auto" />
+            </>
+          )}
         </div>
         {!isOk && (
           // §7.3: while the backoff is in force a click cannot succeed, so

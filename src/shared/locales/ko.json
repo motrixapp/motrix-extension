@@ -213,8 +213,9 @@
       "title": "진단 결과",
       "runningHelp": "debug 로그를 켜고 연결 환경을 확인합니다. 보통 몇 초 걸립니다.",
       "firstLaunchHint": "Motrix를 직접 열고 첫 실행 약관을 읽은 뒤 동의하면 수락하세요. 기본 화면이 나타나면 페어링을 다시 시도하세요.",
-      "homebrewHint": "Homebrew로 설치했나요? 공식 Releases에서 설치하고 초기 설정을 마친 후 페어링이 복구되었다는 사용자 보고가 있습니다.",
-      "appReleases": "Motrix 공식 릴리스",
+      "latestVersionHint": "최신 버전의 Motrix를 다운로드하여 설치해 보세요. 초기 설정을 완료한 후 다시 페어링해 보세요.",
+      "appReleases": "최신 Motrix 다운로드",
+      "advanced": "고급 문제 해결",
       "allowlistHint": "개발 버전이나 압축 해제된 확장 프로그램은 현재 ID가 Motrix의 설정 → 통합 → 신뢰하는 확장 프로그램 및 Native Host 허용 목록에 등록되어 있는지 확인하세요."
     },
     "backend": {

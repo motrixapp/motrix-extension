@@ -277,7 +277,7 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
     expect(writeText.mock.calls.at(-1)?.[0]).not.toContain('old failure')
   })
 
-  it('shows local setup guidance and runs only on demand', async () => {
+  it('folds advanced guidance and replaces setup tips with on-demand results', async () => {
     const user = userEvent.setup()
     render(
       <ConnectionStatusPanel
@@ -293,9 +293,12 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
         onReconnect={vi.fn()}
       />
     )
-    expect(
-      screen.getByText(i18n.t('popup.diagnostics.allowlistHint'))
-    ).toBeTruthy()
+    const advanced = screen
+      .getByText(i18n.t('popup.diagnostics.allowlistHint'))
+      .closest('details')!
+    expect(advanced.open).toBe(false)
+    await user.click(screen.getByText(i18n.t('popup.diagnostics.advanced')))
+    expect(advanced.open).toBe(true)
     expect(
       screen.getByText(i18n.t('popup.diagnostics.firstLaunchHint'))
     ).toBeTruthy()
@@ -316,6 +319,33 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
     expect(send).toHaveBeenCalledWith('bg.runConnectionDiagnostics', {
       endpointId: 'local',
     })
+    expect(
+      screen.queryByText(i18n.t('popup.diagnostics.firstLaunchHint'))
+    ).toBeNull()
+    expect(screen.queryByText(i18n.t('popup.diagnostics.advanced'))).toBeNull()
+  })
+
+  it('starts each new diagnostic report at the top of its scroll area', async () => {
+    const user = userEvent.setup()
+    render(
+      <ConnectionStatusPanel
+        state={baseState({ lastError: 'connection failed' })}
+        onReconnect={vi.fn()}
+      />
+    )
+    await diagnose(user)
+    const scrollArea = screen.getByRole('region', {
+      name: i18n.t('popup.diagnostics.title'),
+    }).parentElement!
+    scrollArea.scrollTop = 200
+    await user.click(
+      screen.getByRole('button', { name: i18n.t('popup.diagnostics.rerun') })
+    )
+    await screen.findByRole('region', {
+      name: i18n.t('popup.diagnostics.title'),
+    })
+    expect(scrollArea.scrollTop).toBe(0)
+    expect(send).toHaveBeenCalledTimes(2)
   })
 
   it('disables diagnosis while running and ignores results after the backend changes', async () => {

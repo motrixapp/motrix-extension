@@ -213,8 +213,9 @@
       "title": "診断結果",
       "runningHelp": "debug ログを有効にして接続環境を確認しています。通常は数秒かかります。",
       "firstLaunchHint": "Motrix を手動で開き、初回起動時の規約を確認して同意する場合は承認してください。メイン画面が表示されたらペアリングを再試行してください。",
-      "homebrewHint": "Homebrew でインストールしましたか？公式 Releases からインストールし直して初回設定を完了したところ、ペアリングできたという報告があります。",
-      "appReleases": "Motrix 公式リリース",
+      "latestVersionHint": "最新版の Motrix のダウンロードとインストールをお試しください。初回設定を完了してから、もう一度ペアリングをお試しください。",
+      "appReleases": "最新版の Motrix をダウンロード",
+      "advanced": "高度なトラブルシューティング",
       "allowlistHint": "開発版やパッケージ化されていない拡張機能では、現在の拡張機能 ID が Motrix の「設定 → 統合 → 信頼する拡張機能」と Native Host の許可リストに登録されているか確認してください。"
     },
     "backend": {

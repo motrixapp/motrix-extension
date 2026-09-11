@@ -213,8 +213,9 @@
       "title": "Diagnostic results",
       "runningHelp": "Enabling debug logging and checking the connection environment. This usually takes a few seconds.",
       "firstLaunchHint": "Open Motrix manually, review and accept the first-launch terms if you agree, then retry pairing once its main window appears.",
-      "homebrewHint": "Installed via Homebrew? A user restored pairing by installing from official Releases and completing first-launch setup.",
-      "appReleases": "Official Motrix releases",
+      "latestVersionHint": "Try downloading and installing the latest version of Motrix, complete the first-launch setup, then try pairing again.",
+      "appReleases": "Download the latest Motrix",
+      "advanced": "Advanced troubleshooting",
       "allowlistHint": "For development or unpacked installs, check that this extension ID is in Motrix Settings → Integration → trusted extensions and the Native Host allowlist."
     },
     "backend": {

@@ -213,8 +213,9 @@
       "title": "Resultados do diagnóstico",
       "runningHelp": "Ativando logs debug e verificando a conexão. Isso costuma levar alguns segundos.",
       "firstLaunchHint": "Abra o Motrix manualmente, leia os termos da primeira execução e aceite se concordar. Tente parear novamente quando a janela principal aparecer.",
-      "homebrewHint": "Instalou pelo Homebrew? Um usuário recuperou o pareamento instalando uma versão oficial de Releases e concluindo a configuração inicial.",
-      "appReleases": "Versões oficiais do Motrix",
+      "latestVersionHint": "Tente baixar e instalar a versão mais recente do Motrix, conclua a configuração inicial e tente parear novamente.",
+      "appReleases": "Baixar a versão mais recente do Motrix",
+      "advanced": "Solução de problemas avançada",
       "allowlistHint": "Para versões de desenvolvimento ou descompactadas, confira o ID em Motrix: Configurações → Integração → extensões confiáveis e na lista de permissões do Native Host."
     },
     "backend": {

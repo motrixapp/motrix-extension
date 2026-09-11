@@ -213,8 +213,9 @@
       "title": "Resultados del diagnóstico",
       "runningHelp": "Activando los registros debug y comprobando la conexión. Suele tardar unos segundos.",
       "firstLaunchHint": "Abre Motrix manualmente, revisa y acepta los términos del primer inicio si estás de acuerdo, y vuelve a intentar el emparejamiento cuando aparezca la ventana principal.",
-      "homebrewHint": "¿Lo instalaste con Homebrew? Un usuario recuperó el emparejamiento instalando una versión oficial de Releases y completando la configuración inicial.",
-      "appReleases": "Versiones oficiales de Motrix",
+      "latestVersionHint": "Prueba a descargar e instalar la última versión de Motrix, completa la configuración inicial y vuelve a intentar el emparejamiento.",
+      "appReleases": "Descargar la última versión de Motrix",
+      "advanced": "Solución de problemas avanzada",
       "allowlistHint": "Si instalaste una versión de desarrollo o sin empaquetar, comprueba que su ID esté en Motrix: Ajustes → Integración → extensiones de confianza y en la lista permitida del Native Host."
     },
     "backend": {

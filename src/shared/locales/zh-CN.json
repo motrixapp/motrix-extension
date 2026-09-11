@@ -213,8 +213,9 @@
       "title": "诊断结果",
       "runningHelp": "正在启用 debug 日志并检查连接环境，通常需要数秒。",
       "firstLaunchHint": "先手动打开 Motrix，阅读并同意首次启动条款，进入主界面后再重试配对。",
-      "homebrewHint": "通过 Homebrew 安装？有用户改用官方 Release 安装包并完成首次启动后恢复了配对，可尝试此办法。",
-      "appReleases": "Motrix 官方安装包",
+      "latestVersionHint": "请尝试下载并安装最新版 Motrix，完成首次启动后再重试配对。",
+      "appReleases": "下载最新版 Motrix",
+      "advanced": "高级排查",
       "allowlistHint": "开发版或未打包扩展请检查：当前扩展 ID 是否已加入 Motrix「设置 → 集成 → 受信任的扩展」及 Native Host 白名单。"
     },
     "backend": {
