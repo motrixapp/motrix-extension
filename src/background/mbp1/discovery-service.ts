@@ -417,6 +417,39 @@ export class DiscoveryService {
     return only === undefined ? null : toProbeResult(only)
   }
 
+  /** One existing v1 NM call; its nonce is deliberately unused for /v1. */
+  async wakeForReconnect(
+    credentialIds: string[]
+  ): Promise<Map<string, DiscoveryResult>> {
+    const matches = new Map<string, DiscoveryResult>()
+    if (this.nativeBootstrap === null || credentialIds.length === 0)
+      return matches
+    const reply = await this.nativeBootstrap.bootstrap({ allowLaunch: true })
+    if (!isValidPort(reply.port)) return matches
+    const live = await this.probe(reply.port, this.config.discoveryTimeoutMs)
+    if (live === null) return matches
+    // Preserve the no-pin rule: one unambiguous live instance, including a
+    // host-selected ephemeral port outside the ordinary candidate range.
+    const pins = await Promise.all(credentialIds.map((id) => this.pins.get(id)))
+    const candidates = pins.some((pin) => pin === null)
+      ? await this.sweepCandidates()
+      : []
+    const ports = new Set([
+      ...candidates.map((candidate) => candidate.port),
+      reply.port,
+    ])
+    for (const [index, id] of credentialIds.entries()) {
+      const pin = pins[index]
+      if (
+        (pin && pin.instanceId === live.instanceId) ||
+        (pin === null && ports.size === 1)
+      ) {
+        matches.set(id, toProbeResult(live))
+      }
+    }
+    return matches
+  }
+
   /**
    * Enumerates every endpoint a first pairing could target, for the user to
    * choose from.

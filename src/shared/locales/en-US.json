@@ -422,7 +422,7 @@
       "degradedTitle": "Motrix is connected",
       "degradedBody": "You can use Motrix normally. This connection has basic verification only. For stronger protection, update Motrix and pair again.",
       "recoveryExhaustedTitle": "Couldn't reconnect automatically",
-      "recoveryExhaustedBody": "None of the saved Motrix pairings worked. Press Connect to pair again."
+      "recoveryExhaustedBody": "The saved pairing could not reconnect. Retry the connection, or choose Forget pairing in Settings → Integration before pairing again."
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "The reply failed verification, so the connection was stopped. It may not be your Motrix.",
       "channelClosed": "The connection was closed. Reconnect to continue.",
       "channelUnavailable": "Motrix isn't reachable right now. Make sure it's running.",
-      "diagnosticsCopyFailed": "Couldn’t copy diagnostics. Try again."
+      "diagnosticsCopyFailed": "Couldn’t copy diagnostics. Try again.",
+      "storedPairingUnavailable": "The saved pairing could not reconnect. Retry the connection, or choose Forget pairing in Settings → Integration before pairing again."
     }
   }
 }

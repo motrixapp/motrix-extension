@@ -422,7 +422,7 @@
       "degradedTitle": "Motrix está conectado",
       "degradedBody": "Puedes usar Motrix con normalidad. Esta conexión solo tiene verificación básica. Para una mayor protección, actualiza Motrix y vuelve a vincularlo.",
       "recoveryExhaustedTitle": "No se pudo reconectar automáticamente",
-      "recoveryExhaustedBody": "Ninguna de las vinculaciones guardadas de Motrix funcionó. Pulsa Conectar para volver a vincularlo."
+      "recoveryExhaustedBody": "No se pudo restablecer la vinculación guardada. Reintenta la conexión o elige Olvidar vinculación en Configuración → Integración antes de volver a vincular."
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "La respuesta no superó la verificación y se detuvo la conexión. Puede que no sea tu Motrix.",
       "channelClosed": "Se cerró la conexión. Vuelve a conectarte para continuar.",
       "channelUnavailable": "No se puede acceder a Motrix ahora. Comprueba que esté en ejecución.",
-      "diagnosticsCopyFailed": "No se pudo copiar la información de diagnóstico. Inténtalo de nuevo."
+      "diagnosticsCopyFailed": "No se pudo copiar la información de diagnóstico. Inténtalo de nuevo.",
+      "storedPairingUnavailable": "No se pudo restablecer la vinculación guardada. Reintenta la conexión o elige Olvidar vinculación en Configuración → Integración antes de volver a vincular."
     }
   }
 }

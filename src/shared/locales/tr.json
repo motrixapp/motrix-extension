@@ -422,7 +422,7 @@
       "degradedTitle": "Motrix bağlı",
       "degradedBody": "Motrix’i normal şekilde kullanabilirsiniz. Bu bağlantı yalnızca temel doğrulamaya sahiptir. Daha güçlü koruma için Motrix’i güncelleyip yeniden eşleştirin.",
       "recoveryExhaustedTitle": "Otomatik olarak yeniden bağlanılamadı",
-      "recoveryExhaustedBody": "Kayıtlı Motrix eşleştirmelerinin hiçbiri çalışmadı. Yeniden eşleştirmek için Bağlan’a basın."
+      "recoveryExhaustedBody": "Kayıtlı eşleştirmeyle yeniden bağlanılamadı. Bağlantıyı yeniden deneyin veya tekrar eşleştirmeden önce Ayarlar → Entegrasyon bölümünde eşleştirmeyi unutun."
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "Yanıt doğrulanamadığı için bağlantı durduruldu. Sizin Motrix’iniz olmayabilir.",
       "channelClosed": "Bağlantı kapatıldı. Devam etmek için yeniden bağlanın.",
       "channelUnavailable": "Şu anda Motrix’e ulaşılamıyor. Çalıştığından emin olun.",
-      "diagnosticsCopyFailed": "Tanılama bilgileri kopyalanamadı. Tekrar deneyin."
+      "diagnosticsCopyFailed": "Tanılama bilgileri kopyalanamadı. Tekrar deneyin.",
+      "storedPairingUnavailable": "Kayıtlı eşleştirmeyle yeniden bağlanılamadı. Bağlantıyı yeniden deneyin veya tekrar eşleştirmeden önce Ayarlar → Entegrasyon bölümünde eşleştirmeyi unutun."
     }
   }
 }

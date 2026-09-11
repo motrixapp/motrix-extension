@@ -141,8 +141,8 @@ export function ConnectionStatusPanel({
             )}
             {/* §6.7/§12: an unattended attempt (autostart, or the automatic
              *  post-close probe-reconnect) correctly refused to fall back to
-             *  fresh code-entry pairing on its own — the Connect button below
-             *  is the actionable next step, not a nudge to wait. `bg.getState`
+             *  fresh code-entry pairing on its own. Connect retries retained
+             *  credentials; the settings page offers an explicit Forget. `bg.getState`
              *  never sends `lastError` alongside this flag (see its own doc),
              *  so this replaces that alert rather than joining it. */}
             {state.recoveryExhaustedUnattended && (

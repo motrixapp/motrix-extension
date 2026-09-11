@@ -422,7 +422,7 @@
       "degradedTitle": "Motrix terhubung",
       "degradedBody": "Anda dapat menggunakan Motrix seperti biasa. Koneksi ini hanya memiliki verifikasi dasar. Untuk perlindungan lebih kuat, perbarui Motrix dan sandingkan ulang.",
       "recoveryExhaustedTitle": "Tidak dapat terhubung ulang secara otomatis",
-      "recoveryExhaustedBody": "Tidak ada penyandingan Motrix tersimpan yang berhasil. Tekan Hubungkan untuk menyandingkan ulang."
+      "recoveryExhaustedBody": "Penyandingan tersimpan tidak dapat tersambung kembali. Coba lagi, atau pilih Lupakan penyandingan di Pengaturan → Integrasi sebelum menyandingkan ulang."
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "Balasan gagal diverifikasi sehingga koneksi dihentikan. Mungkin itu bukan Motrix Anda.",
       "channelClosed": "Koneksi ditutup. Hubungkan ulang untuk melanjutkan.",
       "channelUnavailable": "Motrix tidak dapat dijangkau saat ini. Pastikan Motrix berjalan.",
-      "diagnosticsCopyFailed": "Informasi diagnostik tidak dapat disalin. Coba lagi."
+      "diagnosticsCopyFailed": "Informasi diagnostik tidak dapat disalin. Coba lagi.",
+      "storedPairingUnavailable": "Penyandingan tersimpan tidak dapat tersambung kembali. Coba lagi, atau pilih Lupakan penyandingan di Pengaturan → Integrasi sebelum menyandingkan ulang."
     }
   }
 }

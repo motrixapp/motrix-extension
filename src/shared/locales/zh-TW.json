@@ -422,7 +422,7 @@
       "degradedTitle": "Motrix 已連線",
       "degradedBody": "您可以正常使用 Motrix。此連線僅通過基本驗證。如需更完善的保護，請更新 Motrix 並重新配對。",
       "recoveryExhaustedTitle": "無法自動重新連線",
-      "recoveryExhaustedBody": "已儲存的 Motrix 配對皆無法使用。請按「連線」以重新配對。"
+      "recoveryExhaustedBody": "暫時無法恢復已儲存的配對。請重試連線；若需重新配對，請先到設定 → 整合中點選「忘記配對」。"
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "回應未通過驗證，連線已停止。對方可能不是您的 Motrix。",
       "channelClosed": "連線已關閉，請重新連線以繼續。",
       "channelUnavailable": "目前無法連線至 Motrix，請確認它正在執行。",
-      "diagnosticsCopyFailed": "複製診斷資訊失敗，請重試。"
+      "diagnosticsCopyFailed": "複製診斷資訊失敗，請重試。",
+      "storedPairingUnavailable": "暫時無法恢復已儲存的配對。請重試連線；若需重新配對，請先到設定 → 整合中點選「忘記配對」。"
     }
   }
 }

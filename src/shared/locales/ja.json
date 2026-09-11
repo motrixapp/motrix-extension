@@ -422,7 +422,7 @@
       "degradedTitle": "Motrix に接続しました",
       "degradedBody": "Motrix を通常どおり使用できます。この接続は基本的な検証のみ行われています。保護を強化するには、Motrix を更新して再ペアリングしてください。",
       "recoveryExhaustedTitle": "自動再接続できませんでした",
-      "recoveryExhaustedBody": "保存済みの Motrix ペアリングはどれも使用できませんでした。「接続」を押して再ペアリングしてください。"
+      "recoveryExhaustedBody": "保存されたペアリングで再接続できませんでした。接続を再試行するか、設定 → 連携でペアリングを解除してから再度ペアリングしてください。"
     }
   },
   "errors": {
@@ -455,7 +455,8 @@
       "serverMacMismatch": "応答を検証できなかったため、接続を停止しました。あなたの Motrix ではない可能性があります。",
       "channelClosed": "接続が閉じられました。続行するには再接続してください。",
       "channelUnavailable": "現在 Motrix に接続できません。起動していることを確認してください。",
-      "diagnosticsCopyFailed": "診断情報をコピーできませんでした。もう一度お試しください。"
+      "diagnosticsCopyFailed": "診断情報をコピーできませんでした。もう一度お試しください。",
+      "storedPairingUnavailable": "保存されたペアリングで再接続できませんでした。接続を再試行するか、設定 → 連携でペアリングを解除してから再度ペアリングしてください。"
     }
   }
 }
