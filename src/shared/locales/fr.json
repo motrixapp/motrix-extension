@@ -21,7 +21,7 @@
     "handedToMotrix": "Transmis à Motrix",
     "notConnectedBody": "Associez Motrix pour lui confier les téléchargements.",
     "notConnectedTitle": "Motrix non connecté",
-    "notReachableBody": "Associez Motrix, puis réessayez le téléchargement.",
+    "notReachableBody": "Connexion à Motrix impossible. Ouvrez l’application et réessayez. L’association enregistrée est conservée.",
     "notReachableTitle": "Motrix inaccessible",
     "pairNudgeBody": "Ouvrez Motrix pour terminer l’association.",
     "pairNudgeTitle": "Associer Motrix",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "Le téléchargement du site sensible reste dans le navigateur.",
     "sensitiveSkippedTitle": "Ignoré",
     "submitFailedBody": "Relance du téléchargement dans le navigateur.",
-    "submitFailedTitle": "Échec de l’envoi à Motrix"
+    "submitFailedTitle": "Échec de l’envoi à Motrix",
+    "submitUnknownTitle": "Résultat de l’envoi inconnu. Vérifiez les tâches avant de renvoyer.",
+    "submitUnknownBody": "Résultat de l’envoi inconnu. Vérifiez les tâches avant de renvoyer."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Vous pouvez utiliser Motrix normalement. Cette connexion ne dispose que d’une vérification de base. Pour une meilleure protection, mettez Motrix à jour et associez-le à nouveau.",
       "recoveryExhaustedTitle": "Reconnexion automatique impossible",
       "recoveryExhaustedBody": "Impossible de rétablir l’association enregistrée. Réessayez la connexion ou oubliez l’association dans Paramètres → Intégration avant de recommencer."
+    },
+    "integration": {
+      "pairedTitle": "Associé. Vous pouvez envoyer des téléchargements.",
+      "pairedBody": "Motrix s’ouvre si nécessaire. Connectez-vous pour voir la progression des tâches.",
+      "pairedRemoteBody": "Envoyez directement vos téléchargements. Connectez-vous pour voir la progression des tâches.",
+      "viewTasks": "Voir les tâches",
+      "waking": "Ouverture de Motrix…",
+      "pairingUnavailable": "Informations d’association indisponibles. Réessayez.",
+      "pairingRequired": "Associez Motrix pour envoyer ce téléchargement.",
+      "connectionFailed": "Connexion à Motrix impossible. Ouvrez l’application et réessayez. L’association enregistrée est conservée.",
+      "resultUnknown": "Résultat de l’envoi inconnu. Vérifiez les tâches avant de renvoyer.",
+      "contextChanged": "La page ou le serveur sélectionné a changé. Sélectionnez à nouveau le téléchargement.",
+      "preparing": "Préparation du téléchargement…",
+      "sending": "Envoi du téléchargement…",
+      "pairedStatus": "Associé"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "La connexion a été fermée. Reconnectez-vous pour continuer.",
       "channelUnavailable": "Motrix est actuellement inaccessible. Vérifiez qu’il est en cours d’exécution.",
       "diagnosticsCopyFailed": "Impossible de copier les informations de diagnostic. Réessayez.",
-      "storedPairingUnavailable": "Impossible de rétablir l’association enregistrée. Réessayez la connexion ou oubliez l’association dans Paramètres → Intégration avant de recommencer."
+      "storedPairingUnavailable": "Connexion à Motrix impossible. Ouvrez l’application et réessayez. L’association enregistrée est conservée."
     }
   }
 }

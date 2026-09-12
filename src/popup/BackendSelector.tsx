@@ -15,11 +15,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { LOCAL_ENDPOINT_ID, type PopupEndpoint } from '@/popup/usePopupState'
+import type { PairingState } from '@/shared/integration'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 
 interface BackendSelectorProps {
   connection: ConnectionState | null
   endpoint: PopupEndpoint | null
+  pairing?: PairingState
+  attention?: boolean
   busy: boolean
   onEndpointChange: (endpointId: string) => void
   onConfigureServer: () => void
@@ -32,16 +35,26 @@ const PENDING_STATES = new Set<ConnectionState>([
   'awaiting-code',
 ])
 
-function statusClass(connection: ConnectionState | null): string {
+function statusClass(
+  connection: ConnectionState | null,
+  pairing: PairingState,
+  attention: boolean
+): string {
   if (connection === 'connected') return 'bg-connection-online'
   if (connection && PENDING_STATES.has(connection)) {
     return 'bg-connection-pending animate-pulse'
   }
-  return 'bg-connection-offline'
+  if (connection === 'denied' || pairing === 'unavailable' || attention)
+    return 'bg-connection-offline'
+  return pairing === 'stored'
+    ? 'bg-connection-paired'
+    : 'bg-muted-foreground/50'
 }
 
 export function BackendSelector({
   connection,
+  pairing = 'loading',
+  attention = false,
   endpoint,
   busy,
   onEndpointChange,
@@ -56,7 +69,17 @@ export function BackendSelector({
   const backendName =
     activeServer?.name ??
     t(localBackendAvailable ? 'popup.backend.app' : 'popup.backend.server')
-  const statusLabel = t(`popup.status.${connection ?? 'disconnected'}`)
+  const statusLabel = t(
+    pairing === 'unavailable'
+      ? 'popup.integration.pairingUnavailable'
+      : connection === 'disconnected' && attention
+        ? 'errors.connection.generic'
+        : connection === 'disconnected' && pairing === 'stored'
+          ? 'popup.integration.pairedStatus'
+          : connection === 'disconnected' && pairing === 'none'
+            ? 'options.pairing.notPaired'
+            : `popup.status.${connection ?? 'disconnected'}`
+  )
 
   return (
     <DropdownMenu>
@@ -67,7 +90,7 @@ export function BackendSelector({
             variant="outline"
             size="sm"
             className="h-8 w-full min-w-0 justify-start gap-2 rounded-[8px] px-2.5 text-sm shadow-xs"
-            title={backendName}
+            title={`${backendName} · ${statusLabel}`}
             aria-label={`${t('popup.backend.choose')}: ${backendName}, ${statusLabel}`}
             disabled={busy}
           />
@@ -77,13 +100,12 @@ export function BackendSelector({
           aria-hidden="true"
           className={cn(
             'size-2 shrink-0 rounded-full',
-            statusClass(connection)
+            statusClass(connection, pairing, attention)
           )}
         />
         <span className="min-w-0 flex-1 truncate text-left font-normal">
           {backendName}
         </span>
-        <span className="sr-only">{statusLabel}</span>
         <ChevronDown
           className="size-4 text-muted-foreground"
           data-icon="inline-end"

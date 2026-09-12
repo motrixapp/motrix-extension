@@ -21,7 +21,7 @@
     "handedToMotrix": "Motrix’e gönderildi",
     "notConnectedBody": "İndirmeleri devralması için Motrix’i eşleştirin.",
     "notConnectedTitle": "Motrix bağlı değil",
-    "notReachableBody": "Motrix’i eşleştirip indirmeyi yeniden deneyin.",
+    "notReachableBody": "Motrix bağlantısı kurulamadı. Uygulamayı açıp tekrar deneyin. Kayıtlı eşleştirme korunur.",
     "notReachableTitle": "Motrix’e ulaşılamıyor",
     "pairNudgeBody": "Eşleştirmeyi tamamlamak için Motrix’i açın.",
     "pairNudgeTitle": "Motrix’i eşleştir",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "Hassas sitenin indirmesi tarayıcıya bırakıldı.",
     "sensitiveSkippedTitle": "Atlandı",
     "submitFailedBody": "Tarayıcıda yeniden indiriliyor.",
-    "submitFailedTitle": "Motrix’e gönderilemedi"
+    "submitFailedTitle": "Motrix’e gönderilemedi",
+    "submitUnknownTitle": "Gönderim sonucu bilinmiyor. Tekrar göndermeden önce görevleri kontrol edin.",
+    "submitUnknownBody": "Gönderim sonucu bilinmiyor. Tekrar göndermeden önce görevleri kontrol edin."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Motrix’i normal şekilde kullanabilirsiniz. Bu bağlantı yalnızca temel doğrulamaya sahiptir. Daha güçlü koruma için Motrix’i güncelleyip yeniden eşleştirin.",
       "recoveryExhaustedTitle": "Otomatik olarak yeniden bağlanılamadı",
       "recoveryExhaustedBody": "Kayıtlı eşleştirmeyle yeniden bağlanılamadı. Bağlantıyı yeniden deneyin veya tekrar eşleştirmeden önce Ayarlar → Entegrasyon bölümünde eşleştirmeyi unutun."
+    },
+    "integration": {
+      "pairedTitle": "Eşleştirildi. İndirme gönderebilirsiniz.",
+      "pairedBody": "Gerektiğinde Motrix açılır. Görev ilerlemesini görmek için bağlanın.",
+      "pairedRemoteBody": "İndirmeleri doğrudan gönderin. Görev ilerlemesini görmek için bağlanın.",
+      "viewTasks": "Görevleri göster",
+      "waking": "Motrix açılıyor…",
+      "pairingUnavailable": "Eşleştirme bilgileri okunamıyor. Tekrar deneyin.",
+      "pairingRequired": "Bu indirmeyi göndermek için Motrix ile eşleştirin.",
+      "connectionFailed": "Motrix bağlantısı kurulamadı. Uygulamayı açıp tekrar deneyin. Kayıtlı eşleştirme korunur.",
+      "resultUnknown": "Gönderim sonucu bilinmiyor. Tekrar göndermeden önce görevleri kontrol edin.",
+      "contextChanged": "Sayfa veya seçilen sunucu değişti. İndirmeyi yeniden seçin.",
+      "preparing": "İndirme hazırlanıyor…",
+      "sending": "İndirme gönderiliyor…",
+      "pairedStatus": "Eşleştirildi"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "Bağlantı kapatıldı. Devam etmek için yeniden bağlanın.",
       "channelUnavailable": "Şu anda Motrix’e ulaşılamıyor. Çalıştığından emin olun.",
       "diagnosticsCopyFailed": "Tanılama bilgileri kopyalanamadı. Tekrar deneyin.",
-      "storedPairingUnavailable": "Kayıtlı eşleştirmeyle yeniden bağlanılamadı. Bağlantıyı yeniden deneyin veya tekrar eşleştirmeden önce Ayarlar → Entegrasyon bölümünde eşleştirmeyi unutun."
+      "storedPairingUnavailable": "Motrix bağlantısı kurulamadı. Uygulamayı açıp tekrar deneyin. Kayıtlı eşleştirme korunur."
     }
   }
 }

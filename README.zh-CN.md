@@ -21,7 +21,7 @@
 
 - Chrome 120 或更高版本、当前版本的 Microsoft Edge，或者 Firefox 142 或更高版本；
 - 支持当前 MDXP / MBP1 协议的 Motrix App 或 Motrix Server；
-- 如果要连接本机 Motrix App，请先启动 Motrix，并确保它的浏览器连接组件已经正确安装。
+- 首次配对本机 Motrix App 时，请先启动 Motrix，并确保它的浏览器连接组件已经正确安装。
 
 Firefox Android 通过 Motrix Server 连接。Android 不支持 Native Messaging，
 因此本机 Motrix App 后端只会在桌面浏览器中显示。
@@ -73,11 +73,15 @@ Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入
 ### 连接这台电脑上的 Motrix
 
 1. 启动 Motrix App。
-2. 点击浏览器工具栏中的 Motrix 图标，再点击“连接”。
+2. 点击浏览器工具栏中的 Motrix 图标，再点击“配对”。
 3. 如果发现多个 Motrix 实例，选择你正在使用的那一个。
 4. 在扩展中输入 Motrix 显示的 8 位配对码。
 
-配对成功后，扩展会保存仅属于这台 Motrix 的连接凭据。以后通常可以自动重连，不必每次输入配对码；如果你在 Motrix 端撤销了配对，扩展会要求重新授权。
+配对成功后，即使退出 Motrix，连接凭据也会保留。App 关闭时仍可发送下载：扩展会按需启动 App，并使用已保存的配对恢复连接。只打开扩展不会启动 App；点击“查看任务”可以连接并查看进度。远程 Server 需要已经运行且可访问。
+
+后端指示灯用蓝色表示已配对待命、绿色表示已连接、橙色表示连接中、灰色表示未配对，红色表示需要处理的异常。悬停在选择器上可查看状态。无法取得的实时统计显示为 `—`。
+
+如果发送后没有收到回执，请先查看任务列表再决定是否重试。扩展会保留“发送结果待确认”状态，避免自动创建重复下载。连接失败不会清除配对；只有明确遗忘配对或在 Motrix 中撤销后，才需要重新配对。
 
 ### 连接远程 Motrix Server
 

@@ -250,7 +250,7 @@ describe('registerChromiumInterception', () => {
     await vi.advanceTimersByTimeAsync(HOLD_DEADLINE_MS)
     expect(suggest).toHaveBeenCalledTimes(1)
     await expect(heldOps?.cancelNative()).rejects.toThrow(
-      'determination already released'
+      'download.preparation-timeout'
     )
     expect(downloads.cancel).not.toHaveBeenCalled()
   })

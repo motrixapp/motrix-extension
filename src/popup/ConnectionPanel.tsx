@@ -11,12 +11,14 @@ export function ConnectionPanel({
   state,
   onReconnect,
   onShowPairing,
+  onNewTask,
   actionLabel,
 }: {
   title: string
   state: PopupState
   onReconnect: () => void
   onShowPairing?: () => void
+  onNewTask?: () => void
   actionLabel?: string
 }): React.ReactElement {
   const { t } = useTranslation()
@@ -28,6 +30,7 @@ export function ConnectionPanel({
         <ConnectionStatusPanel
           state={state}
           onReconnect={onReconnect}
+          {...(onNewTask ? { onNewTask } : {})}
           {...(onShowPairing ? { onShowPairing } : {})}
           {...(actionLabel ? { actionLabel } : {})}
         />

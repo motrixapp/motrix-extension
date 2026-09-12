@@ -9,6 +9,7 @@ import type {
 } from '@motrix/mdxp'
 import {
   createMdxpConnection,
+  DownloadSubmitResultSchema,
   ErrorCodes,
   InitializeResultSchema,
   Methods,
@@ -17,6 +18,11 @@ import {
 import type { BgAdapterRegistry } from '@/background/AdapterRegistry'
 import { BackendOperationCoordinator } from '@/background/BackendOperationCoordinator'
 import { ConnectionGate } from '@/background/ConnectionGate'
+import {
+  beforeDeadline,
+  DownloadOutcomeUnknownError,
+  DownloadPreparationError,
+} from '@/background/download-errors'
 import {
   type BackendAttemptLease,
   type BackendAttemptMutationCapability,
@@ -99,6 +105,11 @@ import type { UrlResolutionDispatcher } from '@/background/UrlResolutionDispatch
 import { WebSocketClient } from '@/background/WebSocketClient'
 import { WebSocketFrameChannel } from '@/background/WebSocketFrameChannel'
 import { i18n } from '@/shared/i18n'
+import {
+  type ConnectionIntent,
+  type ConnectionPhase,
+  DOWNLOAD_ERROR,
+} from '@/shared/integration'
 import type { Notify, NotifyInput } from '@/shared/notifications'
 
 export type ConnectionState =
@@ -531,6 +542,10 @@ export class ConnectionManager {
    *  replacement out. `stop()` clears the flight so an endpoint/lifecycle
    *  change can start a genuinely new intent. */
   private explicitConnectFlight: Promise<void> | null = null
+  private readyFlight: Promise<void> | null = null
+  private lastAttemptIntent: ConnectionIntent | null = null
+  private connectionPhase: ConnectionPhase = 'idle'
+
   private readonly credentialStore: CredentialStore
   private readonly pinStore: PinStore
   private readonly discoveryService: DiscoveryService
@@ -638,6 +653,67 @@ export class ConnectionManager {
           new EnvelopeMessageReader(socket, envelope, queuedFrames),
           new EnvelopeMessageWriter(socket, envelope)
         ))
+  }
+
+  getLastAttemptIntent(): ConnectionIntent | null {
+    return this.lastAttemptIntent
+  }
+
+  getConnectionPhase(): ConnectionPhase {
+    return this.connectionPhase
+  }
+
+  /** Prepare a retained pairing without granting first-pair or clearing a gate.
+   * Each caller owns its deadline; the bounded underlying flight is shared. */
+  async ensureReady(options: {
+    intent: 'automatic-download' | 'explicit-download' | 'view-tasks'
+    deadlineAt?: number
+    assertCurrent?: () => void
+  }): Promise<void> {
+    const deadlineAt = options.deadlineAt ?? Date.now() + 30_000
+    const check = (): void => {
+      options.assertCurrent?.()
+      if (Date.now() >= deadlineAt) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.preparationTimeout)
+      }
+    }
+    check()
+    if (this.state === 'connected') return
+    let flight = this.readyFlight ?? this.explicitConnectFlight
+    if (flight === null) {
+      // A passive probe must not prevent a real download from waking the App.
+      // Explicit pairing owns its own flight and is joined above.
+      this.stopCurrentAttempt()
+      const work = this.connectExpected(
+        {
+          allowLaunch: true,
+          userInitiated: true,
+          allowFirstPair: false,
+          intent: options.intent,
+        },
+        null
+      )
+      let owned: Promise<void>
+      owned = beforeDeadline(work, Date.now() + 30_000)
+        .catch((error) => {
+          if (this.readyFlight === owned) this.stopCurrentAttempt()
+          throw error
+        })
+        .finally(() => {
+          if (this.readyFlight === owned) this.readyFlight = null
+        })
+      this.readyFlight = owned
+      flight = owned
+    }
+    await beforeDeadline(flight, deadlineAt)
+    check()
+    if (this.getState() !== 'connected') {
+      throw new DownloadPreparationError(
+        this.lastErrorReason === DOWNLOAD_ERROR.pairingRequired
+          ? DOWNLOAD_ERROR.pairingRequired
+          : DOWNLOAD_ERROR.connectionFailed
+      )
+    }
   }
 
   getState(): ConnectionState {
@@ -816,6 +892,7 @@ export class ConnectionManager {
     options: {
       automaticTakeover?: boolean
       assertCurrent?: () => void
+      onSubmitting?: () => Promise<void>
     } = {}
   ): Promise<DownloadSubmitResult> {
     options.assertCurrent?.()
@@ -835,15 +912,48 @@ export class ConnectionManager {
       outbound = applyRemoteSubmitPolicy(params, policy)
     }
     // Every logical submit carries an idempotency key. Motrix scopes it to the
-    // stable extension identity (browser + extensionId), so a retransmit after
-    // a lost response or reconnect returns the original task. Retry-owning
-    // callers must supply and reuse their key; an unkeyed call starts a new
+    // stable extension identity (browser + extensionId) within its bounded
+    // process-local cache. A lost response does not prove the cache still
+    // retains the result. Callers reuse their key; an unkeyed call starts a new
     // logical submit and therefore receives a fresh key here.
     const withKey: DownloadSubmitParams = outbound.idempotencyKey
       ? outbound
       : { ...outbound, idempotencyKey: crypto.randomUUID() }
     options.assertCurrent?.()
-    return this.request(Methods.DownloadSubmit, withKey)
+    const conn = this.currentConn
+    const generation = this.generation
+    if (conn === null || this.state !== 'connected') {
+      throw new DownloadPreparationError(DOWNLOAD_ERROR.connectionFailed)
+    }
+    await options.onSubmitting?.()
+    options.assertCurrent?.()
+    this.ensureCurrentConnection(generation, conn)
+    try {
+      const result = DownloadSubmitResultSchema.safeParse(
+        await this.request(Methods.DownloadSubmit, withKey)
+      )
+      if (!result.success) throw new DownloadOutcomeUnknownError()
+      return result.data
+    } catch (error) {
+      // Only explicit pre-dispatch rejections prove that no task was accepted.
+      // Transport loss, cancellation and generic server errors may arrive after
+      // task creation. Never automatically retry or browser-fallback those.
+      const code = (error as { code?: unknown } | null)?.code
+      const rejected: unknown[] = [
+        ErrorCodes.ParseError,
+        ErrorCodes.InvalidRequest,
+        ErrorCodes.MethodNotFound,
+        ErrorCodes.InvalidParams,
+        ErrorCodes.PermissionDenied,
+        ErrorCodes.RateLimited,
+        ErrorCodes.CapabilityNotSupported,
+        ErrorCodes.PairRevoked,
+      ]
+      if (rejected.includes(code)) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.rejected)
+      }
+      throw new DownloadOutcomeUnknownError()
+    }
   }
 
   /** Current remote authority's consent, bound to the MBP1-authenticated
@@ -886,7 +996,12 @@ export class ConnectionManager {
     // no later state subscription to correct it. Complete this single
     // attempt before acknowledging the policy change; connect() already
     // contains failures and leaves an authoritative terminal state.
-    await this.connect({ allowLaunch: false, userInitiated: true })
+    await this.connect({
+      allowLaunch: false,
+      userInitiated: true,
+      allowFirstPair: false,
+      intent: 'retry-connection',
+    })
     return policy
   }
 
@@ -910,6 +1025,8 @@ export class ConnectionManager {
   private setState(s: ConnectionState): void {
     if (this.state === s) return
     this.state = s
+    if (s === 'disconnected' || s === 'denied') this.connectionPhase = 'idle'
+    if (s === 'connected') this.connectionPhase = 'ready'
     for (const cb of this.stateListeners) cb(s)
   }
 
@@ -918,6 +1035,7 @@ export class ConnectionManager {
     this.lastErrorReason = null
     this.lastErrorRetryAtMs = null
     this.pendingPairingCode = null
+    this.lastAttemptIntent = null
   }
 
   private adoptPresentationEndpoint(incarnation: EndpointIncarnation): void {
@@ -1102,35 +1220,25 @@ export class ConnectionManager {
     return released
   }
 
-  /**
-   * Unified connect entry. `allowLaunch` and `userInitiated` answer two
-   * different questions and MUST NOT be conflated even though every caller
-   * today happens to pass the same value for both:
-   *
-   * - `allowLaunch`: may this attempt wake Motrix via the native host
-   *   (`NativeBootstrap`)? Forwarded to the discovery chain.
-   * - `userInitiated`: did an actual human ask for this attempt, as opposed
-   *   to an automatic background one (SW-startup autostart, or the single
-   *   probe-reconnect after a socket closes)? Consulted only by
-   *   `connectLocalMbp1`, which refuses to fall through to fresh
-   *   code-entry pairing once the recovery order is exhausted unless this
-   *   is `true` — see `RecoveryExhaustedUnattendedError`.
-   *
-   * Single attempt only. On failure: enters denied (if pair denied/revoked)
-   * or returns to disconnected (dormant). No backoff loop.
-   *
-   * Respects the connection gate: if a pair attempt is pending or a denial
-   * is recorded, surfaces the prior state without re-attempting.
-   */
+  /** Low-level single attempt. Launch, error presentation and first pairing
+   * are independent permissions. Product callers use ensureReady or the
+   * explicit pairing/retry entry instead of choosing these flags themselves. */
   async connect(opts: {
     allowLaunch: boolean
     userInitiated: boolean
+    allowFirstPair?: boolean
+    intent?: ConnectionIntent
   }): Promise<void> {
     await this.connectExpected(opts, null, this.takePreferredCandidatePort())
   }
 
   private async connectExpected(
-    opts: { allowLaunch: boolean; userInitiated: boolean },
+    opts: {
+      allowLaunch: boolean
+      userInitiated: boolean
+      allowFirstPair?: boolean
+      intent?: ConnectionIntent
+    },
     expected: EndpointIncarnation | null,
     preferredCandidatePort: number | null = null
   ): Promise<void> {
@@ -1160,6 +1268,8 @@ export class ConnectionManager {
         expected
       )
       scope = attemptScope
+      this.lastAttemptIntent =
+        opts.intent ?? (opts.userInitiated ? 'first-pair' : 'background-probe')
       this.ensureCurrentAttempt(generation)
 
       // SW-restart safety: skip auto-attempt if a pair attempt is still
@@ -1208,7 +1318,8 @@ export class ConnectionManager {
         opts.allowLaunch,
         opts.userInitiated,
         attemptScope,
-        preferredCandidatePort
+        preferredCandidatePort,
+        opts.allowFirstPair ?? opts.userInitiated
       )
     } catch (e) {
       // A superseded attempt owns neither the visible error/state nor the
@@ -1279,29 +1390,10 @@ export class ConnectionManager {
     )
   }
 
-  /**
-   * Explicit user-triggered reconnect. Clears the gate so the next SW
-   * restart can auto-connect again, then connects wake-authorized and
-   * user-initiated. This is the only caller that passes `userInitiated:
-   * true` — every automatic path (`autostart`, the post-close probe-
-   * reconnect) passes `false` for both.
-   *
-   * Four call sites, all downstream of a real click: `bg.reconnect` (popup
-   * "Connect"), `bg.chooseCandidate` (the "Pair" dialog),
-   * `EndpointCatalogService.afterConnectionChange`, and
-   * `makeOps.connectWithLaunch`. The last two are worth naming explicitly,
-   * since "a human asked for *this*" takes some interpreting there:
-   * switching the backend selector to the local App while unpaired, and a
-   * right-click "Download with Motrix" on an unpaired endpoint, both reach
-   * this method — and therefore `/pair` — as a side effect of an action that
-   * was not itself "pair". Both are treated as user-initiated on purpose:
-   * choosing that backend, or explicitly asking to download via Motrix, is
-   * already an expressed intent to use it, and offering to pair is the
-   * right response to either. Recorded here so the next reader finds a
-   * decision, not an oversight.
-   */
+  /** Explicit Pair/Retry action. Retained credentials still never fall
+   * through to first pairing; automatic downloads must use ensureReady. */
   clearGateAndStart(): Promise<void> {
-    const active = this.explicitConnectFlight
+    const active = this.explicitConnectFlight ?? this.readyFlight
     if (active !== null) return active
 
     const flight = this.runExplicitConnect()
@@ -1340,7 +1432,12 @@ export class ConnectionManager {
       this.stopCurrentAttempt()
     }
     await this.connectExpected(
-      { allowLaunch: true, userInitiated: true },
+      {
+        allowLaunch: true,
+        userInitiated: true,
+        allowFirstPair: true,
+        intent: 'first-pair',
+      },
       intent,
       preferredCandidatePort
     )
@@ -1352,6 +1449,7 @@ export class ConnectionManager {
     // invalidated. The old flight's guarded completion cannot clear a newer
     // replacement.
     this.explicitConnectFlight = null
+    this.readyFlight = null
     this.stopCurrentAttempt()
   }
 
@@ -1402,13 +1500,15 @@ export class ConnectionManager {
     allowLaunch: boolean,
     userInitiated: boolean,
     scope: EndpointAttemptScope,
-    preferredCandidatePort: number | null
+    preferredCandidatePort: number | null,
+    allowFirstPair: boolean
   ): Promise<void> {
     const { generation, endpointConfig } = scope
     this.ensureCurrentAttempt(generation)
     const seq = ++this.attemptSeq
     this.serverIdentity = null
     this.degraded = null
+    this.connectionPhase = 'probing'
     this.setState('bootstrapping')
     log.info(
       `[connect#${seq}] connectOnce start; mode=${endpointConfig.mode} ` +
@@ -1426,18 +1526,20 @@ export class ConnectionManager {
         allowLaunch,
         userInitiated,
         scope,
-        preferredCandidatePort
+        preferredCandidatePort,
+        allowFirstPair
       )
       return
     }
 
-    await this.connectRemoteMbp1(seq, userInitiated, scope)
+    await this.connectRemoteMbp1(seq, userInitiated, scope, allowFirstPair)
   }
 
   private async connectRemoteMbp1(
     seq: number,
     userInitiated: boolean,
-    scope: EndpointAttemptScope
+    scope: EndpointAttemptScope,
+    allowFirstPair: boolean
   ): Promise<void> {
     const { generation, authority } = scope
     if (authority.kind !== 'remote') throw new StaleConnectionAttemptError()
@@ -1532,6 +1634,9 @@ export class ConnectionManager {
     }
 
     if (!userInitiated) throw new RecoveryExhaustedUnattendedError()
+    if (order.length > 0) throw new StoredPairingUnavailableError()
+    if (!allowFirstPair)
+      throw new DownloadPreparationError(DOWNLOAD_ERROR.pairingRequired)
     if (this.opts.pairingCodeSource === undefined) {
       throw new Error(
         'first-pair requires a pairing code source; none configured'
@@ -1617,7 +1722,8 @@ export class ConnectionManager {
     allowLaunch: boolean,
     userInitiated: boolean,
     scope: EndpointAttemptScope,
-    preferredCandidatePort: number | null
+    preferredCandidatePort: number | null,
+    allowFirstPair: boolean
   ): Promise<void> {
     const { generation } = scope
     const principal: Principal = {
@@ -1696,6 +1802,7 @@ export class ConnectionManager {
             pins: this.pinStore,
             isCurrent: () => this.isCurrentAttempt(generation),
           })
+          this.connectionPhase = 'authenticating'
           result = await flow.run({
             credential,
             discovery: discovered,
@@ -1755,8 +1862,8 @@ export class ConnectionManager {
         return
       }
 
-      // Only an explicit click may wake an offline paired app. Complete the
-      // ordinary recovery walk first, and never launch after an auth failure.
+      // A concrete download or an explicit connection may wake a paired App.
+      // Complete ordinary recovery first; never launch after an auth failure.
       if (
         pass !== 0 ||
         foundEndpoint ||
@@ -1765,6 +1872,7 @@ export class ConnectionManager {
         !allowLaunch
       )
         break
+      this.connectionPhase = 'waking'
       awakened = await this.discoveryService.wakeForReconnect(
         order.map((c) => c.credentialId)
       )
@@ -1787,6 +1895,8 @@ export class ConnectionManager {
     if (!userInitiated) {
       throw new RecoveryExhaustedUnattendedError()
     }
+    if (!allowFirstPair)
+      throw new DownloadPreparationError(DOWNLOAD_ERROR.pairingRequired)
     await this.connectFirstPairMbp1(
       seq,
       allowLaunch,
@@ -1951,6 +2061,7 @@ export class ConnectionManager {
     socket.addEventListener('close', () => this.handleClose(generation, conn))
 
     this.ensureCurrentConnection(generation, conn)
+    this.connectionPhase = 'initializing'
     this.setState('handshaking')
 
     // By this point PairingFlow.run has already completed — the dialog was

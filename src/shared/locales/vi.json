@@ -21,7 +21,7 @@
     "handedToMotrix": "Đã gửi tới Motrix",
     "notConnectedBody": "Ghép đôi Motrix để tiếp quản tải xuống.",
     "notConnectedTitle": "Motrix chưa kết nối",
-    "notReachableBody": "Ghép đôi Motrix rồi thử tải xuống lại.",
+    "notReachableBody": "Không thể kết nối với Motrix. Hãy mở ứng dụng rồi thử lại. Thông tin ghép nối đã lưu được giữ nguyên.",
     "notReachableTitle": "Không thể truy cập Motrix",
     "pairNudgeBody": "Mở Motrix để hoàn tất ghép đôi.",
     "pairNudgeTitle": "Ghép đôi Motrix",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "Nội dung từ trang nhạy cảm được tải bằng trình duyệt.",
     "sensitiveSkippedTitle": "Đã bỏ qua",
     "submitFailedBody": "Đang tải lại bằng trình duyệt.",
-    "submitFailedTitle": "Gửi tới Motrix thất bại"
+    "submitFailedTitle": "Gửi tới Motrix thất bại",
+    "submitUnknownTitle": "Chưa xác định được kết quả gửi. Hãy kiểm tra tác vụ trước khi gửi lại.",
+    "submitUnknownBody": "Chưa xác định được kết quả gửi. Hãy kiểm tra tác vụ trước khi gửi lại."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Bạn có thể dùng Motrix bình thường. Kết nối này chỉ có xác minh cơ bản. Để được bảo vệ tốt hơn, hãy cập nhật Motrix và ghép đôi lại.",
       "recoveryExhaustedTitle": "Không thể tự động kết nối lại",
       "recoveryExhaustedBody": "Không thể kết nối lại bằng ghép đôi đã lưu. Hãy thử kết nối lại hoặc chọn Quên ghép đôi trong Cài đặt → Tích hợp trước khi ghép đôi lại."
+    },
+    "integration": {
+      "pairedTitle": "Đã ghép nối. Có thể gửi lượt tải xuống.",
+      "pairedBody": "Motrix sẽ mở khi cần. Kết nối để xem tiến trình tác vụ.",
+      "pairedRemoteBody": "Gửi lượt tải xuống trực tiếp. Kết nối để xem tiến trình tác vụ.",
+      "viewTasks": "Xem tác vụ",
+      "waking": "Đang mở Motrix…",
+      "pairingUnavailable": "Không thể đọc thông tin ghép nối. Hãy thử lại.",
+      "pairingRequired": "Ghép nối Motrix để gửi lượt tải xuống này.",
+      "connectionFailed": "Không thể kết nối với Motrix. Hãy mở ứng dụng rồi thử lại. Thông tin ghép nối đã lưu được giữ nguyên.",
+      "resultUnknown": "Chưa xác định được kết quả gửi. Hãy kiểm tra tác vụ trước khi gửi lại.",
+      "contextChanged": "Trang hoặc máy chủ đã chọn đã thay đổi. Hãy chọn lại lượt tải xuống.",
+      "preparing": "Đang chuẩn bị tải xuống…",
+      "sending": "Đang gửi lượt tải xuống…",
+      "pairedStatus": "Đã ghép"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "Kết nối đã đóng. Kết nối lại để tiếp tục.",
       "channelUnavailable": "Hiện không thể truy cập Motrix. Đảm bảo ứng dụng đang chạy.",
       "diagnosticsCopyFailed": "Không thể sao chép thông tin chẩn đoán. Hãy thử lại.",
-      "storedPairingUnavailable": "Không thể kết nối lại bằng ghép đôi đã lưu. Hãy thử kết nối lại hoặc chọn Quên ghép đôi trong Cài đặt → Tích hợp trước khi ghép đôi lại."
+      "storedPairingUnavailable": "Không thể kết nối với Motrix. Hãy mở ứng dụng rồi thử lại. Thông tin ghép nối đã lưu được giữ nguyên."
     }
   }
 }

@@ -704,7 +704,7 @@ describe('MediaPanel resource rows', () => {
     expect(retryKey).toBe(firstKey)
   })
 
-  it('keeps offline discovery and selection available, then enables submission after reconnect', async () => {
+  it('allows a paired offline download and keeps its receipt after reconnect', async () => {
     let scanCount = 0
     send.mockImplementation(async (kind: string) => {
       if (kind === 'bg.scanActiveTab') {
@@ -732,33 +732,21 @@ describe('MediaPanel resource rows', () => {
 
     expect((selection as HTMLInputElement).disabled).toBe(false)
     expect((selectAll as HTMLInputElement).disabled).toBe(false)
-    expect((quickDownload as HTMLButtonElement).disabled).toBe(true)
-    const quickReasonId = quickDownload.getAttribute('aria-describedby')
-    expect(document.getElementById(quickReasonId ?? '')?.textContent).toBe(
-      i18n.t('popup.sniffer.connectToSubmit')
-    )
-
+    expect((quickDownload as HTMLButtonElement).disabled).toBe(false)
     fireEvent.click(selectAll)
     expect((selection as HTMLInputElement).checked).toBe(true)
     const batch = screen.getByRole('button', { name: 'Download selected' })
-    expect((batch as HTMLButtonElement).disabled).toBe(true)
-    const batchReasonId = batch.getAttribute('aria-describedby')
-    expect(document.getElementById(batchReasonId ?? '')?.textContent).toBe(
-      i18n.t('popup.sniffer.connectToSubmit')
-    )
+    expect((batch as HTMLButtonElement).disabled).toBe(false)
+    fireEvent.click(batch)
+    await screen.findByRole('button', { name: 'Sent master.m3u8' })
+    expect(submitCalls()).toHaveLength(1)
 
     rerender(<MediaPanel active connected submissionKey="local" />)
 
     await waitFor(() => expect(scanCount).toBe(2))
-    const connectedQuickDownload = screen.getByRole('button', {
-      name: 'Quick download master.m3u8',
-    })
-    expect((connectedQuickDownload as HTMLButtonElement).disabled).toBe(false)
-    expect((selection as HTMLInputElement).checked).toBe(true)
-    expect((batch as HTMLButtonElement).disabled).toBe(false)
-
-    fireEvent.click(batch)
-    await screen.findByRole('button', { name: 'Sent master.m3u8' })
+    expect(
+      screen.getByRole('button', { name: 'Sent master.m3u8' })
+    ).toBeTruthy()
     expect(submitCalls()).toHaveLength(1)
   })
 
@@ -1007,7 +995,7 @@ describe('MediaPanel resource rows', () => {
     )
   })
 
-  it('keeps page resolution visible offline with a localized disabled reason', async () => {
+  it('allows page resolution while paired and offline', async () => {
     tabsQuery.mockResolvedValue([
       { url: 'https://www.youtube.com/watch?v=motrix' },
     ])
@@ -1023,11 +1011,7 @@ describe('MediaPanel resource rows', () => {
     const resolve = await screen.findByRole('button', {
       name: i18n.t('popup.sniffer.pageAction.youtube'),
     })
-    expect((resolve as HTMLButtonElement).disabled).toBe(true)
-    const descriptionId = resolve.getAttribute('aria-describedby')
-    expect(document.getElementById(descriptionId ?? '')?.textContent).toBe(
-      i18n.t('popup.sniffer.connectToSubmit')
-    )
+    expect((resolve as HTMLButtonElement).disabled).toBe(false)
 
     rerender(<MediaPanel active connected />)
     await waitFor(() => {

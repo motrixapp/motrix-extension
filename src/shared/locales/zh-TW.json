@@ -21,7 +21,7 @@
     "handedToMotrix": "已傳送至 Motrix",
     "notConnectedBody": "配對 Motrix 以接管下載。",
     "notConnectedTitle": "Motrix 尚未連線",
-    "notReachableBody": "請先配對 Motrix，再重試下載。",
+    "notReachableBody": "暫時無法連線至 Motrix。請開啟 App 後重試，已儲存的配對會保留。",
     "notReachableTitle": "無法連線至 Motrix",
     "pairNudgeBody": "請開啟 Motrix 以完成配對。",
     "pairNudgeTitle": "配對 Motrix",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "敏感網站的下載交由瀏覽器處理。",
     "sensitiveSkippedTitle": "已略過",
     "submitFailedBody": "正在使用瀏覽器重新下載。",
-    "submitFailedTitle": "傳送至 Motrix 失敗"
+    "submitFailedTitle": "傳送至 Motrix 失敗",
+    "submitUnknownTitle": "傳送結果待確認，請先查看任務，避免重複傳送。",
+    "submitUnknownBody": "傳送結果待確認，請先查看任務，避免重複傳送。"
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "您可以正常使用 Motrix。此連線僅通過基本驗證。如需更完善的保護，請更新 Motrix 並重新配對。",
       "recoveryExhaustedTitle": "無法自動重新連線",
       "recoveryExhaustedBody": "暫時無法恢復已儲存的配對。請重試連線；若需重新配對，請先到設定 → 整合中點選「忘記配對」。"
+    },
+    "integration": {
+      "pairedTitle": "已配對，可直接傳送下載",
+      "pairedBody": "傳送時會視需要開啟 Motrix，連線後可查看任務進度。",
+      "pairedRemoteBody": "可直接傳送下載，連線後可查看任務進度。",
+      "viewTasks": "查看任務",
+      "waking": "正在開啟 Motrix…",
+      "pairingUnavailable": "暫時無法讀取配對資訊，請重試。",
+      "pairingRequired": "請先配對 Motrix，再傳送此下載。",
+      "connectionFailed": "暫時無法連線至 Motrix。請開啟 App 後重試，已儲存的配對會保留。",
+      "resultUnknown": "傳送結果待確認，請先查看任務，避免重複傳送。",
+      "contextChanged": "頁面或所選後端已變更，請重新選擇下載。",
+      "preparing": "正在準備下載…",
+      "sending": "正在傳送下載…",
+      "pairedStatus": "已配對"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "連線已關閉，請重新連線以繼續。",
       "channelUnavailable": "目前無法連線至 Motrix，請確認它正在執行。",
       "diagnosticsCopyFailed": "複製診斷資訊失敗，請重試。",
-      "storedPairingUnavailable": "暫時無法恢復已儲存的配對。請重試連線；若需重新配對，請先到設定 → 整合中點選「忘記配對」。"
+      "storedPairingUnavailable": "暫時無法連線至 Motrix。請開啟 App 後重試，已儲存的配對會保留。"
     }
   }
 }

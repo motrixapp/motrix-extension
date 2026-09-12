@@ -12,6 +12,8 @@ export class HandoffEndpointChangedError extends Error {
 
 export interface HandoffGuard {
   readonly origin: TakeoverTarget['origin']
+  readonly endpointId?: string
+  readonly endpointRevision?: number
   /** Synchronous fence immediately before browser cancellation or sending. */
   assertCurrent(): void
 }
@@ -42,6 +44,10 @@ export class HandoffEndpointTracker {
       const generation = this.generation
       return {
         origin,
+        endpointId: config.activeEndpointId,
+        endpointRevision:
+          config.servers.find((server) => server.id === config.activeEndpointId)
+            ?.revision ?? 0,
         assertCurrent: () => {
           if (generation !== this.generation) {
             throw new HandoffEndpointChangedError()

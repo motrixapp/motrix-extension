@@ -34,6 +34,8 @@ import type {
 import type { CreateManualTaskRequest } from '@/shared/manualTask'
 
 export interface CallerIdempotencyRequest {
+  pairIfNeeded?: boolean
+
   idempotencyKey: string
 }
 
@@ -59,6 +61,10 @@ export interface MessageMap {
     request: undefined
     response: {
       state: ConnectionState
+      endpoint: EndpointConfig
+      pairing: import('@/shared/integration').PairingState
+      phase: import('@/shared/integration').ConnectionPhase
+      attemptIntent: import('@/shared/integration').ConnectionIntent | null
       lastError?: string
       /** The failed attempt's stable reason code
        *  (`PairingFailureReason`/`ReconnectFailureReason`), when the error
@@ -112,12 +118,17 @@ export interface MessageMap {
       }
     }
   }
+  'bg.getDownloadOperations': {
+    request: { endpointId: string; endpointRevision?: number }
+    response: import('@/shared/integration').DownloadOperation[]
+  }
   'bg.getRecentActivity': {
     request: undefined
     response: {
       events: Array<{ at: number; kind: string; detail: string }>
     }
   }
+  'bg.viewTasks': { request: undefined; response: { ok: true } }
   'bg.reconnect': { request: undefined; response: { ok: true } }
   'bg.clearBadgeError': { request: undefined; response: { ok: true } }
   'bg.getEndpointConfig': {

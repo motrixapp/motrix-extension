@@ -21,7 +21,7 @@
     "handedToMotrix": "Motrix に送信しました",
     "notConnectedBody": "Motrix をペアリングすると、ダウンロードを引き継げます。",
     "notConnectedTitle": "Motrix 未接続",
-    "notReachableBody": "Motrix をペアリングしてから、もう一度ダウンロードしてください。",
+    "notReachableBody": "Motrix に接続できません。アプリを開いて再試行してください。保存済みのペアリングは保持されます。",
     "notReachableTitle": "Motrix に接続できません",
     "pairNudgeBody": "Motrix を開いてペアリングを完了してください。",
     "pairNudgeTitle": "Motrix をペアリング",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "機密性の高いサイトのダウンロードはブラウザーで処理します。",
     "sensitiveSkippedTitle": "スキップしました",
     "submitFailedBody": "ブラウザーで再ダウンロードしています。",
-    "submitFailedTitle": "Motrix への送信に失敗しました"
+    "submitFailedTitle": "Motrix への送信に失敗しました",
+    "submitUnknownTitle": "送信結果を確認できません。再送信する前にタスクを確認してください。",
+    "submitUnknownBody": "送信結果を確認できません。再送信する前にタスクを確認してください。"
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Motrix を通常どおり使用できます。この接続は基本的な検証のみ行われています。保護を強化するには、Motrix を更新して再ペアリングしてください。",
       "recoveryExhaustedTitle": "自動再接続できませんでした",
       "recoveryExhaustedBody": "保存されたペアリングで再接続できませんでした。接続を再試行するか、設定 → 連携でペアリングを解除してから再度ペアリングしてください。"
+    },
+    "integration": {
+      "pairedTitle": "ペアリング済み。ダウンロードを送信できます。",
+      "pairedBody": "必要に応じて Motrix を起動します。接続するとタスクの進行状況を確認できます。",
+      "pairedRemoteBody": "ダウンロードを直接送信できます。接続するとタスクの進行状況を確認できます。",
+      "viewTasks": "タスクを表示",
+      "waking": "Motrix を起動中…",
+      "pairingUnavailable": "ペアリング情報を読み込めません。もう一度お試しください。",
+      "pairingRequired": "このダウンロードを送信するには Motrix とペアリングしてください。",
+      "connectionFailed": "Motrix に接続できません。アプリを開いて再試行してください。保存済みのペアリングは保持されます。",
+      "resultUnknown": "送信結果を確認できません。再送信する前にタスクを確認してください。",
+      "contextChanged": "ページまたは選択した接続先が変更されました。ダウンロードを選び直してください。",
+      "preparing": "ダウンロードを準備中…",
+      "sending": "ダウンロードを送信中…",
+      "pairedStatus": "ペア済み"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "接続が閉じられました。続行するには再接続してください。",
       "channelUnavailable": "現在 Motrix に接続できません。起動していることを確認してください。",
       "diagnosticsCopyFailed": "診断情報をコピーできませんでした。もう一度お試しください。",
-      "storedPairingUnavailable": "保存されたペアリングで再接続できませんでした。接続を再試行するか、設定 → 連携でペアリングを解除してから再度ペアリングしてください。"
+      "storedPairingUnavailable": "Motrix に接続できません。アプリを開いて再試行してください。保存済みのペアリングは保持されます。"
     }
   }
 }

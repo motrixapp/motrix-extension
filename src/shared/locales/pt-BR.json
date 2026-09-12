@@ -21,7 +21,7 @@
     "handedToMotrix": "Enviado ao Motrix",
     "notConnectedBody": "Pareie o Motrix para gerenciar os downloads.",
     "notConnectedTitle": "Motrix desconectado",
-    "notReachableBody": "Pareie o Motrix e tente baixar novamente.",
+    "notReachableBody": "Não foi possível conectar ao Motrix. Abra o aplicativo e tente novamente. O pareamento salvo é mantido.",
     "notReachableTitle": "Motrix inacessível",
     "pairNudgeBody": "Abra o Motrix para concluir o pareamento.",
     "pairNudgeTitle": "Parear o Motrix",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "O download do site sensível ficou no navegador.",
     "sensitiveSkippedTitle": "Ignorado",
     "submitFailedBody": "Reiniciando o download no navegador.",
-    "submitFailedTitle": "Falha ao enviar ao Motrix"
+    "submitFailedTitle": "Falha ao enviar ao Motrix",
+    "submitUnknownTitle": "Resultado do envio desconhecido. Confira as tarefas antes de enviar novamente.",
+    "submitUnknownBody": "Resultado do envio desconhecido. Confira as tarefas antes de enviar novamente."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Você pode usar o Motrix normalmente. Esta conexão tem apenas verificação básica. Para maior proteção, atualize o Motrix e pareie novamente.",
       "recoveryExhaustedTitle": "Não foi possível reconectar automaticamente",
       "recoveryExhaustedBody": "Não foi possível reconectar o pareamento salvo. Tente novamente ou escolha Esquecer pareamento em Configurações → Integração antes de parear novamente."
+    },
+    "integration": {
+      "pairedTitle": "Pareado. Você pode enviar downloads.",
+      "pairedBody": "O Motrix abre quando necessário. Conecte para ver o progresso das tarefas.",
+      "pairedRemoteBody": "Envie downloads diretamente. Conecte para ver o progresso das tarefas.",
+      "viewTasks": "Ver tarefas",
+      "waking": "Abrindo o Motrix…",
+      "pairingUnavailable": "Não foi possível ler os dados de pareamento. Tente novamente.",
+      "pairingRequired": "Pareie o Motrix para enviar este download.",
+      "connectionFailed": "Não foi possível conectar ao Motrix. Abra o aplicativo e tente novamente. O pareamento salvo é mantido.",
+      "resultUnknown": "Resultado do envio desconhecido. Confira as tarefas antes de enviar novamente.",
+      "contextChanged": "A página ou o servidor selecionado mudou. Selecione o download novamente.",
+      "preparing": "Preparando download…",
+      "sending": "Enviando download…",
+      "pairedStatus": "Pareado"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "A conexão foi fechada. Reconecte-se para continuar.",
       "channelUnavailable": "O Motrix está inacessível no momento. Verifique se ele está em execução.",
       "diagnosticsCopyFailed": "Não foi possível copiar as informações de diagnóstico. Tente novamente.",
-      "storedPairingUnavailable": "Não foi possível reconectar o pareamento salvo. Tente novamente ou escolha Esquecer pareamento em Configurações → Integração antes de parear novamente."
+      "storedPairingUnavailable": "Não foi possível conectar ao Motrix. Abra o aplicativo e tente novamente. O pareamento salvo é mantido."
     }
   }
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { DownloadOutcomeUnknownError } from '@/background/download-errors'
 import { HandoffEndpointChangedError } from '@/background/handoff/guard'
 import { type HandoffOps, runHandoff } from '@/background/handoff/runHandoff'
 import { RemoteDataBoundaryConsentRequiredError } from '@/background/remote-submit-policy'
@@ -40,6 +41,21 @@ function ops(over: Partial<HandoffOps> = {}): HandoffOps {
 }
 
 describe('runHandoff', () => {
+  it('does not replay or browser-fallback an ambiguous submit after cancellation', async () => {
+    const o = ops({
+      submit: vi.fn(async () => {
+        throw new DownloadOutcomeUnknownError()
+      }),
+    })
+    await runHandoff(target(), o)
+    expect(o.cancelNative).toHaveBeenCalledOnce()
+    expect(o.submit).toHaveBeenCalledOnce()
+    expect(o.fallbackToBrowser).not.toHaveBeenCalled()
+    expect(o.notify).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 'reminder' })
+    )
+  })
+
   it('keeps the native download when the endpoint changes during data preparation', async () => {
     let changed = false
     const o = ops({

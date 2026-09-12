@@ -17,6 +17,7 @@ import type {
 } from '@/background/mbp1/credential-store'
 import type { PinStore } from '@/background/mbp1/pin-store'
 import { computeVerifiedOrigin } from '@/background/mbp1/verified-origin'
+import type { PairingState } from '@/shared/integration'
 
 /**
  * What this service needs to answer "is this endpoint paired" and revoke it.
@@ -99,6 +100,23 @@ export class PairingEndpointService {
     return this.coordinator.run(async () => {
       const config = await this.endpointConfigStore.get()
       return this.paired(resolveActiveEndpoint(config))
+    })
+  }
+
+  /** Read pairing and presentation under the same short lifecycle lease.
+   * The callback is synchronous: network work must never hold this queue. */
+  readActiveSnapshot<T>(read: () => T) {
+    return this.coordinator.run(async () => {
+      const endpoint = await this.endpointConfigStore.getForLifecycleMutation()
+      let pairing: PairingState
+      try {
+        pairing = (await this.paired(resolveActiveEndpoint(endpoint)))
+          ? 'stored'
+          : 'none'
+      } catch {
+        pairing = 'unavailable'
+      }
+      return { ...read(), endpoint, pairing }
     })
   }
 

@@ -30,12 +30,17 @@ export const QUICK_ADD_TASK_I18N_KEYS = {
     unsupported: 'popup.quickAdd.error.unsupported',
     invalid: 'popup.quickAdd.error.invalid',
     submitFailed: 'popup.quickAdd.error.submitFailed',
+    resultUnknown: 'popup.integration.resultUnknown',
+    pairingRequired: 'popup.integration.pairingRequired',
+    connectionFailed: 'popup.integration.connectionFailed',
+    contextChanged: 'popup.integration.contextChanged',
   } satisfies Record<QuickAddTaskErrorKind, string>,
 } as const
 
 export interface QuickAddTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  pairIfNeeded?: boolean
   onCreated: (taskId: string) => void | Promise<void>
 }
 
@@ -43,6 +48,7 @@ export function QuickAddTaskDialog({
   open,
   onOpenChange,
   onCreated,
+  pairIfNeeded = false,
 }: QuickAddTaskDialogProps): React.ReactElement {
   const { t } = useTranslation()
   const onOpenChangeRef = useRef(onOpenChange)
@@ -61,7 +67,7 @@ export function QuickAddTaskDialog({
     }
   }, [])
 
-  const controller = useQuickAddTask({ onCreated: handleCreated })
+  const controller = useQuickAddTask({ onCreated: handleCreated, pairIfNeeded })
   const previousOpenRef = useRef(open)
 
   useEffect(() => {
@@ -160,7 +166,11 @@ export function QuickAddTaskDialog({
               )}
               {controller.submitting
                 ? t(QUICK_ADD_TASK_I18N_KEYS.submitting)
-                : t(QUICK_ADD_TASK_I18N_KEYS.add)}
+                : t(
+                    pairIfNeeded
+                      ? 'contextMenu.pairThenDownload'
+                      : QUICK_ADD_TASK_I18N_KEYS.add
+                  )}
             </Button>
           </DialogFooter>
         </form>

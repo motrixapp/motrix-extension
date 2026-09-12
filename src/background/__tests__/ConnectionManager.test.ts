@@ -1874,6 +1874,33 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
     )
   })
 
+  it.each([null, {}, { taskId: 42 }])(
+    'keeps a malformed submit receipt uncertain: %j',
+    async (receipt) => {
+      const fakeConn = makeSubmitFakeConn()
+      const manager = makeManager({
+        mbp1Conn: fakeConn as unknown as MdxpConnection,
+      })
+      await manager.connect({ allowLaunch: true, userInitiated: true })
+      fakeConn.sendRequest.mockResolvedValueOnce(receipt)
+      await expect(
+        manager.submitDownload({
+          source: {
+            pageUrl: 'https://example.com/',
+            pageTitle: 'File',
+            detectedAt: 1,
+          },
+          selection: {
+            kind: 'magnet',
+            uri: 'magnet:?xt=urn:btih:0123456789012345678901234567890123456789',
+          },
+          meta: { suggestedFilename: 'file', qualityLabel: 'source' },
+        })
+      ).rejects.toThrow('download.result-unknown')
+      manager.stop()
+    }
+  )
+
   it('times out a submit whose response is permanently lost', async () => {
     const fakeConn = makeSubmitFakeConn()
     fakeConn.sendRequest.mockImplementation(async (method: string) => {
@@ -1916,7 +1943,7 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
         },
         meta: { suggestedFilename: 'a.mp4', qualityLabel: '1080p' },
       })
-    ).rejects.toThrow(/download\/submit timed out after 10ms/i)
+    ).rejects.toThrow('download.result-unknown')
   })
 
   it('cancelDownload forwards download/cancel', async () => {

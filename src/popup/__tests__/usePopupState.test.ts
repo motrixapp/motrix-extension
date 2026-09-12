@@ -43,6 +43,13 @@ const LOCAL_ENDPOINT = {
   cleanupTombstones: [],
 }
 
+const SNAPSHOT = {
+  endpoint: LOCAL_ENDPOINT,
+  pairing: 'stored',
+  phase: 'ready',
+  attemptIntent: null,
+}
+
 describe('usePopupState', () => {
   beforeEach(() => {
     vi.useRealTimers()
@@ -50,6 +57,7 @@ describe('usePopupState', () => {
       const env = raw as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'connected',
           server: {
             name: 'Motrix',
@@ -138,6 +146,7 @@ describe('usePopupState', () => {
       const env = raw as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'connected',
           capabilities: { taskReveal: true },
         }
@@ -171,10 +180,11 @@ describe('usePopupState', () => {
     let endpointReads = 0
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
-      if (env.kind === 'bg.getState') return { state: 'connected' }
-      if (env.kind === 'bg.getEndpointConfig') {
+      if (env.kind === 'bg.getState') {
         endpointReads += 1
-        return endpointReads === 1 ? LOCAL_ENDPOINT : staleEndpoint.promise
+        const endpoint =
+          endpointReads === 1 ? LOCAL_ENDPOINT : await staleEndpoint.promise
+        return { ...SNAPSHOT, endpoint, state: 'connected' }
       }
       if (env.kind === 'bg.activateEndpoint') {
         return {
@@ -234,7 +244,7 @@ describe('usePopupState', () => {
   it('rejects a failed endpoint activation without changing local state', async () => {
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
-      if (env.kind === 'bg.getState') return { state: 'connected' }
+      if (env.kind === 'bg.getState') return { ...SNAPSHOT, state: 'connected' }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       if (env.kind === 'bg.activateEndpoint') {
         return { error: 'Endpoint activation failed' }
@@ -270,7 +280,7 @@ describe('usePopupState', () => {
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
       if (env.kind === 'bg.getState') {
-        return { state: 'handshaking', pairingCode }
+        return { ...SNAPSHOT, state: 'handshaking', pairingCode }
       }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       return { ok: true }
@@ -289,6 +299,7 @@ describe('usePopupState', () => {
       const env = raw as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'disconnected',
           ...(recoveryExhausted ? { recoveryExhaustedUnattended: true } : {}),
         }
@@ -315,7 +326,7 @@ describe('usePopupState', () => {
     const seen: unknown[] = []
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
-      if (env.kind === 'bg.getState') return { state: 'connected' }
+      if (env.kind === 'bg.getState') return { ...SNAPSHOT, state: 'connected' }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       if (env.kind === 'bg.submitPairingCode') {
         seen.push(env.payload)
@@ -337,7 +348,7 @@ describe('usePopupState', () => {
   it('submitPairingCode rejects when no code request is pending', async () => {
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
-      if (env.kind === 'bg.getState') return { state: 'connected' }
+      if (env.kind === 'bg.getState') return { ...SNAPSHOT, state: 'connected' }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       if (env.kind === 'bg.submitPairingCode') {
         return { ok: false, error: 'no pairing code request is pending' }

@@ -142,11 +142,19 @@ const previewRuntime = {
         if (previewConnection !== 'connected') {
           return {
             state: previewConnection,
+            endpoint: previewEndpoint,
+            pairing: 'stored',
+            phase: previewConnection === 'connected' ? 'ready' : 'idle',
+            attemptIntent: 'background-probe',
             lastError: 'motrix-not-running',
           }
         }
         return {
           state: previewConnection,
+          endpoint: previewEndpoint,
+          pairing: 'stored',
+          phase: previewConnection === 'connected' ? 'ready' : 'idle',
+          attemptIntent: 'background-probe',
           server: {
             name: 'Motrix',
             version: '2.0.0',
@@ -156,6 +164,9 @@ const previewRuntime = {
                 : 'server',
           },
         }
+      case 'bg.getDownloadOperations':
+        return []
+      case 'bg.viewTasks':
       case 'bg.reconnect':
         previewConnection = 'connected'
         return { ok: true }
@@ -207,6 +218,7 @@ const storageChanged = {
   removeListener: () => undefined,
 }
 const previewBrowser = {
+  permissions: { contains: async () => true },
   runtime: previewRuntime,
   i18n: { getUILanguage: () => previewLocale },
   storage: {

@@ -158,18 +158,18 @@ export function ConnectionDiagnosis({
             {description && <p>{description}</p>}
             {state.endpoint?.activeEndpointId === 'local' && (
               <>
-                <p>{t('popup.diagnostics.firstLaunchHint')}</p>
-                <p>
-                  {t('popup.diagnostics.latestVersionHint')}{' '}
-                  <a
-                    href={LINKS.appReleases}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-foreground underline underline-offset-2"
-                  >
-                    {t('popup.diagnostics.appReleases')}
-                  </a>
-                </p>
+                {state.lastErrorReason === 'backendUpgradeRequired' && (
+                  <p>
+                    <a
+                      href={LINKS.appReleases}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-foreground underline underline-offset-2"
+                    >
+                      {t('popup.diagnostics.appReleases')}
+                    </a>
+                  </p>
+                )}
                 <details className="group/advanced">
                   <summary className="flex min-h-7 cursor-pointer list-none items-center gap-1 rounded-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
                     <ChevronRight
@@ -178,6 +178,18 @@ export function ConnectionDiagnosis({
                     />
                     {t('popup.diagnostics.advanced')}
                   </summary>
+                  <p>{t('popup.diagnostics.firstLaunchHint')}</p>
+                  <p>
+                    {t('popup.diagnostics.latestVersionHint')}{' '}
+                    <a
+                      href={LINKS.appReleases}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-foreground underline underline-offset-2"
+                    >
+                      {t('popup.diagnostics.appReleases')}
+                    </a>
+                  </p>
                   <p className="pt-1">{t('popup.diagnostics.allowlistHint')}</p>
                 </details>
               </>
