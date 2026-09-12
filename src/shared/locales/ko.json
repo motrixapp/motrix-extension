@@ -21,7 +21,7 @@
     "handedToMotrix": "Motrix로 전송됨",
     "notConnectedBody": "Motrix를 페어링하여 다운로드를 넘겨주세요.",
     "notConnectedTitle": "Motrix가 연결되지 않음",
-    "notReachableBody": "Motrix를 페어링한 후 다운로드를 다시 시도하세요.",
+    "notReachableBody": "Motrix에 연결할 수 없습니다. 앱을 열고 다시 시도하세요. 저장된 페어링은 유지됩니다.",
     "notReachableTitle": "Motrix에 연결할 수 없음",
     "pairNudgeBody": "Motrix를 열어 페어링을 완료하세요.",
     "pairNudgeTitle": "Motrix 페어링",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "민감한 사이트의 다운로드는 브라우저에서 처리합니다.",
     "sensitiveSkippedTitle": "건너뜀",
     "submitFailedBody": "브라우저에서 다시 다운로드합니다.",
-    "submitFailedTitle": "Motrix 전송 실패"
+    "submitFailedTitle": "Motrix 전송 실패",
+    "submitUnknownTitle": "전송 결과를 확인할 수 없습니다. 다시 보내기 전에 작업을 확인하세요.",
+    "submitUnknownBody": "전송 결과를 확인할 수 없습니다. 다시 보내기 전에 작업을 확인하세요."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Motrix를 정상적으로 사용할 수 있습니다. 이 연결에는 기본 검증만 적용됩니다. 보안을 강화하려면 Motrix를 업데이트하고 다시 페어링하세요.",
       "recoveryExhaustedTitle": "자동으로 다시 연결하지 못했습니다",
       "recoveryExhaustedBody": "저장된 페어링으로 다시 연결할 수 없습니다. 연결을 다시 시도하거나 설정 → 통합에서 페어링을 삭제한 후 다시 페어링하세요."
+    },
+    "integration": {
+      "pairedTitle": "페어링됨. 다운로드를 보낼 수 있습니다.",
+      "pairedBody": "필요할 때 Motrix를 엽니다. 연결하면 작업 진행 상황을 확인할 수 있습니다.",
+      "pairedRemoteBody": "다운로드를 바로 보낼 수 있습니다. 연결하면 작업 진행 상황을 확인할 수 있습니다.",
+      "viewTasks": "작업 보기",
+      "waking": "Motrix 여는 중…",
+      "pairingUnavailable": "페어링 정보를 읽을 수 없습니다. 다시 시도하세요.",
+      "pairingRequired": "이 다운로드를 보내려면 Motrix와 페어링하세요.",
+      "connectionFailed": "Motrix에 연결할 수 없습니다. 앱을 열고 다시 시도하세요. 저장된 페어링은 유지됩니다.",
+      "resultUnknown": "전송 결과를 확인할 수 없습니다. 다시 보내기 전에 작업을 확인하세요.",
+      "contextChanged": "페이지 또는 선택한 백엔드가 변경되었습니다. 다운로드를 다시 선택하세요.",
+      "preparing": "다운로드 준비 중…",
+      "sending": "다운로드 전송 중…",
+      "pairedStatus": "페어링됨"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "연결이 닫혔습니다. 계속하려면 다시 연결하세요.",
       "channelUnavailable": "현재 Motrix에 연결할 수 없습니다. 실행 중인지 확인하세요.",
       "diagnosticsCopyFailed": "진단 정보를 복사하지 못했습니다. 다시 시도하세요.",
-      "storedPairingUnavailable": "저장된 페어링으로 다시 연결할 수 없습니다. 연결을 다시 시도하거나 설정 → 통합에서 페어링을 삭제한 후 다시 페어링하세요."
+      "storedPairingUnavailable": "Motrix에 연결할 수 없습니다. 앱을 열고 다시 시도하세요. 저장된 페어링은 유지됩니다."
     }
   }
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { send } from '@/background/MessageBus'
+import { DOWNLOAD_ERROR, newDownloadOperationId } from '@/shared/integration'
 import { parseManualTaskInput } from '@/shared/manualTask'
 
 export type QuickAddTaskErrorKind =
@@ -7,6 +8,10 @@ export type QuickAddTaskErrorKind =
   | 'unsupported'
   | 'invalid'
   | 'submitFailed'
+  | 'resultUnknown'
+  | 'pairingRequired'
+  | 'connectionFailed'
+  | 'contextChanged'
 
 export interface QuickAddTaskController {
   input: string
@@ -18,6 +23,7 @@ export interface QuickAddTaskController {
 }
 
 export interface UseQuickAddTaskOptions {
+  pairIfNeeded?: boolean
   onCreated: (taskId: string) => void | Promise<void>
 }
 
@@ -142,6 +148,7 @@ function clearPersistedDraft(): Promise<void> {
  */
 export function useQuickAddTask({
   onCreated,
+  pairIfNeeded = false,
 }: UseQuickAddTaskOptions): QuickAddTaskController {
   const [input, setInputState] = useState('')
   const [error, setError] = useState<QuickAddTaskErrorKind | null>(null)
@@ -152,6 +159,8 @@ export function useQuickAddTask({
   const submittingRef = useRef(false)
   const mountedRef = useRef(true)
   const onCreatedRef = useRef(onCreated)
+  const pairIfNeededRef = useRef(pairIfNeeded)
+  pairIfNeededRef.current = pairIfNeeded
   const inputRevisionRef = useRef(0)
 
   useEffect(() => {
@@ -227,7 +236,7 @@ export function useQuickAddTask({
       return null
     }
 
-    const idempotencyKey = idempotencyKeyRef.current ?? crypto.randomUUID()
+    const idempotencyKey = idempotencyKeyRef.current ?? newDownloadOperationId()
     idempotencyKeyRef.current = idempotencyKey
     const normalizedInput =
       parsed.value.kind === 'direct' ? parsed.value.url : parsed.value.uri
@@ -247,10 +256,28 @@ export function useQuickAddTask({
       const response = await send('bg.createManualTask', {
         input: normalizedInput,
         idempotencyKey,
+        ...(pairIfNeededRef.current ? { pairIfNeeded: true } : {}),
       })
       taskId = response.taskId
-    } catch {
-      if (mountedRef.current) setError('submitFailed')
+    } catch (error) {
+      if (mountedRef.current)
+        setError(
+          (error as Error)?.message === DOWNLOAD_ERROR.resultUnknown
+            ? 'resultUnknown'
+            : (error as Error)?.message === DOWNLOAD_ERROR.pairingRequired
+              ? 'pairingRequired'
+              : [
+                    DOWNLOAD_ERROR.connectionFailed,
+                    DOWNLOAD_ERROR.preparationTimeout,
+                  ].includes((error as Error)?.message as never)
+                ? 'connectionFailed'
+                : [
+                      DOWNLOAD_ERROR.endpointChanged,
+                      DOWNLOAD_ERROR.contextChanged,
+                    ].includes((error as Error)?.message as never)
+                  ? 'contextChanged'
+                  : 'submitFailed'
+        )
       return null
     } finally {
       submittingRef.current = false

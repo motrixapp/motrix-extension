@@ -34,6 +34,9 @@ function baseState(overrides: Partial<PopupState> = {}): PopupState {
   return {
     loading: false,
     connection: 'disconnected',
+    pairing: 'stored',
+    phase: 'idle',
+    attemptIntent: null,
     lastError: null,
     lastErrorReason: null,
     endpoint: null,
@@ -132,7 +135,7 @@ describe('ConnectionStatusPanel error copy', () => {
       <ConnectionStatusPanel state={baseState()} onReconnect={onReconnect} />
     )
     const button = screen.getByRole('button', {
-      name: i18n.t('popup.reconnect'),
+      name: i18n.t('popup.integration.viewTasks'),
     }) as HTMLButtonElement
     await userEvent.click(button)
     expect(onReconnect).toHaveBeenCalledOnce()
@@ -428,15 +431,27 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
     expect(writeText.mock.calls[0]?.[0]).toContain('original failure')
   })
 
-  it('offers diagnosis after unattended recovery is exhausted', async () => {
+  it('keeps an unattended offline pairing quiet and offers task access', async () => {
     render(
       <ConnectionStatusPanel
-        state={baseState({ recoveryExhaustedUnattended: true })}
+        state={baseState({
+          recoveryExhaustedUnattended: true,
+          lastError: 'not running',
+          attemptIntent: 'background-probe',
+        })}
         onReconnect={vi.fn()}
       />
     )
     expect(
-      screen.getByRole('button', { name: i18n.t('popup.diagnostics.run') })
+      screen.queryByRole('button', { name: i18n.t('popup.diagnostics.run') })
+    ).toBeNull()
+    expect(
+      screen.getByText(i18n.t('popup.integration.pairedTitle'))
+    ).toBeTruthy()
+    expect(
+      screen.getByRole('button', {
+        name: i18n.t('popup.integration.viewTasks'),
+      })
     ).toBeTruthy()
   })
 

@@ -21,7 +21,7 @@
     "handedToMotrix": "An Motrix übergeben",
     "notConnectedBody": "Koppeln Sie Motrix, um Downloads zu übernehmen.",
     "notConnectedTitle": "Motrix nicht verbunden",
-    "notReachableBody": "Koppeln Sie Motrix und versuchen Sie den Download erneut.",
+    "notReachableBody": "Keine Verbindung zu Motrix. App öffnen und erneut versuchen. Die gespeicherte Kopplung bleibt erhalten.",
     "notReachableTitle": "Motrix nicht erreichbar",
     "pairNudgeBody": "Öffnen Sie Motrix, um die Kopplung abzuschließen.",
     "pairNudgeTitle": "Motrix koppeln",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "Downloads von sensiblen Websites verbleiben im Browser.",
     "sensitiveSkippedTitle": "Übersprungen",
     "submitFailedBody": "Download wird erneut im Browser gestartet.",
-    "submitFailedTitle": "Übermittlung an Motrix fehlgeschlagen"
+    "submitFailedTitle": "Übermittlung an Motrix fehlgeschlagen",
+    "submitUnknownTitle": "Sendeergebnis unbekannt. Vor erneutem Senden die Aufgaben prüfen.",
+    "submitUnknownBody": "Sendeergebnis unbekannt. Vor erneutem Senden die Aufgaben prüfen."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Sie können Motrix normal nutzen. Diese Verbindung wurde nur grundlegend überprüft. Aktualisieren Sie Motrix und koppeln Sie es erneut, um den Schutz zu verbessern.",
       "recoveryExhaustedTitle": "Automatische Wiederverbindung fehlgeschlagen",
       "recoveryExhaustedBody": "Die gespeicherte Kopplung konnte nicht wiederhergestellt werden. Versuche die Verbindung erneut oder entferne die Kopplung unter Einstellungen → Integration, bevor du erneut koppelst."
+    },
+    "integration": {
+      "pairedTitle": "Gekoppelt. Downloads können gesendet werden.",
+      "pairedBody": "Motrix wird bei Bedarf geöffnet. Verbinden, um den Aufgabenfortschritt zu sehen.",
+      "pairedRemoteBody": "Downloads direkt senden. Verbinden, um den Aufgabenfortschritt zu sehen.",
+      "viewTasks": "Aufgaben ansehen",
+      "waking": "Motrix wird geöffnet…",
+      "pairingUnavailable": "Kopplungsinformationen sind nicht verfügbar. Erneut versuchen.",
+      "pairingRequired": "Motrix koppeln, um diesen Download zu senden.",
+      "connectionFailed": "Keine Verbindung zu Motrix. App öffnen und erneut versuchen. Die gespeicherte Kopplung bleibt erhalten.",
+      "resultUnknown": "Sendeergebnis unbekannt. Vor erneutem Senden die Aufgaben prüfen.",
+      "contextChanged": "Die Seite oder das gewählte Backend hat sich geändert. Download erneut auswählen.",
+      "preparing": "Download wird vorbereitet…",
+      "sending": "Download wird gesendet…",
+      "pairedStatus": "Gekoppelt"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "Die Verbindung wurde geschlossen. Verbinden Sie sich erneut, um fortzufahren.",
       "channelUnavailable": "Motrix ist derzeit nicht erreichbar. Stellen Sie sicher, dass es läuft.",
       "diagnosticsCopyFailed": "Diagnoseinformationen konnten nicht kopiert werden. Versuche es erneut.",
-      "storedPairingUnavailable": "Die gespeicherte Kopplung konnte nicht wiederhergestellt werden. Versuche die Verbindung erneut oder entferne die Kopplung unter Einstellungen → Integration, bevor du erneut koppelst."
+      "storedPairingUnavailable": "Keine Verbindung zu Motrix. App öffnen und erneut versuchen. Die gespeicherte Kopplung bleibt erhalten."
     }
   }
 }

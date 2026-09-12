@@ -14,6 +14,7 @@ interface Props {
   state: PopupState
   onReconnect: () => void
   onShowPairing?: () => void
+  onNewTask?: () => void
   actionLabel?: string
 }
 
@@ -59,7 +60,7 @@ const DOT_COLOR: Record<string, string> = {
   bootstrapping: 'bg-amber-400 animate-pulse',
   handshaking: 'bg-amber-400 animate-pulse',
   'awaiting-code': 'bg-amber-400 animate-pulse',
-  disconnected: 'bg-red-500',
+  disconnected: 'bg-muted-foreground/50',
   denied: 'bg-red-500',
 }
 
@@ -67,6 +68,7 @@ export function ConnectionStatusPanel({
   state,
   onReconnect,
   onShowPairing,
+  onNewTask,
   actionLabel,
 }: Props): React.ReactElement {
   const { t } = useTranslation()
@@ -86,7 +88,7 @@ export function ConnectionStatusPanel({
     setPendingReconnect(false)
   }, [state])
 
-  if (state.loading) {
+  if (state.loading || state.pairing === 'loading') {
     return (
       <div className="flex h-full items-center justify-center gap-2 text-sm text-muted-foreground">
         <Spinner className="size-4" aria-hidden="true" />
@@ -100,8 +102,27 @@ export function ConnectionStatusPanel({
   const canShowPairing =
     state.pairingCode !== null && onShowPairing !== undefined
 
-  const showDiagnosis =
-    state.lastError !== null || state.recoveryExhaustedUnattended
+  const pairedIdle = state.pairing === 'stored' && conn === 'disconnected'
+  const showError =
+    state.lastError !== null &&
+    (state.attemptIntent !== 'background-probe' || conn === 'denied')
+  const showDiagnosis = showError
+  const busy = [
+    'bootstrapping',
+    'connecting',
+    'handshaking',
+    'awaiting-code',
+  ].includes(conn)
+  const statusLabel =
+    state.pairing === 'unavailable'
+      ? t('popup.integration.pairingUnavailable')
+      : state.phase === 'waking'
+        ? t('popup.integration.waking')
+        : pairedIdle
+          ? t('popup.integration.pairedTitle')
+          : conn === 'disconnected' && state.pairing === 'none'
+            ? t('options.pairing.notPaired')
+            : t(`popup.status.${conn}`, { defaultValue: conn })
   const errorKey = connectionErrorKey(state.lastErrorReason)
   const notices = (
     <>
@@ -159,17 +180,19 @@ export function ConnectionStatusPanel({
               data-state={conn}
               className={cn(
                 'h-2.5 w-2.5 rounded-full',
-                DOT_COLOR[conn] ?? 'bg-muted-foreground'
+                showError
+                  ? 'bg-connection-offline'
+                  : pairedIdle
+                    ? 'bg-connection-paired'
+                    : (DOT_COLOR[conn] ?? 'bg-muted-foreground')
               )}
             />
-            <span className="text-sm text-foreground">
-              {t(`popup.status.${conn}`, { defaultValue: conn })}
-            </span>
+            <span className="text-sm text-foreground">{statusLabel}</span>
           </div>
           {/* A reason never arrives without its message (they are set and
            *  suppressed together in bg.getState), so presence keys off the
            *  message alone; the reason picks the copy. */}
-          {state.lastError !== null && (
+          {showError && (
             // Locale copy keyed by the stable reason code — the raw
             // `lastError` sentence is developer-facing (it also goes to
             // logs) and surfaces only as a hover title for diagnosis.
@@ -189,21 +212,14 @@ export function ConnectionStatusPanel({
               {notices}
             </ConnectionDiagnosis>
           )}
-          {/* §6.7/§12: an unattended attempt (autostart, or the automatic
-           *  post-close probe-reconnect) correctly refused to fall back to
-           *  fresh code-entry pairing on its own. Connect retries retained
-           *  credentials; the settings page offers an explicit Forget. `bg.getState`
-           *  never sends `lastError` alongside this flag (see its own doc),
-           *  so this replaces that alert rather than joining it. */}
-          {state.lastError === null && state.recoveryExhaustedUnattended && (
-            <ConnectionDiagnosis
-              key={JSON.stringify(state.endpoint)}
-              state={state}
-              heading={t('popup.pairing.recoveryExhaustedTitle')}
-              description={t('popup.pairing.recoveryExhaustedBody')}
-            >
-              {notices}
-            </ConnectionDiagnosis>
+          {!showDiagnosis && pairedIdle && (
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {t(
+                state.endpoint?.activeEndpointId === 'local'
+                  ? 'popup.integration.pairedBody'
+                  : 'popup.integration.pairedRemoteBody'
+              )}
+            </p>
           )}
           {!showDiagnosis && (
             <>
@@ -212,6 +228,11 @@ export function ConnectionStatusPanel({
             </>
           )}
         </div>
+        {!isOk && onNewTask && !busy && !showError && (
+          <Button type="button" size="sm" onClick={onNewTask}>
+            {t('popup.quickAdd.title')}
+          </Button>
+        )}
         {!isOk && (
           // §7.3: while the backoff is in force a click cannot succeed, so
           // the button says when it can instead of silently failing.
@@ -219,10 +240,11 @@ export function ConnectionStatusPanel({
             type="button"
             size="sm"
             className="shrink-0"
+            variant={pairedIdle && !showError ? 'outline' : 'default'}
             disabled={
               actionLabel === undefined &&
               !canShowPairing &&
-              (pendingReconnect || backoffSecondsLeft > 0)
+              (pendingReconnect || busy || backoffSecondsLeft > 0)
             }
             onClick={() => {
               if (canShowPairing) {
@@ -246,7 +268,11 @@ export function ConnectionStatusPanel({
                 ? actionLabel
                 : backoffSecondsLeft > 0
                   ? t('popup.pairing.retryIn', { seconds: backoffSecondsLeft })
-                  : t('popup.reconnect')}
+                  : pairedIdle && !showError
+                    ? t('popup.integration.viewTasks')
+                    : state.pairing === 'none'
+                      ? t('options.pairing.pair')
+                      : t('popup.reconnect')}
           </Button>
         )}
       </CardContent>

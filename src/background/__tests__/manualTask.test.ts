@@ -121,7 +121,8 @@ describe('manual task background adapter', () => {
       expect.objectContaining({
         idempotencyKey: 'caller-key-12345678',
         source: expect.objectContaining({ detectedAt: 5678 }),
-      })
+      }),
+      { pairIfNeeded: false }
     )
   })
 
@@ -184,7 +185,8 @@ describe('manual task background adapter', () => {
         popupSender
       )
       expect(submitDownload).toHaveBeenCalledWith(
-        expect.objectContaining({ idempotencyKey })
+        expect.objectContaining({ idempotencyKey }),
+        { pairIfNeeded: false }
       )
     }
   )

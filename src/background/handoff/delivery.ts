@@ -1,4 +1,8 @@
 import type { DownloadSubmitParams } from '@motrix/mdxp'
+import {
+  DownloadOutcomeUnknownError,
+  DownloadPreparationError,
+} from '@/background/download-errors'
 import { HandoffEndpointChangedError } from '@/background/handoff/guard'
 import type { HandoffOps } from '@/background/handoff/runHandoff'
 import {
@@ -28,7 +32,15 @@ async function submitOrFallback(
 ): Promise<void> {
   try {
     await submitWithRetry(params, ops)
-  } catch {
+  } catch (error) {
+    if (error instanceof DownloadOutcomeUnknownError) {
+      notifySafely(ops, {
+        title: i18n.t('notify.submitUnknownTitle'),
+        message: i18n.t('notify.submitUnknownBody'),
+        severity: 'reminder',
+      })
+      return
+    }
     let fellBack = false
     try {
       // Magnet links cannot be restored through the browser downloads API.
@@ -65,6 +77,8 @@ async function submitWithRetry(
     // Consent and endpoint changes cannot be repaired by resending the same
     // request. Other failures retain the existing idempotent retry.
     if (
+      error instanceof DownloadOutcomeUnknownError ||
+      error instanceof DownloadPreparationError ||
       error instanceof HandoffEndpointChangedError ||
       error instanceof RemoteDataBoundaryConsentRequiredError ||
       error instanceof RemoteAutomaticTakeoverConsentRequiredError

@@ -21,7 +21,7 @@
     "handedToMotrix": "Dikirim ke Motrix",
     "notConnectedBody": "Sandingkan Motrix untuk mengambil alih unduhan.",
     "notConnectedTitle": "Motrix tidak terhubung",
-    "notReachableBody": "Sandingkan Motrix, lalu coba unduh lagi.",
+    "notReachableBody": "Tidak dapat terhubung ke Motrix. Buka aplikasi dan coba lagi. Pemasangan yang tersimpan tetap dipertahankan.",
     "notReachableTitle": "Motrix tidak dapat dijangkau",
     "pairNudgeBody": "Buka Motrix untuk menyelesaikan penyandingan.",
     "pairNudgeTitle": "Sandingkan Motrix",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "Unduhan dari situs sensitif tetap ditangani browser.",
     "sensitiveSkippedTitle": "Dilewati",
     "submitFailedBody": "Mengunduh ulang di browser.",
-    "submitFailedTitle": "Pengiriman ke Motrix gagal"
+    "submitFailedTitle": "Pengiriman ke Motrix gagal",
+    "submitUnknownTitle": "Hasil pengiriman belum diketahui. Periksa tugas sebelum mengirim ulang.",
+    "submitUnknownBody": "Hasil pengiriman belum diketahui. Periksa tugas sebelum mengirim ulang."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Anda dapat menggunakan Motrix seperti biasa. Koneksi ini hanya memiliki verifikasi dasar. Untuk perlindungan lebih kuat, perbarui Motrix dan sandingkan ulang.",
       "recoveryExhaustedTitle": "Tidak dapat terhubung ulang secara otomatis",
       "recoveryExhaustedBody": "Penyandingan tersimpan tidak dapat tersambung kembali. Coba lagi, atau pilih Lupakan penyandingan di Pengaturan → Integrasi sebelum menyandingkan ulang."
+    },
+    "integration": {
+      "pairedTitle": "Sudah dipasangkan. Unduhan dapat dikirim.",
+      "pairedBody": "Motrix terbuka saat diperlukan. Hubungkan untuk melihat progres tugas.",
+      "pairedRemoteBody": "Kirim unduhan langsung. Hubungkan untuk melihat progres tugas.",
+      "viewTasks": "Lihat tugas",
+      "waking": "Membuka Motrix…",
+      "pairingUnavailable": "Informasi pemasangan tidak dapat dibaca. Coba lagi.",
+      "pairingRequired": "Pasangkan Motrix untuk mengirim unduhan ini.",
+      "connectionFailed": "Tidak dapat terhubung ke Motrix. Buka aplikasi dan coba lagi. Pemasangan yang tersimpan tetap dipertahankan.",
+      "resultUnknown": "Hasil pengiriman belum diketahui. Periksa tugas sebelum mengirim ulang.",
+      "contextChanged": "Halaman atau server yang dipilih berubah. Pilih unduhan lagi.",
+      "preparing": "Menyiapkan unduhan…",
+      "sending": "Mengirim unduhan…",
+      "pairedStatus": "Dipasangkan"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "Koneksi ditutup. Hubungkan ulang untuk melanjutkan.",
       "channelUnavailable": "Motrix tidak dapat dijangkau saat ini. Pastikan Motrix berjalan.",
       "diagnosticsCopyFailed": "Informasi diagnostik tidak dapat disalin. Coba lagi.",
-      "storedPairingUnavailable": "Penyandingan tersimpan tidak dapat tersambung kembali. Coba lagi, atau pilih Lupakan penyandingan di Pengaturan → Integrasi sebelum menyandingkan ulang."
+      "storedPairingUnavailable": "Tidak dapat terhubung ke Motrix. Buka aplikasi dan coba lagi. Pemasangan yang tersimpan tetap dipertahankan."
     }
   }
 }

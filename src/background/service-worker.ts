@@ -20,15 +20,13 @@ import { createConnectionDiagnosticsHandler } from '@/background/ConnectionDiagn
 import { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { ConnectionManager } from '@/background/ConnectionManager'
-import { buildMediaSubmitParams } from '@/background/capture/buildMediaSubmitParams'
 import { MediaCredentialStore } from '@/background/capture/MediaCredentialStore'
-import { buildResourceCredentials } from '@/background/capture/mediaCredentials'
-import { capturePageCookies } from '@/background/capture/pageCookies'
 import {
   downloadHttpInBrowser,
   registerContextMenu,
   updateContextMenuTitle,
 } from '@/background/contextMenu/register'
+import { DownloadSubmissionService } from '@/background/DownloadSubmissionService'
 import { EndpointCatalogService } from '@/background/EndpointCatalogService'
 import { EndpointConfigStore } from '@/background/EndpointConfigStore'
 import { HandoffEndpointTracker } from '@/background/handoff/guard'
@@ -43,18 +41,14 @@ import { MediaReportLimiter } from '@/background/MediaReportLimiter'
 import { MediaStore } from '@/background/MediaStore'
 import { MediaThumbnailBroker } from '@/background/MediaThumbnailBroker'
 import { MessageBus } from '@/background/MessageBus'
-import { createManualTaskHandler } from '@/background/manualTask'
+import {
+  createManualTaskHandler,
+  isExtensionPageSender,
+} from '@/background/manualTask'
 import { CredentialStore } from '@/background/mbp1/credential-store'
 import { MAX_RUNS_PER_SESSION } from '@/background/mbp1/pairing-flow'
 import { PinStore } from '@/background/mbp1/pin-store'
-import {
-  applyCallerIdempotencyKey,
-  toSafeMediaSubmitError,
-} from '@/background/mediaSubmission'
-import {
-  normalizeMediaReport,
-  resolveStoredMedia,
-} from '@/background/mediaTrust'
+import { normalizeMediaReport } from '@/background/mediaTrust'
 import { NotificationsConfigStore } from '@/background/NotificationsConfigStore'
 import { registerNetworkMediaCapture } from '@/background/networkMediaCapture'
 import { createNotify } from '@/background/notify'
@@ -62,6 +56,7 @@ import { PairingEndpointService } from '@/background/PairingEndpointService'
 import { createPairingCodeSource } from '@/background/pairing-code-source'
 import { PairNudge } from '@/background/pairNudge'
 import { decideTakeover } from '@/background/policy/decideTakeover'
+import { createPopupDownloadHandlers } from '@/background/popupDownloads'
 import { clearRemoteBackendPoliciesForAuthority } from '@/background/RemoteBackendPolicyStore'
 import { recoverStorageBeforeEndpointAutostart } from '@/background/storage-migrations'
 import { TakeoverConfigStore } from '@/background/TakeoverConfigStore'
@@ -82,8 +77,8 @@ import {
   type ControlPanelActivityEvent,
 } from '@/shared/controlPanelEvents'
 import { initI18n } from '@/shared/i18n'
-import { isResolvableVideoPage, shouldExcludeHost } from '@/shared/media'
-import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
+import { newDownloadOperationId } from '@/shared/integration'
+import { shouldExcludeHost } from '@/shared/media'
 
 // Build-time constant injected by vite (see vite.config.ts `define`).
 declare const __BROWSER__: 'chromium' | 'firefox'
@@ -153,7 +148,7 @@ const endpointCatalogService = new EndpointCatalogService(
     afterConnectionChange: () => {
       // The lifecycle queue is still held here. Schedule the connection after
       // this callback returns so it cannot wait on its own lease operation.
-      void manager.clearGateAndStart().catch(() => {
+      void manager.autostart().catch(() => {
         log.warn('backend connection restart failed after endpoint change')
       })
     },
@@ -204,11 +199,19 @@ const pairingEndpointService = new PairingEndpointService(
   {
     coordinator: backendOperationCoordinator,
     onActiveUnpair: async (authority) => {
-      manager.stop()
+      handoffEndpoints.invalidate()
+      manager.stopForEndpointChange()
       await ConnectionGate.forAuthority(authority).clear()
     },
   }
 )
+
+const submissions = new DownloadSubmissionService({
+  manager,
+  isPaired: () => pairingEndpointService.isActivePaired(),
+  captureGuard: () => handoffEndpoints.capture('context-menu'),
+  storage: browser.storage.session,
+})
 
 // Start recovery immediately, while keeping every MV3 listener registration
 // synchronous below. Message dispatch and non-message handoff entry points
@@ -253,56 +256,67 @@ bus.on(
       pairingEndpointService.getStatus(endpointId),
   })
 )
-bus.on('bg.getState', async () => {
-  const lastError = manager.getLastError()
-  const server = manager.getServerIdentity()
-  const errorReason = manager.getLastErrorReason()
-  const retryAtMs = manager.getLastErrorRetryAtMs()
-  // State-machine invariant 1: the prompt payload exists iff the manager is
-  // in `awaiting-code` — a dead attempt's prompt never reaches a surface.
-  const pending = manager.getPendingPairingCode()
-  const capabilities = manager.getServerCapabilities()
-  // `recoveryExhaustedUnattended` gets its own presentable copy in the
-  // popup (see ConnectionStatusPanel) — omit the raw developer-facing
-  // `lastError` sentence in that case rather than showing both.
-  const recoveryExhaustedUnattended =
-    errorReason === 'recoveryExhaustedUnattended'
-  return {
-    state: manager.getState(),
-    // One branch for both fields: message and reason are companion facts
-    // (set together in ConnectionManager), so they ship together or not at
-    // all — a second predicate here is where they could drift apart.
-    ...(lastError === null || recoveryExhaustedUnattended
-      ? {}
-      : {
-          lastError,
-          ...(errorReason === null ? {} : { lastErrorReason: errorReason }),
-        }),
-    ...(server === null ? {} : { server }),
-    ...(pending === null
-      ? {}
-      : {
-          pairingCode: {
-            run: pending.request.run,
-            maxRuns: MAX_RUNS_PER_SESSION,
-            attemptsRemaining: pending.request.attemptsRemaining,
-            deadlineMs: pending.deadlineMs,
-          },
-        }),
-    ...(errorReason === 'backoffLocked' && retryAtMs !== null
-      ? { backoff: { retryAtMs } }
-      : {}),
-    ...(manager.getDegraded() === true ? { degraded: true } : {}),
-    capabilities: {
-      taskReveal: capabilities?.taskReveal === true,
-    },
-    ...(recoveryExhaustedUnattended
-      ? { recoveryExhaustedUnattended: true }
-      : {}),
-  }
-})
+bus.on('bg.getState', () =>
+  pairingEndpointService.readActiveSnapshot(() => {
+    const lastError = manager.getLastError()
+    const server = manager.getServerIdentity()
+    const errorReason = manager.getLastErrorReason()
+    const retryAtMs = manager.getLastErrorRetryAtMs()
+    // State-machine invariant 1: the prompt payload exists iff the manager is
+    // in `awaiting-code` — a dead attempt's prompt never reaches a surface.
+    const pending = manager.getPendingPairingCode()
+    const capabilities = manager.getServerCapabilities()
+    // `recoveryExhaustedUnattended` gets its own presentable copy in the
+    // popup (see ConnectionStatusPanel) — omit the raw developer-facing
+    // `lastError` sentence in that case rather than showing both.
+    const recoveryExhaustedUnattended =
+      errorReason === 'recoveryExhaustedUnattended'
+    return {
+      state: manager.getState(),
+      phase: manager.getConnectionPhase(),
+      attemptIntent: manager.getLastAttemptIntent(),
+      // One branch for both fields: message and reason are companion facts
+      // (set together in ConnectionManager), so they ship together or not at
+      // all — a second predicate here is where they could drift apart.
+      ...(lastError === null || recoveryExhaustedUnattended
+        ? {}
+        : {
+            lastError,
+            ...(errorReason === null ? {} : { lastErrorReason: errorReason }),
+          }),
+      ...(server === null ? {} : { server }),
+      ...(pending === null
+        ? {}
+        : {
+            pairingCode: {
+              run: pending.request.run,
+              maxRuns: MAX_RUNS_PER_SESSION,
+              attemptsRemaining: pending.request.attemptsRemaining,
+              deadlineMs: pending.deadlineMs,
+            },
+          }),
+      ...(errorReason === 'backoffLocked' && retryAtMs !== null
+        ? { backoff: { retryAtMs } }
+        : {}),
+      ...(manager.getDegraded() === true ? { degraded: true } : {}),
+      capabilities: {
+        taskReveal: capabilities?.taskReveal === true,
+      },
+      ...(recoveryExhaustedUnattended
+        ? { recoveryExhaustedUnattended: true }
+        : {}),
+    }
+  })
+)
+bus.on('bg.getDownloadOperations', ({ endpointId, endpointRevision }) =>
+  submissions.list(endpointId, endpointRevision)
+)
 bus.on('bg.reconnect', async () => {
   await manager.clearGateAndStart()
+  return { ok: true } as const
+})
+bus.on('bg.viewTasks', async () => {
+  await manager.ensureReady({ intent: 'view-tasks' })
   return { ok: true } as const
 })
 bus.on('bg.clearBadgeError', async () => {
@@ -410,13 +424,33 @@ bus.on('bg.statsGet', async (params) =>
 bus.on('bg.engineStatus', async (params) =>
   manager.request(Methods.EngineStatus, params)
 )
-bus.on('bg.submitDownload', async (params) => manager.submitDownload(params))
+bus.on('bg.submitDownload', async (params, sender) => {
+  if (!isExtensionPageSender(sender, extensionId, browser.runtime.getURL('')))
+    throw new Error('download.rejected')
+  return submissions.run(
+    {
+      idempotencyKey: params.idempotencyKey ?? newDownloadOperationId(),
+      source: 'direct',
+      resourceKey: JSON.stringify(params.selection),
+    },
+    async () => params
+  )
+})
 bus.on(
   'bg.createManualTask',
   createManualTaskHandler({
     extensionId,
     extensionBaseUrl: browser.runtime.getURL(''),
-    submitDownload: (params) => manager.submitDownload(params),
+    submitDownload: (params, options) =>
+      submissions.run(
+        {
+          pairIfNeeded: options.pairIfNeeded,
+          idempotencyKey: params.idempotencyKey ?? newDownloadOperationId(),
+          source: 'manual',
+          resourceKey: JSON.stringify(params.selection),
+        },
+        async () => params
+      ),
   })
 )
 bus.on('bg.cancelDownload', async (params) => {
@@ -611,136 +645,24 @@ bus.on('bg.getMediaThumbnail', async (request) =>
   )
 )
 
-// bg.submitMedia: forward a detected media item to Motrix via MDXP.
-// Gates on selectionKinds capability reported by the server at initialize time;
-// hls/dash require ffmpeg on the desktop side.
-bus.on('bg.submitMedia', async (request) => {
-  if (
-    typeof request !== 'object' ||
-    request === null ||
-    typeof request.mediaKey !== 'string'
-  ) {
-    throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
-  }
-  try {
-    const [activeTab] = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    })
-    const media = await resolveStoredMedia(
-      request.mediaKey,
-      async () => activeTab,
-      mediaStore
-    )
-    const caps = manager.getServerCapabilities()
-    const kinds = caps?.selectionKinds ?? ['direct']
-    if (!kinds.includes(media.kind)) {
-      throw new Error('unsupported media selection')
-    }
-    if (typeof activeTab?.id !== 'number') throw new Error('no active tab')
-    const primaryObservation = mediaCredentialStore.get(
-      activeTab.id,
-      media.pageUrl,
-      media.url
-    )
-    const primaryCredentials = await buildResourceCredentials({
-      url: media.url,
-      ...(primaryObservation ? { observation: primaryObservation } : {}),
-      userAgent: navigator.userAgent,
-    })
-    const audioObservation = media.audioUrl
-      ? mediaCredentialStore.get(activeTab.id, media.pageUrl, media.audioUrl)
-      : undefined
-    const audioCredentials = media.audioUrl
-      ? await buildResourceCredentials({
-          url: media.audioUrl,
-          ...(audioObservation ? { observation: audioObservation } : {}),
-          userAgent: navigator.userAgent,
-        })
-      : { cookies: [], headers: {} }
-    const [currentTab] = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    })
-    if (
-      currentTab?.id !== activeTab.id ||
-      !currentTab.url ||
-      new URL(currentTab.url).toString() !== media.pageUrl
-    ) {
-      throw new Error('active tab changed')
-    }
-    const params = applyCallerIdempotencyKey(
-      buildMediaSubmitParams(
-        media,
-        primaryCredentials.cookies,
-        primaryCredentials.headers,
-        audioCredentials
-      ),
-      request
-    )
-    return await manager.submitDownload(params)
-  } catch (error) {
-    // Stored media, cookie, transport and native errors can contain private
-    // URLs or paths. Only expose a stable reason to the popup.
-    throw toSafeMediaSubmitError(error)
-  }
+const popupDownloads = createPopupDownloadHandlers({
+  manager,
+  submissions,
+  mediaStore,
+  mediaCredentialStore,
+  extensionId,
+  extensionBaseUrl: browser.runtime.getURL(''),
+  getActiveTabs: () =>
+    browser.tabs.query({ active: true, currentWindow: true }),
+  cookieApi: browser.cookies as unknown as Parameters<
+    typeof createPopupDownloadHandlers
+  >[0]['cookieApi'],
+  browserKind: __BROWSER__,
+  userAgent: navigator.userAgent,
+  webStore: isWebStoreBuild(),
 })
-
-// bg.resolvePageDownload: submit the active tab's watch-page URL for resolution.
-// Used for bilibili/youtube pages where the generic sniffer finds nothing.
-// Motrix's resolveToMux seam resolves the actual stream URLs server-side.
-// Does NOT gate on selectionKinds — 'direct' is always supported and turbo
-// upgrades the submit via resolveToMux on its side.
-bus.on('bg.resolvePageDownload', async (request) => {
-  try {
-    const [tab] = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    })
-    if (!tab?.url) throw new Error('no active tab')
-    const check = isResolvableVideoPage(tab.url, isWebStoreBuild())
-    if (!check.resolvable) throw new Error('page not resolvable')
-    const cookies = await capturePageCookies({
-      url: tab.url,
-      ...(tab.cookieStoreId ? { storeId: tab.cookieStoreId } : {}),
-      browser: __BROWSER__,
-      api: browser.cookies as unknown as Parameters<
-        typeof capturePageCookies
-      >[0]['api'],
-    })
-    const [currentTab] = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    })
-    if (
-      !currentTab ||
-      currentTab.id !== tab.id ||
-      !currentTab.url ||
-      new URL(currentTab.url).toString() !== new URL(tab.url).toString()
-    ) {
-      throw new Error('active tab changed')
-    }
-    const headers: Record<string, string> = {
-      Referer: `${new URL(tab.url).origin}/`,
-      'User-Agent': navigator.userAgent,
-    }
-    const media = {
-      kind: 'direct' as const,
-      url: tab.url,
-      pageUrl: tab.url,
-      pageTitle: tab.title ?? tab.url,
-      detectedAt: Date.now(),
-    }
-    const params = applyCallerIdempotencyKey(
-      buildMediaSubmitParams(media, cookies, headers),
-      request
-    )
-    return await manager.submitDownload(params)
-  } catch (error) {
-    // Do not surface the active URL, cookie details or native errors.
-    throw toSafeMediaSubmitError(error)
-  }
-})
+bus.on('bg.submitMedia', popupDownloads.submitMedia)
+bus.on('bg.resolvePageDownload', popupDownloads.resolvePageDownload)
 
 bus.attach()
 

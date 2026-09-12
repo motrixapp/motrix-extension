@@ -6,17 +6,26 @@ import {
   mapCookies,
 } from '@/background/capture/cookies'
 import { isSensitiveDomain } from '@/background/capture/sensitiveDomains'
+import {
+  beforeDeadline,
+  DownloadPreparationError,
+} from '@/background/download-errors'
 import type { HandoffGuard } from '@/background/handoff/guard'
 import type { HandoffOps } from '@/background/handoff/runHandoff'
 import { describeUrlForLog, log } from '@/background/log'
 import type { PairNudge } from '@/background/pairNudge'
+import { DOWNLOAD_ERROR } from '@/shared/integration'
 import type { Notify } from '@/shared/notifications'
 import type { TakeoverTarget } from '@/shared/takeover'
 
 export interface OpsDeps {
   manager: Pick<
     ConnectionManager,
-    'getState' | 'getLastError' | 'clearGateAndStart' | 'submitDownload'
+    | 'getState'
+    | 'getLastError'
+    | 'clearGateAndStart'
+    | 'ensureReady'
+    | 'submitDownload'
   >
   guard: HandoffGuard
   /** `PairingEndpointService.isActivePaired` — the one definition of
@@ -30,6 +39,7 @@ export interface OpsDeps {
   fallbackToBrowser: () => Promise<void>
   confirmSensitive: (t: TakeoverTarget) => Promise<boolean>
   notify: Notify
+  deadlineAt?: number
 }
 
 async function waitForConnected(
@@ -52,19 +62,43 @@ async function waitForConnected(
 
 export function makeOps(deps: OpsDeps): HandoffOps {
   const { manager, gate, nudge } = deps
+  const deadlineAt =
+    deps.deadlineAt ??
+    Date.now() + (deps.guard.origin === 'auto' ? 8000 : 150_000)
+  const assertCurrent = (): void => {
+    deps.guard.assertCurrent()
+    if (Date.now() >= deadlineAt)
+      throw new DownloadPreparationError(DOWNLOAD_ERROR.preparationTimeout)
+  }
   return {
-    assertCurrent: deps.guard.assertCurrent,
+    assertCurrent,
     getState: () => manager.getState(),
     connectWithLaunch: async () => {
-      deps.guard.assertCurrent()
+      assertCurrent()
       log.debug(
         '[takeover] connectWithLaunch (clearGateAndStart); state=',
         manager.getState()
       )
-      await manager.clearGateAndStart()
+      if (deps.guard.origin === 'context-menu' && !(await deps.isPaired())) {
+        assertCurrent()
+        await beforeDeadline(manager.clearGateAndStart(), deadlineAt)
+      } else {
+        await manager.ensureReady({
+          intent:
+            deps.guard.origin === 'auto'
+              ? 'automatic-download'
+              : 'explicit-download',
+          deadlineAt,
+          assertCurrent,
+        })
+      }
+      assertCurrent()
     },
     waitForConnected: async (ms) => {
-      const ok = await waitForConnected(manager, ms)
+      const ok = await waitForConnected(
+        manager,
+        Math.min(ms, Math.max(0, deadlineAt - Date.now()))
+      )
       log.debug(
         '[takeover] waitForConnected ->',
         ok,
@@ -88,7 +122,7 @@ export function makeOps(deps: OpsDeps): HandoffOps {
     isSensitive: (host) => isSensitiveDomain(host),
     confirmSensitive: deps.confirmSensitive,
     cancelNative: async () => {
-      deps.guard.assertCurrent()
+      assertCurrent()
       log.debug('[takeover] cancelNative')
       await deps.cancelNative()
     },
@@ -97,7 +131,7 @@ export function makeOps(deps: OpsDeps): HandoffOps {
       await deps.fallbackToBrowser()
     },
     captureCookies: async (url): Promise<Cookie[]> => {
-      deps.guard.assertCurrent()
+      assertCurrent()
       const raw = (await browser.cookies.getAll({
         url,
       })) as unknown as BrowserCookieLike[]
@@ -135,7 +169,7 @@ export function makeOps(deps: OpsDeps): HandoffOps {
       try {
         const r = await manager.submitDownload(params, {
           automaticTakeover: deps.guard.origin === 'auto',
-          assertCurrent: deps.guard.assertCurrent,
+          assertCurrent,
         })
         log.debug('[takeover] submit OK taskId=', r.taskId)
         return r

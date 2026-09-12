@@ -429,6 +429,7 @@ interface ControlPanelProps {
   controller: ControlPanelController
   canRevealTask?: boolean
   onReconnect: () => void
+  onNewTask?: () => void
   notice?: ReactNode
 }
 
@@ -437,6 +438,7 @@ export const ControlPanel = memo(function ControlPanel({
   controller,
   canRevealTask = false,
   onReconnect,
+  onNewTask,
   notice,
 }: ControlPanelProps): React.ReactElement {
   const { t } = useTranslation()
@@ -566,7 +568,7 @@ export const ControlPanel = memo(function ControlPanel({
         aria-label={t('popup.quickAdd.title')}
         title={t('popup.quickAdd.title')}
         disabled={controller.loading}
-        onClick={() => setQuickAddOpen(true)}
+        onClick={() => (onNewTask ? onNewTask() : setQuickAddOpen(true))}
       >
         <Plus className="size-4.5" aria-hidden="true" />
       </Button>

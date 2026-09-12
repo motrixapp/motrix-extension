@@ -88,6 +88,7 @@ async function handleHeld(
   suggest: () => void,
   deps: ChromiumInterceptionDeps
 ): Promise<void> {
+  const deadlineAt = Date.now() + 8000
   const hold = createHold(
     {
       suggest,
@@ -148,6 +149,7 @@ async function handleHeld(
     const ops = makeOps({
       manager: deps.manager,
       guard,
+      deadlineAt,
       isPaired: deps.isPaired,
       gate: deps.gate,
       nudge: deps.nudge,

@@ -21,7 +21,7 @@
     "handedToMotrix": "Enviado a Motrix",
     "notConnectedBody": "Vincula Motrix para que gestione las descargas.",
     "notConnectedTitle": "Motrix sin conexión",
-    "notReachableBody": "Vincula Motrix y vuelve a intentar la descarga.",
+    "notReachableBody": "No se pudo conectar con Motrix. Abre la aplicación e inténtalo de nuevo. Se conserva la vinculación guardada.",
     "notReachableTitle": "No se puede acceder a Motrix",
     "pairNudgeBody": "Abre Motrix para completar la vinculación.",
     "pairNudgeTitle": "Vincular Motrix",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "La descarga del sitio sensible se deja al navegador.",
     "sensitiveSkippedTitle": "Omitido",
     "submitFailedBody": "Reiniciando la descarga en el navegador.",
-    "submitFailedTitle": "Error al enviar a Motrix"
+    "submitFailedTitle": "Error al enviar a Motrix",
+    "submitUnknownTitle": "Resultado del envío desconocido. Revisa las tareas antes de volver a enviar.",
+    "submitUnknownBody": "Resultado del envío desconocido. Revisa las tareas antes de volver a enviar."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Puedes usar Motrix con normalidad. Esta conexión solo tiene verificación básica. Para una mayor protección, actualiza Motrix y vuelve a vincularlo.",
       "recoveryExhaustedTitle": "No se pudo reconectar automáticamente",
       "recoveryExhaustedBody": "No se pudo restablecer la vinculación guardada. Reintenta la conexión o elige Olvidar vinculación en Configuración → Integración antes de volver a vincular."
+    },
+    "integration": {
+      "pairedTitle": "Vinculado. Puedes enviar descargas.",
+      "pairedBody": "Motrix se abre cuando hace falta. Conecta para ver el progreso de las tareas.",
+      "pairedRemoteBody": "Envía descargas directamente. Conecta para ver el progreso de las tareas.",
+      "viewTasks": "Ver tareas",
+      "waking": "Abriendo Motrix…",
+      "pairingUnavailable": "No se puede leer la información de vinculación. Inténtalo de nuevo.",
+      "pairingRequired": "Vincula Motrix para enviar esta descarga.",
+      "connectionFailed": "No se pudo conectar con Motrix. Abre la aplicación e inténtalo de nuevo. Se conserva la vinculación guardada.",
+      "resultUnknown": "Resultado del envío desconocido. Revisa las tareas antes de volver a enviar.",
+      "contextChanged": "La página o el servidor seleccionado ha cambiado. Selecciona la descarga de nuevo.",
+      "preparing": "Preparando descarga…",
+      "sending": "Enviando descarga…",
+      "pairedStatus": "Vinculado"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "Se cerró la conexión. Vuelve a conectarte para continuar.",
       "channelUnavailable": "No se puede acceder a Motrix ahora. Comprueba que esté en ejecución.",
       "diagnosticsCopyFailed": "No se pudo copiar la información de diagnóstico. Inténtalo de nuevo.",
-      "storedPairingUnavailable": "No se pudo restablecer la vinculación guardada. Reintenta la conexión o elige Olvidar vinculación en Configuración → Integración antes de volver a vincular."
+      "storedPairingUnavailable": "No se pudo conectar con Motrix. Abre la aplicación e inténtalo de nuevo. Se conserva la vinculación guardada."
     }
   }
 }

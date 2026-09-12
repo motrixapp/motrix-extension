@@ -30,6 +30,7 @@
   --color-surface-sunken: var(--surface-sunken);
   --color-speed-upload: var(--speed-upload);
   --color-speed-download: var(--speed-download);
+  --color-connection-paired: var(--connection-paired);
   --color-connection-online: var(--connection-online);
   --color-connection-pending: var(--connection-pending);
   --color-connection-offline: var(--connection-offline);
@@ -87,6 +88,7 @@
   --panel-highlight: rgba(255, 255, 255, 0.7);
   --speed-upload: #5d55fc;
   --speed-download: #16bbe9;
+  --connection-paired: #3b82f6;
   --connection-online: #5bc660;
   --connection-pending: #e5a52b;
   --connection-offline: var(--destructive);
@@ -133,6 +135,7 @@
   --panel-highlight: rgba(255, 255, 255, 0.06);
   --speed-upload: #7771ff;
   --speed-download: #24c7ee;
+  --connection-paired: #60a5fa;
   --connection-online: #69d36e;
   --connection-pending: #f2b94b;
   --connection-offline: var(--destructive);

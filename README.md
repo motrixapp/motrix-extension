@@ -26,7 +26,7 @@ You will need:
 
 - Chrome 120 or later, a current Microsoft Edge release, or Firefox 142 or later;
 - a Motrix App or Motrix Server compatible with the current MDXP / MBP1 protocol;
-- for a local connection, a running Motrix App with its browser integration component installed correctly.
+- for initial local pairing, start the Motrix App and make sure its browser integration component is installed correctly.
 
 Firefox for Android connects through Motrix Server. Native Messaging is not
 available there, so the local Motrix App backend is shown only on desktop.
@@ -76,11 +76,15 @@ Firefox: open `about:debugging#/runtime/this-firefox`, choose **Load Temporary A
 ### Motrix on this computer
 
 1. Start the Motrix App.
-2. Select the Motrix icon in the browser toolbar, then choose **Connect**.
+2. Select the Motrix icon in the browser toolbar, then choose **Pair**.
 3. If the extension finds more than one Motrix instance, select the one you want.
 4. Enter the eight-character pairing code shown by Motrix.
 
-After pairing, the extension stores a credential that belongs only to that Motrix installation. It will usually reconnect without asking for another code. If you revoke the pairing in Motrix, the browser must be authorized again.
+After pairing, the extension retains the credential when you quit Motrix. You can send a download while the App is closed: the extension starts it when needed and reconnects with the saved pairing. Opening the extension alone does not start the App. Choose **View tasks** to connect and see progress. Remote Servers must already be running and reachable.
+
+The backend indicator is blue when paired and waiting, green when connected, orange while connecting, gray when unpaired, and red when an error needs attention. Hover over the selector for its status. Unavailable live statistics appear as `—`.
+
+If a send loses its response, check the task list before trying again. The extension keeps the result uncertain instead of automatically creating another download. A connection failure does not erase your pairing; pair again only after explicitly forgetting it or revoking it in Motrix.
 
 ### A remote Motrix Server
 

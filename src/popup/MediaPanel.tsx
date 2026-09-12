@@ -44,6 +44,8 @@ import {
   matchesImageQuickFilters,
 } from '@/popup/imageQuickFilters'
 import { usePageMedia } from '@/popup/usePageMedia'
+import { downloadErrorKey } from '@/shared/downloadErrorCopy'
+import type { PairingState } from '@/shared/integration'
 import {
   type DetectedMedia,
   mediaCategory,
@@ -379,7 +381,8 @@ function SelectionCheckbox({
 function ResourceRow({
   media,
   supported,
-  connected,
+  canSubmit,
+  pairIfNeeded,
   previewEnabled,
   selected,
   state,
@@ -390,7 +393,8 @@ function ResourceRow({
 }: {
   media: DetectedMedia
   supported: boolean
-  connected: boolean
+  canSubmit: boolean
+  pairIfNeeded: boolean
   previewEnabled: boolean
   selected: boolean
   state: SubmitState
@@ -408,8 +412,8 @@ function ResourceRow({
   const unsupportedReason = t('popup.sniffer.unsupportedReason', {
     kind: media.kind.toUpperCase(),
   })
-  const disabledReason = !connected
-    ? t('popup.sniffer.connectToSubmit')
+  const disabledReason = !canSubmit
+    ? t('popup.integration.pairingUnavailable')
     : !supported
       ? unsupportedReason
       : null
@@ -418,16 +422,18 @@ function ResourceRow({
         name,
         reason: disabledReason,
       })
-    : supported
-      ? state === 'sending'
-        ? t('popup.sniffer.downloadingResource', { name })
-        : state === 'sent'
-          ? t('popup.sniffer.downloadedResource', { name })
-          : t('popup.sniffer.quickDownloadResource', { name })
-      : t('popup.sniffer.unsupportedResource', {
-          name,
-          reason: unsupportedReason,
-        })
+    : pairIfNeeded
+      ? `${t('contextMenu.pairThenDownload')}: ${name}`
+      : supported
+        ? state === 'sending'
+          ? t('popup.sniffer.downloadingResource', { name })
+          : state === 'sent'
+            ? t('popup.sniffer.downloadedResource', { name })
+            : t('popup.sniffer.quickDownloadResource', { name })
+        : t('popup.sniffer.unsupportedResource', {
+            name,
+            reason: unsupportedReason,
+          })
   return (
     <li
       data-testid={`resource-row-${mediaDomKey(media)}`}
@@ -476,7 +482,7 @@ function ResourceRow({
           state === 'sent' &&
             'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
         )}
-        disabled={!supported || !connected || state !== 'idle'}
+        disabled={!supported || !canSubmit || state !== 'idle'}
         title={disabledReason ?? host}
         aria-label={actionLabel}
         aria-describedby={
@@ -503,11 +509,13 @@ function ResourceRow({
 
 function ResolvablePageAction({
   site,
-  connected,
+  canSubmit,
+  pairIfNeeded,
   onResolve,
 }: {
   site: 'bilibili' | 'youtube'
-  connected: boolean
+  canSubmit: boolean
+  pairIfNeeded: boolean
   onResolve: () => Promise<{ taskId: string }>
 }): React.ReactElement {
   const { t } = useTranslation()
@@ -515,7 +523,7 @@ function ResolvablePageAction({
   const [submitting, setSubmitting] = useState(false)
   const [taskId, setTaskId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const disconnectedReason = t('popup.sniffer.connectToSubmit')
+  const discanSubmitReason = t('popup.integration.pairingUnavailable')
 
   const submit = async (): Promise<void> => {
     setSubmitting(true)
@@ -524,8 +532,8 @@ function ResolvablePageAction({
     try {
       const result = await onResolve()
       setTaskId(result.taskId)
-    } catch {
-      setError(t('popup.sniffer.submitFailed'))
+    } catch (error) {
+      setError(t(downloadErrorKey(error)))
     } finally {
       setSubmitting(false)
     }
@@ -537,9 +545,9 @@ function ResolvablePageAction({
         type="button"
         size="xs"
         variant="secondary"
-        disabled={!connected || submitting || taskId !== null}
-        title={!connected ? disconnectedReason : undefined}
-        aria-describedby={!connected ? disabledDescriptionId : undefined}
+        disabled={!canSubmit || submitting || taskId !== null}
+        title={!canSubmit ? discanSubmitReason : undefined}
+        aria-describedby={!canSubmit ? disabledDescriptionId : undefined}
         onClick={() => void submit()}
       >
         {submitting ? (
@@ -549,7 +557,11 @@ function ResolvablePageAction({
         ) : (
           <Send data-icon="inline-start" aria-hidden="true" />
         )}
-        {t(`popup.sniffer.pageAction.${site}`)}
+        {t(
+          pairIfNeeded
+            ? 'contextMenu.pairThenDownload'
+            : `popup.sniffer.pageAction.${site}`
+        )}
       </Button>
       <span
         className={cn(
@@ -560,9 +572,9 @@ function ResolvablePageAction({
         {error ??
           (taskId ? t('popup.sniffer.pageSubmitted', { taskId }) : null)}
       </span>
-      {!connected && (
+      {!canSubmit && (
         <span id={disabledDescriptionId} className="sr-only">
-          {disconnectedReason}
+          {discanSubmitReason}
         </span>
       )}
     </div>
@@ -572,6 +584,7 @@ function ResolvablePageAction({
 interface MediaPanelProps {
   active?: boolean
   connected?: boolean
+  pairing?: PairingState
   submissionKey?: string
   onMediaCountChange?: (count: number) => void
 }
@@ -579,10 +592,12 @@ interface MediaPanelProps {
 export const MediaPanel = memo(function MediaPanel({
   active = false,
   connected = true,
+  pairing = 'stored',
   submissionKey = 'default',
   onMediaCountChange,
 }: MediaPanelProps): React.ReactElement {
   const { t } = useTranslation()
+  const canAttemptSend = pairing === 'stored' || pairing === 'none'
   const autoScanned = useRef(false)
   const submissionKeyRef = useRef(submissionKey)
   const capabilityRefreshPending = useRef(false)
@@ -608,7 +623,7 @@ export const MediaPanel = memo(function MediaPanel({
     getThumbnail,
     resolvableSite,
     resolvePageDownload,
-  } = usePageMedia(submissionKey)
+  } = usePageMedia(submissionKey, pairing === 'none')
 
   useEffect(() => {
     if (submissionKeyRef.current !== submissionKey) {
@@ -638,15 +653,6 @@ export const MediaPanel = memo(function MediaPanel({
     capabilityRefreshPending.current = false
     void scan()
   }, [active, connected, scan, submissionKey])
-
-  useEffect(() => {
-    if (connected) return
-    // Submission feedback belongs to a live Backend session. Discovery and
-    // selection are deliberately retained while that session is offline.
-    inFlight.current.clear()
-    setSubmitStates({})
-    setSubmitErrors({})
-  }, [connected])
 
   useEffect(() => {
     onMediaCountChange?.(media.length)
@@ -701,7 +707,7 @@ export const MediaPanel = memo(function MediaPanel({
     selected.has(mediaStorageKey(item))
   )
   const selectedUnsupported = selectedMedia.some(
-    (item) => !selectionKinds.includes(item.kind)
+    (item) => connected && !selectionKinds.includes(item.kind)
   )
 
   const toggleSelected = (key: string): void => {
@@ -727,8 +733,8 @@ export const MediaPanel = memo(function MediaPanel({
 
   const submitOne = useCallback(
     async (item: DetectedMedia): Promise<boolean> => {
-      if (!connected) return false
-      if (!selectionKinds.includes(item.kind)) return false
+      if (!canAttemptSend) return false
+      if (connected && !selectionKinds.includes(item.kind)) return false
       const key = mediaStorageKey(item)
       if (inFlight.current.has(key)) return false
       const requestToken = Symbol(key)
@@ -748,12 +754,12 @@ export const MediaPanel = memo(function MediaPanel({
           return next
         })
         return true
-      } catch {
+      } catch (error) {
         if (inFlight.current.get(key) !== requestToken) return false
         setSubmitStates((current) => ({ ...current, [key]: 'idle' }))
         setSubmitErrors((current) => ({
           ...current,
-          [key]: t('popup.sniffer.submitFailed'),
+          [key]: t(downloadErrorKey(error)),
         }))
         return false
       } finally {
@@ -762,13 +768,13 @@ export const MediaPanel = memo(function MediaPanel({
         }
       }
     },
-    [connected, download, selectionKinds, t]
+    [canAttemptSend, connected, download, selectionKinds, t]
   )
 
   const submitSelected = async (): Promise<void> => {
     if (
       batchSubmitting ||
-      !connected ||
+      !canAttemptSend ||
       selectedUnsupported ||
       selectedMedia.length === 0
     ) {
@@ -833,8 +839,8 @@ export const MediaPanel = memo(function MediaPanel({
         {scanning ? <Spinner /> : <RefreshCw aria-hidden="true" />}
       </Button>
     )
-  const batchDisabledReason = !connected
-    ? t('popup.sniffer.connectToSubmit')
+  const batchDisabledReason = !canAttemptSend
+    ? t('popup.integration.pairingUnavailable')
     : selectedUnsupported
       ? t('popup.sniffer.unsupportedSelectionReason')
       : null
@@ -862,9 +868,10 @@ export const MediaPanel = memo(function MediaPanel({
       >
         {resolvableSite && (
           <ResolvablePageAction
-            key={`${submissionKey}:${connected ? 'online' : 'offline'}`}
+            key={submissionKey}
             site={resolvableSite}
-            connected={connected}
+            canSubmit={canAttemptSend}
+            pairIfNeeded={pairing === 'none'}
             onResolve={resolvePageDownload}
           />
         )}
@@ -907,8 +914,11 @@ export const MediaPanel = memo(function MediaPanel({
                     <ResourceRow
                       key={mediaStorageKey(item)}
                       media={item}
-                      supported={selectionKinds.includes(item.kind)}
-                      connected={connected}
+                      supported={
+                        !connected || selectionKinds.includes(item.kind)
+                      }
+                      canSubmit={canAttemptSend}
+                      pairIfNeeded={pairing === 'none'}
                       previewEnabled={active}
                       selected={selected.has(mediaStorageKey(item))}
                       state={submitStates[mediaStorageKey(item)] ?? 'idle'}
@@ -981,7 +991,11 @@ export const MediaPanel = memo(function MediaPanel({
                 type="button"
                 size="xs"
                 className="h-auto min-h-6 max-w-full whitespace-normal [overflow-wrap:anywhere]"
-                aria-label={t('popup.sniffer.downloadSelected')}
+                aria-label={t(
+                  pairing === 'none'
+                    ? 'contextMenu.pairThenDownload'
+                    : 'popup.sniffer.downloadSelected'
+                )}
                 disabled={
                   batchSubmitting ||
                   selectedMedia.length === 0 ||
@@ -994,7 +1008,9 @@ export const MediaPanel = memo(function MediaPanel({
                 onClick={() => void submitSelected()}
               >
                 <Download data-icon="inline-start" aria-hidden="true" />
-                {t('popup.sniffer.downloadCount', { count: selected.size })}
+                {pairing === 'none'
+                  ? t('contextMenu.pairThenDownload')
+                  : t('popup.sniffer.downloadCount', { count: selected.size })}
               </Button>
               {batchDisabledReason && (
                 <span id={batchDescriptionId} className="sr-only">

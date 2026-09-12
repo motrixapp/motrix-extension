@@ -27,7 +27,7 @@ export function CompactPopupHeader({
 
   return (
     <header className="flex min-h-8 shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
-      <div className="min-w-0 flex-[1_1_9rem]">{backend}</div>
+      <div className="w-[176px] min-w-0 flex-none">{backend}</div>
       <div className="flex min-w-0 max-w-full flex-[1_1_auto] items-center justify-end gap-4">
         <div
           className="flex min-h-8 min-w-0 flex-1 items-center justify-end gap-2 text-sm font-normal"

@@ -3,6 +3,7 @@ import {
   DownloadSubmitParamsSchema,
   type DownloadSubmitResult,
 } from '@motrix/mdxp'
+import { isDownloadErrorReason } from '@/shared/integration'
 import {
   type CreateManualTaskRequest,
   type ParsedManualTaskInput,
@@ -20,7 +21,8 @@ export interface ManualTaskHandlerDeps {
   extensionBaseUrl: string
   now?: () => number
   submitDownload: (
-    params: DownloadSubmitParams
+    params: DownloadSubmitParams,
+    options: { pairIfNeeded: boolean }
   ) => Promise<DownloadSubmitResult>
 }
 
@@ -107,8 +109,11 @@ export function createManualTaskHandler(deps: ManualTaskHandlerDeps) {
     )
 
     try {
-      return await deps.submitDownload(params)
-    } catch {
+      return await deps.submitDownload(params, {
+        pairIfNeeded: request.pairIfNeeded === true,
+      })
+    } catch (error) {
+      if (isDownloadErrorReason((error as Error)?.message)) throw error
       // The transport/desktop error may contain a URL, credentials, or a
       // native path. Only return a stable, localizable reason to the caller.
       throw new Error(MANUAL_TASK_ERROR.submitFailed)

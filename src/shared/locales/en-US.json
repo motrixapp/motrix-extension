@@ -21,7 +21,7 @@
     "handedToMotrix": "Handed to Motrix",
     "notConnectedBody": "Pair Motrix to take over downloads.",
     "notConnectedTitle": "Motrix not connected",
-    "notReachableBody": "Pair Motrix, then try the download again.",
+    "notReachableBody": "Couldn’t connect to Motrix. Open it and try again; your saved pairing is retained.",
     "notReachableTitle": "Motrix not reachable",
     "pairNudgeBody": "Open Motrix to finish pairing.",
     "pairNudgeTitle": "Pair Motrix",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "Sensitive site left to the browser.",
     "sensitiveSkippedTitle": "Skipped",
     "submitFailedBody": "Re-downloading in the browser.",
-    "submitFailedTitle": "Motrix submit failed"
+    "submitFailedTitle": "Motrix submit failed",
+    "submitUnknownTitle": "Send result unknown. Check tasks before sending again.",
+    "submitUnknownBody": "Send result unknown. Check tasks before sending again."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "You can use Motrix normally. This connection has basic verification only. For stronger protection, update Motrix and pair again.",
       "recoveryExhaustedTitle": "Couldn't reconnect automatically",
       "recoveryExhaustedBody": "The saved pairing could not reconnect. Retry the connection, or choose Forget pairing in Settings → Integration before pairing again."
+    },
+    "integration": {
+      "pairedTitle": "Paired. Ready to send downloads.",
+      "pairedBody": "Motrix opens when needed. Connect to view task progress.",
+      "pairedRemoteBody": "Send downloads directly. Connect to view task progress.",
+      "viewTasks": "View tasks",
+      "waking": "Opening Motrix…",
+      "pairingUnavailable": "Pairing information is unavailable. Try again.",
+      "pairingRequired": "Pair Motrix to send this download.",
+      "connectionFailed": "Couldn’t connect to Motrix. Open it and try again; your saved pairing is retained.",
+      "resultUnknown": "Send result unknown. Check tasks before sending again.",
+      "contextChanged": "The page or selected backend changed. Select the download again.",
+      "preparing": "Preparing download…",
+      "sending": "Sending download…",
+      "pairedStatus": "Paired"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "The connection was closed. Reconnect to continue.",
       "channelUnavailable": "Motrix isn't reachable right now. Make sure it's running.",
       "diagnosticsCopyFailed": "Couldn’t copy diagnostics. Try again.",
-      "storedPairingUnavailable": "The saved pairing could not reconnect. Retry the connection, or choose Forget pairing in Settings → Integration before pairing again."
+      "storedPairingUnavailable": "Couldn’t connect to Motrix. Open it and try again; your saved pairing is retained."
     }
   }
 }

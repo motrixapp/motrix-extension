@@ -675,6 +675,13 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
     const connections: MdxpConnection[] = []
     const mgr = makeManager({
       endpointConfigStore,
+      credentials: [
+        {
+          ...makeStoredCredential('remote-credential'),
+          authenticatedInstanceId: 'fresh-instance',
+        },
+      ],
+      reconnectOutcomes: { 'remote-credential': { envelope: fakeEnvelope() } },
       remoteDiscoveryService: remoteDiscoveryService as never,
       createEnvelopeConnection: () => {
         const conn = makeFakeServerConn()
@@ -2884,5 +2891,96 @@ describe('explicit wake for a retained local pairing', () => {
     expect(wake).toHaveBeenCalledOnce()
     expect(firstPair).not.toHaveBeenCalled()
     expect(mgr.getState()).toBe('disconnected')
+  })
+})
+
+describe('download readiness intent', () => {
+  it('shares one wake between downloads and task viewing without admitting first pairing', async () => {
+    let release!: (
+      value: Map<string, ReturnType<typeof makeDiscoveryResult>>
+    ) => void
+    const wake = vi.fn(
+      () =>
+        new Promise<Map<string, ReturnType<typeof makeDiscoveryResult>>>(
+          (done) => {
+            release = done
+          }
+        )
+    )
+    const firstPair = vi.fn(async () => [])
+    const mgr = makeManager({
+      credentials: [makeStoredCredential('cred-1')],
+      discovery: { wakeForReconnect: wake, discoverForFirstPair: firstPair },
+      reconnectOutcomes: { 'cred-1': { envelope: fakeEnvelope() } },
+    })
+    const first = mgr.ensureReady({ intent: 'explicit-download' })
+    const second = mgr.ensureReady({ intent: 'view-tasks' })
+    await vi.waitFor(() => expect(wake).toHaveBeenCalledOnce())
+    expect(mgr.getConnectionPhase()).toBe('waking')
+    release(new Map([['cred-1', makeDiscoveryResult({ instanceId: 'known' })]]))
+    await Promise.all([first, second])
+    expect(mgr.getState()).toBe('connected')
+    expect(firstPair).not.toHaveBeenCalled()
+    mgr.stop()
+  })
+
+  it('does not clear a denied gate or show a first-pair prompt for a download', async () => {
+    const gate = new ConnectionGate()
+    await gate.pauseDenied('operator denied')
+    const wake = vi.fn(async () => new Map())
+    const firstPair = vi.fn(async () => [])
+    const mgr = makeManager({
+      credentials: [makeStoredCredential('cred-1')],
+      discovery: { wakeForReconnect: wake, discoverForFirstPair: firstPair },
+    })
+    await expect(
+      mgr.ensureReady({ intent: 'automatic-download' })
+    ).rejects.toThrow('download.connection-failed')
+    expect((await gate.get()).reason).toBe('denied')
+    expect(wake).not.toHaveBeenCalled()
+    expect(firstPair).not.toHaveBeenCalled()
+    mgr.stop()
+  })
+
+  it('keeps an unpaired download out of first pairing', async () => {
+    const firstPair = vi.fn(async () => [])
+    const mgr = makeManager({ discovery: { discoverForFirstPair: firstPair } })
+    await expect(
+      mgr.ensureReady({ intent: 'explicit-download' })
+    ).rejects.toThrow('download.pairing-required')
+    expect(firstPair).not.toHaveBeenCalled()
+    mgr.stop()
+  })
+
+  it('lets another waiter finish when a short download deadline expires', async () => {
+    let release!: (
+      value: Map<string, ReturnType<typeof makeDiscoveryResult>>
+    ) => void
+    const wake = vi.fn(
+      () =>
+        new Promise<Map<string, ReturnType<typeof makeDiscoveryResult>>>(
+          (done) => {
+            release = done
+          }
+        )
+    )
+    const mgr = makeManager({
+      credentials: [makeStoredCredential('cred-1')],
+      discovery: { wakeForReconnect: wake },
+      reconnectOutcomes: { 'cred-1': { envelope: fakeEnvelope() } },
+    })
+    const short = expect(
+      mgr.ensureReady({
+        intent: 'automatic-download',
+        deadlineAt: Date.now() + 50,
+      })
+    ).rejects.toThrow('download.preparation-timeout')
+    const long = mgr.ensureReady({ intent: 'explicit-download' })
+    await short
+    release(new Map([['cred-1', makeDiscoveryResult({ instanceId: 'known' })]]))
+    await long
+    expect(wake).toHaveBeenCalledOnce()
+    expect(mgr.getState()).toBe('connected')
+    mgr.stop()
   })
 })

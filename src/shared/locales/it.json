@@ -21,7 +21,7 @@
     "handedToMotrix": "Inviato a Motrix",
     "notConnectedBody": "Associa Motrix per gestire i download.",
     "notConnectedTitle": "Motrix non connesso",
-    "notReachableBody": "Associa Motrix e riprova il download.",
+    "notReachableBody": "Impossibile connettersi a Motrix. Apri l’app e riprova. L’associazione salvata viene mantenuta.",
     "notReachableTitle": "Motrix non raggiungibile",
     "pairNudgeBody": "Apri Motrix per completare l’associazione.",
     "pairNudgeTitle": "Associa Motrix",
@@ -30,7 +30,9 @@
     "sensitiveSkippedBody": "Il download dal sito sensibile resta nel browser.",
     "sensitiveSkippedTitle": "Ignorato",
     "submitFailedBody": "Riavvio del download nel browser.",
-    "submitFailedTitle": "Invio a Motrix non riuscito"
+    "submitFailedTitle": "Invio a Motrix non riuscito",
+    "submitUnknownTitle": "Esito dell’invio sconosciuto. Controlla le attività prima di inviare di nuovo.",
+    "submitUnknownBody": "Esito dell’invio sconosciuto. Controlla le attività prima di inviare di nuovo."
   },
   "options": {
     "diagnostics": {
@@ -424,6 +426,21 @@
       "degradedBody": "Puoi usare Motrix normalmente. Questa connessione dispone solo di una verifica di base. Per una maggiore protezione, aggiorna Motrix e associalo di nuovo.",
       "recoveryExhaustedTitle": "Riconnessione automatica non riuscita",
       "recoveryExhaustedBody": "Impossibile ripristinare l’associazione salvata. Riprova la connessione oppure elimina l’associazione in Impostazioni → Integrazione prima di ripeterla."
+    },
+    "integration": {
+      "pairedTitle": "Associato. Puoi inviare download.",
+      "pairedBody": "Motrix si apre quando serve. Connettiti per vedere l’avanzamento delle attività.",
+      "pairedRemoteBody": "Invia direttamente i download. Connettiti per vedere l’avanzamento delle attività.",
+      "viewTasks": "Visualizza attività",
+      "waking": "Apertura di Motrix…",
+      "pairingUnavailable": "Informazioni di associazione non disponibili. Riprova.",
+      "pairingRequired": "Associa Motrix per inviare questo download.",
+      "connectionFailed": "Impossibile connettersi a Motrix. Apri l’app e riprova. L’associazione salvata viene mantenuta.",
+      "resultUnknown": "Esito dell’invio sconosciuto. Controlla le attività prima di inviare di nuovo.",
+      "contextChanged": "La pagina o il backend selezionato è cambiato. Seleziona di nuovo il download.",
+      "preparing": "Preparazione del download…",
+      "sending": "Invio del download…",
+      "pairedStatus": "Associato"
     }
   },
   "errors": {
@@ -457,7 +474,7 @@
       "channelClosed": "La connessione è stata chiusa. Riconnettiti per continuare.",
       "channelUnavailable": "Motrix non è raggiungibile al momento. Assicurati che sia in esecuzione.",
       "diagnosticsCopyFailed": "Impossibile copiare le informazioni diagnostiche. Riprova.",
-      "storedPairingUnavailable": "Impossibile ripristinare l’associazione salvata. Riprova la connessione oppure elimina l’associazione in Impostazioni → Integrazione prima di ripeterla."
+      "storedPairingUnavailable": "Impossibile connettersi a Motrix. Apri l’app e riprova. L’associazione salvata viene mantenuta."
     }
   }
 }

@@ -1,6 +1,8 @@
 import { z } from 'zod'
 
 export interface CreateManualTaskRequest {
+  pairIfNeeded?: boolean
+
   input: string
   idempotencyKey: string
 }

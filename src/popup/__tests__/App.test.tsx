@@ -69,12 +69,22 @@ const LOCAL_ENDPOINT = {
   cleanupTombstones: [],
 }
 
+const SNAPSHOT = {
+  endpoint: LOCAL_ENDPOINT,
+  pairing: 'stored',
+  phase: 'idle',
+  attemptIntent: null,
+}
+
 function installConnectedBus(): ReturnType<typeof vi.fn> {
   let endpoint = LOCAL_ENDPOINT
   const sendMessage = vi.fn(async (msg: unknown) => {
     const env = msg as Envelope
     if (env.kind === 'bg.getState') {
       return {
+        ...SNAPSHOT,
+        endpoint,
+        phase: 'ready',
         state: 'connected',
         capabilities: { taskReveal: true },
         server: {
@@ -171,6 +181,7 @@ describe('Popup App', () => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'disconnected',
           lastError: rawError,
           lastErrorReason: 'backendUpgradeRequired',
@@ -200,6 +211,7 @@ describe('Popup App', () => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'handshaking',
           pairingCode: {
             instanceId: 'motrix-desktop-1',
@@ -250,6 +262,7 @@ describe('Popup App', () => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'awaiting-code',
           pairingCode: {
             instanceId: 'motrix-desktop-1',
@@ -369,7 +382,8 @@ describe('Popup App', () => {
     browser.runtime.connectNative = undefined
     browser.runtime.sendMessage = vi.fn(async (msg: unknown) => {
       const env = msg as Envelope
-      if (env.kind === 'bg.getState') return { state: 'disconnected' }
+      if (env.kind === 'bg.getState')
+        return { ...SNAPSHOT, state: 'disconnected' }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       if (env.kind === 'bg.scanActiveTab') {
         return { media: [], selectionKinds: ['direct'] }
@@ -512,7 +526,12 @@ describe('Popup App', () => {
     const sendMessage = vi.fn(async (msg: unknown) => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
-        return { state: 'disconnected', lastError: 'socket ECONNREFUSED' }
+        return {
+          ...SNAPSHOT,
+          state: 'disconnected',
+          lastError: 'socket ECONNREFUSED',
+          attemptIntent: 'background-probe',
+        }
       }
       if (env.kind === 'bg.getEndpointConfig') {
         return LOCAL_ENDPOINT
@@ -548,11 +567,7 @@ describe('Popup App', () => {
 
     const row = screen.getByTestId(`resource-row-${MEDIA_ITEM.url}`)
     const submit = within(row).getByRole('button')
-    expect((submit as HTMLButtonElement).disabled).toBe(true)
-    const reasonId = submit.getAttribute('aria-describedby')
-    expect(document.getElementById(reasonId ?? '')?.textContent).toBe(
-      i18n.t('popup.sniffer.connectToSubmit')
-    )
+    expect((submit as HTMLButtonElement).disabled).toBe(false)
     expect(screen.queryByText('socket ECONNREFUSED')).toBeNull()
 
     const resourceTile = screen.getByTestId('tile-resources')
@@ -580,7 +595,9 @@ describe('Popup App', () => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'connected',
+          endpoint: { ...LOCAL_ENDPOINT, activeEndpointId },
           server: {
             name: activeEndpointId === 'local' ? 'Motrix' : 'Studio Server',
             version: '2.0.0',
