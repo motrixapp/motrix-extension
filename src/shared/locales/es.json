@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "Acciones para {{name}}",
+      "openTaskInApp": "Ver detalles de la tarea en Motrix App",
       "openFolder": "Abrir carpeta contenedora en Motrix",
       "openFolderError": "No se pudo abrir la carpeta de la tarea. Reinténtalo.",
       "openFolderMetadataPending": "Espera los metadatos de la tarea antes de abrir la carpeta",

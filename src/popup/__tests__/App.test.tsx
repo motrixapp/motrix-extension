@@ -158,6 +158,13 @@ describe('Popup App', () => {
     expect(await screen.findByText('Motrix App')).toBeTruthy()
     expect(await screen.findByText('ubuntu.iso')).toBeTruthy()
     expect(screen.getByTestId('task-reveal-task-1')).toBeTruthy()
+    expect(
+      screen
+        .getByRole('link', {
+          name: 'View task details in Motrix App: ubuntu.iso',
+        })
+        .getAttribute('href')
+    ).toBe('motrix://tasks/task-1')
 
     const popup = screen.getByTestId('compact-popup')
     expect(popup.className).toContain('h-[600px]')

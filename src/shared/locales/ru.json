@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "Действия с {{name}}",
+      "openTaskInApp": "Посмотреть сведения о задаче в Motrix App",
       "openFolder": "Открыть папку файла в Motrix",
       "openFolderError": "Не удалось открыть папку задачи. Повторите.",
       "openFolderMetadataPending": "Перед открытием папки дождитесь метаданных задачи",

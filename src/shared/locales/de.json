@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "Aktionen für {{name}}",
+      "openTaskInApp": "Aufgabendetails in Motrix App anzeigen",
       "openFolder": "Enthaltenden Ordner in Motrix öffnen",
       "openFolderError": "Der Aufgabenordner konnte nicht geöffnet werden. Bitte erneut versuchen.",
       "openFolderMetadataPending": "Vor dem Öffnen des Ordners auf Aufgabenmetadaten warten",

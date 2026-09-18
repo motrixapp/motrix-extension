@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "{{name}} 작업 메뉴",
+      "openTaskInApp": "Motrix App에서 작업 상세 보기",
       "openFolder": "Motrix에서 파일이 있는 폴더 열기",
       "openFolderError": "작업 폴더를 열지 못했습니다. 다시 시도하세요.",
       "openFolderMetadataPending": "작업 메타데이터를 받은 후 폴더를 여세요",

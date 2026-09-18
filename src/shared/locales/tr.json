@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "{{name}} işlemleri",
+      "openTaskInApp": "Motrix App’te görev ayrıntılarını görüntüle",
       "openFolder": "İçeren klasörü Motrix’te aç",
       "openFolderError": "Görev klasörü açılamadı. Tekrar deneyin.",
       "openFolderMetadataPending": "Klasörü açmadan önce görev meta verilerini bekleyin",

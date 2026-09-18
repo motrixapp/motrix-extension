@@ -374,7 +374,56 @@ describe('ControlPanel task views', () => {
     expect(control.remove).not.toHaveBeenCalled()
   })
 
-  it('reveals from the task body or visible folder icon without action cross-talk', async () => {
+  it.each(['active', 'failed', 'recent'] as const)(
+    'links to the exact %s task details and reveals only from its folder icon',
+    async (view) => {
+      const control = controller()
+      const user = userEvent.setup()
+      render(
+        <ControlPanel
+          connection="connected"
+          controller={control}
+          canRevealTask
+          canOpenApp
+          onReconnect={vi.fn()}
+        />
+      )
+      await user.click(
+        screen.getByRole('tab', { name: i18n.t(`popup.tasks.filters.${view}`) })
+      )
+
+      const taskAction = screen.getByRole('link', {
+        name: `View task details in Motrix App: ${view}.iso`,
+      })
+      expect(taskAction.getAttribute('href')).toBe(`motrix://tasks/${view}-1`)
+      // Observe the browser handoff without navigating jsdom to a custom URL.
+      const navigate = vi.fn((event: Event) => event.preventDefault())
+      taskAction.addEventListener('click', navigate)
+      await user.click(taskAction)
+      expect(navigate).toHaveBeenCalledOnce()
+      expect(control.reveal).not.toHaveBeenCalled()
+
+      navigate.mockClear()
+      await user.keyboard('{Enter}')
+      expect(navigate).toHaveBeenCalledOnce()
+      expect(control.reveal).not.toHaveBeenCalled()
+
+      navigate.mockClear()
+      const folder = screen.getByTestId(`task-reveal-${view}-1`)
+      expect(folder.getAttribute('title')).toBe(
+        `Open the folder containing ${view}.iso`
+      )
+      await user.click(folder)
+      await waitFor(() =>
+        expect(control.reveal).toHaveBeenCalledExactlyOnceWith(`${view}-1`)
+      )
+      expect(navigate).not.toHaveBeenCalled()
+      expect(control.pause).not.toHaveBeenCalled()
+      expect(control.remove).not.toHaveBeenCalled()
+    }
+  )
+
+  it('does not open a local App for a remote task even when folder reveal is supported', async () => {
     const control = controller()
     const user = userEvent.setup()
     render(
@@ -382,23 +431,58 @@ describe('ControlPanel task views', () => {
         connection="connected"
         controller={control}
         canRevealTask
+        canOpenApp={false}
         onReconnect={vi.fn()}
       />
     )
+    expect(screen.queryByRole('link')).toBeNull()
+    expect(screen.queryByTestId('task-main-active-1')).toBeNull()
+    await user.click(screen.getByTestId('task-reveal-active-1'))
+    expect(control.reveal).toHaveBeenCalledExactlyOnceWith('active-1')
+  })
 
-    const taskAction = screen.getByTestId('task-main-active-1')
-    await user.click(taskAction)
-    await waitFor(() => expect(control.reveal).toHaveBeenCalledWith('active-1'))
-
-    vi.mocked(control.reveal).mockClear()
-    const folder = screen.getByTestId('task-reveal-active-1')
-    expect(folder.getAttribute('title')).toBe(
-      'Open the folder containing active.iso'
+  it('opens a local App even when folder reveal is unsupported', () => {
+    render(
+      <ControlPanel
+        connection="connected"
+        controller={controller()}
+        canOpenApp
+        onReconnect={vi.fn()}
+      />
     )
-    await user.click(folder)
-    await waitFor(() => expect(control.reveal).toHaveBeenCalledWith('active-1'))
-    expect(control.pause).not.toHaveBeenCalled()
-    expect(control.remove).not.toHaveBeenCalled()
+    expect(
+      screen
+        .getByRole('link', {
+          name: 'View task details in Motrix App: active.iso',
+        })
+        .getAttribute('href')
+    ).toBe('motrix://tasks/active-1')
+    expect(
+      screen.getByTestId('task-reveal-active-1').getAttribute('aria-disabled')
+    ).toBe('true')
+  })
+
+  it('encodes opaque task IDs without turning them into URL paths or query parameters', () => {
+    const control = controller()
+    control.tasks = [task('任务/一?#&%', 'special.iso', 'completed', 1)]
+    render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        canOpenApp
+        onReconnect={vi.fn()}
+      />
+    )
+    fireEvent.click(
+      screen.getByRole('tab', { name: i18n.t('popup.tasks.filters.recent') })
+    )
+    expect(
+      screen
+        .getByRole('link', {
+          name: 'View task details in Motrix App: special.iso',
+        })
+        .getAttribute('href')
+    ).toBe(`motrix://tasks/${encodeURIComponent('任务/一?#&%')}`)
   })
 
   it('keeps unsupported rows non-actionable and exposes the disabled reason', async () => {
@@ -446,13 +530,14 @@ describe('ControlPanel task views', () => {
         connection="connected"
         controller={control}
         canRevealTask
+        canOpenApp
         onReconnect={vi.fn()}
       />
     )
 
     const mainAction = screen.getByTestId('task-main-metadata')
-    expect(mainAction.getAttribute('aria-hidden')).toBe('true')
-    expect(mainAction.getAttribute('tabindex')).toBe('-1')
+    expect(mainAction.getAttribute('href')).toBe('motrix://tasks/metadata')
+    expect(mainAction.getAttribute('tabindex')).toBe('0')
     const folder = screen.getByTestId(
       'task-reveal-metadata'
     ) as HTMLButtonElement
@@ -483,6 +568,7 @@ describe('ControlPanel task views', () => {
         connection="connected"
         controller={control}
         canRevealTask
+        canOpenApp
         onReconnect={onReconnect}
       />
     )
@@ -496,6 +582,7 @@ describe('ControlPanel task views', () => {
           tasks: [task('metadata', 'metadata.iso', 'downloading', 1)],
         }}
         canRevealTask
+        canOpenApp
         onReconnect={onReconnect}
       />
     )
@@ -506,7 +593,7 @@ describe('ControlPanel task views', () => {
     expect(readyAction.getAttribute('tabindex')).toBe('0')
   })
 
-  it('keeps focus on the task body while folder reveal is in flight', async () => {
+  it('keeps focus on the folder button and the App link available while revealing', async () => {
     const control = controller()
     control.tasks = [task('active-1', 'active.iso', 'downloading', 1)]
     let finishReveal!: () => void
@@ -522,12 +609,13 @@ describe('ControlPanel task views', () => {
         connection="connected"
         controller={control}
         canRevealTask
+        canOpenApp
         onReconnect={vi.fn()}
       />
     )
 
     const mainAction = screen.getByTestId(
-      'task-main-active-1'
+      'task-reveal-active-1'
     ) as HTMLButtonElement
     await user.click(mainAction)
     await waitFor(() =>
@@ -537,6 +625,13 @@ describe('ControlPanel task views', () => {
     expect(mainAction.disabled).toBe(false)
     expect(mainAction.getAttribute('aria-disabled')).toBe('true')
     expect(document.activeElement).toBe(mainAction)
+    expect(
+      screen
+        .getByRole('link', {
+          name: 'View task details in Motrix App: active.iso',
+        })
+        .getAttribute('aria-disabled')
+    ).toBeNull()
 
     await act(async () => finishReveal())
     await waitFor(() => expect(mainAction.getAttribute('aria-busy')).toBeNull())

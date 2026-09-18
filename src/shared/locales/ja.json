@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "{{name}} の操作",
+      "openTaskInApp": "Motrix App でタスクの詳細を表示",
       "openFolder": "保存先フォルダーを Motrix で開く",
       "openFolderError": "タスクのフォルダーを開けませんでした。再試行してください。",
       "openFolderMetadataPending": "タスクのメタデータ取得後にフォルダーを開いてください",

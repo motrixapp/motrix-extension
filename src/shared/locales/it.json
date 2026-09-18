@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "Azioni per {{name}}",
+      "openTaskInApp": "Visualizza i dettagli del download in Motrix App",
       "openFolder": "Apri cartella contenente il file in Motrix",
       "openFolderError": "Impossibile aprire la cartella dell’attività. Riprova.",
       "openFolderMetadataPending": "Attendi i metadati dell’attività prima di aprire la cartella",

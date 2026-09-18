@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "Tindakan untuk {{name}}",
+      "openTaskInApp": "Lihat detail tugas di Motrix App",
       "openFolder": "Buka folder file di Motrix",
       "openFolderError": "Tidak dapat membuka folder tugas. Coba lagi.",
       "openFolderMetadataPending": "Tunggu metadata tugas sebelum membuka folder",

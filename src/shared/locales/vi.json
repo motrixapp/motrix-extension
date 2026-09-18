@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "Thao tác cho {{name}}",
+      "openTaskInApp": "Xem chi tiết tác vụ trong Motrix App",
       "openFolder": "Mở thư mục chứa tệp trong Motrix",
       "openFolderError": "Không thể mở thư mục tác vụ. Hãy thử lại.",
       "openFolderMetadataPending": "Chờ siêu dữ liệu tác vụ trước khi mở thư mục",

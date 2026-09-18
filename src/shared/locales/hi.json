@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "{{name}} के लिए कार्रवाइयाँ",
+      "openTaskInApp": "Motrix App में कार्य का विवरण देखें",
       "openFolder": "फ़ाइल वाला फ़ोल्डर Motrix में खोलें",
       "openFolderError": "कार्य का फ़ोल्डर खुल नहीं सका। फिर कोशिश करें।",
       "openFolderMetadataPending": "फ़ोल्डर खोलने से पहले कार्य के मेटाडेटा का इंतज़ार करें",

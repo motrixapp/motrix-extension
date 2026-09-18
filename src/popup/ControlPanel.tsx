@@ -310,6 +310,7 @@ interface TaskRowProps {
   onReveal: (id: string) => void
   onRemove: (id: string, deleteFiles: boolean) => void
   canRevealTask: boolean
+  canOpenApp: boolean
   revealing: boolean
 }
 
@@ -325,6 +326,7 @@ function taskRowPropsEqual(
     previous.onReveal === next.onReveal &&
     previous.onRemove === next.onRemove &&
     previous.canRevealTask === next.canRevealTask &&
+    previous.canOpenApp === next.canOpenApp &&
     previous.revealing === next.revealing &&
     a.id === b.id &&
     a.name === b.name &&
@@ -345,38 +347,32 @@ const TaskRow = memo(function TaskRow({
   onReveal,
   onRemove,
   canRevealTask,
+  canOpenApp,
   revealing,
 }: TaskRowProps): React.ReactElement {
   const { t } = useTranslation()
-  const revealReady = canRevealTask && task.status !== 'fetching_metadata'
   const secondaryId = `task-secondary-${task.id}`
-  const revealUnavailable = !revealReady || revealing
+  const openAppLabel = `${t('popup.tasks.openTaskInApp')}: ${task.name}`
 
   return (
     <li
       data-testid={`task-row-${task.id}`}
       className="relative h-[74px] shrink-0 after:pointer-events-none after:absolute after:inset-x-4 after:bottom-0 after:h-px after:bg-border"
     >
-      <button
-        type="button"
-        data-testid={`task-main-${task.id}`}
-        data-task-id={task.id}
-        data-task-action="main"
-        className="absolute inset-y-0 right-[108px] left-0 text-left transition-colors hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 focus-visible:outline-none aria-disabled:pointer-events-none"
-        aria-label={
-          revealReady
-            ? t('popup.tasks.openFolderTask', { name: task.name })
-            : undefined
-        }
-        aria-describedby={secondaryId}
-        aria-busy={revealing || undefined}
-        aria-disabled={revealUnavailable || undefined}
-        aria-hidden={revealReady ? undefined : true}
-        tabIndex={revealReady ? 0 : -1}
-        onClick={() => {
-          if (!revealUnavailable) onReveal(task.id)
-        }}
-      />
+      {canOpenApp && (
+        <a
+          href={`motrix://tasks/${encodeURIComponent(task.id)}`}
+          data-testid={`task-main-${task.id}`}
+          data-task-id={task.id}
+          data-task-action="main"
+          className="absolute inset-0 text-left transition-colors hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 focus-visible:outline-none"
+          title={openAppLabel}
+          aria-describedby={secondaryId}
+          tabIndex={0}
+        >
+          <span className="sr-only">{openAppLabel}</span>
+        </a>
+      )}
       <div className="pointer-events-none absolute inset-y-0 right-[108px] left-0">
         <TaskIdentity name={task.name} type={task.type} status={task.status} />
         <TaskLiveMetrics
@@ -428,6 +424,7 @@ interface ControlPanelProps {
   connection: ConnectionState | null
   controller: ControlPanelController
   canRevealTask?: boolean
+  canOpenApp?: boolean
   onReconnect: () => void
   onNewTask?: () => void
   notice?: ReactNode
@@ -437,6 +434,7 @@ export const ControlPanel = memo(function ControlPanel({
   connection,
   controller,
   canRevealTask = false,
+  canOpenApp = false,
   onReconnect,
   onNewTask,
   notice,
@@ -655,6 +653,7 @@ export const ControlPanel = memo(function ControlPanel({
                             onReveal={revealTask}
                             onRemove={removeTask}
                             canRevealTask={canRevealTask}
+                            canOpenApp={canOpenApp}
                             revealing={revealingTaskIds.has(task.id)}
                           />
                         ))}

@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "{{name}} 的操作",
+      "openTaskInApp": "在 Motrix App 中查看任務詳情",
       "openFolder": "在 Motrix 開啟所在資料夾",
       "openFolderError": "無法開啟任務資料夾，請重試。",
       "openFolderMetadataPending": "取得任務中繼資料後再開啟資料夾",

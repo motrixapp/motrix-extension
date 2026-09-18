@@ -204,6 +204,7 @@ const PopupContent = memo(function PopupContent({
               connection={state.connection}
               controller={taskController}
               canRevealTask={state.capabilities.taskReveal}
+              canOpenApp={state.endpoint?.activeEndpointId === 'local'}
               onReconnect={onReconnect}
               notice={notice}
               onNewTask={() => setQuickAddOpen(true)}

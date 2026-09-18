@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "{{name}} 的操作",
+      "openTaskInApp": "在 Motrix App 中查看任务详情",
       "openFolder": "在 Motrix 中打开所在目录",
       "openFolderError": "无法打开任务所在目录，请重试。",
       "openFolderMetadataPending": "获取任务元数据后可打开目录",

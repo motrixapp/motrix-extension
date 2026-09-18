@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "Actions for {{name}}",
+      "openTaskInApp": "View task details in Motrix App",
       "openFolder": "Open containing folder in Motrix",
       "openFolderError": "Couldn't open the task folder. Try again.",
       "openFolderMetadataPending": "Wait for task metadata before opening the folder",

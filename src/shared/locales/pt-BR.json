@@ -360,6 +360,7 @@
     },
     "tasks": {
       "actions": "Ações para {{name}}",
+      "openTaskInApp": "Ver detalhes da tarefa no Motrix App",
       "openFolder": "Abrir pasta do arquivo no Motrix",
       "openFolderError": "Não foi possível abrir a pasta da tarefa. Tente novamente.",
       "openFolderMetadataPending": "Aguarde os metadados da tarefa antes de abrir a pasta",
