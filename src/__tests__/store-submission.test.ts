@@ -406,10 +406,43 @@ describe('single-store submission', () => {
         channel: 'listed',
         zip: resolve(directory, files.firefox),
         sourcesZip: resolve(directory, files.source),
-        compatibility: ['firefox', 'android'],
       }),
     })
   })
+
+  it('does not override manifest compatibility after Firefox creates a version', async () => {
+    const { directory } = fixture()
+    const calls: { url: string; method: string }[] = []
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url, init) => {
+        const method = init?.method ?? 'GET'
+        calls.push({ url: String(url), method })
+        if (init?.body) await new Response(init.body).arrayBuffer()
+        if (method === 'PATCH')
+          throw new Error('Unexpected compatibility override')
+        const body = String(url).includes('/versions/')
+          ? { id: 12, file: { id: 34 } }
+          : String(url).includes('/upload/')
+            ? {
+                uuid: 'upload-id',
+                processed: true,
+                valid: true,
+                validation: { errors: 0, warnings: 0, notices: 0 },
+              }
+            : { id: 56 }
+        return new Response(JSON.stringify(body), {
+          headers: { 'Content-Type': 'application/json' },
+        })
+      })
+    )
+    await submitStore(
+      { store: 'firefox', tag, directory, dryRun: false },
+      { env: settings }
+    )
+    expect(calls.filter(({ method }) => method === 'POST')).toHaveLength(2)
+    expect(calls.some(({ method }) => method === 'PATCH')).toBe(false)
+  }, 10000)
 
   it('does not contact a store when artifact validation fails', async () => {
     const { directory } = fixture()

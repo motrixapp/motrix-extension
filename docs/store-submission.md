@@ -184,6 +184,18 @@ If a version is already accepted or under review, do not re-upload it blindly.
 Wait for the existing submission or use the store's own controls. The workflow
 does not automatically bump versions, cancel review, or resubmit all stores.
 
+For Firefox, **Check Firefox submission status** reads an existing version
+without uploading anything. Run it from `main` with the release tag and approve
+`store-firefox`. It reports review status, source presence, and compatibility.
+This is useful after a partial failure: v0.1.12 was created with sources before
+the old publisher configuration attempted an unnecessary Android compatibility
+override. Compatibility now comes only from the package manifest.
+
+```bash
+gh workflow run check-firefox-version.yml --repo motrixapp/motrix-extension \
+  --ref main -f tag=v0.1.12
+```
+
 Package updates are automated. Listing screenshots, descriptions, privacy
 declarations, and responses to reviewers remain separate store tasks. In
 particular, Edge's Update API does not provide listing-metadata update endpoints.

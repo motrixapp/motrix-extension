@@ -67,7 +67,8 @@ export function submissionConfig({ store, tag, directory, dryRun }, env) {
       zip: resolve(directory, files.firefox),
       sourcesZip: resolve(directory, files.source),
       channel: 'listed',
-      compatibility: ['firefox', 'android'],
+      // Desktop and Android compatibility come from browser_specific_settings.
+      // AMO rejects a post-upload override when gecko_android is in the manifest.
       skipSubmitReview: false,
     },
   }
