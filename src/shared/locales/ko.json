@@ -331,10 +331,10 @@
       "unavailableDescription": "페이지를 바꾸거나 나중에 다시 시도하세요.",
       "unavailableTitle": "이 페이지는 검색 불가",
       "unsupported": "ffmpeg 필요",
-      "unsupportedReason": "선택한 백엔드에서 ffmpeg를 지원하지 않아 {{kind}} 리소스를 전송할 수 없습니다.",
+      "unsupportedReason": "이 콘텐츠를 다운로드하려면 FFmpeg가 필요합니다.",
       "unsupportedSelectionReason": "선택한 백엔드에서 선택된 리소스 유형 중 하나 이상을 전송할 수 없습니다.",
       "unsupportedResource": "{{name}}을(를) 전송할 수 없습니다. {{reason}}",
-      "refreshCapabilitiesHint": "Motrix에서 FFmpeg를 설정한 후 다시 스캔하여 미디어 지원 상태를 갱신하세요."
+      "refreshCapabilitiesHint": "Motrix 설정에서 FFmpeg를 설정한 다음 “다시 검색”을 클릭하세요."
     },
     "speed": {
       "download": "다운로드",

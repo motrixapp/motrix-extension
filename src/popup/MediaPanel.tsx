@@ -30,6 +30,11 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import {
   CompactContentCard,
@@ -409,14 +414,14 @@ function ResourceRow({
   const name = mediaName(media)
   const host = mediaHost(media)
   const metadata = readableMediaMetadata(media)
-  const unsupportedReason = t('popup.sniffer.unsupportedReason', {
-    kind: media.kind.toUpperCase(),
-  })
+  const unsupportedReason = t('popup.sniffer.unsupportedReason')
   const disabledReason = !canSubmit
     ? t('popup.integration.pairingUnavailable')
     : !supported
       ? unsupportedReason
       : null
+  const disabledHint =
+    canSubmit && !supported ? t('popup.sniffer.refreshCapabilitiesHint') : null
   const actionLabel = disabledReason
     ? t('popup.sniffer.unsupportedResource', {
         name,
@@ -434,6 +439,37 @@ function ResourceRow({
             name,
             reason: unsupportedReason,
           })
+  const downloadButton = (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      className={cn(
+        'mr-3 size-8 shrink-0 rounded-lg text-muted-foreground',
+        disabledReason
+          ? 'cursor-not-allowed opacity-50 hover:bg-transparent hover:text-muted-foreground active:translate-y-0 dark:hover:bg-transparent'
+          : 'hover:bg-speed-download/[0.1] hover:text-speed-download',
+        state === 'sent' &&
+          'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
+      )}
+      disabled={!supported || !canSubmit || state !== 'idle'}
+      focusableWhenDisabled={!!disabledReason}
+      title={disabledReason ? undefined : host}
+      aria-label={actionLabel}
+      aria-describedby={
+        disabledReason ? disabledDescriptionId : hostDescriptionId
+      }
+      onClick={onDownload}
+    >
+      {state === 'sending' ? (
+        <RefreshCw className="size-4 animate-spin" aria-hidden="true" />
+      ) : state === 'sent' ? (
+        <Check className="size-4" aria-hidden="true" />
+      ) : (
+        <Download className="size-4" aria-hidden="true" />
+      )}
+    </Button>
+  )
   return (
     <li
       data-testid={`resource-row-${mediaDomKey(media)}`}
@@ -464,17 +500,12 @@ function ResourceRow({
             {metadata && <span aria-hidden="true"> · </span>}
             {metadata && <span>{metadata}</span>}
           </span>
-          {(error || !supported) && (
+          {error && (
             <span
-              role={error ? 'alert' : undefined}
+              role="alert"
               className="block whitespace-normal text-[11px] text-destructive [overflow-wrap:anywhere]"
             >
-              {error ?? unsupportedReason}
-              {!supported && (
-                <span className="block">
-                  {t('popup.sniffer.refreshCapabilitiesHint')}
-                </span>
-              )}
+              {error}
             </span>
           )}
           <span id={hostDescriptionId} className="sr-only">
@@ -482,34 +513,25 @@ function ResourceRow({
           </span>
         </span>
       </div>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        className={cn(
-          'mr-3 size-8 shrink-0 rounded-lg text-muted-foreground hover:bg-speed-download/[0.1] hover:text-speed-download',
-          state === 'sent' &&
-            'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
-        )}
-        disabled={!supported || !canSubmit || state !== 'idle'}
-        title={disabledReason ?? host}
-        aria-label={actionLabel}
-        aria-describedby={
-          disabledReason ? disabledDescriptionId : hostDescriptionId
-        }
-        onClick={onDownload}
-      >
-        {state === 'sending' ? (
-          <RefreshCw className="size-4 animate-spin" aria-hidden="true" />
-        ) : state === 'sent' ? (
-          <Check className="size-4" aria-hidden="true" />
-        ) : (
-          <Download className="size-4" aria-hidden="true" />
-        )}
-      </Button>
+      {disabledReason ? (
+        <Tooltip>
+          <TooltipTrigger render={downloadButton} delay={300} />
+          <TooltipContent
+            role="tooltip"
+            side="left"
+            className="block max-w-[260px] leading-relaxed [overflow-wrap:anywhere]"
+          >
+            <p>{disabledReason}</p>
+            {disabledHint && <p className="mt-1 opacity-75">{disabledHint}</p>}
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        downloadButton
+      )}
       {disabledReason && (
         <span id={disabledDescriptionId} className="sr-only">
           {disabledReason}
+          {disabledHint && ` ${disabledHint}`}
         </span>
       )}
     </li>

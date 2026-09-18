@@ -331,10 +331,10 @@
       "unavailableDescription": "Pindah halaman atau coba lagi nanti.",
       "unavailableTitle": "Halaman ini tak bisa dipindai",
       "unsupported": "Memerlukan ffmpeg",
-      "unsupportedReason": "Backend yang dipilih tidak dapat mengirim sumber daya {{kind}} karena dukungan ffmpeg tidak tersedia.",
+      "unsupportedReason": "FFmpeg diperlukan untuk mengunduh konten ini.",
       "unsupportedSelectionReason": "Backend yang dipilih tidak dapat mengirim satu atau beberapa jenis sumber daya yang dipilih.",
       "unsupportedResource": "{{name}} tidak dapat dikirim. {{reason}}",
-      "refreshCapabilitiesHint": "Setelah mengonfigurasi FFmpeg di Motrix, pindai ulang untuk memperbarui dukungan media."
+      "refreshCapabilitiesHint": "Siapkan FFmpeg di pengaturan Motrix, lalu klik “Pindai lagi”."
     },
     "speed": {
       "download": "Unduh",

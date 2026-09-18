@@ -331,10 +331,10 @@
       "unavailableDescription": "請切換頁面或稍後再試。",
       "unavailableTitle": "無法掃描此頁面",
       "unsupported": "需要 ffmpeg",
-      "unsupportedReason": "所選後端不支援 ffmpeg，無法傳送 {{kind}} 資源。",
+      "unsupportedReason": "下載此內容需要 FFmpeg。",
       "unsupportedSelectionReason": "所選後端無法傳送一或多種已選取的資源類型。",
       "unsupportedResource": "無法傳送 {{name}}。{{reason}}",
-      "refreshCapabilitiesHint": "在 Motrix 中設定 FFmpeg 後，請重新掃描以更新媒體支援狀態。"
+      "refreshCapabilitiesHint": "請先在 Motrix 中設定 FFmpeg，再點選「重新掃描」。"
     },
     "speed": {
       "download": "下載",

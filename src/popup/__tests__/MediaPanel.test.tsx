@@ -974,12 +974,15 @@ describe('MediaPanel resource rows', () => {
     const descriptionId = resource.getAttribute('aria-describedby')
     const reason = descriptionId ? document.getElementById(descriptionId) : null
 
-    expect((resource as HTMLButtonElement).disabled).toBe(true)
+    const unsupportedReason = i18n.t('popup.sniffer.unsupportedReason')
+    expect(resource.getAttribute('aria-disabled')).toBe('true')
     expect(reason?.textContent).toBe(
-      'The selected backend cannot submit MUX resources because ffmpeg support is unavailable.'
+      `${unsupportedReason} ${i18n.t('popup.sniffer.refreshCapabilitiesHint')}`
     )
-    expect(resource.getAttribute('title')).toBe(reason?.textContent)
-    expect(resource.getAttribute('aria-label')).toContain(reason?.textContent)
+    expect(reason?.className).toBe('sr-only')
+    expect(screen.queryByRole('tooltip')).toBeNull()
+    expect(resource.getAttribute('title')).toBeNull()
+    expect(resource.getAttribute('aria-label')).toContain(unsupportedReason)
 
     const selection = screen.getByRole('checkbox', {
       name: 'Select video.mp4',
@@ -993,6 +996,84 @@ describe('MediaPanel resource rows', () => {
     expect(document.getElementById(batchDescriptionId ?? '')?.textContent).toBe(
       i18n.t('popup.sniffer.unsupportedSelectionReason')
     )
+  })
+
+  it.each(['hover', 'keyboard'] as const)(
+    'explains disabled downloads on %s without allowing submission',
+    async (interaction) => {
+      const user = userEvent.setup()
+      send.mockImplementation(async (kind: string) => {
+        if (kind === 'bg.scanActiveTab') {
+          return { media: [HLS_ITEM], selectionKinds: ['direct'] }
+        }
+        return {}
+      })
+
+      render(<MediaPanel active connected />)
+      const resource = await screen.findByRole('button', {
+        name: /master\.m3u8 cannot be sent/,
+      })
+      if (interaction === 'hover') {
+        await user.hover(resource)
+      } else {
+        act(() => {
+          screen.getByRole('checkbox', { name: 'Select master.m3u8' }).focus()
+        })
+        await user.tab()
+        expect(document.activeElement).toBe(resource)
+      }
+
+      const tooltip = await screen.findByRole('tooltip')
+      expect(tooltip.textContent).toContain(
+        i18n.t('popup.sniffer.unsupportedReason')
+      )
+      expect(tooltip.textContent).toContain(
+        i18n.t('popup.sniffer.refreshCapabilitiesHint')
+      )
+
+      if (interaction === 'hover') {
+        await user.click(resource)
+      } else {
+        await user.keyboard('{Enter} ')
+      }
+      expect(submitCalls()).toHaveLength(0)
+      expect(resource.getAttribute('aria-disabled')).toBe('true')
+
+      await user.keyboard('{Escape}')
+      await waitFor(() => expect(screen.queryByRole('tooltip')).toBeNull())
+    }
+  )
+
+  it('clears the disabled tooltip and enables downloads after a capability rescan', async () => {
+    const user = userEvent.setup()
+    let supported = false
+    send.mockImplementation(async (kind: string) => {
+      if (kind === 'bg.scanActiveTab') {
+        return {
+          media: [HLS_ITEM],
+          selectionKinds: supported ? ['direct', 'hls'] : ['direct'],
+        }
+      }
+      return { ok: true }
+    })
+
+    render(<MediaPanel active connected />)
+    await user.hover(
+      await screen.findByRole('button', { name: /master\.m3u8 cannot be sent/ })
+    )
+    await screen.findByRole('tooltip')
+
+    supported = true
+    fireEvent.click(
+      screen.getByRole('button', { name: i18n.t('popup.sniffer.scan') })
+    )
+    const resource = await screen.findByRole('button', {
+      name: 'Quick download master.m3u8',
+    })
+    expect(screen.queryByRole('tooltip')).toBeNull()
+    expect(resource.getAttribute('aria-disabled')).not.toBe('true')
+    await user.click(resource)
+    expect(submitCalls()).toHaveLength(1)
   })
 
   it('shows the complete page submission error and lets the user retry', async () => {

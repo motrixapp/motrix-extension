@@ -331,10 +331,10 @@
       "unavailableDescription": "เปลี่ยนหน้าหรือลองอีกครั้งภายหลัง",
       "unavailableTitle": "สแกนหน้านี้ไม่ได้",
       "unsupported": "ต้องใช้ ffmpeg",
-      "unsupportedReason": "แบ็กเอนด์ที่เลือกไม่สามารถส่งทรัพยากร {{kind}} ได้ เนื่องจากไม่มีการรองรับ ffmpeg",
+      "unsupportedReason": "ต้องใช้ FFmpeg เพื่อดาวน์โหลดรายการนี้",
       "unsupportedSelectionReason": "แบ็กเอนด์ที่เลือกไม่สามารถส่งทรัพยากรที่เลือกอย่างน้อยหนึ่งประเภทได้",
       "unsupportedResource": "ส่ง {{name}} ไม่ได้ {{reason}}",
-      "refreshCapabilitiesHint": "หลังจากตั้งค่า FFmpeg ใน Motrix ให้สแกนอีกครั้งเพื่ออัปเดตการรองรับสื่อ"
+      "refreshCapabilitiesHint": "ตั้งค่า FFmpeg ในการตั้งค่า Motrix แล้วคลิก “สแกนอีกครั้ง”"
     },
     "speed": {
       "download": "ดาวน์โหลด",

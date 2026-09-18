@@ -331,10 +331,10 @@
       "unavailableDescription": "Chuyển trang hoặc thử lại sau.",
       "unavailableTitle": "Không thể quét trang này",
       "unsupported": "Cần có ffmpeg",
-      "unsupportedReason": "Dịch vụ đã chọn không thể gửi tài nguyên {{kind}} vì không có hỗ trợ ffmpeg.",
+      "unsupportedReason": "Cần FFmpeg để tải nội dung này.",
       "unsupportedSelectionReason": "Dịch vụ đã chọn không thể gửi một hoặc nhiều loại tài nguyên đã chọn.",
       "unsupportedResource": "Không thể gửi {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "Sau khi cấu hình FFmpeg trong Motrix, hãy quét lại để cập nhật khả năng hỗ trợ phương tiện."
+      "refreshCapabilitiesHint": "Thiết lập FFmpeg trong phần cài đặt Motrix, sau đó nhấp vào “Quét lại”."
     },
     "speed": {
       "download": "Tải xuống",

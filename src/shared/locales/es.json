@@ -331,10 +331,10 @@
       "unavailableDescription": "Cambia de página o inténtalo más tarde.",
       "unavailableTitle": "No se puede analizar la página",
       "unsupported": "Requiere ffmpeg",
-      "unsupportedReason": "El servicio seleccionado no puede enviar recursos de tipo {{kind}} porque no dispone de compatibilidad con ffmpeg.",
+      "unsupportedReason": "Necesitas FFmpeg para descargar este contenido.",
       "unsupportedSelectionReason": "El servicio seleccionado no puede enviar uno o más de los tipos de recursos seleccionados.",
       "unsupportedResource": "No se puede enviar {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "Tras configurar FFmpeg en Motrix, vuelve a escanear para actualizar la compatibilidad multimedia."
+      "refreshCapabilitiesHint": "Configura FFmpeg en los ajustes de Motrix y haz clic en «Volver a analizar»."
     },
     "speed": {
       "download": "Descarga",

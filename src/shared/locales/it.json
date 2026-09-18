@@ -331,10 +331,10 @@
       "unavailableDescription": "Cambia pagina o riprova più tardi.",
       "unavailableTitle": "Pagina non analizzabile",
       "unsupported": "Richiede ffmpeg",
-      "unsupportedReason": "Il servizio selezionato non può inviare risorse {{kind}} perché il supporto ffmpeg non è disponibile.",
+      "unsupportedReason": "Per scaricare questo contenuto serve FFmpeg.",
       "unsupportedSelectionReason": "Il servizio selezionato non può inviare uno o più tipi di risorse selezionati.",
       "unsupportedResource": "Impossibile inviare {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "Dopo aver configurato FFmpeg in Motrix, ripeti la scansione per aggiornare il supporto multimediale."
+      "refreshCapabilitiesHint": "Configura FFmpeg nelle impostazioni di Motrix, poi fai clic su “Ripeti scansione”."
     },
     "speed": {
       "download": "Download",

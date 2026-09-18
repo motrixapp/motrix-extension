@@ -331,10 +331,10 @@
       "unavailableDescription": "Смените страницу или повторите позже.",
       "unavailableTitle": "Страницу нельзя сканировать",
       "unsupported": "Требуется ffmpeg",
-      "unsupportedReason": "Выбранная служба не может отправить ресурсы {{kind}}, поскольку поддержка ffmpeg недоступна.",
+      "unsupportedReason": "Для скачивания этого файла нужен FFmpeg.",
       "unsupportedSelectionReason": "Выбранная служба не может отправить один или несколько выбранных типов ресурсов.",
       "unsupportedResource": "Не удаётся отправить {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "После настройки FFmpeg в Motrix повторите сканирование, чтобы обновить поддержку медиа."
+      "refreshCapabilitiesHint": "Настройте FFmpeg в настройках Motrix, затем нажмите «Сканировать снова»."
     },
     "speed": {
       "download": "Скачивание",

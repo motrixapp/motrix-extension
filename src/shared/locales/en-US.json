@@ -331,10 +331,10 @@
       "unavailableDescription": "Switch pages or try again later.",
       "unavailableTitle": "Page can’t be scanned",
       "unsupported": "Requires ffmpeg",
-      "unsupportedReason": "The selected backend cannot submit {{kind}} resources because ffmpeg support is unavailable.",
+      "unsupportedReason": "FFmpeg is needed to download this item.",
       "unsupportedSelectionReason": "The selected backend cannot submit one or more selected resource types.",
       "unsupportedResource": "{{name}} cannot be sent. {{reason}}",
-      "refreshCapabilitiesHint": "After configuring FFmpeg in Motrix, rescan to refresh media support."
+      "refreshCapabilitiesHint": "Set up FFmpeg in Motrix settings, then click “Scan again”."
     },
     "speed": {
       "download": "Download",

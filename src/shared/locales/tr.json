@@ -331,10 +331,10 @@
       "unavailableDescription": "Sayfayı değiştirin veya sonra tekrar deneyin.",
       "unavailableTitle": "Bu sayfa taranamıyor",
       "unsupported": "ffmpeg gerekli",
-      "unsupportedReason": "ffmpeg desteği olmadığından seçili arka uç {{kind}} kaynaklarını gönderemez.",
+      "unsupportedReason": "Bu içeriği indirmek için FFmpeg gerekiyor.",
       "unsupportedSelectionReason": "Seçili arka uç, seçilen kaynak türlerinden birini veya birkaçını gönderemez.",
       "unsupportedResource": "{{name}} gönderilemiyor. {{reason}}",
-      "refreshCapabilitiesHint": "Motrix’te FFmpeg’i yapılandırdıktan sonra medya desteğini güncellemek için yeniden tarayın."
+      "refreshCapabilitiesHint": "Motrix ayarlarında FFmpeg’i yapılandırın, ardından “Yeniden tara”ya tıklayın."
     },
     "speed": {
       "download": "İndirme",

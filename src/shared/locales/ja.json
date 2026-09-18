@@ -331,10 +331,10 @@
       "unavailableDescription": "ページを変えるか、後で再試行してください。",
       "unavailableTitle": "このページはスキャン不可",
       "unsupported": "ffmpeg が必要です",
-      "unsupportedReason": "選択したバックエンドは ffmpeg に対応していないため、{{kind}} リソースを送信できません。",
+      "unsupportedReason": "このコンテンツのダウンロードには FFmpeg が必要です。",
       "unsupportedSelectionReason": "選択したバックエンドでは、選択されたリソースの一部またはすべての種類を送信できません。",
       "unsupportedResource": "{{name}} を送信できません。{{reason}}",
-      "refreshCapabilitiesHint": "Motrix で FFmpeg を設定したら、再スキャンしてメディアの対応状況を更新してください。"
+      "refreshCapabilitiesHint": "Motrix の設定で FFmpeg を設定してから、「再スキャン」をクリックしてください。"
     },
     "speed": {
       "download": "ダウンロード",
