@@ -11,7 +11,9 @@
   "imports": {
     "#build-variant-plugin": "./buildVariantPlugin.ts",
     "#build-verifier": "./scripts/verify-build.mjs",
-    "#manifest-config": "./manifest.config.ts"
+    "#manifest-config": "./manifest.config.ts",
+    "#store-release": "./scripts/store-release.mjs",
+    "#store-submitter": "./scripts/submit-store.mjs"
   },
   "scripts": {
     "check:imports": "node scripts/check-imports.mjs",
@@ -66,7 +68,9 @@
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^6.1.1",
     "es-module-lexer": "3.0.2",
+    "fflate": "0.8.3",
     "jsdom": "^30.1.0",
+    "publish-browser-extension": "6.1.1",
     "shadcn": "^4.21.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
