@@ -40,18 +40,12 @@ function DashboardTileContent({
 }: DashboardTileCommonProps): React.ReactElement {
   return (
     <>
-      <span className="flex min-w-0 items-start justify-between gap-1">
-        <span className="min-w-0 text-[9px]/3 font-medium text-muted-foreground [overflow-wrap:anywhere]">
-          {label}
-        </span>
-        {Icon ? (
-          <Icon
-            aria-hidden="true"
-            data-slot="dashboard-tile-icon"
-            className={cn('size-4 shrink-0', iconClassName)}
-            strokeWidth={2}
-          />
-        ) : null}
+      <span
+        data-slot="dashboard-tile-label"
+        title={label}
+        className="block min-w-0 truncate text-[9px]/3 font-medium text-muted-foreground"
+      >
+        {label}
       </span>
       <span
         data-slot="dashboard-tile-value-row"
@@ -72,6 +66,14 @@ function DashboardTileContent({
           </span>
         ) : null}
       </span>
+      {Icon ? (
+        <Icon
+          aria-hidden="true"
+          data-slot="dashboard-tile-icon"
+          className={cn('absolute right-2 bottom-3 size-4', iconClassName)}
+          strokeWidth={2}
+        />
+      ) : null}
       {decoration}
     </>
   )
