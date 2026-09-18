@@ -333,7 +333,8 @@
       "unsupported": "ต้องใช้ ffmpeg",
       "unsupportedReason": "แบ็กเอนด์ที่เลือกไม่สามารถส่งทรัพยากร {{kind}} ได้ เนื่องจากไม่มีการรองรับ ffmpeg",
       "unsupportedSelectionReason": "แบ็กเอนด์ที่เลือกไม่สามารถส่งทรัพยากรที่เลือกอย่างน้อยหนึ่งประเภทได้",
-      "unsupportedResource": "ส่ง {{name}} ไม่ได้ {{reason}}"
+      "unsupportedResource": "ส่ง {{name}} ไม่ได้ {{reason}}",
+      "refreshCapabilitiesHint": "หลังจากตั้งค่า FFmpeg ใน Motrix ให้สแกนอีกครั้งเพื่ออัปเดตการรองรับสื่อ"
     },
     "speed": {
       "download": "ดาวน์โหลด",

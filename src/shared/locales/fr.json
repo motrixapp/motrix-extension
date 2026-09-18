@@ -333,7 +333,8 @@
       "unsupported": "Nécessite ffmpeg",
       "unsupportedReason": "Le service sélectionné ne peut pas envoyer les ressources {{kind}}, car la prise en charge de ffmpeg est indisponible.",
       "unsupportedSelectionReason": "Le service sélectionné ne peut pas envoyer un ou plusieurs types de ressources sélectionnés.",
-      "unsupportedResource": "Impossible d’envoyer {{name}}. {{reason}}"
+      "unsupportedResource": "Impossible d’envoyer {{name}}. {{reason}}",
+      "refreshCapabilitiesHint": "Après avoir configuré FFmpeg dans Motrix, relancez l’analyse pour actualiser la prise en charge des médias."
     },
     "speed": {
       "download": "Téléchargement",

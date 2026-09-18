@@ -437,7 +437,7 @@ function ResourceRow({
   return (
     <li
       data-testid={`resource-row-${mediaDomKey(media)}`}
-      className="relative flex h-[68px] shrink-0 items-center transition-colors after:absolute after:inset-x-4 after:bottom-0 after:h-px after:bg-border last:after:hidden hover:bg-muted/40 focus-within:bg-muted/40"
+      className="relative flex min-h-[68px] shrink-0 items-center py-2 transition-colors after:absolute after:inset-x-4 after:bottom-0 after:h-px after:bg-border last:after:hidden hover:bg-muted/40 focus-within:bg-muted/40"
     >
       <div className="flex min-w-0 flex-1 items-center gap-2 pr-1.5 pl-3">
         <SelectionCheckbox
@@ -461,13 +461,22 @@ function ResourceRow({
           </span>
           <span className="block truncate text-[10px] text-muted-foreground">
             <span>{host}</span>
-            {(error || metadata) && <span aria-hidden="true"> · </span>}
-            {error ? (
-              <span className="text-destructive">{error}</span>
-            ) : (
-              metadata && <span>{metadata}</span>
-            )}
+            {metadata && <span aria-hidden="true"> · </span>}
+            {metadata && <span>{metadata}</span>}
           </span>
+          {(error || !supported) && (
+            <span
+              role={error ? 'alert' : undefined}
+              className="block whitespace-normal text-[11px] text-destructive [overflow-wrap:anywhere]"
+            >
+              {error ?? unsupportedReason}
+              {!supported && (
+                <span className="block">
+                  {t('popup.sniffer.refreshCapabilitiesHint')}
+                </span>
+              )}
+            </span>
+          )}
           <span id={hostDescriptionId} className="sr-only">
             {t('popup.sniffer.sourceHost', { host })}
           </span>
@@ -540,7 +549,7 @@ function ResolvablePageAction({
   }
 
   return (
-    <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border px-3">
+    <div className="flex shrink-0 flex-col items-start gap-2 border-b border-border p-3">
       <Button
         type="button"
         size="xs"
@@ -564,13 +573,19 @@ function ResolvablePageAction({
         )}
       </Button>
       <span
+        role={error ? 'alert' : 'status'}
         className={cn(
-          'min-w-0 flex-1 truncate text-right text-[10px]',
+          'block w-full min-w-0 whitespace-normal text-xs [overflow-wrap:anywhere]',
           error ? 'text-destructive' : 'text-muted-foreground'
         )}
       >
         {error ??
           (taskId ? t('popup.sniffer.pageSubmitted', { taskId }) : null)}
+        {error === t('popup.sniffer.unsupportedSelectionReason') && (
+          <span className="mt-1 block">
+            {t('popup.sniffer.refreshCapabilitiesHint')}
+          </span>
+        )}
       </span>
       {!canSubmit && (
         <span id={disabledDescriptionId} className="sr-only">

@@ -333,7 +333,8 @@
       "unsupported": "需要 ffmpeg",
       "unsupportedReason": "所选后端不支持提交 {{kind}} 资源，因为当前没有 ffmpeg 能力。",
       "unsupportedSelectionReason": "所选后端不支持一个或多个已选资源类型。",
-      "unsupportedResource": "无法提交 {{name}}。{{reason}}"
+      "unsupportedResource": "无法提交 {{name}}。{{reason}}",
+      "refreshCapabilitiesHint": "在 Motrix 中配置 FFmpeg 后，请重新扫描以刷新媒体支持状态。"
     },
     "speed": {
       "download": "下载",

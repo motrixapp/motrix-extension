@@ -1,5 +1,5 @@
 import type { MdxpConnection } from '@motrix/mdxp'
-import { Methods, Notifications } from '@motrix/mdxp'
+import { ErrorCodes, Methods, Notifications } from '@motrix/mdxp'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConnectionGate } from '@/background/ConnectionGate'
 import {
@@ -386,6 +386,114 @@ describe('ConnectionManager — happy path', () => {
       version: '2.0',
       runtime: 'electron',
     })
+  })
+
+  it('refreshes capabilities on the live session and coalesces concurrent scans', async () => {
+    const conn = makeFakeConn()
+    const mgr = makeManager({ mbp1Conn: conn })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    const declared = vi.mocked(conn.sendRequest).mock.calls[0]?.[1]
+    const pending = deferred<unknown>()
+    vi.mocked(conn.sendRequest).mockImplementationOnce(
+      () => pending.promise as never
+    )
+    const first = mgr.refreshServerCapabilities()
+    const second = mgr.refreshServerCapabilities()
+    expect(first).toBe(second)
+    pending.resolve({
+      protocolVersion: '1.0',
+      server: { name: 'motrix', version: '2.0', runtime: 'electron' },
+      capabilities: {
+        ffmpegAvailable: true,
+        selectionKinds: ['direct', 'hls', 'dash', 'mux'],
+        progress: true,
+        cancellation: true,
+      },
+      serverAdapters: [],
+    })
+    await expect(first).resolves.toMatchObject({
+      selectionKinds: ['direct', 'hls', 'dash', 'mux'],
+    })
+    expect(conn.sendRequest).toHaveBeenLastCalledWith(
+      'motrix/initialize',
+      declared
+    )
+    expect(mgr.getState()).toBe('connected')
+    expect(conn.dispose).not.toHaveBeenCalled()
+    expect(conn.sendNotification).toHaveBeenCalledTimes(1)
+    // A later scan also detects removed/invalidated FFmpeg support.
+    vi.mocked(conn.sendRequest).mockResolvedValueOnce({
+      protocolVersion: '1.0',
+      server: { name: 'motrix', version: '2.0', runtime: 'electron' },
+      capabilities: {
+        ffmpegAvailable: false,
+        selectionKinds: ['direct'],
+        progress: true,
+        cancellation: true,
+      },
+      serverAdapters: [],
+    } as never)
+    await expect(mgr.refreshServerCapabilities()).resolves.toMatchObject({
+      ffmpegAvailable: false,
+      selectionKinds: ['direct'],
+    })
+  })
+
+  it('does not connect or launch Motrix to refresh an offline session', async () => {
+    const mgr = makeManager()
+    await expect(mgr.refreshServerCapabilities()).resolves.toBeNull()
+    expect(mgr.getState()).toBe('disconnected')
+  })
+
+  it('discards a capability reply after the session is stopped', async () => {
+    const conn = makeFakeConn()
+    const mgr = makeManager({ mbp1Conn: conn })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    const pending = deferred<unknown>()
+    vi.mocked(conn.sendRequest).mockImplementationOnce(
+      () => pending.promise as never
+    )
+    const refresh = mgr.refreshServerCapabilities()
+    mgr.stop()
+    pending.resolve({})
+    await expect(refresh).rejects.toThrow()
+    expect(mgr.getServerCapabilities()).toBeNull()
+    expect(mgr.getState()).toBe('disconnected')
+  })
+
+  it('bounds capability refresh time and allows another scan after failure', async () => {
+    const conn = makeFakeConn()
+    const mgr = makeManager({ mbp1Conn: conn, requestTimeoutMs: 10 })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    vi.mocked(conn.sendRequest).mockImplementationOnce(
+      () => new Promise(() => {})
+    )
+    await expect(mgr.refreshServerCapabilities()).rejects.toThrow('timed out')
+    await expect(mgr.refreshServerCapabilities()).resolves.toMatchObject({
+      selectionKinds: ['direct'],
+    })
+  })
+
+  it.each([
+    {},
+    {
+      protocolVersion: '1.0',
+      server: { name: 'motrix', version: '2.0', runtime: 'server' },
+      capabilities: {
+        ffmpegAvailable: true,
+        selectionKinds: ['direct', 'mux'],
+        progress: true,
+        cancellation: true,
+      },
+      serverAdapters: [],
+    },
+  ])('rejects an invalid or mismatched refresh reply', async (result) => {
+    const conn = makeFakeConn()
+    const mgr = makeManager({ mbp1Conn: conn })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    vi.mocked(conn.sendRequest).mockResolvedValueOnce(result as never)
+    await expect(mgr.refreshServerCapabilities()).rejects.toThrow()
+    expect(mgr.getServerCapabilities()?.selectionKinds).toEqual(['direct'])
   })
 
   it('abandons a server that never answers motrix/initialize', async () => {
@@ -1784,6 +1892,40 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
       sendRequest: ReturnType<typeof vi.fn>
     }
   }
+
+  it('reports a capability rejection as unsupported instead of an unknown download outcome', async () => {
+    const conn = makeSubmitFakeConn()
+    const manager = makeManager({ mbp1Conn: conn })
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    conn.sendRequest.mockRejectedValueOnce({
+      code: ErrorCodes.CapabilityNotSupported,
+      message: 'private native path',
+    })
+    await expect(
+      manager.submitDownload({
+        source: {
+          pageUrl: 'https://example.com',
+          pageTitle: 'Video',
+          detectedAt: 1,
+        },
+        selection: {
+          kind: 'direct',
+          primary: {
+            url: 'https://example.com/video.mp4',
+            headers: {},
+            cookies: [],
+            refererPolicy: 'strict-origin-when-cross-origin',
+          },
+        },
+        meta: { suggestedFilename: 'video.mp4', qualityLabel: '' },
+      })
+    ).rejects.toThrow('download.unsupported')
+    expect(
+      conn.sendRequest.mock.calls.filter(
+        ([method]) => method === 'download/submit'
+      )
+    ).toHaveLength(1)
+  })
 
   it('submitDownload forwards download/submit and returns the taskId', async () => {
     const fakeConn = makeSubmitFakeConn()

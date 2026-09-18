@@ -333,7 +333,8 @@
       "unsupported": "Memerlukan ffmpeg",
       "unsupportedReason": "Backend yang dipilih tidak dapat mengirim sumber daya {{kind}} karena dukungan ffmpeg tidak tersedia.",
       "unsupportedSelectionReason": "Backend yang dipilih tidak dapat mengirim satu atau beberapa jenis sumber daya yang dipilih.",
-      "unsupportedResource": "{{name}} tidak dapat dikirim. {{reason}}"
+      "unsupportedResource": "{{name}} tidak dapat dikirim. {{reason}}",
+      "refreshCapabilitiesHint": "Setelah mengonfigurasi FFmpeg di Motrix, pindai ulang untuk memperbarui dukungan media."
     },
     "speed": {
       "download": "Unduh",

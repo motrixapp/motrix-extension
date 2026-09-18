@@ -333,7 +333,8 @@
       "unsupported": "Requires ffmpeg",
       "unsupportedReason": "The selected backend cannot submit {{kind}} resources because ffmpeg support is unavailable.",
       "unsupportedSelectionReason": "The selected backend cannot submit one or more selected resource types.",
-      "unsupportedResource": "{{name}} cannot be sent. {{reason}}"
+      "unsupportedResource": "{{name}} cannot be sent. {{reason}}",
+      "refreshCapabilitiesHint": "After configuring FFmpeg in Motrix, rescan to refresh media support."
     },
     "speed": {
       "download": "Download",

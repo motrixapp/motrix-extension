@@ -333,7 +333,8 @@
       "unsupported": "ffmpeg が必要です",
       "unsupportedReason": "選択したバックエンドは ffmpeg に対応していないため、{{kind}} リソースを送信できません。",
       "unsupportedSelectionReason": "選択したバックエンドでは、選択されたリソースの一部またはすべての種類を送信できません。",
-      "unsupportedResource": "{{name}} を送信できません。{{reason}}"
+      "unsupportedResource": "{{name}} を送信できません。{{reason}}",
+      "refreshCapabilitiesHint": "Motrix で FFmpeg を設定したら、再スキャンしてメディアの対応状況を更新してください。"
     },
     "speed": {
       "download": "ダウンロード",

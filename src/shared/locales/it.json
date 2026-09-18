@@ -333,7 +333,8 @@
       "unsupported": "Richiede ffmpeg",
       "unsupportedReason": "Il servizio selezionato non può inviare risorse {{kind}} perché il supporto ffmpeg non è disponibile.",
       "unsupportedSelectionReason": "Il servizio selezionato non può inviare uno o più tipi di risorse selezionati.",
-      "unsupportedResource": "Impossibile inviare {{name}}. {{reason}}"
+      "unsupportedResource": "Impossibile inviare {{name}}. {{reason}}",
+      "refreshCapabilitiesHint": "Dopo aver configurato FFmpeg in Motrix, ripeti la scansione per aggiornare il supporto multimediale."
     },
     "speed": {
       "download": "Download",

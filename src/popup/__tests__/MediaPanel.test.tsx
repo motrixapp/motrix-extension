@@ -995,6 +995,34 @@ describe('MediaPanel resource rows', () => {
     )
   })
 
+  it('shows the complete page submission error and lets the user retry', async () => {
+    tabsQuery.mockResolvedValue([
+      { id: 1, url: 'https://www.youtube.com/watch?v=motrix' },
+    ])
+    let rejected = true
+    send.mockImplementation(async (kind: string) => {
+      if (kind === 'bg.scanActiveTab')
+        return { media: [], selectionKinds: ['direct'] }
+      if (kind === 'bg.resolvePageDownload')
+        return rejected
+          ? { error: 'download.unsupported' }
+          : { taskId: 'retried-task' }
+      return {}
+    })
+    render(<MediaPanel active connected />)
+    const action = await screen.findByRole('button', {
+      name: i18n.t('popup.sniffer.pageAction.youtube'),
+    })
+    fireEvent.click(action)
+    const alert = await screen.findByRole('alert')
+    expect(alert.textContent).toBeTruthy()
+    expect(alert.className).not.toContain('truncate')
+    expect(alert.parentElement?.className).not.toContain('h-11')
+    rejected = false
+    fireEvent.click(action)
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull())
+  })
+
   it('allows page resolution while paired and offline', async () => {
     tabsQuery.mockResolvedValue([
       { url: 'https://www.youtube.com/watch?v=motrix' },

@@ -333,7 +333,8 @@
       "unsupported": "需要 ffmpeg",
       "unsupportedReason": "所選後端不支援 ffmpeg，無法傳送 {{kind}} 資源。",
       "unsupportedSelectionReason": "所選後端無法傳送一或多種已選取的資源類型。",
-      "unsupportedResource": "無法傳送 {{name}}。{{reason}}"
+      "unsupportedResource": "無法傳送 {{name}}。{{reason}}",
+      "refreshCapabilitiesHint": "在 Motrix 中設定 FFmpeg 後，請重新掃描以更新媒體支援狀態。"
     },
     "speed": {
       "download": "下載",

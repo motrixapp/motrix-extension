@@ -333,7 +333,8 @@
       "unsupported": "Cần có ffmpeg",
       "unsupportedReason": "Dịch vụ đã chọn không thể gửi tài nguyên {{kind}} vì không có hỗ trợ ffmpeg.",
       "unsupportedSelectionReason": "Dịch vụ đã chọn không thể gửi một hoặc nhiều loại tài nguyên đã chọn.",
-      "unsupportedResource": "Không thể gửi {{name}}. {{reason}}"
+      "unsupportedResource": "Không thể gửi {{name}}. {{reason}}",
+      "refreshCapabilitiesHint": "Sau khi cấu hình FFmpeg trong Motrix, hãy quét lại để cập nhật khả năng hỗ trợ phương tiện."
     },
     "speed": {
       "download": "Tải xuống",

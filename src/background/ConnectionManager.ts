@@ -1,6 +1,7 @@
 import type {
   DownloadSubmitParams,
   DownloadSubmitResult,
+  InitializeParams,
   MdxpConnection,
   MdxpRequestMap,
   TaskCompletedParams,
@@ -505,6 +506,13 @@ export class ConnectionManager {
   private readonly requestTimeoutMs: number
   private readonly initializeTimeoutMs: number
   private readonly closeReconnectDelayMs: number
+  private initializeRequest: {
+    conn: MdxpConnection
+    params: InitializeParams
+  } | null = null
+  private capabilitiesRefreshFlight: Promise<
+    ReturnType<ConnectionManager['getServerCapabilities']>
+  > | null = null
   private serverCapabilities: {
     ffmpegAvailable: boolean
     selectionKinds: string[]
@@ -850,6 +858,46 @@ export class ConnectionManager {
     return this.serverCapabilities
   }
 
+  /** Re-read capabilities over the authenticated session without reconnecting,
+   * launching Motrix, changing consent, or replaying a download. MDXP initialize
+   * is a capability exchange; reuse exactly the session's original declaration. */
+  refreshServerCapabilities(): Promise<
+    ReturnType<ConnectionManager['getServerCapabilities']>
+  > {
+    if (this.capabilitiesRefreshFlight) return this.capabilitiesRefreshFlight
+    const request = this.initializeRequest
+    const scope = this.currentEndpointScope
+    if (this.state !== 'connected' || !request || !scope)
+      return Promise.resolve(null)
+    const generation = this.generation
+    const flight = (async () => {
+      const rawResult = await this.withTimeout(
+        request.conn.sendRequest(Methods.MotrixInitialize, request.params),
+        this.requestTimeoutMs,
+        Methods.MotrixInitialize
+      )
+      this.ensureCurrentConnection(generation, request.conn)
+      const result = InitializeResultSchema.parse(rawResult)
+      const expectedRuntime =
+        scope.endpointConfig.mode === 'local' ? 'electron' : 'server'
+      if (result.server.runtime !== expectedRuntime) {
+        throw new BackendCompatibilityError(
+          'unsupportedRemote',
+          'Motrix runtime changed during capability refresh'
+        )
+      }
+      this.captureCapabilities(result.capabilities)
+      return this.getServerCapabilities()
+    })()
+    this.capabilitiesRefreshFlight = flight
+    const release = () => {
+      if (this.capabilitiesRefreshFlight === flight)
+        this.capabilitiesRefreshFlight = null
+    }
+    void flight.then(release, release)
+    return flight
+  }
+
   /** Identity reported by the backend during the latest successful handshake. */
   getServerIdentity(): ServerIdentity | null {
     return this.serverIdentity === null ? null : { ...this.serverIdentity }
@@ -940,6 +988,9 @@ export class ConnectionManager {
       // Transport loss, cancellation and generic server errors may arrive after
       // task creation. Never automatically retry or browser-fallback those.
       const code = (error as { code?: unknown } | null)?.code
+      if (code === ErrorCodes.CapabilityNotSupported) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.unsupported)
+      }
       const rejected: unknown[] = [
         ErrorCodes.ParseError,
         ErrorCodes.InvalidRequest,
@@ -947,7 +998,6 @@ export class ConnectionManager {
         ErrorCodes.InvalidParams,
         ErrorCodes.PermissionDenied,
         ErrorCodes.RateLimited,
-        ErrorCodes.CapabilityNotSupported,
         ErrorCodes.PairRevoked,
       ]
       if (rejected.includes(code)) {
@@ -1479,6 +1529,8 @@ export class ConnectionManager {
     this.currentEndpointScope = null
     this.currentAuthenticatedInstanceId = null
     this.serverCapabilities = null
+    this.initializeRequest = null
+    this.capabilitiesRefreshFlight = null
     this.serverIdentity = null
     this.degraded = null
     this.taskEvents.clear()
@@ -2184,19 +2236,20 @@ export class ConnectionManager {
 
     this.ensureCurrentConnection(generation, conn)
     conn.listen()
+    const initializeParams: InitializeParams = {
+      protocolVersion: '1.0',
+      client: this.opts.clientInfo,
+      capabilities: {
+        submitDownload: allowBrowserData || allowRemoteSubmit,
+        resolveUrl: canResolve,
+        probeUrl: adapters.length > 0,
+        cancellation: true,
+        progress: true,
+      },
+      adapters,
+    }
     const rawResult: unknown = await this.withTimeout(
-      conn.sendRequest(Methods.MotrixInitialize, {
-        protocolVersion: '1.0',
-        client: this.opts.clientInfo,
-        capabilities: {
-          submitDownload: allowBrowserData || allowRemoteSubmit,
-          resolveUrl: canResolve,
-          probeUrl: adapters.length > 0,
-          cancellation: true,
-          progress: true,
-        },
-        adapters,
-      }),
+      conn.sendRequest(Methods.MotrixInitialize, initializeParams),
       this.initializeTimeoutMs,
       Methods.MotrixInitialize
     )
@@ -2230,6 +2283,7 @@ export class ConnectionManager {
         : { instanceId: authenticatedInstanceId }),
     }
     this.captureCapabilities(result.capabilities)
+    this.initializeRequest = { conn, params: initializeParams }
     conn.sendNotification(Notifications.MotrixInitialized, undefined)
   }
 
@@ -2393,6 +2447,8 @@ export class ConnectionManager {
     this.currentEndpointScope = null
     this.currentAuthenticatedInstanceId = null
     this.serverCapabilities = null
+    this.initializeRequest = null
+    this.capabilitiesRefreshFlight = null
     this.serverIdentity = null
     this.degraded = null
     this.taskEvents.clear()

@@ -584,12 +584,16 @@ function isYouTubeTab(tab: Browser.tabs.Tab | undefined): boolean {
 // Toolbar action → background: retain same-page findings, inject the idempotent
 // relay, and ask the page-world sniffer to explicitly re-harvest the current
 // route. Network hooks remain installed once per document.
-bus.on('bg.scanActiveTab', async () => {
+bus.on('bg.scanActiveTab', async (_request, sender) => {
+  if (!isExtensionPageSender(sender, extensionId, browser.runtime.getURL(''))) {
+    throw new Error('invalid media scan sender')
+  }
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
   const tabId = tab?.id
-  const selectionKinds = manager.getServerCapabilities()?.selectionKinds ?? [
-    'direct',
-  ]
+  // Scanning is also the explicit capability refresh action. A live session
+  // can discover FFmpeg configured after Motrix started, without reconnecting.
+  const selectionKinds = (await manager.refreshServerCapabilities())
+    ?.selectionKinds ?? ['direct']
   if (typeof tabId !== 'number') return { media: [], selectionKinds }
   if (tab?.url) {
     await mediaStore.retainPage(tabId, tab.url)

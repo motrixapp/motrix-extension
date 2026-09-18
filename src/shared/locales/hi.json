@@ -333,7 +333,8 @@
       "unsupported": "ffmpeg ज़रूरी है",
       "unsupportedReason": "ffmpeg समर्थन उपलब्ध नहीं है, इसलिए चुना गया बैकएंड {{kind}} संसाधन नहीं भेज सकता।",
       "unsupportedSelectionReason": "चुना गया बैकएंड चयनित संसाधनों में से एक या अधिक प्रकार नहीं भेज सकता।",
-      "unsupportedResource": "{{name}} भेजा नहीं जा सकता। {{reason}}"
+      "unsupportedResource": "{{name}} भेजा नहीं जा सकता। {{reason}}",
+      "refreshCapabilitiesHint": "Motrix में FFmpeg कॉन्फ़िगर करने के बाद, मीडिया समर्थन अपडेट करने के लिए फिर से स्कैन करें।"
     },
     "speed": {
       "download": "डाउनलोड",

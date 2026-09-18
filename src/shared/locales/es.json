@@ -333,7 +333,8 @@
       "unsupported": "Requiere ffmpeg",
       "unsupportedReason": "El servicio seleccionado no puede enviar recursos de tipo {{kind}} porque no dispone de compatibilidad con ffmpeg.",
       "unsupportedSelectionReason": "El servicio seleccionado no puede enviar uno o más de los tipos de recursos seleccionados.",
-      "unsupportedResource": "No se puede enviar {{name}}. {{reason}}"
+      "unsupportedResource": "No se puede enviar {{name}}. {{reason}}",
+      "refreshCapabilitiesHint": "Tras configurar FFmpeg en Motrix, vuelve a escanear para actualizar la compatibilidad multimedia."
     },
     "speed": {
       "download": "Descarga",

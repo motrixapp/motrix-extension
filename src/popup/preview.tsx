@@ -6,6 +6,11 @@ import type { TakeoverConfig } from '@/shared/takeover'
 
 const previewParams = new URLSearchParams(globalThis.location.search)
 const previewScan = previewParams.get('scan')
+const previewFfmpegAvailable = previewParams.get('ffmpeg') !== 'missing'
+const previewPageUrl =
+  previewParams.get('page') === 'video'
+    ? 'https://www.youtube.com/watch?v=preview'
+    : 'https://example.com/watch'
 const previewLocale = resolveLocale(previewParams.get('lang') ?? 'en-US')
 let previewConnection =
   previewParams.get('connection') === 'offline' ? 'disconnected' : 'connected'
@@ -201,11 +206,15 @@ const previewRuntime = {
         }
         return {
           media: previewMedia,
-          selectionKinds: ['direct', 'hls', 'dash', 'mux'],
+          selectionKinds: previewFfmpegAvailable
+            ? ['direct', 'hls', 'dash', 'mux']
+            : ['direct'],
         }
       case 'bg.submitMedia':
       case 'bg.resolvePageDownload':
-        return { taskId: 'preview-task' }
+        return previewFfmpegAvailable
+          ? { taskId: 'preview-task' }
+          : { error: 'download.unsupported' }
       default:
         return { ok: true }
     }
@@ -233,9 +242,7 @@ const previewBrowser = {
 const previewChrome = {
   ...previewBrowser,
   tabs: {
-    query: async () => [
-      { id: 1, url: 'https://example.com/watch', title: 'Launch film' },
-    ],
+    query: async () => [{ id: 1, url: previewPageUrl, title: 'Launch film' }],
   },
 }
 
