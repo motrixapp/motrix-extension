@@ -42,6 +42,7 @@ import { SettingsTabForm } from '@/options/components/SettingsTabForm'
 import { SettingPanel } from '@/options/SettingPanel'
 import { type HelpFormValues, helpFormSchema } from '@/options/tabs/schemas'
 import { zodFormResolver } from '@/options/zodFormResolver'
+import { extensionBrowser as browser } from '@/shared/browser'
 import { LINKS } from '@/shared/links'
 import { getLogLevel, setLogLevel } from '@/shared/logLevel'
 

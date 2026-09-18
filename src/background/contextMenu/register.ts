@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import { describeUrlForLog, log } from '@/background/log'
+import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
 import {
   isMagnetUrl,
@@ -51,8 +52,8 @@ export async function downloadHttpInBrowser(
 }
 
 export async function handleMenuClick(
-  info: browser.contextMenus.OnClickData,
-  tab: browser.tabs.Tab | undefined,
+  info: Browser.contextMenus.OnClickData,
+  tab: Browser.tabs.Tab | undefined,
   deps: MenuClickDeps
 ): Promise<void> {
   const url = info.linkUrl ?? info.srcUrl
@@ -89,8 +90,8 @@ export async function handleMenuClick(
  * startup/handoff failure here so a failed lifecycle barrier never becomes an
  * unhandled rejection, and do not log the target URL or raw error. */
 export async function handleMenuClickSafely(
-  info: browser.contextMenus.OnClickData,
-  tab: browser.tabs.Tab | undefined,
+  info: Browser.contextMenus.OnClickData,
+  tab: Browser.tabs.Tab | undefined,
   deps: MenuClickDeps
 ): Promise<void> {
   try {

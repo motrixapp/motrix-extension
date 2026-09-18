@@ -7,8 +7,6 @@ import youtubeSnifferScriptPath from 'virtual:motrix-youtube-sniffer-script'
 // "No runtime abstraction layer installed". The `/browser` entry re-exports the
 // full public API, so this also provides `Methods`.
 import { Methods } from '@motrix/mdxp/browser'
-// Install `browser.*` before any shared dependency evaluates in Chromium.
-import '@/shared/browser'
 import { BgAdapterRegistry } from '@/background/AdapterRegistry'
 import { BackendOperationCoordinator } from '@/background/BackendOperationCoordinator'
 import {
@@ -71,6 +69,7 @@ import snifferScriptPath from '@/content/sniffer-entry?script&iife'
 // forwards results to the background via chrome.runtime.sendMessage.
 // @ts-expect-error TS2307 — query-string import not in tsconfig types
 import relayScriptPath from '@/content/sniffer-relay?script&iife'
+import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import { isWebStoreBuild } from '@/shared/buildFlags'
 import {
   CONTROL_PANEL_ACTIVITY_EVENT,
@@ -472,7 +471,7 @@ function senderDocumentKey(value: string | undefined): string | null {
 
 // content sniffer → background: store reported media items for the sender's tab
 bus.on('bg.mediaDetected', async (payload, sender) => {
-  const messageSender = sender as browser.runtime.MessageSender
+  const messageSender = sender as Browser.runtime.MessageSender
   const senderTab = messageSender.tab
   const tabId = senderTab?.id
   const senderTopUrl = senderTab?.url
@@ -480,7 +479,7 @@ bus.on('bg.mediaDetected', async (payload, sender) => {
     if (!mediaReportLimiter.allow(tabId, payload)) {
       return { ok: true } as const
     }
-    let currentTab: browser.tabs.Tab
+    let currentTab: Browser.tabs.Tab
     try {
       currentTab = await browser.tabs.get(tabId)
       if (
@@ -500,7 +499,7 @@ bus.on('bg.mediaDetected', async (payload, sender) => {
     let frameUrl = messageSender.url ?? senderTopUrl
     const frameId = messageSender.frameId ?? 0
     const senderDocumentId = (
-      messageSender as browser.runtime.MessageSender & { documentId?: string }
+      messageSender as Browser.runtime.MessageSender & { documentId?: string }
     ).documentId
     try {
       const currentFrame = await browser.webNavigation.getFrame({
@@ -546,7 +545,7 @@ bus.on('bg.mediaDetected', async (payload, sender) => {
         ...(frameUrl !== currentTab.url ? { frameUrl } : {}),
       }))
     if (currentItems.length === 0) return { ok: true } as const
-    let latestTab: browser.tabs.Tab
+    let latestTab: Browser.tabs.Tab
     try {
       latestTab = await browser.tabs.get(tabId)
     } catch {
@@ -566,7 +565,7 @@ bus.on('bg.mediaDetected', async (payload, sender) => {
 })
 
 /** Returns true when the tab URL belongs to a YouTube domain. */
-function isYouTubeTab(tab: browser.tabs.Tab | undefined): boolean {
+function isYouTubeTab(tab: Browser.tabs.Tab | undefined): boolean {
   if (!tab?.url) return false
   try {
     const host = new URL(tab.url).hostname

@@ -1,3 +1,4 @@
+import { extensionBrowser } from '@/shared/browser'
 import {
   type DetectedMedia,
   mediaCategory,
@@ -270,15 +271,7 @@ interface SessionStorageArea {
 }
 
 function resolveSessionStorage(): SessionStorageArea {
-  const globals = globalThis as unknown as {
-    browser?: { storage?: { session?: SessionStorageArea } }
-    chrome?: { storage?: { session?: SessionStorageArea } }
-  }
-  // Firefox exposes both namespaces, but only `browser` is guaranteed to
-  // return Promises. Prefer it so `await` never silently continues before a
-  // callback-only `chrome.storage` operation has completed.
-  const storage =
-    globals.browser?.storage?.session ?? globals.chrome?.storage?.session
+  const storage = extensionBrowser.storage?.session
   if (!storage) throw new Error('session storage is unavailable')
   return storage
 }

@@ -1,5 +1,6 @@
 import { computeBadge, type IconVariant } from '@/background/badge/computeBadge'
 import type { ConnectionState } from '@/background/ConnectionManager'
+import { extensionBrowser as browser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
 import type { Notify } from '@/shared/notifications'
 

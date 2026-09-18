@@ -21,6 +21,16 @@ const visit = (directory) => {
 visit(packageRoot)
 
 const violations = []
+const packageJson = JSON.parse(
+  readFileSync(join(packageRoot, 'package.json'), 'utf8')
+)
+for (const name of ['@types/chrome', '@types/firefox-webext-browser']) {
+  if (packageJson.dependencies?.[name] || packageJson.devDependencies?.[name]) {
+    violations.push(
+      `${name} introduces competing browser globals; use @wxt-dev/browser through @/shared/browser`
+    )
+  }
+}
 for (const file of files) {
   const source = readFileSync(file, 'utf8')
   const sourceRelative = relative(sourceRoot, file)
@@ -109,6 +119,18 @@ for (const file of files) {
 
     const line = source.slice(0, match.index).split('\n').length
     const location = `${relative(packageRoot, file)}:${line}`
+    if (
+      isSourceFile &&
+      !isTestFile &&
+      ['@wxt-dev/browser', 'webextension-polyfill'].includes(specifier) &&
+      !['shared/browser.ts', 'shared/browser-types.d.ts'].includes(
+        sourceRelative
+      )
+    ) {
+      violations.push(
+        `${location} browser APIs and types must come from @/shared/browser`
+      )
+    }
     // The extensionless-specifier convention only applies to internal
     // TypeScript modules (relative imports and the @/ alias). Node ESM scripts
     // require explicit file extensions. Third-party packages are

@@ -1,3 +1,5 @@
+import { extensionBrowser as browser } from '@/shared/browser'
+
 /**
  * MBP1 `verifiedOrigin` (bridge-pairing-protocol.md §6.4, §6.7).
  *

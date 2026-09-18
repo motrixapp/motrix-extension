@@ -7,6 +7,7 @@ import {
   MENU_ID,
   updateContextMenuTitle,
 } from '@/background/contextMenu/register'
+import { type Browser, extensionBrowser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
 import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 
@@ -21,8 +22,8 @@ describe('handleMenuClick', () => {
       {
         linkUrl: 'https://cdn.example.com/a.bin',
         pageUrl: 'https://example.com/p',
-      } as browser.contextMenus.OnClickData,
-      { title: 'Example' } as browser.tabs.Tab,
+      } as Browser.contextMenus.OnClickData,
+      { title: 'Example' } as Browser.tabs.Tab,
       {
         getConfig: async () => ({
           ...TAKEOVER_DEFAULT,
@@ -53,7 +54,7 @@ describe('handleMenuClick', () => {
       {
         srcUrl: 'data:image/png;base64,AAAA',
         pageUrl: 'https://example.com',
-      } as browser.contextMenus.OnClickData,
+      } as Browser.contextMenus.OnClickData,
       undefined,
       {
         getConfig: async () => ({ ...TAKEOVER_DEFAULT, enabled: true }),
@@ -70,8 +71,8 @@ describe('handleMenuClick', () => {
       {
         linkUrl: 'magnet:?xt=urn:btih:abc&dn=Cool+File',
         pageUrl: 'https://example.com/p',
-      } as browser.contextMenus.OnClickData,
-      { title: 'Example' } as browser.tabs.Tab,
+      } as Browser.contextMenus.OnClickData,
+      { title: 'Example' } as Browser.tabs.Tab,
       {
         getConfig: async () => ({ ...TAKEOVER_DEFAULT, enabled: true }),
         run: async (t) =>
@@ -97,7 +98,7 @@ describe('handleMenuClick', () => {
         {
           linkUrl: 'https://private.example/download',
           pageUrl: 'https://private.example/page',
-        } as browser.contextMenus.OnClickData,
+        } as Browser.contextMenus.OnClickData,
         undefined,
         {
           getConfig: async () => TAKEOVER_DEFAULT,
@@ -149,21 +150,21 @@ describe('contextMenuTitle', () => {
 
 describe('updateContextMenuTitle', () => {
   beforeEach(() => {
-    ;(globalThis as { browser?: unknown }).browser = {
+    Object.assign(extensionBrowser, {
       contextMenus: {
         update: vi.fn(),
         create: vi.fn(),
         removeAll: vi.fn(async () => {}),
         onClicked: { addListener: vi.fn() },
       },
-    }
+    })
   })
   it('updates the menu item with the paired title', async () => {
     await i18n.changeLanguage('en-US')
     const update = vi.fn(async () => {})
-    ;(globalThis as { browser?: unknown }).browser = {
+    Object.assign(extensionBrowser, {
       contextMenus: { update },
-    }
+    })
     updateContextMenuTitle(true)
     expect(update).toHaveBeenCalledWith(MENU_ID, {
       title: 'Download with Motrix',

@@ -1,3 +1,5 @@
+import { extensionBrowser as browser } from '@/shared/browser'
+
 const STORAGE_KEY = 'motrix.badgeError'
 
 export class BadgeErrorStore {

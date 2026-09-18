@@ -5,6 +5,7 @@ import {
   cancelFirefoxDownload,
   handleFirefoxDownloadSafely,
 } from '@/background/interception/firefox'
+import type { Browser } from '@/shared/browser'
 
 vi.mock('@/background/handoff/runHandoff', () => ({
   runHandoff: vi.fn(async () => {}),
@@ -61,7 +62,7 @@ describe('handleFirefoxDownloadSafely', () => {
         url: 'https://example.com/c-m9021',
         filename: String.raw`E:\Downloads\asset_v1.2.8.1.zip`,
         totalBytes: 1024,
-      } as browser.downloads.DownloadItem,
+      } as Browser.downloads.DownloadItem,
       {
         getConfig: async () => ({
           enabled: true,
@@ -93,7 +94,7 @@ describe('handleFirefoxDownloadSafely', () => {
         id: 7,
         url: 'https://example.com/file',
         totalBytes: -1,
-      } as browser.downloads.DownloadItem,
+      } as Browser.downloads.DownloadItem,
       deps
     )
     expect(captureGuard).toHaveBeenCalledOnce()
@@ -114,7 +115,7 @@ describe('handleFirefoxDownloadSafely', () => {
           id: 7,
           url: 'https://private.example/download',
           totalBytes: 1,
-        } as browser.downloads.DownloadItem,
+        } as Browser.downloads.DownloadItem,
         deps
       )
     ).resolves.toBeUndefined()

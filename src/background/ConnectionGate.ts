@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 /**
  * Authority-scoped "may this backend auto-connect now?" state.
  *

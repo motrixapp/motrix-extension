@@ -2,6 +2,7 @@ import type { EngineStatusResult, MdxpTask, StatsResult } from '@motrix/mdxp'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { send } from '@/background/MessageBus'
 import { snapshotEqual } from '@/popup/snapshotEqual'
+import { extensionBrowser as browser } from '@/shared/browser'
 import { isControlPanelActivityEvent } from '@/shared/controlPanelEvents'
 import { isErrorResponse } from '@/shared/messages'
 

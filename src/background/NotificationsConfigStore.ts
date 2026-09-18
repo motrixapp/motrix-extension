@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 import {
   NOTIFICATIONS_DEFAULT,
   type NotificationsConfig,

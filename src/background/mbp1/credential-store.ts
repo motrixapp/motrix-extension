@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 /**
  * Durable MBP1 client credentials (bridge-pairing-protocol.md §6.7, §12).
  *

@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
 import type { Notify } from '@/shared/notifications'
 

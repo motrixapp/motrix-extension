@@ -28,6 +28,7 @@ import {
   type QuickSettingsController,
   useQuickSettings,
 } from '@/popup/useQuickSettings'
+import { extensionBrowser as browser } from '@/shared/browser'
 import { connectionErrorKey } from '@/shared/errorCopy'
 import type { PairingState } from '@/shared/integration'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'

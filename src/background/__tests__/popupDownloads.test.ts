@@ -5,6 +5,7 @@ import { MediaCredentialStore } from '@/background/capture/MediaCredentialStore'
 import { DownloadSubmissionService } from '@/background/DownloadSubmissionService'
 import { MediaStore } from '@/background/MediaStore'
 import { createPopupDownloadHandlers } from '@/background/popupDownloads'
+import type { Browser } from '@/shared/browser'
 import { newDownloadOperationId } from '@/shared/integration'
 import { mediaStorageKey } from '@/shared/media'
 
@@ -74,7 +75,7 @@ async function fixture() {
   const mediaCredentialStore = new MediaCredentialStore()
   const observation = vi.spyOn(mediaCredentialStore, 'get')
   const getActiveTabs = vi.fn(async () => [
-    { id: 4, url: media.pageUrl, title: 'Watch' } as browser.tabs.Tab,
+    { id: 4, url: media.pageUrl, title: 'Watch' } as Browser.tabs.Tab,
   ])
   const cookieApi = { getAll: vi.fn(async () => []) }
   const handlers = createPopupDownloadHandlers({
@@ -170,7 +171,7 @@ describe('production popup download handlers', () => {
         expect(f.manager.ensureReady).toHaveBeenCalledOnce()
       )
       f.getActiveTabs.mockResolvedValue([
-        { id: 5, url: media.pageUrl } as browser.tabs.Tab,
+        { id: 5, url: media.pageUrl } as Browser.tabs.Tab,
       ])
       f.ready.resolve()
       await rejected
@@ -179,7 +180,7 @@ describe('production popup download handlers', () => {
   )
   it('rejects content-script intents before any lookup or App wake', async () => {
     const f = await fixture()
-    const contentSender = { ...sender, tab: { id: 4 } as browser.tabs.Tab }
+    const contentSender = { ...sender, tab: { id: 4 } as Browser.tabs.Tab }
     await expect(
       f.handlers.resolvePageDownload(
         { idempotencyKey: newDownloadOperationId(), pairIfNeeded: true },

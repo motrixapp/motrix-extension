@@ -26,7 +26,7 @@ function installSessionStorage(session: unknown): void {
     browser: unknown
     chrome: unknown
   }
-  globals.browser = { storage: { session } }
+  Object.assign(globals.browser as object, { storage: { session } })
   globals.chrome = { storage: { session } }
 }
 
@@ -505,7 +505,7 @@ describe('MediaStore', () => {
       browser: unknown
       chrome: unknown
     }
-    globals.browser = {
+    Object.assign(globals.browser as object, {
       storage: {
         session: {
           get: browserGet,
@@ -513,7 +513,7 @@ describe('MediaStore', () => {
           remove: browserRemove,
         },
       },
-    }
+    })
     globals.chrome = {
       storage: {
         session: {

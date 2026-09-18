@@ -45,7 +45,18 @@
       "test": "recommended"
     },
     "rules": {
-      "preset": "recommended"
+      "preset": "recommended",
+      "style": {
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "browser": "Import extensionBrowser from @/shared/browser.",
+              "chrome": "Import nativeBrowser from @/shared/browser for native event protocols."
+            }
+          }
+        }
+      }
     }
   },
   "overrides": [
@@ -76,7 +87,8 @@
       "linter": {
         "rules": {
           "style": {
-            "noNonNullAssertion": "off"
+            "noNonNullAssertion": "off",
+            "noRestrictedGlobals": "off"
           },
           "suspicious": {
             "noExplicitAny": "off"

@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 /**
  * MBP1 client-side global first-pair backoff (bridge-pairing-protocol.md §7.3).
  *

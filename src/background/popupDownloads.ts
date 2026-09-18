@@ -13,6 +13,7 @@ import {
   toSafeMediaSubmitError,
 } from '@/background/mediaSubmission'
 import { resolveStoredMedia } from '@/background/mediaTrust'
+import type { Browser } from '@/shared/browser'
 import { DOWNLOAD_ERROR } from '@/shared/integration'
 import { isResolvableVideoPage } from '@/shared/media'
 import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
@@ -24,7 +25,7 @@ interface PopupDownloadDeps {
   mediaCredentialStore: MediaCredentialStore
   extensionId: string
   extensionBaseUrl: string
-  getActiveTabs: () => Promise<browser.tabs.Tab[]>
+  getActiveTabs: () => Promise<Browser.tabs.Tab[]>
   cookieApi: Parameters<typeof capturePageCookies>[0]['api']
   browserKind: 'chromium' | 'firefox'
   userAgent: string
@@ -45,7 +46,7 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     userAgent,
     webStore,
   } = deps
-  const assertSender = (sender: browser.runtime.MessageSender): void => {
+  const assertSender = (sender: Browser.runtime.MessageSender): void => {
     if (!isExtensionPageSender(sender, deps.extensionId, deps.extensionBaseUrl))
       throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
   }

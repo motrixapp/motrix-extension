@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 /**
  * MBP1 `clientInstallationId` (bridge-pairing-protocol.md §6.4, §6.7).
  *

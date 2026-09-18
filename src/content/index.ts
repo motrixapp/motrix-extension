@@ -1,5 +1,4 @@
 // MUST be first: the shared bootstrap makes `browser.*` available in Chromium.
-import '@/shared/browser'
 
 import { ContentRuntime } from '@/content/ContentRuntime'
 

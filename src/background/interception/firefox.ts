@@ -6,6 +6,7 @@ import type { ChromiumInterceptionDeps } from '@/background/interception/chromiu
 import { isEligibleDownload } from '@/background/interception/eligibility'
 import { log } from '@/background/log'
 import { decideTakeover } from '@/background/policy/decideTakeover'
+import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 function configHasThreshold(cfg: TakeoverConfig): boolean {
@@ -46,7 +47,7 @@ export function registerFirefoxInterception(
 /** Firefox's downloads event ignores returned promises. Keep a rejected
  * startup barrier or handoff contained without logging URL-bearing errors. */
 export async function handleFirefoxDownloadSafely(
-  item: browser.downloads.DownloadItem,
+  item: Browser.downloads.DownloadItem,
   deps: ChromiumInterceptionDeps
 ): Promise<void> {
   try {
@@ -57,7 +58,7 @@ export async function handleFirefoxDownloadSafely(
 }
 
 async function handle(
-  item: browser.downloads.DownloadItem,
+  item: Browser.downloads.DownloadItem,
   deps: ChromiumInterceptionDeps
 ): Promise<void> {
   const cfg = await deps.getConfig()

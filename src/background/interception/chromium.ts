@@ -13,6 +13,7 @@ import { createHold } from '@/background/interception/holdController'
 import { describeUrlForLog, log } from '@/background/log'
 import type { PairNudge } from '@/background/pairNudge'
 import { decideTakeover } from '@/background/policy/decideTakeover'
+import { extensionBrowser as browser, nativeBrowser } from '@/shared/browser'
 import type { Notify } from '@/shared/notifications'
 import type { TakeoverConfig } from '@/shared/takeover'
 
@@ -40,17 +41,11 @@ interface DeterminingItem {
   id: number
   url: string
   finalUrl?: string
-  byExtensionId?: string
+  byExtensionId?: string | undefined
   totalBytes?: number
   referrer?: string
   filename?: string
   mime?: string
-}
-
-interface DeterminingFilenameEvent {
-  addListener: (
-    cb: (item: DeterminingItem, suggest: () => void) => boolean | undefined
-  ) => void
 }
 
 function configHasThreshold(cfg: TakeoverConfig): boolean {
@@ -64,13 +59,7 @@ export function registerChromiumInterception(
   // NATIVE chrome namespace — the async protocol needs the listener's raw
   // `return true` to reach Chrome's bindings, so the webextension-polyfill
   // must not sit in between (spec §2 finding 5).
-  const event = (
-    globalThis as unknown as {
-      chrome?: {
-        downloads?: { onDeterminingFilename?: DeterminingFilenameEvent }
-      }
-    }
-  ).chrome?.downloads?.onDeterminingFilename
+  const event = nativeBrowser.downloads?.onDeterminingFilename
   if (!event) return
 
   event.addListener((item, suggest) => {

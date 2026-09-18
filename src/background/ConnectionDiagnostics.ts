@@ -16,6 +16,7 @@ import {
   NativeBootstrapError,
 } from '@/background/NativeBootstrap'
 import { pairingAuthorityForEndpoint } from '@/background/PairingEndpointService'
+import { extensionBrowser as browser } from '@/shared/browser'
 import {
   type ConnectionDiagnosticResult,
   type DiagnosticCheck,

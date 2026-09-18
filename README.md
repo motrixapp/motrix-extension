@@ -206,6 +206,40 @@ Chinese is selected for `zh-TW`, `zh-HK`, `zh-MO`, and `zh-Hant`. When adding
 an interface language, register it in `src/shared/supportedLocales.ts` and
 `src/shared/i18n.ts`; locale tests verify every key and interpolation placeholder.
 
+### Browser APIs and types
+
+Import the API value and its types explicitly through the shared adapter:
+
+```ts
+import { type Browser, extensionBrowser } from '@/shared/browser'
+
+const tabs: Browser.tabs.Tab[] = await extensionBrowser.tabs.query({ active: true })
+```
+
+The module-scoped `Browser` namespace comes from the standalone
+[`@wxt-dev/browser`](https://wxt.dev/guide/essentials/extension-apis) package;
+the project continues to build with CRXJS. Do not add the ambient
+`@types/chrome` or `@types/firefox-webext-browser` packages, or access browser
+globals in application code. Firefox-only type additions belong in
+`src/shared/browser-types.d.ts` and must retain runtime feature checks.
+
+The adapter keeps `webextension-polyfill` for the supported Chrome 120+
+baseline. Use Promise-based calls. The polyfill is a no-op on Firefox and
+Chrome 148+; removing it requires a deliberate compatibility change, as
+explained in [Chrome's migration guide](https://developer.chrome.com/docs/extensions/develop/concepts/browser-namespace).
+Chromium's callback-sensitive `onDeterminingFilename` event uses the adapter's
+`nativeBrowser` export with feature detection. Browser globals are never
+installed or overwritten by the adapter.
+
+`pnpm run typecheck` includes a separate browser API contract check with
+`skipLibCheck: false`, checking vendor declarations and rejecting accidental
+ambient globals. Lint rejects direct API-package imports outside the adapter.
+The patch for `@wxt-dev/browser@0.3.0` corrects two leftover `typeof chrome`
+references in its generated declarations to `typeof Browser`; remove the
+patch when an upstream version passes the contract check without it.
+CI runs these checks, the regression suite, and all three build variants for
+pull requests and `main` pushes.
+
 ### Publish a GitHub release
 
 Releases are built by GitHub Actions from an existing `vX.Y.Z` tag. Update the

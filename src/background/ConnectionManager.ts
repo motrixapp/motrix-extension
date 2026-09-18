@@ -104,6 +104,7 @@ import { TaskEventStore } from '@/background/TaskEventStore'
 import type { UrlResolutionDispatcher } from '@/background/UrlResolutionDispatcher'
 import { WebSocketClient } from '@/background/WebSocketClient'
 import { WebSocketFrameChannel } from '@/background/WebSocketFrameChannel'
+import { extensionBrowser as browser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
 import {
   type ConnectionIntent,

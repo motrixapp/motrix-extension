@@ -1,3 +1,4 @@
+import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import {
   type Envelope,
   type ErrorResponse,
@@ -7,7 +8,7 @@ import {
   type MessageResponse,
 } from '@/shared/messages'
 
-type AnySender = browser.runtime.MessageSender
+type AnySender = Browser.runtime.MessageSender
 
 export type MessageBusHandler<K extends MessageKind> = (
   payload: MessageRequest<K>,

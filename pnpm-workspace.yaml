@@ -25,3 +25,4 @@ minimumReleaseAgeExclude:
 patchedDependencies:
   # Vite 8/Rolldown IIFE option migration; re-review with any CRXJS upgrade.
   '@crxjs/vite-plugin@2.7.1': patches/@crxjs__vite-plugin@2.7.1.patch
+  '@wxt-dev/browser@0.3.0': patches/@wxt-dev__browser@0.3.0.patch

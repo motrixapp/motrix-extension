@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 /**
  * Native Messaging bootstrap. Connects to the Motrix native host shim,
  * which reads endpoint.json (or launches Motrix if needed) and reports
