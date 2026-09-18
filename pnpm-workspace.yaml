@@ -18,8 +18,10 @@ minimumReleaseAgeExclude:
   - '@types/node@26.2.0'
   - react-hook-form@7.85.0
   - ws@8.21.3
-  - lucide-react@1.38.0
+  - lucide-react@1.38.0 || 1.47.0
   - shadcn@4.19.1
+  - tailwind-merge@3.7.0
+  - zod@4.6.4
 patchedDependencies:
   # Vite 8/Rolldown IIFE option migration; re-review with any CRXJS upgrade.
   '@crxjs/vite-plugin@2.7.1': patches/@crxjs__vite-plugin@2.7.1.patch

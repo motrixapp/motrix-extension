@@ -48,7 +48,8 @@ Local browser integration is not currently available in the Motrix AppImage pack
 <details>
 <summary>Install a test build from source</summary>
 
-You need Node.js 22.13 or later and pnpm 11.
+You need Node.js 22.13+ (22.x), 24.x, or 26+, and pnpm 12
+(the version pinned in `package.json`).
 
 ```bash
 pnpm install

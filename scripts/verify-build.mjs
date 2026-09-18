@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { Script } from 'node:vm'
 import { init, parse } from 'es-module-lexer'
 
-await init
+await init()
 
 const SUPPORTED_VARIANTS = new Set(['chromium', 'firefox', 'webstore'])
 const GENERIC_IIFE_SCRIPTS = [
@@ -142,7 +142,7 @@ function verifyManifestLocales(outputPath, manifest) {
   return locales.length
 }
 
-function findModuleSyntax(source, fileName) {
+export function findModuleSyntax(source, fileName) {
   const [imports, exports] = parse(source, fileName)
   const violations = []
   const addViolation = (offset, label) => {
@@ -154,14 +154,14 @@ function findModuleSyntax(source, fileName) {
 
   for (const imported of imports) {
     const label =
-      imported.d === -2
+      imported.type === 'import-meta'
         ? 'import.meta'
-        : imported.d >= 0
+        : imported.type === 'dynamic'
           ? 'dynamic import'
           : 'static import'
-    addViolation(imported.ss, label)
+    addViolation(imported.importStart, label)
   }
-  for (const exported of exports) addViolation(exported.ss, 'export')
+  for (const exported of exports) addViolation(exported.exportStart, 'export')
   return violations
 }
 
