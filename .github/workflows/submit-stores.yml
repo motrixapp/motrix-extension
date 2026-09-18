@@ -17,7 +17,7 @@ on:
       dry_run:
         description: Check artifacts and credentials without uploading (Edge credentials are not checked)
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: read
@@ -29,12 +29,16 @@ jobs:
     timeout-minutes: 10
     outputs:
       stores: ${{ steps.plan.outputs.stores }}
+      release_sha: ${{ steps.provenance.outputs.release_sha }}
     steps:
       - name: Require the main workflow branch
-        run: test "$GITHUB_REF" = refs/heads/main
+        run: |
+          test "$GITHUB_REPOSITORY" = motrixapp/motrix-extension
+          test "$GITHUB_REF" = refs/heads/main
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
         with:
           runtime: node@24.18.0
@@ -64,9 +68,11 @@ jobs:
             --pattern "motrix-extension-$VERSION-source.zip" \
             --pattern SHA256SUMS.txt
       - name: Verify release before distributing assets
+        id: provenance
         env:
           RELEASE_TAG: ${{ inputs.tag }}
-        run: node scripts/store-release.mjs verify artifacts "$RELEASE_TAG"
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/verify-store-provenance.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: verified-store-assets
@@ -79,6 +85,8 @@ jobs:
     needs: prepare
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    environment:
+      name: store-${{ matrix.store }}
     strategy:
       fail-fast: false
       matrix:
@@ -91,6 +99,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
         with:
           runtime: node@24.18.0
@@ -101,6 +110,12 @@ jobs:
         with:
           name: verified-store-assets
           path: artifacts
+      - name: Reverify provenance after environment approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          EXPECTED_RELEASE_SHA: ${{ needs.prepare.outputs.release_sha }}
+        run: node scripts/verify-store-provenance.mjs
       - name: Verify and submit to the selected store
         env:
           STORE: ${{ matrix.store }}

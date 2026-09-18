@@ -254,8 +254,9 @@ git push origin v0.1.2
 The workflow runs the checks and tests, builds the Chrome/Edge Web Store and
 Firefox variants, verifies their manifest versions, and publishes both ZIP
 files, a reproducible source ZIP for Firefox review, and `SHA256SUMS.txt` to a
-GitHub Release. An existing tag can also be released manually from the
-**Release browser extension** workflow in GitHub Actions.
+GitHub Release with signed provenance. Tags must point to commits already on
+`main`. For a manual **Release browser extension** run, select the same tag as
+both the workflow ref and the `tag` input.
 
 ### Submit updates to Chrome, Edge, and Firefox
 
@@ -263,10 +264,13 @@ All three store listings already exist. After creating a GitHub Release, run
 **Submit browser extension to stores** from the `main` branch. Select its
 `vX.Y.Z` tag and either `all` or one store. The workflow verifies and submits
 the existing release ZIPs, including Firefox sources, in independent jobs.
-It does not rebuild the release. Each job reports whether submission succeeded;
-store review and public availability happen separately.
+It does not rebuild the release. Dry runs are the default; live uploads require
+`dry_run=false`. Both require approval in the corresponding store environment.
+Releases without provenance cannot be submitted. Each job reports whether
+submission succeeded; store review and public availability happen separately.
 
-See [Store submission](docs/store-submission.md) for the one-time credentials,
+Apply [repository protection](.github/security/README.md) before adding store credentials.
+See [Store submission](docs/store-submission.md) for the environment-scoped credentials,
 GitHub CLI commands, dry-run limitations, and recovery from partial failures.
 
 The main areas of the codebase are:

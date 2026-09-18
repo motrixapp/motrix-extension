@@ -7,8 +7,15 @@ tool used by `wxt submit`. CRXJS remains the build system.
 
 ## One-time repository configuration
 
-Configure these repository **Actions variables** under Settings → Secrets and
-variables → Actions → Variables:
+First apply the [repository protection configuration](../.github/security/README.md).
+Create `store-chrome`, `store-edge`, and `store-firefox` under Settings →
+Environments. Each environment must allow only the `main` branch, require
+approval by `agalwood`, allow self-review for the solo-maintainer profile, and
+disable administrator bypass. Both dry runs and live submissions use these gates.
+
+Configure the following **environment variables** under Settings → Environments
+→ the corresponding store → Environment variables (Chrome settings in
+`store-chrome`, Edge settings in `store-edge`):
 
 | Variable | Value and location |
 | --- | --- |
@@ -17,7 +24,7 @@ variables → Actions → Variables:
 | `EDGE_PRODUCT_ID` | Product GUID from the extension's Partner Center overview/identity page. This is not the public Edge extension ID. |
 | `EDGE_CLIENT_ID` | Client ID from Partner Center → Microsoft Edge → Publish API. |
 
-Configure these repository **Actions secrets**:
+Configure these **environment secrets** in the matching store environment:
 
 | Secret | Value and location |
 | --- | --- |
@@ -28,9 +35,11 @@ Configure these repository **Actions secrets**:
 
 The submission script supplies the existing Chrome extension ID
 `lggbokfckofcgjndaboioakcmincinpo` and Firefox ID
-`motrix-extension@motrix.app`; those are not additional repository settings.
-Each job receives only its own store credentials. There is no additional
-GitHub environment or approval setup required by this workflow.
+`motrix-extension@motrix.app`; those are not additional settings.
+Each job binds to `store-${store}` and receives only its own store credentials.
+Do not also store these credentials at repository or organization scope:
+that would leave them accessible outside the environment gate. Creating an
+environment without reviewer and branch rules does not secure it.
 
 For Chrome, enable the **Chrome Web Store API** in the Google Cloud project,
 create a service account, and link its email in the Chrome Web Store developer
@@ -48,39 +57,45 @@ Setup references:
 - [Firefox API authentication](https://mozilla.github.io/addons-server/topics/api/auth.html)
 
 With `gh`, set nonsecret values using
-`gh variable set NAME --repo motrixapp/motrix-extension --body VALUE`.
-For the Chrome private key, read its field from the downloaded service-account
-JSON directly into the secret, preserving the multiline PEM value:
+`gh variable set NAME --repo motrixapp/motrix-extension --env store-chrome --body VALUE`.
+Use `--env store-edge` for Edge variables. For the Chrome private key, read its
+field from the downloaded service-account JSON directly into the secret,
+preserving the multiline PEM value:
 
 ```bash
 jq -r '.private_key' service-account.json | \
-  gh secret set CHROME_SERVICE_ACCOUNT_PRIVATE_KEY --repo motrixapp/motrix-extension
+  gh secret set CHROME_SERVICE_ACCOUNT_PRIVATE_KEY --repo motrixapp/motrix-extension --env store-chrome
 ```
 
 For the remaining secrets, run these commands and enter each value at the
 hidden prompt:
 
 ```bash
-gh secret set EDGE_API_KEY --repo motrixapp/motrix-extension
-gh secret set FIREFOX_JWT_ISSUER --repo motrixapp/motrix-extension
-gh secret set FIREFOX_JWT_SECRET --repo motrixapp/motrix-extension
+gh secret set EDGE_API_KEY --repo motrixapp/motrix-extension --env store-edge
+gh secret set FIREFOX_JWT_ISSUER --repo motrixapp/motrix-extension --env store-firefox
+gh secret set FIREFOX_JWT_SECRET --repo motrixapp/motrix-extension --env store-firefox
 ```
 
 Do not paste secrets into workflow YAML, release notes, or committed files.
 The publisher supports `.env.submit` for its standalone CLI; the workflow uses
-repository settings instead and does not need that file.
+environment settings instead and does not need that file.
 
 ## Submit an existing release
 
 1. Create the release with **Release browser extension** and wait for its ZIPs
-   and `SHA256SUMS.txt` to become available.
+   and `SHA256SUMS.txt` plus their signed attestations to become available.
+   Release tags must point to commits already on main. For a manual
+   release build, run `release.yml` with `--ref vX.Y.Z -f tag=vX.Y.Z`; the workflow
+   revision must be the tag itself, not main.
 2. Open Actions → **Submit browser extension to stores** → Run workflow.
 3. Keep the workflow branch as `main`, enter the published `vX.Y.Z` release tag,
    select `all`, `chrome`, `edge`, or `firefox`, and run it.
 
-`dry_run` defaults to `false`: running this workflow uploads and submits the
-selected stores for review. Credentials are validated before their store's
-upload where supported. Chrome uses normal review and publication after
+`dry_run` defaults to `true` (no upload). Select `false` explicitly to upload and
+submit for review. After preparation succeeds, approve the selected store
+environments through **Review deployments**. Approval is required for dry runs
+too; it is not performed automatically by the workflow. Credentials are validated
+before their store's upload where supported. Chrome uses normal review and publication after
 approval; it does not cancel an existing pending review or request a review
 exemption. Firefox uses the public `listed` channel and retains desktop and
 Android compatibility.
@@ -112,10 +127,18 @@ The preparation job downloads exactly these assets for the requested version:
 
 It rejects draft/prerelease releases, mismatched tags, absent or duplicate
 checksums, altered ZIPs, wrong manifest versions, a different Firefox identity,
-and source archives missing the lockfile or referenced pnpm patches. All three
+and source archives missing the lockfile or referenced pnpm patches. It also verifies
+GitHub-signed provenance for all three ZIPs and the checksum manifest, requiring
+the upstream repository, `release.yml`, the exact release tag and commit, and a
+GitHub-hosted runner. The release commit must belong to main's history. All three
 ZIPs are required even when selecting one store. Submission jobs recheck the
-same bytes before calling the store API. Only code from the selected `main`
-workflow revision is executed; code inside release archives is not executed.
+same bytes and provenance after environment approval, including detecting tag
+changes since preparation, before exposing store credentials to the submit step.
+Only code from the selected `main` workflow revision is executed; code inside release archives is not executed.
+
+There is no legacy checksum-only fallback. Releases built before this hardening,
+including v0.1.11, lack the required attestations. Build a new version from the
+updated main branch; do not rewrite an old protected tag to bypass this check.
 
 To check initial setup without uploading:
 
@@ -177,7 +200,7 @@ selected store is configured. Changes to the dependencies or workflow should pas
 pnpm exec vitest run src/__tests__/store-submission.test.ts
 pnpm lint
 pnpm typecheck
-actionlint .github/workflows/submit-stores.yml
+actionlint .github/workflows/*.yml
 ```
 
 The regression tests exercise release identity/checksum failures, source patch

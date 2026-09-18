@@ -7,6 +7,7 @@ import { buffer } from 'node:stream/consumers'
 import { strToU8, zipSync } from 'fflate'
 import { validateConfig } from 'publish-browser-extension'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { verifyStoreProvenance } from '#store-provenance'
 import {
   FIREFOX_EXTENSION_ID,
   parseDryRun,
@@ -198,6 +199,109 @@ describe('store release verification', () => {
     save()
     expect(() => verifyRelease(directory, tag)).toThrow(
       'Source package version'
+    )
+  })
+})
+
+describe('store release provenance', () => {
+  const sha = 'a'.repeat(40)
+  const runner = () =>
+    vi.fn((command: string, args: string[]) =>
+      command === 'git' && args[0] === 'rev-parse' ? sha : ''
+    )
+
+  it('requires signed provenance for every archive and the checksum manifest', () => {
+    const { directory } = fixture()
+    const run = runner()
+    expect(verifyStoreProvenance({ directory, tag }, run)).toBe(sha)
+    const checks = run.mock.calls.filter(([command]) => command === 'gh')
+    expect(checks.map(([, args]) => args[2])).toEqual(
+      [files.chromium, files.firefox, files.source, 'SHA256SUMS.txt'].map(
+        (name) => resolve(directory, name)
+      )
+    )
+    for (const [, args] of checks) {
+      expect(args.slice(3)).toEqual([
+        '--repo',
+        'motrixapp/motrix-extension',
+        '--signer-workflow',
+        'motrixapp/motrix-extension/.github/workflows/release.yml',
+        '--source-ref',
+        `refs/tags/${tag}`,
+        '--source-digest',
+        sha,
+        '--signer-digest',
+        sha,
+        '--deny-self-hosted-runners',
+      ])
+    }
+  })
+
+  it('rejects a corrupted archive before invoking git or gh', () => {
+    const { directory } = fixture()
+    writeFileSync(join(directory, files.chromium), 'altered')
+    const run = runner()
+    expect(() => verifyStoreProvenance({ directory, tag }, run)).toThrow(
+      'SHA256'
+    )
+    expect(run).not.toHaveBeenCalled()
+  })
+
+  it('rejects a tag changed while waiting for approval', () => {
+    const run = runner()
+    expect(() =>
+      verifyStoreProvenance(
+        {
+          directory: fixture().directory,
+          tag,
+          expectedSha: 'b'.repeat(40),
+        },
+        run
+      )
+    ).toThrow('no longer matches')
+    expect(run.mock.calls.some(([command]) => command === 'gh')).toBe(false)
+  })
+
+  it.each(['', 'main', 'abc', `${sha};echo injected`])(
+    'rejects malformed expected SHA %j',
+    (expectedSha) => {
+      const run = runner()
+      expect(() =>
+        verifyStoreProvenance(
+          {
+            directory: fixture().directory,
+            tag,
+            expectedSha,
+          },
+          run
+        )
+      ).toThrow('complete release commit SHA')
+      expect(run).not.toHaveBeenCalled()
+    }
+  )
+
+  it('rejects commits outside main before checking attestations', () => {
+    const run = runner().mockImplementation((command, args) => {
+      if (command === 'git' && args[0] === 'merge-base')
+        throw new Error('not an ancestor')
+      return args[0] === 'rev-parse' ? sha : ''
+    })
+    expect(() =>
+      verifyStoreProvenance({ directory: fixture().directory, tag }, run)
+    ).toThrow('not an ancestor')
+    expect(run.mock.calls.some(([command]) => command === 'gh')).toBe(false)
+  })
+
+  it('fails closed if provenance is missing or has the wrong signer, ref, or digest', () => {
+    const run = runner().mockImplementation((command, args) => {
+      if (command === 'gh') throw new Error('attestation verification failed')
+      return args[0] === 'rev-parse' ? sha : ''
+    })
+    expect(() =>
+      verifyStoreProvenance({ directory: fixture().directory, tag }, run)
+    ).toThrow('attestation verification failed')
+    expect(run.mock.calls.filter(([command]) => command === 'gh')).toHaveLength(
+      1
     )
   })
 })

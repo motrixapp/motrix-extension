@@ -13,6 +13,7 @@
     "#build-verifier": "./scripts/verify-build.mjs",
     "#manifest-config": "./manifest.config.ts",
     "#store-release": "./scripts/store-release.mjs",
+    "#store-provenance": "./scripts/verify-store-provenance.mjs",
     "#store-submitter": "./scripts/submit-store.mjs"
   },
   "scripts": {
