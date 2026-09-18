@@ -114,6 +114,23 @@ function register(cfg: TakeoverConfig): ChromiumInterceptionDeps {
 }
 
 describe('registerChromiumInterception', () => {
+  it('passes only the leaf of a Windows download path to handoff', async () => {
+    register(enabledConfig())
+    listener?.(
+      item({ filename: String.raw`E:\Downloads\asset_v1.2.8.1.zip` }),
+      vi.fn()
+    )
+    await vi.waitFor(() =>
+      expect(mockedRunHandoff).toHaveBeenCalledWith(
+        expect.objectContaining({
+          suggestedFilename: 'asset_v1.2.8.1.zip',
+          filenameFromUrl: false,
+        }),
+        expect.anything()
+      )
+    )
+  })
+
   it('no-ops when onDeterminingFilename is unavailable (Firefox)', () => {
     ;(
       globalThis as Record<string, unknown> & {

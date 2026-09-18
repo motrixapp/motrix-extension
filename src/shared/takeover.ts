@@ -20,6 +20,8 @@ export interface TakeoverTarget {
   pageUrl: string
   pageTitle: string
   suggestedFilename: string
+  /** URL-derived display name; leave remote filename discovery to Motrix. */
+  filenameFromUrl?: boolean
   mime: string
   sizeBytes: number | null
   siteHint: string
