@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { runHandoff } from '@/background/handoff/runHandoff'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
 import {
   cancelFirefoxDownload,
   handleFirefoxDownloadSafely,
 } from '@/background/interception/firefox'
+
+vi.mock('@/background/handoff/runHandoff', () => ({
+  runHandoff: vi.fn(async () => {}),
+}))
 
 interface DownloadsStub {
   cancel: ReturnType<typeof vi.fn>
@@ -49,6 +54,32 @@ describe('cancelFirefoxDownload', () => {
 })
 
 describe('handleFirefoxDownloadSafely', () => {
+  it('passes only the leaf of a Windows download path to handoff', async () => {
+    await handleFirefoxDownloadSafely(
+      {
+        id: 7,
+        url: 'https://example.com/c-m9021',
+        filename: String.raw`E:\Downloads\asset_v1.2.8.1.zip`,
+        totalBytes: 1024,
+      } as browser.downloads.DownloadItem,
+      {
+        getConfig: async () => ({
+          enabled: true,
+          defaultAction: 'motrix',
+          rules: [],
+        }),
+        captureGuard: async () => ({ assertCurrent: vi.fn() }),
+      } as unknown as ChromiumInterceptionDeps
+    )
+    expect(runHandoff).toHaveBeenCalledWith(
+      expect.objectContaining({
+        suggestedFilename: 'asset_v1.2.8.1.zip',
+        filenameFromUrl: false,
+      }),
+      expect.anything()
+    )
+  })
+
   it('does not touch the original remote download or attempt a handoff', async () => {
     const captureGuard = vi.fn(async () => null)
     const getState = vi.fn()

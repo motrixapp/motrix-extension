@@ -2,6 +2,45 @@ import { describe, expect, it } from 'vitest'
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 
 describe('normalizeTarget', () => {
+  it.each([
+    String.raw`E:\Downloads\asset_v1.2.8.1.zip`,
+    String.raw`\\server\share\asset_v1.2.8.1.zip`,
+    String.raw`\\?\E:\Downloads\asset_v1.2.8.1.zip`,
+    '/home/user/Downloads/asset_v1.2.8.1.zip',
+  ])('removes the browser download directory from %s', (filename) => {
+    const target = normalizeTarget({
+      url: 'https://cdn.example/c-m9021?filename=ignored.zip',
+      suggestedFilename: filename,
+      origin: 'auto',
+    })
+    expect(target.suggestedFilename).toBe('asset_v1.2.8.1.zip')
+    expect(target.pageTitle).toBe('asset_v1.2.8.1.zip')
+    expect(target.filenameFromUrl).toBe(false)
+  })
+
+  it('keeps literal URL delimiters in a local filename', () => {
+    const target = normalizeTarget({
+      url: 'https://cdn.example/file',
+      suggestedFilename: '/Downloads/report#1?draft.zip',
+      origin: 'auto',
+    })
+    expect(target.suggestedFilename).toBe('report#1_draft.zip')
+    expect(target.filenameFromUrl).toBe(false)
+  })
+
+  it.each(['', ' ', '/', 'E:\\Downloads\\', '..'])(
+    'treats unusable browser filename %s as a URL fallback',
+    (suggestedFilename) => {
+      const target = normalizeTarget({
+        url: 'https://cdn.example/Report%20%231.zip?token=ignored',
+        suggestedFilename,
+        origin: 'auto',
+      })
+      expect(target.suggestedFilename).toBe('Report #1.zip')
+      expect(target.filenameFromUrl).toBe(true)
+    }
+  )
+
   it('prefers finalUrl for url and referrer for pageUrl', () => {
     const t = normalizeTarget({
       url: 'https://x/start',

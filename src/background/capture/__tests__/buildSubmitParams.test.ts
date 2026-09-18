@@ -1,5 +1,7 @@
+import { DownloadSubmitParamsSchema } from '@motrix/mdxp'
 import { describe, expect, it } from 'vitest'
 import { buildSubmitParams } from '@/background/capture/buildSubmitParams'
+import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import type { TakeoverTarget } from '@/shared/takeover'
 
 function target(over: Partial<TakeoverTarget> = {}): TakeoverTarget {
@@ -17,6 +19,32 @@ function target(over: Partial<TakeoverTarget> = {}): TakeoverTarget {
 }
 
 describe('buildSubmitParams', () => {
+  it.each(['auto', 'context-menu'] as const)(
+    'leaves URL-derived filenames open to discovery for %s',
+    (origin) => {
+      const normalized = normalizeTarget({
+        url: 'https://cdn.example/c-m9021?filename=BCUninstaller.7z',
+        origin,
+      })
+      expect(normalized.suggestedFilename).toBe('c-m9021')
+      const params = buildSubmitParams(normalized, [], {})
+      expect(params.meta.suggestedFilename).toBe('')
+      expect(params.source.pageTitle).toBe('c-m9021')
+      expect(DownloadSubmitParamsSchema.safeParse(params).success).toBe(true)
+    }
+  )
+
+  it('sends only the browser filename for a Windows automatic download', () => {
+    const normalized = normalizeTarget({
+      url: 'https://cdn.example/c-m9021',
+      suggestedFilename: String.raw`E:\Downloads\BCUninstaller.7z`,
+      origin: 'auto',
+    })
+    const params = buildSubmitParams(normalized, [], {})
+    expect(params.meta.suggestedFilename).toBe('BCUninstaller.7z')
+    expect(JSON.stringify(params)).not.toContain('Downloads')
+  })
+
   it('builds a direct selection with the quality sentinel and estimatedBytes when size known', () => {
     const p = buildSubmitParams(target(), [], {
       Referer: 'https://example.com/p',
