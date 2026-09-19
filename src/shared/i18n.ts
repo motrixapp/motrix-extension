@@ -7,6 +7,7 @@ import enUS from '@/shared/locales/en-US.json'
 import es from '@/shared/locales/es.json'
 import fr from '@/shared/locales/fr.json'
 import hi from '@/shared/locales/hi.json'
+import hu from '@/shared/locales/hu.json'
 import id from '@/shared/locales/id.json'
 import it from '@/shared/locales/it.json'
 import ja from '@/shared/locales/ja.json'
@@ -27,6 +28,7 @@ const resources = {
   es: { translation: es },
   fr: { translation: fr },
   hi: { translation: hi },
+  hu: { translation: hu },
   id: { translation: id },
   it: { translation: it },
   ja: { translation: ja },
