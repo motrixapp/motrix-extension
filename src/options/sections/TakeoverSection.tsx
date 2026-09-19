@@ -18,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { SettingSection } from '@/options/components/SettingSection'
 import type { TakeoverFormValues } from '@/options/tabs/schemas'
 import { useTakeoverAvailability } from '@/options/useTakeoverAvailability'
+import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
 import { CONSENT_VERSION } from '@/shared/takeover'
 
 export function TakeoverSection({
@@ -31,6 +32,8 @@ export function TakeoverSection({
 }): React.ReactElement {
   const { t } = useTranslation()
   const availability = useTakeoverAvailability()
+  const enabled = form.watch('enabled')
+  const popupSupported = supportsAutoOpenPopup()
   const [showConsent, setShowConsent] = useState(false)
   useEffect(() => {
     if (availability !== 'local') setShowConsent(false)
@@ -76,6 +79,37 @@ export function TakeoverSection({
                     }
                     field.onChange(checked)
                   }}
+                />
+              </Field>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="autoOpenPopup"
+            render={({ field }) => (
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldLabel htmlFor="download-auto-popup">
+                    {t('options.takeover.autoOpenPopup')}
+                  </FieldLabel>
+                  <FieldDescription id="download-auto-popup-description">
+                    {t(
+                      !popupSupported
+                        ? 'options.takeover.autoOpenUnsupported'
+                        : !enabled || availability !== 'local'
+                          ? 'options.takeover.autoOpenDisabled'
+                          : 'options.takeover.autoOpenDescription'
+                    )}
+                  </FieldDescription>
+                </FieldContent>
+                <Switch
+                  id="download-auto-popup"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={
+                    !popupSupported || !enabled || availability !== 'local'
+                  }
+                  aria-describedby="download-auto-popup-description"
                 />
               </Field>
             )}

@@ -60,6 +60,7 @@ export interface MessageMap {
   'bg.getState': {
     request: undefined
     response: {
+      rpc?: import('@/shared/integration').RpcStatus
       state: ConnectionState
       endpoint: EndpointConfig
       pairing: import('@/shared/integration').PairingState
@@ -180,6 +181,14 @@ export interface MessageMap {
     response: {
       policy: import('@/background/RemoteBackendPolicyStore').RemoteBackendPolicyV1
     }
+  }
+  'bg.patchTakeoverEnabled': {
+    request: { enabled: boolean; consentAckVersion?: number }
+    response: import('@/shared/takeover').TakeoverConfig
+  }
+  'bg.getPopupReceipt': {
+    request: { windowId: number }
+    response: import('@/shared/autoPopup').PopupReceipt | null
   }
   'bg.getTakeoverConfig': {
     request: undefined

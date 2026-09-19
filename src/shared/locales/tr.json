@@ -163,7 +163,11 @@
       "title": "İndirmeleri devralma",
       "remoteUnavailable": "Otomatik devralma şu anda yerel Motrix App gerektirir. Uzak indirmeler ve üstbilgi veya çerez izinleri bu özelliği etkinleştirmez. Bu Server’a elle veya sağ tık menüsünden indirme gönderebilirsiniz.",
       "availabilityUnknown": "Seçili arka uç kontrol edilene kadar devralma kullanılamaz.",
-      "remoteUnavailableShort": "Yalnızca yerel App. Sağ tıkla gönderim Server ile de çalışır."
+      "remoteUnavailableShort": "Yalnızca yerel App. Sağ tıkla gönderim Server ile de çalışır.",
+      "autoOpenPopup": "Devralma sonrası görev panelini aç",
+      "autoOpenDescription": "Motrix indirmeyi kabul ettiğinde paneli açar. Art arda indirmelerde panel yalnızca bir kez açılır.",
+      "autoOpenDisabled": "Bu seçenek için indirmeleri devralmayı etkinleştirin.",
+      "autoOpenUnsupported": "Chrome / Edge 127+ veya Firefox 149+ gerektirir."
     },
     "tabs": {
       "general": "Genel",
@@ -443,6 +447,12 @@
       "preparing": "İndirme hazırlanıyor…",
       "sending": "İndirme gönderiliyor…",
       "pairedStatus": "Eşleştirildi"
+    },
+    "rpc": {
+      "checking": "Motrix geç yanıt veriyor. Bağlantı denetleniyor…",
+      "failed": "Motrix yanıt vermedi. Yeniden bağlanıp tekrar deneyin.",
+      "stale": "Son alınan veriler gösteriliyor.",
+      "added": "Eklenen indirmeler: {{count}}"
     }
   },
   "errors": {

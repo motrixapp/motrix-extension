@@ -163,7 +163,11 @@
       "title": "下载接管",
       "remoteUnavailable": "自动接管目前仅支持本机 Motrix App。开启远程下载、请求头或 Cookie 权限不会启用自动接管。你仍可手动添加下载或通过右键菜单发送到此 Server。",
       "availabilityUnknown": "确认当前后端之前，自动接管暂不可用。",
-      "remoteUnavailableShort": "仅支持本机 App；远程 Server 可通过右键发送。"
+      "remoteUnavailableShort": "仅支持本机 App；远程 Server 可通过右键发送。",
+      "autoOpenPopup": "接管成功后展开任务面板",
+      "autoOpenDescription": "下载交给 Motrix 后，自动展开任务面板。连续下载只展开一次。",
+      "autoOpenDisabled": "启用下载接管后可用。",
+      "autoOpenUnsupported": "需要 Chrome / Edge 127 或 Firefox 149 及以上版本。"
     },
     "tabs": {
       "general": "通用",
@@ -443,6 +447,12 @@
       "preparing": "正在准备下载…",
       "sending": "正在发送下载…",
       "pairedStatus": "已配对"
+    },
+    "rpc": {
+      "checking": "Motrix 响应超时，正在检查连接…",
+      "failed": "Motrix 未响应，请重新连接后重试。",
+      "stale": "当前显示上次更新的数据。",
+      "added": "已添加下载：{{count}}"
     }
   },
   "errors": {

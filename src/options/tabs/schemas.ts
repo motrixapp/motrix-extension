@@ -3,6 +3,7 @@ import { parseRemoteEndpoint } from '@/shared/endpoint'
 import { SUPPORTED_LOCALES } from '@/shared/supportedLocales'
 
 export const takeoverFormSchema = z.object({
+  autoOpenPopup: z.boolean(),
   enabled: z.boolean(),
   thresholdMB: z.string().refine((s) => s.trim() === '' || Number(s) >= 0, {
     message: 'options.takeover.thresholdInvalid',

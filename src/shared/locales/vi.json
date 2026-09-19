@@ -163,7 +163,11 @@
       "title": "Tiếp quản tải xuống",
       "remoteUnavailable": "Tiếp quản tự động hiện yêu cầu Motrix App cục bộ. Tải xuống từ xa và quyền tiêu đề hoặc cookie không bật tính năng này. Bạn vẫn có thể gửi lượt tải xuống tới Server này theo cách thủ công hoặc qua menu chuột phải.",
       "availabilityUnknown": "Chưa thể tiếp quản cho đến khi kiểm tra được dịch vụ đã chọn.",
-      "remoteUnavailableShort": "Chỉ App cục bộ. Gửi qua chuột phải vẫn dùng được với Server."
+      "remoteUnavailableShort": "Chỉ App cục bộ. Gửi qua chuột phải vẫn dùng được với Server.",
+      "autoOpenPopup": "Mở bảng tác vụ sau khi tiếp quản",
+      "autoOpenDescription": "Mở bảng khi Motrix chấp nhận tải xuống. Các lượt tải liên tiếp chỉ mở bảng một lần.",
+      "autoOpenDisabled": "Bật tiếp quản tải xuống để dùng tùy chọn này.",
+      "autoOpenUnsupported": "Yêu cầu Chrome / Edge 127+ hoặc Firefox 149+."
     },
     "tabs": {
       "general": "Chung",
@@ -443,6 +447,12 @@
       "preparing": "Đang chuẩn bị tải xuống…",
       "sending": "Đang gửi lượt tải xuống…",
       "pairedStatus": "Đã ghép"
+    },
+    "rpc": {
+      "checking": "Motrix phản hồi chậm. Đang kiểm tra kết nối…",
+      "failed": "Motrix không phản hồi. Hãy kết nối lại để thử lại.",
+      "stale": "Đang hiển thị dữ liệu nhận được lần gần nhất.",
+      "added": "Đã thêm lượt tải: {{count}}"
     }
   },
   "errors": {

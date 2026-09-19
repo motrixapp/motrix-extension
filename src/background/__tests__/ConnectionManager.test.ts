@@ -61,7 +61,9 @@ function makeUnavailableRemoteDiscoveryService() {
 function makeFakeConn(): MdxpConnection {
   const conn = {
     listen: vi.fn(),
-    sendRequest: vi.fn(async (method: string) => {
+    sendRequest: vi.fn(async (method: string, params: { sentAt?: number }) => {
+      if (method === Methods.SystemPing)
+        return { sentAt: params.sentAt, recvAt: Date.now() }
       if (method === 'motrix/initialize') {
         const result: Record<string, unknown> = {
           protocolVersion: '1.0',
@@ -1287,9 +1289,13 @@ describe('ConnectionManager — request() proxy', () => {
     expect(manager.getState()).toBe('connected')
 
     const result = await manager.request('task/list', { limit: 10 })
-    expect(fakeConn.sendRequest).toHaveBeenCalledWith('task/list', {
-      limit: 10,
-    })
+    expect(fakeConn.sendRequest).toHaveBeenCalledWith(
+      'task/list',
+      {
+        limit: 10,
+      },
+      expect.objectContaining({ isCancellationRequested: false })
+    )
     expect(result).toEqual(cannedResult)
   })
 
@@ -2086,6 +2092,55 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
         meta: { suggestedFilename: 'a.mp4', qualityLabel: '1080p' },
       })
     ).rejects.toThrow('download.result-unknown')
+  })
+
+  it('does not mark an unsent download unknown when health changes during journal persistence', async () => {
+    const conn = makeSubmitFakeConn()
+    const manager = makeManager({ mbp1Conn: conn, requestTimeoutMs: 10 })
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    const journal = deferred<void>()
+    const started = deferred<void>()
+    conn.sendRequest.mockImplementation(async () => new Promise(() => {}))
+    const submitting = manager.submitDownload(
+      {
+        source: {
+          pageUrl: 'https://example.test/',
+          pageTitle: 'file',
+          detectedAt: 0,
+        },
+        selection: {
+          kind: 'magnet',
+          uri: 'magnet:?xt=urn:btih:0123456789012345678901234567890123456789',
+        },
+        meta: { suggestedFilename: 'file', qualityLabel: 'source' },
+      },
+      {
+        onSubmitting: async () => {
+          started.resolve()
+          await journal.promise
+        },
+      }
+    )
+    const rejected = expect(submitting).rejects.toThrow(
+      'download.connection-failed'
+    )
+    await started.promise
+    const reading = manager.request(Methods.TaskList, {}).catch(() => {})
+    await vi.waitFor(() =>
+      expect(manager.getRpcStatus().health).toBe('checking')
+    )
+    journal.resolve()
+    try {
+      await rejected
+      expect(
+        conn.sendRequest.mock.calls.filter(
+          ([method]) => method === Methods.DownloadSubmit
+        )
+      ).toHaveLength(0)
+    } finally {
+      manager.stop()
+      await reading
+    }
   })
 
   it('cancelDownload forwards download/cancel', async () => {

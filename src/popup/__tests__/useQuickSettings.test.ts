@@ -12,6 +12,7 @@ const send = vi.mocked(MessageBus.send)
 
 const TAKEOVER: TakeoverConfig = {
   enabled: false,
+  autoOpenPopup: true,
   consentAckVersion: 0,
   defaultAction: 'chrome',
   rules: [
@@ -31,8 +32,9 @@ const NOTIFICATIONS: NotificationsConfig = {
 }
 
 function mockSuccessfulBus(): void {
-  send.mockImplementation(async (kind: string) => {
+  send.mockImplementation(async (kind: string, payload) => {
     if (kind === 'bg.getTakeoverConfig') return structuredClone(TAKEOVER)
+    if (kind === 'bg.patchTakeoverEnabled') return { ...TAKEOVER, ...payload }
     if (kind === 'bg.getNotificationsConfig') {
       return structuredClone(NOTIFICATIONS)
     }
@@ -73,7 +75,7 @@ describe('useQuickSettings', () => {
       await result.current.requestTakeoverEnabled(true)
     })
     expect(
-      send.mock.calls.filter(([kind]) => kind === 'bg.setTakeoverConfig')
+      send.mock.calls.filter(([kind]) => kind === 'bg.patchTakeoverEnabled')
     ).toHaveLength(0)
     expect(result.current.takeover).toEqual(TAKEOVER)
     rerender({ supported: true })
@@ -93,7 +95,7 @@ describe('useQuickSettings', () => {
     expect(result.current.consentRequired).toBe(true)
     expect(result.current.takeover?.enabled).toBe(false)
     expect(
-      send.mock.calls.filter(([kind]) => kind === 'bg.setTakeoverConfig')
+      send.mock.calls.filter(([kind]) => kind === 'bg.patchTakeoverEnabled')
     ).toHaveLength(0)
 
     await act(async () => {
@@ -106,8 +108,7 @@ describe('useQuickSettings', () => {
       enabled: true,
       consentAckVersion: CONSENT_VERSION,
     })
-    expect(send).toHaveBeenCalledWith('bg.setTakeoverConfig', {
-      ...TAKEOVER,
+    expect(send).toHaveBeenCalledWith('bg.patchTakeoverEnabled', {
       enabled: true,
       consentAckVersion: CONSENT_VERSION,
     })
@@ -133,7 +134,7 @@ describe('useQuickSettings', () => {
         return { ...TAKEOVER, consentAckVersion: CONSENT_VERSION }
       }
       if (kind === 'bg.getNotificationsConfig') return NOTIFICATIONS
-      if (kind === 'bg.setTakeoverConfig') throw new Error('storage failed')
+      if (kind === 'bg.patchTakeoverEnabled') throw new Error('storage failed')
       return { ok: true }
     })
     const { result } = renderHook(() => useQuickSettings())

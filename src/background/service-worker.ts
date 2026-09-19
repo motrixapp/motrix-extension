@@ -8,6 +8,7 @@ import youtubeSnifferScriptPath from 'virtual:motrix-youtube-sniffer-script'
 // full public API, so this also provides `Methods`.
 import { Methods } from '@motrix/mdxp/browser'
 import { BgAdapterRegistry } from '@/background/AdapterRegistry'
+import { createAutoPopup } from '@/background/autoPopup'
 import { BackendOperationCoordinator } from '@/background/BackendOperationCoordinator'
 import {
   BadgeController,
@@ -116,6 +117,7 @@ const handoffEndpoints = new HandoffEndpointTracker(
   backendOperationCoordinator
 )
 const takeoverConfigStore = new TakeoverConfigStore()
+const autoPopup = createAutoPopup(takeoverConfigStore)
 const notificationsConfigStore = new NotificationsConfigStore()
 const badgeErrorStore = new BadgeErrorStore()
 const gate = new ConnectionGate()
@@ -271,6 +273,7 @@ bus.on('bg.getState', () =>
     const recoveryExhaustedUnattended =
       errorReason === 'recoveryExhaustedUnattended'
     return {
+      rpc: manager.getRpcStatus(),
       state: manager.getState(),
       phase: manager.getConnectionPhase(),
       attemptIntent: manager.getLastAttemptIntent(),
@@ -350,6 +353,17 @@ bus.on('bg.getRemoteBackendPolicy', async () => ({
 bus.on('bg.replaceRemoteBackendPolicy', async (replacement) => ({
   policy: await manager.replaceRemoteBackendPolicy(replacement),
 }))
+bus.on('bg.patchTakeoverEnabled', ({ enabled, consentAckVersion }) =>
+  takeoverConfigStore.patchEnabled(enabled, consentAckVersion)
+)
+bus.on('bg.getPopupReceipt', async ({ windowId }, sender) => {
+  if (
+    sender.id !== browser.runtime.id ||
+    sender.url !== browser.runtime.getURL('popup.html')
+  )
+    return null
+  return autoPopup.receipt(windowId)
+})
 bus.on('bg.getTakeoverConfig', async () => takeoverConfigStore.get())
 bus.on('bg.setTakeoverConfig', async (payload) => {
   await takeoverConfigStore.set(payload)
@@ -737,6 +751,7 @@ void initI18n().then(() => {
 void initLogLevel()
 
 const interceptionDeps = {
+  popup: autoPopup,
   captureGuard: () => handoffEndpoints.capture('auto'),
   getConfig: async () => {
     await endpointLifecycleReady

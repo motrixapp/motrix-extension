@@ -262,7 +262,10 @@ describe('runHandoff', () => {
       }),
     })
 
-    await expect(runHandoff(target(), o)).resolves.toBeUndefined()
+    await expect(runHandoff(target(), o)).resolves.toMatchObject({
+      kind: 'accepted',
+      taskId: 't1',
+    })
     expect(o.submit).toHaveBeenCalledOnce()
     expect(o.fallbackToBrowser).not.toHaveBeenCalled()
   })
@@ -309,7 +312,7 @@ describe('runHandoff', () => {
 
     await expect(
       runHandoff(target({ origin: 'context-menu' }), o)
-    ).resolves.toBeUndefined()
+    ).resolves.toEqual({ kind: 'browser' })
     expect(o.cancelNative).not.toHaveBeenCalled()
     expect(o.fallbackToBrowser).toHaveBeenCalledOnce()
     expect(o.submit).not.toHaveBeenCalled()

@@ -163,7 +163,11 @@
       "title": "Captura de downloads",
       "remoteUnavailable": "A captura automática exige atualmente o Motrix App local. Downloads remotos e permissões de cabeçalhos ou cookies não a ativam. Você ainda pode enviar downloads a este Server manualmente ou pelo menu de contexto.",
       "availabilityUnknown": "A captura fica indisponível até que o serviço selecionado possa ser verificado.",
-      "remoteUnavailableShort": "Somente App local. O envio por clique direito funciona com Servers."
+      "remoteUnavailableShort": "Somente App local. O envio por clique direito funciona com Servers.",
+      "autoOpenPopup": "Abrir tarefas após capturar download",
+      "autoOpenDescription": "Abre as tarefas quando o Motrix aceita um download. Downloads consecutivos abrem o painel apenas uma vez.",
+      "autoOpenDisabled": "Ative a captura de downloads para usar esta opção.",
+      "autoOpenUnsupported": "Requer Chrome / Edge 127+ ou Firefox 149+."
     },
     "tabs": {
       "general": "Geral",
@@ -443,6 +447,12 @@
       "preparing": "Preparando download…",
       "sending": "Enviando download…",
       "pairedStatus": "Pareado"
+    },
+    "rpc": {
+      "checking": "O Motrix está demorando para responder. Verificando a conexão…",
+      "failed": "O Motrix não respondeu. Reconecte para tentar novamente.",
+      "stale": "Exibindo os últimos dados disponíveis.",
+      "added": "Downloads adicionados: {{count}}"
     }
   },
   "errors": {

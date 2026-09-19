@@ -1,10 +1,11 @@
+import type { AutoOpenPopupService } from '@/background/AutoOpenPopupService'
 import type { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionManager } from '@/background/ConnectionManager'
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import { probeSize } from '@/background/capture/probeSize'
 import type { HandoffGuard } from '@/background/handoff/guard'
 import { makeOps } from '@/background/handoff/makeOps'
-import { runHandoff } from '@/background/handoff/runHandoff'
+import { type HandoffResult, runHandoff } from '@/background/handoff/runHandoff'
 import {
   isEligibleDownload,
   pickDownloadUrl,
@@ -18,6 +19,7 @@ import type { Notify } from '@/shared/notifications'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 export interface ChromiumInterceptionDeps {
+  popup?: AutoOpenPopupService
   captureGuard: () => Promise<HandoffGuard | null>
   getConfig: () => Promise<TakeoverConfig>
   manager: ConnectionManager
@@ -77,6 +79,14 @@ async function handleHeld(
   suggest: () => void,
   deps: ChromiumInterceptionDeps
 ): Promise<void> {
+  const popupWindow = deps.popup?.captureWindow()
+  let presentation:
+    | {
+        result: Extract<HandoffResult, { kind: 'accepted' }>
+        guard: HandoffGuard
+        enabled: boolean
+      }
+    | undefined
   const deadlineAt = Date.now() + 8000
   const hold = createHold(
     {
@@ -150,11 +160,26 @@ async function handleHeld(
       confirmSensitive: async () => false,
       notify: deps.notify,
     })
-    await runHandoff(target, ops)
+    const result = await runHandoff(target, ops)
+    if (result?.kind === 'accepted')
+      presentation = { result, guard, enabled: cfg.autoOpenPopup }
   } catch (e) {
     log.debug('[takeover] held handoff aborted', e)
   } finally {
     hold.dispose()
     hold.release() // no-op if committed or already released
+  }
+  if (presentation && deps.popup) {
+    const windowId = await popupWindow
+    const { result, guard, enabled } = presentation
+    if (windowId != null && guard.endpointId)
+      void deps.popup.present({
+        ...result,
+        endpointId: guard.endpointId,
+        endpointRevision: guard.endpointRevision ?? 0,
+        windowId,
+        enabledAtCapture: enabled,
+        assertCurrent: guard.assertCurrent,
+      })
   }
 }

@@ -94,86 +94,132 @@ function hasActiveTasks(tasks: readonly MdxpTask[]): boolean {
  */
 export function useControlPanel(
   active: boolean,
-  scopeKey = 'default'
+  scopeKey = 'default',
+  paused = false
 ): ControlPanel {
   const [state, setState] = useState<ScopedControlPanelState>(() =>
     emptyState(scopeKey, active)
   )
   const activeRef = useRef(active)
   const scopeRef = useRef(scopeKey)
+  const pausedRef = useRef(paused)
+  const revisionRef = useRef({ active, paused, scopeKey, revision: 0 })
+  if (
+    revisionRef.current.active !== active ||
+    revisionRef.current.paused !== paused ||
+    revisionRef.current.scopeKey !== scopeKey
+  )
+    revisionRef.current = {
+      active,
+      paused,
+      scopeKey,
+      revision: revisionRef.current.revision + 1,
+    }
+  pausedRef.current = paused
   activeRef.current = active
   scopeRef.current = scopeKey
 
   const refreshActivitySnapshot = useCallback(
     async (requestScope: string): Promise<boolean | null> => {
-      if (!activeRef.current) return null
-      try {
-        const [list, stats] = await Promise.all([
-          send('bg.taskList', {}),
-          send('bg.statsGet', {}),
-        ])
-        if (isErrorResponse(list)) throw new Error(list.error)
-        if (isErrorResponse(stats)) throw new Error(stats.error)
-        if (!activeRef.current || scopeRef.current !== requestScope) return null
-        const nextHasActiveTasks = hasActiveTasks(list.tasks)
-        setState((current) => {
-          const scopedCurrent =
-            current.scopeKey === requestScope
-              ? current
-              : emptyState(requestScope, true)
-          const tasks = retainEqualTasks(scopedCurrent.tasks, list.tasks)
-          const nextStats = snapshotEqual(scopedCurrent.stats, stats)
-            ? scopedCurrent.stats
-            : stats
-          if (
-            scopedCurrent.tasks === tasks &&
-            scopedCurrent.stats === nextStats &&
-            !scopedCurrent.loading &&
-            scopedCurrent.activityError === null
-          ) {
-            return scopedCurrent
-          }
-          return {
-            ...scopedCurrent,
-            activityError: null,
-            error: scopedCurrent.engineError,
-            loading: false,
-            stats: nextStats,
-            tasks,
-          }
-        })
-        return nextHasActiveTasks
-      } catch (e) {
-        if (!activeRef.current || scopeRef.current !== requestScope) return null
-        setState((current) => {
-          const error = (e as Error).message
-          const scopedCurrent =
-            current.scopeKey === requestScope
-              ? current
-              : emptyState(requestScope, true)
-          if (!scopedCurrent.loading && scopedCurrent.activityError === error) {
-            return scopedCurrent
-          }
-          return {
-            ...scopedCurrent,
-            activityError: error,
-            loading: false,
-            error,
-          }
-        })
+      if (!activeRef.current || pausedRef.current) return null
+      const revision = revisionRef.current.revision
+      const isCurrent = () =>
+        activeRef.current &&
+        !pausedRef.current &&
+        scopeRef.current === requestScope &&
+        revisionRef.current.revision === revision
+      const [listResult, statsResult] = await Promise.allSettled([
+        send('bg.taskList', {}).then((list) => {
+          if (isCurrent())
+            setState((current) => {
+              const previous =
+                current.scopeKey === requestScope
+                  ? current
+                  : emptyState(requestScope, true)
+              const tasks = retainEqualTasks(previous.tasks, list.tasks)
+              return tasks === previous.tasks && !previous.loading
+                ? previous
+                : { ...previous, tasks, loading: false }
+            })
+          return list
+        }),
+        send('bg.statsGet', {}).then((stats) => {
+          if (isCurrent())
+            setState((current) => {
+              const previous =
+                current.scopeKey === requestScope
+                  ? current
+                  : emptyState(requestScope, true)
+              return snapshotEqual(previous.stats, stats)
+                ? previous
+                : { ...previous, stats }
+            })
+          return stats
+        }),
+      ])
+      if (
+        !activeRef.current ||
+        pausedRef.current ||
+        scopeRef.current !== requestScope ||
+        revisionRef.current.revision !== revision
+      )
         return null
-      }
+      const list = listResult.status === 'fulfilled' ? listResult.value : null
+      const stats =
+        statsResult.status === 'fulfilled' ? statsResult.value : null
+      const error =
+        listResult.status === 'rejected'
+          ? String(listResult.reason?.message ?? 'task/list failed')
+          : statsResult.status === 'rejected'
+            ? String(statsResult.reason?.message ?? 'stats/get failed')
+            : null
+      setState((current) => {
+        const previous =
+          current.scopeKey === requestScope
+            ? current
+            : emptyState(requestScope, true)
+        const tasks = list
+          ? retainEqualTasks(previous.tasks, list.tasks)
+          : previous.tasks
+        const nextStats =
+          stats && !snapshotEqual(previous.stats, stats)
+            ? stats
+            : previous.stats
+        if (
+          previous.tasks === tasks &&
+          previous.stats === nextStats &&
+          !previous.loading &&
+          previous.activityError === error
+        )
+          return previous
+        return {
+          ...previous,
+          tasks,
+          stats: nextStats,
+          loading: false,
+          activityError: error,
+          error: error ?? previous.engineError,
+        }
+      })
+      return list ? hasActiveTasks(list.tasks) : null
     },
     []
   )
 
   const refreshEngineSnapshot = useCallback(
     async (requestScope: string): Promise<void> => {
-      if (!activeRef.current) return
+      if (!activeRef.current || pausedRef.current) return
+      const revision = revisionRef.current.revision
       try {
         const engine = await send('bg.engineStatus', {})
         if (isErrorResponse(engine)) throw new Error(engine.error)
-        if (!activeRef.current || scopeRef.current !== requestScope) return
+        if (
+          !activeRef.current ||
+          pausedRef.current ||
+          scopeRef.current !== requestScope ||
+          revisionRef.current.revision !== revision
+        )
+          return
         setState((current) => {
           const scopedCurrent =
             current.scopeKey === requestScope
@@ -196,7 +242,13 @@ export function useControlPanel(
           }
         })
       } catch (e) {
-        if (!activeRef.current || scopeRef.current !== requestScope) return
+        if (
+          !activeRef.current ||
+          pausedRef.current ||
+          scopeRef.current !== requestScope ||
+          revisionRef.current.revision !== revision
+        )
+          return
         setState((current) => {
           const error = (e as Error).message
           const scopedCurrent =
@@ -224,8 +276,14 @@ export function useControlPanel(
   )
 
   useEffect(() => {
-    setState(emptyState(scopeKey, active))
-    if (!active) {
+    setState((current) =>
+      current.scopeKey !== scopeKey || !active
+        ? emptyState(scopeKey, active)
+        : paused
+          ? { ...current, loading: false }
+          : current
+    )
+    if (!active || paused) {
       requestActivityRefreshRef.current = async () => undefined
       return
     }
@@ -301,7 +359,7 @@ export function useControlPanel(
         requestActivityRefreshRef.current = async () => undefined
       }
     }
-  }, [active, refreshActivitySnapshot, refreshEngineSnapshot, scopeKey])
+  }, [active, paused, refreshActivitySnapshot, refreshEngineSnapshot, scopeKey])
 
   const action = useCallback(
     async (
@@ -309,6 +367,8 @@ export function useControlPanel(
       taskId: string,
       deleteFiles?: boolean
     ): Promise<void> => {
+      if (!activeRef.current || pausedRef.current)
+        throw new Error('Motrix connection needs retry')
       const payload =
         kind === 'bg.taskRemove' ? { taskId, deleteFiles } : { taskId }
       const res = await send(kind, payload as never)
@@ -327,6 +387,8 @@ export function useControlPanel(
     [action]
   )
   const reveal = useCallback(async (taskId: string): Promise<void> => {
+    if (!activeRef.current || pausedRef.current)
+      throw new Error('Motrix connection needs retry')
     const response = await send('bg.taskReveal', { taskId })
     if (isErrorResponse(response)) throw new Error(response.error)
   }, [])

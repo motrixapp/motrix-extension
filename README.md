@@ -124,6 +124,10 @@ The settings let you define:
 
 Takeover is off by default and asks for confirmation the first time it is enabled. There is a concrete reason: to keep authenticated downloads working, the extension may read cookies for the target domain and send them with the task to Motrix. A built-in sensitive-host list excludes some banking, government, and medical sites. If Motrix cannot accept an ordinary HTTP(S) download, the extension tries to return it to the browser. Magnet links have no equivalent browser download to fall back to.
 
+**Open task panel after takeover** is an optional switch under Settings → Downloads, off by default. On Chrome/Edge 127+ and Firefox 149+, it opens the extension popup only after Motrix confirms an automatic download. A run of downloads less than 10 seconds apart opens it once; an existing popup refreshes without changing its tab or filter. Switching windows or closing the panel does not cause that batch to reopen it. Apply saves the preference.
+
+If an RPC request times out, the panel checks the connection, preserving its last task data while controls and polling pause. Recovery probes the existing session, then makes at most one reconnect with stored credentials. Only task/status reads may be retried once. Download submissions and task actions are never automatically replayed; an uncertain submission still needs checking in Motrix before retrying.
+
 ## Data and permissions
 
 Your browser will say that this extension can access every website, downloads, and cookies. That is broad access. I do not want to hide it behind a vague “required for operation,” so here is what each part is for.

@@ -19,6 +19,7 @@ export type PopupServerEndpoint = MotrixServerEndpoint
 export type PopupEndpoint = EndpointConfig
 
 export interface PopupState {
+  rpc?: import('@/shared/integration').RpcStatus
   loading: boolean
   connection: ConnectionState | null
   pairing: PairingState
@@ -95,10 +96,13 @@ export function usePopupState(): {
 
   useEffect(() => {
     let cancelled = false
+    let requested = 0
+    let applied = 0
     void send('bg.clearBadgeError', undefined)
     const tick = async (): Promise<void> => {
       if (switchingRef.current) return
       const requestVersion = stateVersionRef.current
+      const sequence = ++requested
       try {
         const connection = await send('bg.getState', undefined)
         const endpoint = connection.endpoint
@@ -107,12 +111,15 @@ export function usePopupState(): {
         if (
           cancelled ||
           switchingRef.current ||
+          sequence < applied ||
           requestVersion !== stateVersionRef.current
         ) {
           return
         }
+        applied = sequence
         const nextState: PopupState = {
           loading: false,
+          ...(connection.rpc ? { rpc: connection.rpc } : {}),
           connection: connection.state,
           pairing: connection.pairing ?? 'unavailable',
           phase: connection.phase ?? 'idle',
@@ -137,10 +144,12 @@ export function usePopupState(): {
         if (
           cancelled ||
           switchingRef.current ||
+          sequence < applied ||
           requestVersion !== stateVersionRef.current
         ) {
           return
         }
+        applied = sequence
         setState((current) => {
           const nextState: PopupState = {
             ...current,
@@ -161,6 +170,7 @@ export function usePopupState(): {
             // reported.
             recoveryExhaustedUnattended: false,
           }
+          delete nextState.rpc
           return snapshotEqual(current, nextState) ? current : nextState
         })
       }
@@ -226,7 +236,7 @@ export function usePopupState(): {
       try {
         const activated = await send('bg.activateEndpoint', { endpointId })
         if (isErrorResponse(activated)) throw new Error(activated.error)
-        setState((current) => ({
+        setState(({ rpc: _rpc, ...current }) => ({
           ...current,
           connection: 'disconnected',
           pairing: 'loading',

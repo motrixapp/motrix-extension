@@ -163,7 +163,11 @@
       "title": "Gestión de descargas",
       "remoteUnavailable": "La gestión automática requiere actualmente Motrix App en este equipo. Las descargas remotas y los permisos de cabeceras o cookies no la activan. Puedes seguir enviando descargas a este Server manualmente o desde el menú contextual.",
       "availabilityUnknown": "La gestión de descargas no está disponible hasta que se pueda comprobar el servicio seleccionado.",
-      "remoteUnavailableShort": "Solo App local. El envío con clic derecho funciona con Servers."
+      "remoteUnavailableShort": "Solo App local. El envío con clic derecho funciona con Servers.",
+      "autoOpenPopup": "Abrir tareas tras capturar una descarga",
+      "autoOpenDescription": "Abre las tareas cuando Motrix acepta una descarga. Las descargas consecutivas abren el panel una sola vez.",
+      "autoOpenDisabled": "Activa la captura de descargas para usar esta opción.",
+      "autoOpenUnsupported": "Requiere Chrome / Edge 127+ o Firefox 149+."
     },
     "tabs": {
       "general": "General",
@@ -443,6 +447,12 @@
       "preparing": "Preparando descarga…",
       "sending": "Enviando descarga…",
       "pairedStatus": "Vinculado"
+    },
+    "rpc": {
+      "checking": "Motrix tarda en responder. Comprobando la conexión…",
+      "failed": "Motrix no respondió. Vuelve a conectar para reintentar.",
+      "stale": "Se muestran los últimos datos disponibles.",
+      "added": "Descargas añadidas: {{count}}"
     }
   },
   "errors": {

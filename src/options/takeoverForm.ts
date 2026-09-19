@@ -1,6 +1,7 @@
 import type { TakeoverConfig, TakeoverRule } from '@/shared/takeover'
 
 export interface TakeoverForm {
+  autoOpenPopup: boolean
   enabled: boolean
   thresholdMB: string // '' = none
   denylist: string // newline-separated hosts
@@ -18,6 +19,7 @@ export function configToForm(config: TakeoverConfig): TakeoverForm {
     )
     .flatMap((r) => r.match.domains ?? [])
   return {
+    autoOpenPopup: config.autoOpenPopup ?? false,
     enabled: config.enabled,
     thresholdMB: typeof threshold === 'number' ? String(threshold) : '',
     denylist: denylist.join('\n'),
@@ -49,6 +51,7 @@ export function formToConfig(
     })
   }
   return {
+    autoOpenPopup: form.autoOpenPopup,
     enabled: form.enabled,
     consentAckVersion,
     defaultAction: 'motrix',
