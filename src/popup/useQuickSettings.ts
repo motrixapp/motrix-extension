@@ -112,7 +112,12 @@ export function useQuickSettings(
       }
 
       try {
-        await send('bg.setTakeoverConfig', next)
+        const saved = await send('bg.patchTakeoverEnabled', {
+          enabled: next.enabled,
+          consentAckVersion: next.consentAckVersion,
+        })
+        takeoverRef.current = saved
+        if (mountedRef.current) setTakeover(saved)
         return true
       } catch (saveError) {
         const shouldRollback = takeoverRef.current === next

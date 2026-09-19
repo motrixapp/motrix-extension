@@ -123,3 +123,50 @@ describe('handleFirefoxDownloadSafely', () => {
     expect(downloads.erase).not.toHaveBeenCalled()
   })
 })
+
+it.each(['accepted', 'unknown', 'browser', 'skipped', 'failed'] as const)(
+  'presents only an accepted Firefox handoff: %s',
+  async (kind) => {
+    const popup = {
+      captureWindow: vi.fn(async () => 42),
+      present: vi.fn(async () => {}),
+    }
+    vi.mocked(runHandoff).mockResolvedValueOnce({
+      kind,
+      operationId: 'op1',
+      taskId: 'task1',
+    } as never)
+    await handleFirefoxDownloadSafely(
+      {
+        id: 7,
+        url: 'https://example.com/file',
+        totalBytes: 1024,
+      } as Browser.downloads.DownloadItem,
+      {
+        popup,
+        getConfig: async () => ({
+          enabled: true,
+          autoOpenPopup: true,
+          defaultAction: 'motrix',
+          rules: [],
+        }),
+        captureGuard: async () => ({
+          origin: 'auto',
+          endpointId: 'local',
+          endpointRevision: 0,
+          assertCurrent: vi.fn(),
+        }),
+      } as unknown as ChromiumInterceptionDeps
+    )
+    if (kind === 'accepted')
+      expect(popup.present).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'task1',
+          operationId: 'op1',
+          windowId: 42,
+          enabledAtCapture: true,
+        })
+      )
+    else expect(popup.present).not.toHaveBeenCalled()
+  }
+)

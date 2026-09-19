@@ -163,7 +163,11 @@
       "title": "Gestione dei download",
       "remoteUnavailable": "La gestione automatica richiede attualmente Motrix App in locale. I download remoti e le autorizzazioni per intestazioni o cookie non la abilitano. Puoi comunque inviare download a questo Server manualmente o dal menu contestuale.",
       "availabilityUnknown": "La gestione dei download non è disponibile finché non è possibile verificare il servizio selezionato.",
-      "remoteUnavailableShort": "Solo App locale. L’invio con clic destro funziona con i Server."
+      "remoteUnavailableShort": "Solo App locale. L’invio con clic destro funziona con i Server.",
+      "autoOpenPopup": "Apri le attività dopo la cattura",
+      "autoOpenDescription": "Apri le attività quando Motrix accetta un download. I download consecutivi aprono il pannello una sola volta.",
+      "autoOpenDisabled": "Attiva la cattura dei download per usare questa opzione.",
+      "autoOpenUnsupported": "Richiede Chrome / Edge 127+ o Firefox 149+."
     },
     "tabs": {
       "general": "Generali",
@@ -443,6 +447,12 @@
       "preparing": "Preparazione del download…",
       "sending": "Invio del download…",
       "pairedStatus": "Associato"
+    },
+    "rpc": {
+      "checking": "Motrix tarda a rispondere. Verifica della connessione…",
+      "failed": "Motrix non risponde. Riconnettiti per riprovare.",
+      "stale": "Sono visualizzati gli ultimi dati disponibili.",
+      "added": "Download aggiunti: {{count}}"
     }
   },
   "errors": {

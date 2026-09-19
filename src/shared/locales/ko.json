@@ -163,7 +163,11 @@
       "title": "다운로드 인계",
       "remoteUnavailable": "자동 인계에는 현재 로컬 Motrix App이 필요합니다. 원격 다운로드 및 헤더나 쿠키 권한으로는 활성화되지 않습니다. 이 Server에는 수동으로 또는 마우스 오른쪽 버튼 메뉴에서 다운로드를 보낼 수 있습니다.",
       "availabilityUnknown": "선택한 백엔드를 확인할 수 있을 때까지 인계를 사용할 수 없습니다.",
-      "remoteUnavailableShort": "로컬 App 전용. 오른쪽 클릭 전송은 Server에서도 가능합니다."
+      "remoteUnavailableShort": "로컬 App 전용. 오른쪽 클릭 전송은 Server에서도 가능합니다.",
+      "autoOpenPopup": "다운로드 인계 후 작업 패널 열기",
+      "autoOpenDescription": "Motrix가 다운로드를 수락하면 패널을 엽니다. 연속 다운로드에서는 한 번만 엽니다.",
+      "autoOpenDisabled": "이 옵션을 사용하려면 다운로드 인계를 켜세요.",
+      "autoOpenUnsupported": "Chrome / Edge 127 이상 또는 Firefox 149 이상이 필요합니다."
     },
     "tabs": {
       "general": "일반",
@@ -443,6 +447,12 @@
       "preparing": "다운로드 준비 중…",
       "sending": "다운로드 전송 중…",
       "pairedStatus": "페어링됨"
+    },
+    "rpc": {
+      "checking": "Motrix의 응답이 지연되고 있습니다. 연결 확인 중…",
+      "failed": "Motrix가 응답하지 않습니다. 다시 연결하여 시도하세요.",
+      "stale": "마지막으로 받은 데이터를 표시합니다.",
+      "added": "추가된 다운로드: {{count}}"
     }
   },
   "errors": {

@@ -61,6 +61,7 @@ async function handle(
   item: Browser.downloads.DownloadItem,
   deps: ChromiumInterceptionDeps
 ): Promise<void> {
+  const popupWindow = deps.popup?.captureWindow()
   const cfg = await deps.getConfig()
   if (!cfg.enabled) return
   const guard = await deps.captureGuard()
@@ -105,5 +106,17 @@ async function handle(
     confirmSensitive: async () => false,
     notify: deps.notify,
   })
-  await runHandoff(target, ops)
+  const result = await runHandoff(target, ops)
+  if (result?.kind === 'accepted' && deps.popup && guard.endpointId) {
+    const windowId = await popupWindow
+    if (windowId != null)
+      void deps.popup.present({
+        ...result,
+        endpointId: guard.endpointId,
+        endpointRevision: guard.endpointRevision ?? 0,
+        windowId,
+        enabledAtCapture: cfg.autoOpenPopup,
+        assertCurrent: guard.assertCurrent,
+      })
+  }
 }

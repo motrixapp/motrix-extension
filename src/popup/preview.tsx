@@ -74,6 +74,7 @@ let previewEndpoint: PreviewEndpoint = {
 }
 
 let previewTakeover: TakeoverConfig = {
+  autoOpenPopup: false,
   enabled: true,
   consentAckVersion: 1,
   defaultAction: 'motrix',
@@ -134,6 +135,15 @@ const previewRuntime = {
           ],
         }
       case 'bg.getTakeoverConfig':
+        return previewTakeover
+      case 'bg.patchTakeoverEnabled':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as {
+            enabled: boolean
+            consentAckVersion?: number
+          }),
+        }
         return previewTakeover
       case 'bg.setTakeoverConfig':
         previewTakeover = request.payload as TakeoverConfig

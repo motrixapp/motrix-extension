@@ -24,6 +24,7 @@ export interface OpsDeps {
     ConnectionManager,
     | 'getState'
     | 'getLastError'
+    | 'getRpcStatus'
     | 'clearGateAndStart'
     | 'ensureReady'
     | 'submitDownload'
@@ -73,7 +74,12 @@ export function makeOps(deps: OpsDeps): HandoffOps {
   }
   return {
     assertCurrent,
-    getState: () => manager.getState(),
+    getState: () => {
+      const health = manager.getRpcStatus?.().health
+      return health && health !== 'healthy'
+        ? 'disconnected'
+        : manager.getState()
+    },
     connectWithLaunch: async () => {
       assertCurrent()
       log.debug(

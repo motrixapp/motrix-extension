@@ -7,6 +7,7 @@ export interface TakeoverRule {
 }
 
 export interface TakeoverConfig {
+  autoOpenPopup: boolean
   enabled: boolean
   /** Bumped acknowledgement of the cookie-consent dialog; 0 = never consented. */
   consentAckVersion: number
@@ -41,6 +42,7 @@ export interface RawTarget {
 }
 
 export const TAKEOVER_DEFAULT: TakeoverConfig = {
+  autoOpenPopup: false,
   enabled: false,
   consentAckVersion: 0,
   defaultAction: 'motrix',

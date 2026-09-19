@@ -163,7 +163,11 @@
       "title": "Download takeover",
       "remoteUnavailable": "Automatic takeover currently requires the local Motrix App. Remote downloads and header or cookie permissions do not enable it. You can still send downloads to this Server manually or from the right-click menu.",
       "availabilityUnknown": "Takeover is unavailable until the selected backend can be checked.",
-      "remoteUnavailableShort": "Local App only. Right-click sending works with Servers."
+      "remoteUnavailableShort": "Local App only. Right-click sending works with Servers.",
+      "autoOpenPopup": "Open task panel after takeover",
+      "autoOpenDescription": "Open the task panel after Motrix accepts a download. Consecutive downloads open it once.",
+      "autoOpenDisabled": "Enable download takeover to use this option.",
+      "autoOpenUnsupported": "Requires Chrome / Edge 127+ or Firefox 149+."
     },
     "tabs": {
       "general": "General",
@@ -443,6 +447,12 @@
       "preparing": "Preparing download…",
       "sending": "Sending download…",
       "pairedStatus": "Paired"
+    },
+    "rpc": {
+      "checking": "Motrix is slow to respond. Checking the connection…",
+      "failed": "Motrix did not respond. Reconnect to try again.",
+      "stale": "Showing the last available data.",
+      "added": "Downloads added: {{count}}"
     }
   },
   "errors": {

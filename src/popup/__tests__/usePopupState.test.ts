@@ -141,6 +141,46 @@ describe('usePopupState', () => {
     expect(result.current.state).toBe(firstSnapshot)
   })
 
+  it.each(['success', 'failure'])(
+    'ignores a stale polling %s after a newer RPC health snapshot',
+    async (outcome) => {
+      vi.useFakeTimers()
+      const stale = deferred<unknown>()
+      let reads = 0
+      browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
+        if ((raw as Envelope).kind !== 'bg.getState') return { ok: true }
+        if (++reads === 1) return stale.promise
+        return {
+          ...SNAPSHOT,
+          state: 'connected',
+          rpc: { health: 'unresponsive', lastError: null, lastSuccessAt: null },
+        }
+      })
+      const { result } = renderHook(() => usePopupState())
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      expect(result.current.state.rpc?.health).toBe('unresponsive')
+      const latest = result.current.state
+      await act(async () => {
+        stale.resolve(
+          outcome === 'failure'
+            ? { error: 'old polling error' }
+            : {
+                ...SNAPSHOT,
+                state: 'connected',
+                rpc: {
+                  health: 'healthy',
+                  lastError: null,
+                  lastSuccessAt: null,
+                },
+              }
+        )
+      })
+      expect(result.current.state).toBe(latest)
+    }
+  )
+
   it('reads taskReveal capability and clears it while switching backends', async () => {
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope

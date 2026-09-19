@@ -163,7 +163,11 @@
       "title": "Download-Übernahme",
       "remoteUnavailable": "Die automatische Übernahme erfordert derzeit die lokale Motrix App. Remote-Downloads und Berechtigungen für Header oder Cookies aktivieren sie nicht. Sie können Downloads weiterhin manuell oder über das Kontextmenü an diesen Server senden.",
       "availabilityUnknown": "Die Übernahme ist erst verfügbar, wenn das ausgewählte Backend überprüft werden kann.",
-      "remoteUnavailableShort": "Nur lokale App. Senden per Rechtsklick funktioniert mit Servern."
+      "remoteUnavailableShort": "Nur lokale App. Senden per Rechtsklick funktioniert mit Servern.",
+      "autoOpenPopup": "Aufgaben nach Übernahme öffnen",
+      "autoOpenDescription": "Öffnet die Aufgaben nach Annahme durch Motrix. Bei mehreren Downloads wird das Fenster nur einmal geöffnet.",
+      "autoOpenDisabled": "Zuerst die Download-Übernahme aktivieren.",
+      "autoOpenUnsupported": "Erfordert Chrome / Edge 127+ oder Firefox 149+."
     },
     "tabs": {
       "general": "Allgemein",
@@ -443,6 +447,12 @@
       "preparing": "Download wird vorbereitet…",
       "sending": "Download wird gesendet…",
       "pairedStatus": "Gekoppelt"
+    },
+    "rpc": {
+      "checking": "Motrix antwortet langsam. Verbindung wird geprüft…",
+      "failed": "Motrix antwortet nicht. Bitte erneut verbinden.",
+      "stale": "Die zuletzt verfügbaren Daten werden angezeigt.",
+      "added": "Hinzugefügte Downloads: {{count}}"
     }
   },
   "errors": {

@@ -16,7 +16,9 @@ export function buildConnectionDiagnostics(
     PopupState,
     'connection' | 'lastError' | 'lastErrorReason' | 'endpoint' | 'server'
   > &
-    Partial<Pick<PopupState, 'backoff' | 'recoveryExhaustedUnattended'>>,
+    Partial<
+      Pick<PopupState, 'backoff' | 'recoveryExhaustedUnattended' | 'rpc'>
+    >,
   environment: DiagnosticEnvironment
 ): string {
   // Select fields explicitly: endpoint profiles and unrelated popup data do
@@ -41,6 +43,22 @@ export function buildConnectionDiagnostics(
             ? 'local'
             : 'remote',
       state: state.connection,
+      ...(state.rpc
+        ? {
+            rpc: {
+              health: state.rpc.health,
+              lastSuccessAt: state.rpc.lastSuccessAt,
+              lastError: state.rpc.lastError
+                ? {
+                    method: state.rpc.lastError.method,
+                    at: state.rpc.lastError.at,
+                    elapsedMs: state.rpc.lastError.elapsedMs,
+                    generation: state.rpc.lastError.generation,
+                  }
+                : null,
+            },
+          }
+        : {}),
       ...(state.backoff ? { retryAtMs: state.backoff.retryAtMs } : {}),
       ...(state.recoveryExhaustedUnattended
         ? { recoveryExhaustedUnattended: true }

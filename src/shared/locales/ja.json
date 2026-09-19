@@ -163,7 +163,11 @@
       "title": "ダウンロードの引き継ぎ",
       "remoteUnavailable": "自動引き継ぎには現在、ローカルの Motrix App が必要です。リモートダウンロードやヘッダー・Cookie の権限では有効になりません。この Server には引き続き手動または右クリックメニューからダウンロードを送信できます。",
       "availabilityUnknown": "選択したバックエンドを確認できるまで、引き継ぎは利用できません。",
-      "remoteUnavailableShort": "ローカル App のみ対応。右クリックでの送信は Server でも利用できます。"
+      "remoteUnavailableShort": "ローカル App のみ対応。右クリックでの送信は Server でも利用できます。",
+      "autoOpenPopup": "引き継ぎ成功後にタスクパネルを開く",
+      "autoOpenDescription": "Motrix がダウンロードを受け付けたらパネルを開きます。連続したダウンロードでは一度だけ開きます。",
+      "autoOpenDisabled": "この設定にはダウンロードの引き継ぎを有効にしてください。",
+      "autoOpenUnsupported": "Chrome / Edge 127 以降、または Firefox 149 以降が必要です。"
     },
     "tabs": {
       "general": "一般",
@@ -443,6 +447,12 @@
       "preparing": "ダウンロードを準備中…",
       "sending": "ダウンロードを送信中…",
       "pairedStatus": "ペア済み"
+    },
+    "rpc": {
+      "checking": "Motrix の応答が遅れています。接続を確認中…",
+      "failed": "Motrix が応答しません。再接続してお試しください。",
+      "stale": "最後に取得したデータを表示しています。",
+      "added": "追加したダウンロード：{{count}}"
     }
   },
   "errors": {

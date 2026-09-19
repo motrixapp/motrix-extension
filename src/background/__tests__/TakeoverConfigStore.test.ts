@@ -31,6 +31,7 @@ describe('TakeoverConfigStore', () => {
     const store = new TakeoverConfigStore()
     const cfg = {
       enabled: true,
+      autoOpenPopup: true,
       consentAckVersion: 1,
       defaultAction: 'motrix' as const,
       rules: [
@@ -56,6 +57,7 @@ describe('TakeoverConfigStore', () => {
     await browser.storage.local.set({
       'motrix.takeoverConfig': {
         enabled: true,
+        autoOpenPopup: true,
         consentAckVersion: 1,
         defaultAction: 'motrix',
         rules: [{ id: 'r', match: {}, action: 'bogus' }],
@@ -63,4 +65,34 @@ describe('TakeoverConfigStore', () => {
     })
     expect(await new TakeoverConfigStore().get()).toEqual(TAKEOVER_DEFAULT)
   })
+})
+
+it('migrates existing preferences with automatic popup off', async () => {
+  const { autoOpenPopup: _popup, ...legacy } = {
+    ...TAKEOVER_DEFAULT,
+    enabled: true,
+    consentAckVersion: 1,
+  }
+  await browser.storage.local.set({ 'motrix.takeoverConfig': legacy })
+  expect(await new TakeoverConfigStore().get()).toEqual({
+    ...legacy,
+    autoOpenPopup: false,
+  })
+})
+
+it('serializes the quick toggle with settings saves and retains the new preference', async () => {
+  const first = new TakeoverConfigStore()
+  const second = new TakeoverConfigStore()
+  await Promise.all([
+    first.set({ ...TAKEOVER_DEFAULT, autoOpenPopup: true }),
+    second.patchEnabled(true, 1),
+  ])
+  expect(await first.get()).toEqual({
+    ...TAKEOVER_DEFAULT,
+    enabled: true,
+    autoOpenPopup: true,
+    consentAckVersion: 1,
+  })
+  await second.patchEnabled(false)
+  expect((await first.get()).autoOpenPopup).toBe(true)
 })

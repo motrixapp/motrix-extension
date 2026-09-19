@@ -387,3 +387,55 @@ describe('useControlPanel', () => {
     expect(result.current.stats?.totalDownloadSpeed).toBe(200)
   })
 })
+
+it('keeps the last good snapshot while paused, stops polling, and clears it when the backend changes', async () => {
+  vi.useFakeTimers()
+  const { sent } = mockBus()
+  const { result, rerender, unmount } = renderHook(
+    ({ paused, scope }) => useControlPanel(true, scope, paused),
+    { initialProps: { paused: false, scope: 'local' } }
+  )
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1)
+  })
+  expect(result.current.tasks).toHaveLength(1)
+  rerender({ paused: true, scope: 'local' })
+  const requests = sent.length
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(60000)
+    await result.current.refresh()
+  })
+  expect(sent).toHaveLength(requests)
+  expect(result.current.tasks).toHaveLength(1)
+  expect(result.current.stats?.totalDownloadSpeed).toBe(100)
+  await expect(result.current.pause('t1')).rejects.toThrow('needs retry')
+  rerender({ paused: true, scope: 'remote' })
+  expect(result.current.tasks).toEqual([])
+  expect(result.current.stats).toBeNull()
+  unmount()
+  vi.useRealTimers()
+})
+
+it('accepts fresh statistics independently of a stalled task request', async () => {
+  vi.useRealTimers()
+  mockBus()
+  const original = browser.runtime.sendMessage
+  let rejectList: ((error: Error) => void) | undefined
+  browser.runtime.sendMessage = vi.fn((message) =>
+    (message as Envelope).kind === 'bg.taskList'
+      ? new Promise((_resolve, reject) => {
+          rejectList = reject
+        })
+      : original(message)
+  )
+  const { result, unmount } = renderHook(() => useControlPanel(true))
+  await waitFor(() =>
+    expect(result.current.stats?.totalDownloadSpeed).toBe(100)
+  )
+  await act(async () => {
+    rejectList?.(new Error('list timeout'))
+  })
+  expect(result.current.error).toBe('list timeout')
+  expect(result.current.stats?.totalDownloadSpeed).toBe(100)
+  unmount()
+})

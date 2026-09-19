@@ -17,7 +17,9 @@ import { MediaPanel } from '@/popup/MediaPanel'
 import { PairingPromptDialog } from '@/popup/PairingPromptDialog'
 import { QuickAddTaskDialog } from '@/popup/QuickAddTaskDialog'
 import { QuickSettingsPanel } from '@/popup/QuickSettingsPanel'
+import { RpcNotice } from '@/popup/RpcNotice'
 import { SpeedTile } from '@/popup/SpeedTile'
+import { useAutoPopupReceipt } from '@/popup/useAutoPopupReceipt'
 import { type TaskControlPanel, useControlPanel } from '@/popup/useControlPanel'
 import {
   type PopupEndpoint,
@@ -58,6 +60,7 @@ const PopupHeaderSection = memo(function PopupHeaderSection({
   connection,
   pairing,
   attention,
+  checking,
   endpoint,
   switching,
   takeoverChecked,
@@ -70,6 +73,7 @@ const PopupHeaderSection = memo(function PopupHeaderSection({
   connection: ConnectionState | null
   pairing: PairingState
   attention: boolean
+  checking: boolean
   endpoint: PopupEndpoint | null
   switching: boolean
   takeoverChecked: boolean
@@ -86,6 +90,7 @@ const PopupHeaderSection = memo(function PopupHeaderSection({
           connection={connection}
           pairing={pairing}
           attention={attention}
+          checking={checking}
           endpoint={endpoint}
           busy={switching}
           onEndpointChange={onEndpointChange}
@@ -197,11 +202,18 @@ const PopupContent = memo(function PopupContent({
       >
         <TabsContent
           value="tasks"
-          className={`min-h-0 min-w-0 overflow-x-hidden ${connected && !state.loading ? 'overflow-y-auto' : 'overflow-y-hidden'}`}
+          className={`min-h-0 min-w-0 overflow-x-hidden ${(connected || state.rpc?.health === 'checking' || state.rpc?.health === 'unresponsive') && !state.loading ? 'overflow-y-auto' : 'overflow-y-hidden'}`}
         >
-          {connected && !state.loading ? (
+          {(connected ||
+            state.rpc?.health === 'checking' ||
+            state.rpc?.health === 'unresponsive') &&
+          !state.loading ? (
             <ControlPanel
-              connection={state.connection}
+              connection="connected"
+              readOnly={
+                state.rpc?.health === 'checking' ||
+                state.rpc?.health === 'unresponsive'
+              }
               controller={taskController}
               canRevealTask={state.capabilities.taskReveal}
               canOpenApp={state.endpoint?.activeEndpointId === 'local'}
@@ -231,7 +243,12 @@ const PopupContent = memo(function PopupContent({
         >
           <MediaPanel
             active={tab === 'sniffer'}
-            connected={connected && !state.loading}
+            connected={
+              connected &&
+              !state.loading &&
+              state.rpc?.health !== 'checking' &&
+              state.rpc?.health !== 'unresponsive'
+            }
             pairing={state.pairing}
             submissionKey={backendKey}
             onMediaCountChange={onMediaCountChange}
@@ -278,6 +295,8 @@ export function App(): React.ReactElement {
     number | null
   >(null)
   const connected = state.connection === 'connected'
+  const rpcPaused =
+    state.rpc?.health === 'checking' || state.rpc?.health === 'unresponsive'
   const needsServer =
     !hasNativeMessagingSupport() &&
     (state.endpoint?.activeEndpointId ?? 'local') === 'local'
@@ -293,7 +312,16 @@ export function App(): React.ReactElement {
     state.endpoint?.servers.find((server) => server.id === backendId)
       ?.revision ?? 0
   const backendKey = `${backendId}:${backendRevision}`
-  const controller = useControlPanel(connected, backendKey)
+  const controller = useControlPanel(
+    connected || rpcPaused,
+    backendKey,
+    rpcPaused
+  )
+  const autoReceipt = useAutoPopupReceipt(
+    backendId,
+    backendRevision,
+    controller.refresh
+  )
   const taskController = useMemo<TaskControlPanel>(
     () => ({
       tasks: controller.tasks,
@@ -317,7 +345,7 @@ export function App(): React.ReactElement {
     ]
   )
   const activeTaskCount =
-    connected && controller.stats !== null
+    (connected || rpcPaused) && controller.stats !== null
       ? controller.stats.activeTasks + controller.stats.waitingTasks
       : null
 
@@ -399,8 +427,12 @@ export function App(): React.ReactElement {
         connection={state.loading ? 'connecting' : state.connection}
         pairing={state.pairing}
         attention={
-          state.lastError !== null && state.attemptIntent !== 'background-probe'
+          !!state.rpc?.lastError ||
+          state.rpc?.health === 'unresponsive' ||
+          (state.lastError !== null &&
+            state.attemptIntent !== 'background-probe')
         }
+        checking={state.rpc?.health === 'checking'}
         endpoint={state.endpoint}
         switching={switching}
         takeoverChecked={
@@ -420,10 +452,14 @@ export function App(): React.ReactElement {
 
       <PopupDashboard
         uploadSpeed={
-          connected ? (controller.stats?.totalUploadSpeed ?? null) : null
+          connected || rpcPaused
+            ? (controller.stats?.totalUploadSpeed ?? null)
+            : null
         }
         downloadSpeed={
-          connected ? (controller.stats?.totalDownloadSpeed ?? null) : null
+          connected || rpcPaused
+            ? (controller.stats?.totalDownloadSpeed ?? null)
+            : null
         }
         activeTaskCount={activeTaskCount}
         resourceCount={resourceCount}
@@ -444,6 +480,15 @@ export function App(): React.ReactElement {
         />
       )}
 
+      {autoReceipt && (
+        <p
+          role="status"
+          className="mt-2 shrink-0 text-xs text-muted-foreground"
+        >
+          {t('popup.rpc.added', { count: autoReceipt.count })}
+        </p>
+      )}
+      <RpcNotice state={state} onReconnect={reconnectPopup} />
       <PopupContent
         tab={tab}
         onTabChange={changeTab}

@@ -207,6 +207,7 @@ const TaskActions = memo(function TaskActions({
   onRemove,
   canRevealTask,
   revealing,
+  readOnly,
 }: {
   taskId: string
   taskName: string
@@ -217,6 +218,7 @@ const TaskActions = memo(function TaskActions({
   onRemove: (id: string, deleteFiles: boolean) => void
   canRevealTask: boolean
   revealing: boolean
+  readOnly: boolean
 }): React.ReactElement {
   const { t } = useTranslation()
   const revealReady = canRevealTask && status !== 'fetching_metadata'
@@ -225,7 +227,7 @@ const TaskActions = memo(function TaskActions({
     : status === 'fetching_metadata'
       ? t('popup.tasks.openFolderMetadataPending')
       : t('popup.tasks.openFolderTask', { name: taskName })
-  const revealUnavailable = !revealReady || revealing
+  const revealUnavailable = readOnly || !revealReady || revealing
   const transferAction = PAUSABLE.has(status)
     ? 'pause'
     : RESUMABLE.has(status)
@@ -271,6 +273,7 @@ const TaskActions = memo(function TaskActions({
           data-testid={`task-transfer-${taskId}`}
           data-task-id={taskId}
           data-task-action="transfer"
+          disabled={readOnly}
           className="size-7 text-muted-foreground"
           aria-label={transferLabel}
           title={transferLabel}
@@ -289,6 +292,7 @@ const TaskActions = memo(function TaskActions({
         size="icon-xs"
         data-task-id={taskId}
         data-task-action="remove"
+        disabled={readOnly}
         className="size-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         aria-label={removeLabel}
         title={removeLabel}
@@ -312,6 +316,7 @@ interface TaskRowProps {
   canRevealTask: boolean
   canOpenApp: boolean
   revealing: boolean
+  readOnly: boolean
 }
 
 function taskRowPropsEqual(
@@ -328,6 +333,7 @@ function taskRowPropsEqual(
     previous.canRevealTask === next.canRevealTask &&
     previous.canOpenApp === next.canOpenApp &&
     previous.revealing === next.revealing &&
+    previous.readOnly === next.readOnly &&
     a.id === b.id &&
     a.name === b.name &&
     a.type === b.type &&
@@ -349,6 +355,7 @@ const TaskRow = memo(function TaskRow({
   canRevealTask,
   canOpenApp,
   revealing,
+  readOnly,
 }: TaskRowProps): React.ReactElement {
   const { t } = useTranslation()
   const secondaryId = `task-secondary-${task.id}`
@@ -396,6 +403,7 @@ const TaskRow = memo(function TaskRow({
         onRemove={onRemove}
         canRevealTask={canRevealTask}
         revealing={revealing}
+        readOnly={readOnly}
       />
     </li>
   )
@@ -423,6 +431,7 @@ function EmptyTasks({ view }: { view: TaskView }): React.ReactElement {
 interface ControlPanelProps {
   connection: ConnectionState | null
   controller: ControlPanelController
+  readOnly?: boolean
   canRevealTask?: boolean
   canOpenApp?: boolean
   onReconnect: () => void
@@ -433,6 +442,7 @@ interface ControlPanelProps {
 export const ControlPanel = memo(function ControlPanel({
   connection,
   controller,
+  readOnly = false,
   canRevealTask = false,
   canOpenApp = false,
   onReconnect,
@@ -528,7 +538,7 @@ export const ControlPanel = memo(function ControlPanel({
   )
 
   const confirmRemoveTask = useCallback(async (): Promise<void> => {
-    if (taskToRemove === null || removingTask) return
+    if (taskToRemove === null || removingTask || readOnly) return
     setActionError(null)
     setRemovingTask(true)
     try {
@@ -540,7 +550,7 @@ export const ControlPanel = memo(function ControlPanel({
       setDeleteTaskFiles(false)
       setRemoveDialogOpen(false)
     }
-  }, [controller.remove, deleteTaskFiles, removingTask, taskToRemove])
+  }, [controller.remove, deleteTaskFiles, removingTask, taskToRemove, readOnly])
 
   const filter = (
     <TabsList className="h-auto min-h-8 w-full min-w-0 flex-1 flex-wrap items-stretch gap-0 rounded-[10px] bg-tab-background p-0.5 group-data-horizontal/tabs:h-auto">
@@ -565,7 +575,7 @@ export const ControlPanel = memo(function ControlPanel({
         className="size-8 rounded-full"
         aria-label={t('popup.quickAdd.title')}
         title={t('popup.quickAdd.title')}
-        disabled={controller.loading}
+        disabled={controller.loading || readOnly}
         onClick={() => (onNewTask ? onNewTask() : setQuickAddOpen(true))}
       >
         <Plus className="size-4.5" aria-hidden="true" />
@@ -655,6 +665,7 @@ export const ControlPanel = memo(function ControlPanel({
                             canRevealTask={canRevealTask}
                             canOpenApp={canOpenApp}
                             revealing={revealingTaskIds.has(task.id)}
+                            readOnly={readOnly}
                           />
                         ))}
                       </ul>
@@ -732,7 +743,7 @@ export const ControlPanel = memo(function ControlPanel({
             <AlertDialogAction
               type="button"
               variant="destructive"
-              disabled={removingTask}
+              disabled={removingTask || readOnly}
               onClick={() => void confirmRemoveTask()}
             >
               {removingTask && <Spinner data-icon="inline-start" />}

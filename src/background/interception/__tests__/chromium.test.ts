@@ -272,3 +272,43 @@ describe('registerChromiumInterception', () => {
     expect(downloads.cancel).not.toHaveBeenCalled()
   })
 })
+
+it.each(['accepted', 'unknown', 'browser', 'skipped', 'failed'] as const)(
+  'presents only an accepted handoff after releasing the native hold: %s',
+  async (kind) => {
+    const suggest = vi.fn()
+    const deps = makeDeps(enabledConfig({ autoOpenPopup: true }))
+    const popup = {
+      captureWindow: vi.fn(async () => 42),
+      present: vi.fn(async () => {
+        expect(suggest).toHaveBeenCalledOnce()
+      }),
+    }
+    deps.popup = popup as never
+    deps.captureGuard = vi.fn(async () => ({
+      origin: 'auto',
+      endpointId: 'local',
+      endpointRevision: 0,
+      assertCurrent: vi.fn(),
+    }))
+    mockedRunHandoff.mockResolvedValueOnce({
+      kind,
+      operationId: 'op1',
+      taskId: 'task1',
+    } as never)
+    registerChromiumInterception(deps)
+    listener?.(item(), suggest)
+    await vi.waitFor(() => expect(suggest).toHaveBeenCalledOnce())
+    if (kind === 'accepted')
+      expect(popup.present).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'task1',
+          operationId: 'op1',
+          windowId: 42,
+          enabledAtCapture: true,
+        })
+      )
+    else expect(popup.present).not.toHaveBeenCalled()
+    expect(downloads.download).not.toHaveBeenCalled()
+  }
+)

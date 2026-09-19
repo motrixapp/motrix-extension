@@ -817,3 +817,28 @@ describe('ControlPanel task views', () => {
     expect(onReconnect).toHaveBeenCalledOnce()
   })
 })
+
+it('keeps stale task data and filters accessible while disabling task operations', async () => {
+  const controls = controller()
+  render(
+    <ControlPanel
+      connection="connected"
+      controller={controls}
+      canRevealTask
+      readOnly
+      onReconnect={vi.fn()}
+    />
+  )
+  expect(screen.getByText('active.iso')).toBeTruthy()
+  expect(
+    screen.getByTestId('task-transfer-active-1').hasAttribute('disabled')
+  ).toBe(true)
+  expect(
+    screen.getByTestId('task-reveal-active-1').getAttribute('aria-disabled')
+  ).toBe('true')
+  await userEvent.click(
+    screen.getByRole('tab', { name: i18n.t('popup.tasks.filters.failed') })
+  )
+  expect(screen.getByText('failed.iso')).toBeTruthy()
+  expect(controls.pause).not.toHaveBeenCalled()
+})

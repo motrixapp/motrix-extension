@@ -12,7 +12,11 @@
  * `createPairingFlow`/`createReconnectFlow` DI seams — the crypto is out of
  * scope for this file by design.
  */
-import type { DownloadSubmitParams, MdxpConnection } from '@motrix/mdxp'
+import {
+  type DownloadSubmitParams,
+  type MdxpConnection,
+  Methods,
+} from '@motrix/mdxp'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BackendOperationCoordinator } from '@/background/BackendOperationCoordinator'
 import { ConnectionGate } from '@/background/ConnectionGate'
@@ -2984,3 +2988,147 @@ describe('download readiness intent', () => {
     mgr.stop()
   })
 })
+
+it('retires a wedged MDXP socket and reconnects once with stored credentials without launch or pairing', async () => {
+  const oldConn = makeFakeConn()
+  const newConn = makeFakeConn()
+  const originalSend = vi.mocked(oldConn.sendRequest).getMockImplementation()
+  vi.mocked(oldConn.sendRequest).mockImplementation((method, ...args) =>
+    method === Methods.MotrixInitialize
+      ? originalSend?.(method, ...args)
+      : new Promise(() => {})
+  )
+  const newSend = vi.mocked(newConn.sendRequest).getMockImplementation()
+  vi.mocked(newConn.sendRequest).mockImplementation((method, ...args) =>
+    method === Methods.TaskList
+      ? (Promise.resolve({ tasks: [], total: 0 }) as never)
+      : newSend?.(method, ...args)
+  )
+  const createEnvelopeConnection = vi
+    .fn()
+    .mockReturnValueOnce(oldConn)
+    .mockReturnValueOnce(newConn)
+  const wake = vi.fn(async () => new Map())
+  const pair = vi.fn()
+  const reconnect = vi.fn()
+  const mgr = makeManager({
+    requestTimeoutMs: 10,
+    rpcRecoveryTimeouts: { probeTimeoutMs: 10, retryTimeoutMs: 50 },
+    credentials: [makeStoredCredential('recovery-credential')],
+    pins: {
+      'recovery-credential': { port: 16802, instanceId: 'known-instance' },
+    },
+    discovery: {
+      discoverForReconnect: async () => makeDiscoveryResult(),
+      wakeForReconnect: wake,
+    },
+    reconnectOutcomes: { 'recovery-credential': { envelope: fakeEnvelope() } },
+    onPairingRun: pair,
+    onReconnectRun: reconnect,
+    createEnvelopeConnection,
+  })
+  await mgr.connect({ allowLaunch: false, userInitiated: false })
+  expect(mgr.getState()).toBe('connected')
+  await expect(mgr.request(Methods.TaskList, {})).resolves.toEqual({
+    tasks: [],
+    total: 0,
+  })
+  expect(oldConn.dispose).toHaveBeenCalledOnce()
+  expect(createEnvelopeConnection).toHaveBeenCalledTimes(2)
+  expect(reconnect).toHaveBeenCalledTimes(2)
+  expect(pair).not.toHaveBeenCalled()
+  expect(wake).not.toHaveBeenCalled()
+  expect(mgr.getRpcStatus()).toMatchObject({
+    health: 'healthy',
+    lastError: null,
+  })
+  mgr.stop()
+})
+
+it.each(['probe', 'retry', 'stop'])(
+  'keeps recovery bounded when the connection closes during %s',
+  async (stage) => {
+    const oldConn = makeFakeConn()
+    const newConn = makeFakeConn()
+    const initialize = vi.mocked(oldConn.sendRequest).getMockImplementation()
+    let closeSocket: (() => void) | undefined
+    let reads = 0
+    vi.mocked(oldConn.sendRequest).mockImplementation((method, ...args) => {
+      if (method === Methods.MotrixInitialize)
+        return initialize?.(method, ...args)
+      if (method === Methods.SystemPing) {
+        if (stage === 'retry')
+          return Promise.resolve({ ...args[0], recvAt: Date.now() }) as never
+        queueMicrotask(() =>
+          stage === 'stop' ? manager.stop() : closeSocket?.()
+        )
+      }
+      if (method === Methods.TaskList && ++reads === 2)
+        queueMicrotask(() => closeSocket?.())
+      return new Promise(() => {})
+    })
+    const newInitialize = vi.mocked(newConn.sendRequest).getMockImplementation()
+    vi.mocked(newConn.sendRequest).mockImplementation((method, ...args) =>
+      method === Methods.TaskList
+        ? (Promise.resolve({ tasks: [], total: 0 }) as never)
+        : newInitialize?.(method, ...args)
+    )
+    const socket = fakeSocket()
+    vi.mocked(socket.addEventListener).mockImplementation((type, listener) => {
+      if (type === 'close') closeSocket = listener as () => void
+    })
+    const first = makeFakeChannel()
+    first.release = () => ({ socket, queuedFrames: [] })
+    const createFrameChannel = vi
+      .fn()
+      .mockReturnValueOnce(first)
+      .mockImplementation(() => makeFakeChannel())
+    const createEnvelopeConnection = vi
+      .fn()
+      .mockReturnValueOnce(oldConn)
+      .mockReturnValueOnce(newConn)
+    const wake = vi.fn(async () => new Map())
+    const pair = vi.fn()
+    const reconnect = vi.fn()
+    const manager = makeManager({
+      requestTimeoutMs: 10,
+      rpcRecoveryTimeouts: { probeTimeoutMs: 20, retryTimeoutMs: 50 },
+      credentials: [makeStoredCredential('review-cred')],
+      pins: { 'review-cred': { port: 16802, instanceId: 'known' } },
+      discovery: {
+        discoverForReconnect: async () => makeDiscoveryResult(),
+        wakeForReconnect: wake,
+      },
+      reconnectOutcomes: { 'review-cred': { envelope: fakeEnvelope() } },
+      onReconnectRun: reconnect,
+      onPairingRun: pair,
+      createFrameChannel,
+      createEnvelopeConnection,
+    })
+    try {
+      await manager.connect({ allowLaunch: false, userInitiated: false })
+      const read = manager.request(Methods.TaskList, {})
+      if (stage === 'probe') {
+        await expect(read).resolves.toEqual({ tasks: [], total: 0 })
+        expect(createEnvelopeConnection).toHaveBeenCalledTimes(2)
+        expect(reconnect).toHaveBeenCalledTimes(2)
+        expect(manager.getState()).toBe('connected')
+        expect(manager.getRpcStatus().health).toBe('healthy')
+      } else {
+        await expect(read).rejects.toThrow(
+          stage === 'stop' ? 'RPC session changed' : 'timed out'
+        )
+        expect(createEnvelopeConnection).toHaveBeenCalledOnce()
+        expect(reconnect).toHaveBeenCalledOnce()
+        expect(manager.getState()).toBe('disconnected')
+        expect(manager.getRpcStatus().health).toBe(
+          stage === 'stop' ? 'healthy' : 'unresponsive'
+        )
+      }
+      expect(wake).not.toHaveBeenCalled()
+      expect(pair).not.toHaveBeenCalled()
+    } finally {
+      manager.stop()
+    }
+  }
+)

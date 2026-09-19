@@ -98,6 +98,12 @@ import {
   type RemoteBackendPolicyV1,
 } from '@/background/RemoteBackendPolicyStore'
 import {
+  RpcNotReadyError,
+  RpcRecovery,
+  type RpcSession,
+  rpcDeadline,
+} from '@/background/RpcRecovery'
+import {
   applyRemoteSubmitPolicy,
   RemoteAutomaticTakeoverConsentRequiredError,
 } from '@/background/remote-submit-policy'
@@ -216,6 +222,12 @@ export interface ConnectionManagerOptions {
   notify?: Notify
   /** Max time for an ordinary MDXP request before the caller may recover. */
   requestTimeoutMs?: number
+  rpcRecoveryTimeouts?: {
+    probeTimeoutMs?: number
+    reconnectTimeoutMs?: number
+    retryTimeoutMs?: number
+    totalTimeoutMs?: number
+  }
   /** Max time for the pairing/initialize handshake, including user approval. */
   initializeTimeoutMs?: number
   /** Delay before the single unattended probe after an established socket
@@ -503,6 +515,7 @@ export class ConnectionManager {
   private readonly opts: ConnectionManagerOptions
   private readonly taskEvents: TaskEventStore
   private readonly notify: Notify
+  private readonly rpcRecovery: RpcRecovery
   private readonly requestTimeoutMs: number
   private readonly initializeTimeoutMs: number
   private readonly closeReconnectDelayMs: number
@@ -595,6 +608,16 @@ export class ConnectionManager {
     this.gate = opts.gate ?? new ConnectionGate()
     this.taskEvents = opts.taskEvents ?? new TaskEventStore()
     this.requestTimeoutMs = opts.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS
+    this.rpcRecovery = new RpcRecovery({
+      requestTimeoutMs: this.requestTimeoutMs,
+      ...opts.rpcRecoveryTimeouts,
+      session: () =>
+        this.state === 'connected' && this.currentConn
+          ? { conn: this.currentConn, generation: this.generation }
+          : null,
+      reconnect: (session, timeoutMs) =>
+        this.recoverRpcSession(session, timeoutMs),
+    })
     this.initializeTimeoutMs =
       opts.initializeTimeoutMs ?? DEFAULT_INITIALIZE_TIMEOUT_MS
     this.closeReconnectDelayMs = opts.closeReconnectDelayMs ?? 250
@@ -687,7 +710,13 @@ export class ConnectionManager {
       }
     }
     check()
-    if (this.state === 'connected') return
+    if (this.rpcRecovery.isRecovering()) {
+      await beforeDeadline(this.rpcRecovery.ready(deadlineAt), deadlineAt)
+      check()
+    }
+    if (this.state === 'connected' && this.getRpcStatus().health === 'healthy')
+      return
+    this.rpcRecovery.reset()
     let flight = this.readyFlight ?? this.explicitConnectFlight
     if (flight === null) {
       // A passive probe must not prevent a real download from waking the App.
@@ -871,10 +900,9 @@ export class ConnectionManager {
       return Promise.resolve(null)
     const generation = this.generation
     const flight = (async () => {
-      const rawResult = await this.withTimeout(
-        request.conn.sendRequest(Methods.MotrixInitialize, request.params),
-        this.requestTimeoutMs,
-        Methods.MotrixInitialize
+      const rawResult = await this.request(
+        Methods.MotrixInitialize,
+        request.params
       )
       this.ensureCurrentConnection(generation, request.conn)
       const result = InitializeResultSchema.parse(rawResult)
@@ -926,11 +954,39 @@ export class ConnectionManager {
     if (conn === null || this.state !== 'connected') {
       throw new Error(`bridge not connected (state: ${this.state})`)
     }
-    return await this.withTimeout(
-      conn.sendRequest(method, params),
-      this.requestTimeoutMs,
-      String(method)
+    return this.rpcRecovery.request(method, params)
+  }
+
+  getRpcStatus(): import('@/shared/integration').RpcStatus {
+    return this.rpcRecovery.snapshot()
+  }
+
+  private async recoverRpcSession(
+    session: RpcSession,
+    timeoutMs: number
+  ): Promise<RpcSession> {
+    this.ensureCurrentConnection(session.generation, session.conn)
+    const scope = this.currentEndpointScope
+    if (!scope || timeoutMs <= 0) throw new Error('RPC recovery expired')
+    this.stopCurrentAttempt()
+    const work = this.connectExpected(
+      { allowLaunch: false, userInitiated: false, allowFirstPair: false },
+      scope
     )
+    const generation = this.generation
+    try {
+      await rpcDeadline(work, timeoutMs, 'connection recovery')
+    } catch (error) {
+      if (this.generation === generation) this.stopCurrentAttempt()
+      throw error
+    }
+    if (
+      this.generation !== generation ||
+      !this.currentConn ||
+      this.getState() !== 'connected'
+    )
+      throw new Error('RPC recovery unavailable')
+    return { conn: this.currentConn, generation }
   }
 
   /** Hand a browser-detected download to Motrix (the page-shaped submit path).
@@ -971,7 +1027,11 @@ export class ConnectionManager {
     options.assertCurrent?.()
     const conn = this.currentConn
     const generation = this.generation
-    if (conn === null || this.state !== 'connected') {
+    if (
+      conn === null ||
+      this.state !== 'connected' ||
+      this.getRpcStatus().health !== 'healthy'
+    ) {
       throw new DownloadPreparationError(DOWNLOAD_ERROR.connectionFailed)
     }
     await options.onSubmitting?.()
@@ -987,6 +1047,9 @@ export class ConnectionManager {
       // Only explicit pre-dispatch rejections prove that no task was accepted.
       // Transport loss, cancellation and generic server errors may arrive after
       // task creation. Never automatically retry or browser-fallback those.
+      if (error instanceof RpcNotReadyError) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.connectionFailed)
+      }
       const code = (error as { code?: unknown } | null)?.code
       if (code === ErrorCodes.CapabilityNotSupported) {
         throw new DownloadPreparationError(DOWNLOAD_ERROR.unsupported)
@@ -1447,6 +1510,7 @@ export class ConnectionManager {
     const active = this.explicitConnectFlight ?? this.readyFlight
     if (active !== null) return active
 
+    this.rpcRecovery.reset()
     const flight = this.runExplicitConnect()
     this.explicitConnectFlight = flight
     const release = (): void => {
@@ -1495,6 +1559,7 @@ export class ConnectionManager {
   }
 
   stop(): void {
+    this.rpcRecovery.reset()
     // A lifecycle boundary (endpoint edit/switch, explicit unpair, policy
     // replacement) must never make the next intent join work it just
     // invalidated. The old flight's guarded completion cannot clear a newer
@@ -1512,6 +1577,11 @@ export class ConnectionManager {
     this.preferredCandidatePort = null
     this.pendingPairingCode = null
     this.closePreAuthChannel()
+    try {
+      this.currentConn?.dispose()
+    } catch {
+      /* best effort */
+    }
     try {
       this.client.close()
     } catch {
@@ -2313,6 +2383,14 @@ export class ConnectionManager {
     // 'denied' is terminal (pair denied or revoked) — never reconnect
     // automatically; wait for explicit user action.
     if (this.state === 'disconnected' || this.state === 'denied') return
+    if (this.rpcRecovery.onSocketClosed({ conn, generation })) return
+    if (
+      this.rpcRecovery.isRecovering() ||
+      this.getRpcStatus().health === 'unresponsive'
+    ) {
+      this.stopCurrentAttempt()
+      return
+    }
     log.info('WS closed; one probe-reconnect (allowLaunch:false)')
     this.stop() // releases the closed socket and invalidates duplicate callbacks
     // A Server restart closes the old socket before its replacement listener
@@ -2452,6 +2530,7 @@ export class ConnectionManager {
     this.serverIdentity = null
     this.degraded = null
     this.taskEvents.clear()
+    this.rpcRecovery.reset()
     this.setState('denied')
     try {
       this.client.close()

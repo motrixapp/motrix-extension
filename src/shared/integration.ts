@@ -1,5 +1,16 @@
 export type PairingState = 'loading' | 'none' | 'stored' | 'unavailable'
 
+export interface RpcStatus {
+  health: 'healthy' | 'checking' | 'unresponsive'
+  lastError: {
+    method: string
+    at: number
+    elapsedMs: number
+    generation: number
+  } | null
+  lastSuccessAt: number | null
+}
+
 export type ConnectionIntent =
   | 'background-probe'
   | 'automatic-download'

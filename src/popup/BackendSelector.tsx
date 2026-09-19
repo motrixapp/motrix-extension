@@ -23,6 +23,7 @@ interface BackendSelectorProps {
   endpoint: PopupEndpoint | null
   pairing?: PairingState
   attention?: boolean
+  checking?: boolean
   busy: boolean
   onEndpointChange: (endpointId: string) => void
   onConfigureServer: () => void
@@ -38,8 +39,11 @@ const PENDING_STATES = new Set<ConnectionState>([
 function statusClass(
   connection: ConnectionState | null,
   pairing: PairingState,
-  attention: boolean
+  attention: boolean,
+  checking: boolean
 ): string {
+  if (checking) return 'bg-connection-pending animate-pulse'
+  if (attention) return 'bg-connection-offline'
   if (connection === 'connected') return 'bg-connection-online'
   if (connection && PENDING_STATES.has(connection)) {
     return 'bg-connection-pending animate-pulse'
@@ -55,6 +59,7 @@ export function BackendSelector({
   connection,
   pairing = 'loading',
   attention = false,
+  checking = false,
   endpoint,
   busy,
   onEndpointChange,
@@ -70,15 +75,17 @@ export function BackendSelector({
     activeServer?.name ??
     t(localBackendAvailable ? 'popup.backend.app' : 'popup.backend.server')
   const statusLabel = t(
-    pairing === 'unavailable'
-      ? 'popup.integration.pairingUnavailable'
-      : connection === 'disconnected' && attention
+    checking
+      ? 'popup.rpc.checking'
+      : attention
         ? 'errors.connection.generic'
-        : connection === 'disconnected' && pairing === 'stored'
-          ? 'popup.integration.pairedStatus'
-          : connection === 'disconnected' && pairing === 'none'
-            ? 'options.pairing.notPaired'
-            : `popup.status.${connection ?? 'disconnected'}`
+        : pairing === 'unavailable'
+          ? 'popup.integration.pairingUnavailable'
+          : connection === 'disconnected' && pairing === 'stored'
+            ? 'popup.integration.pairedStatus'
+            : connection === 'disconnected' && pairing === 'none'
+              ? 'options.pairing.notPaired'
+              : `popup.status.${connection ?? 'disconnected'}`
   )
 
   return (
@@ -100,7 +107,7 @@ export function BackendSelector({
           aria-hidden="true"
           className={cn(
             'size-2 shrink-0 rounded-full',
-            statusClass(connection, pairing, attention)
+            statusClass(connection, pairing, attention, checking)
           )}
         />
         <span className="min-w-0 flex-1 truncate text-left font-normal">

@@ -163,7 +163,11 @@
       "title": "Prise en charge des téléchargements",
       "remoteUnavailable": "La prise en charge automatique nécessite actuellement Motrix App en local. Les téléchargements distants et les autorisations d’en-têtes ou de cookies ne l’activent pas. Vous pouvez toujours envoyer des téléchargements à ce Server manuellement ou par le menu contextuel.",
       "availabilityUnknown": "La prise en charge reste indisponible tant que le service sélectionné ne peut pas être vérifié.",
-      "remoteUnavailableShort": "App locale uniquement. L’envoi par clic droit fonctionne avec les Servers."
+      "remoteUnavailableShort": "App locale uniquement. L’envoi par clic droit fonctionne avec les Servers.",
+      "autoOpenPopup": "Ouvrir les tâches après une capture",
+      "autoOpenDescription": "Ouvre les tâches lorsque Motrix accepte un téléchargement. Les téléchargements successifs ouvrent le panneau une seule fois.",
+      "autoOpenDisabled": "Activez la capture des téléchargements pour utiliser cette option.",
+      "autoOpenUnsupported": "Nécessite Chrome / Edge 127+ ou Firefox 149+."
     },
     "tabs": {
       "general": "Général",
@@ -443,6 +447,12 @@
       "preparing": "Préparation du téléchargement…",
       "sending": "Envoi du téléchargement…",
       "pairedStatus": "Associé"
+    },
+    "rpc": {
+      "checking": "Motrix tarde à répondre. Vérification de la connexion…",
+      "failed": "Motrix ne répond pas. Reconnectez-vous pour réessayer.",
+      "stale": "Affichage des dernières données disponibles.",
+      "added": "Téléchargements ajoutés : {{count}}"
     }
   },
   "errors": {
