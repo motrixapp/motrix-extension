@@ -1,6 +1,7 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
 import type { NotificationsConfig } from '@/shared/notifications'
+import { withSiteExcluded } from '@/shared/siteExclusion'
 import { resolveLocale } from '@/shared/supportedLocales'
 import type { TakeoverConfig } from '@/shared/takeover'
 
@@ -74,7 +75,7 @@ let previewEndpoint: PreviewEndpoint = {
 }
 
 let previewTakeover: TakeoverConfig = {
-  autoOpenPopup: false,
+  openTaskPanelAfterSubmit: false,
   enabled: true,
   consentAckVersion: 1,
   defaultAction: 'motrix',
@@ -146,8 +147,25 @@ const previewRuntime = {
         }
         return previewTakeover
       case 'bg.setTakeoverConfig':
-        previewTakeover = request.payload as TakeoverConfig
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as TakeoverConfig),
+        }
         return { ok: true }
+      case 'bg.patchTaskPanelPreference':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as { openTaskPanelAfterSubmit: boolean }),
+        }
+        return previewTakeover
+      case 'bg.patchSiteExclusion': {
+        const { domain, excluded } = request.payload as {
+          domain: string
+          excluded: boolean
+        }
+        previewTakeover = withSiteExcluded(previewTakeover, domain, excluded)
+        return previewTakeover
+      }
       case 'bg.getNotificationsConfig':
         return previewNotifications
       case 'bg.setNotificationsConfig':
@@ -237,8 +255,12 @@ const storageChanged = {
   removeListener: () => undefined,
 }
 const previewBrowser = {
+  action: { openPopup: async () => undefined },
   permissions: { contains: async () => true },
   runtime: previewRuntime,
+  tabs: {
+    query: async () => [{ id: 1, url: previewPageUrl, title: 'Launch film' }],
+  },
   i18n: { getUILanguage: () => previewLocale },
   storage: {
     local: {

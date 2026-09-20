@@ -163,11 +163,7 @@
       "title": "다운로드 인계",
       "remoteUnavailable": "자동 인계에는 현재 로컬 Motrix App이 필요합니다. 원격 다운로드 및 헤더나 쿠키 권한으로는 활성화되지 않습니다. 이 Server에는 수동으로 또는 마우스 오른쪽 버튼 메뉴에서 다운로드를 보낼 수 있습니다.",
       "availabilityUnknown": "선택한 백엔드를 확인할 수 있을 때까지 인계를 사용할 수 없습니다.",
-      "remoteUnavailableShort": "로컬 App 전용. 오른쪽 클릭 전송은 Server에서도 가능합니다.",
-      "autoOpenPopup": "다운로드 인계 후 작업 패널 열기",
-      "autoOpenDescription": "Motrix가 다운로드를 수락하면 패널을 엽니다. 연속 다운로드에서는 한 번만 엽니다.",
-      "autoOpenDisabled": "이 옵션을 사용하려면 다운로드 인계를 켜세요.",
-      "autoOpenUnsupported": "Chrome / Edge 127 이상 또는 Firefox 149 이상이 필요합니다."
+      "remoteUnavailableShort": "로컬 App 전용. 오른쪽 클릭 전송은 Server에서도 가능합니다."
     },
     "tabs": {
       "general": "일반",
@@ -209,7 +205,13 @@
       "subtitle": "Motrix로 웹에서 파일 다운로드",
       "website": "공식 웹사이트"
     },
-    "title": "Motrix 확장 프로그램 설정"
+    "title": "Motrix 확장 프로그램 설정",
+    "taskPanel": {
+      "title": "작업 패널",
+      "openAfterSubmit": "다운로드 추가 후 작업 패널 열기",
+      "description": "Motrix에 다운로드가 추가되면 작업 패널을 자동으로 엽니다. 마우스 오른쪽 버튼으로 추가하거나 자동으로 넘긴 다운로드에도 적용됩니다. 여러 다운로드를 연속으로 추가하면 한 번만 열립니다.",
+      "unsupported": "Chrome / Edge 127 이상 또는 Firefox 149 이상이 필요합니다."
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "확장 프로그램의 시스템 알림 제어",
       "retry": "다시 시도",
       "saveError": "설정 저장 실패. 다시 시도하세요.",
-      "takeoverDescription": "브라우저 다운로드를 현재 Motrix 백엔드로 전송"
+      "takeoverDescription": "브라우저 다운로드를 현재 Motrix 백엔드로 전송",
+      "excludeCurrentSite": "현재 사이트 제외",
+      "excludeCurrentSiteDescription": "{{site}}의 다운로드를 브라우저에서 처리",
+      "noCurrentSite": "이 페이지에는 제외할 웹사이트 도메인이 없습니다.",
+      "inheritedExclusion": "{{site}}는 {{domain}}의 제외 규칙에 포함됩니다. 전체 설정에서 변경하세요.",
+      "taskPanelDescription": "오른쪽 클릭, 자동 인계 등으로 다운로드를 추가한 후 열기"
     },
     "quickAdd": {
       "title": "새 작업",

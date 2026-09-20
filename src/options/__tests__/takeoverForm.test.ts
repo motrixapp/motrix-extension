@@ -6,7 +6,6 @@ describe('takeoverForm', () => {
   it('derives empty form from the default config', () => {
     expect(configToForm(TAKEOVER_DEFAULT)).toEqual({
       enabled: false,
-      autoOpenPopup: false,
       thresholdMB: '',
       denylist: '',
     })
@@ -15,7 +14,6 @@ describe('takeoverForm', () => {
   it('round-trips threshold + denylist through rules', () => {
     const form = {
       enabled: true,
-      autoOpenPopup: true,
       thresholdMB: '10',
       denylist: 'ads.example.com\ntracker.test',
     }
@@ -34,7 +32,11 @@ describe('takeoverForm', () => {
 
   it('drops the threshold rule when thresholdMB is empty or 0', () => {
     const cfg = formToConfig(
-      { enabled: true, autoOpenPopup: true, thresholdMB: '0', denylist: '' },
+      {
+        enabled: true,
+        thresholdMB: '0',
+        denylist: '',
+      },
       1
     )
     expect(cfg.rules.some((r) => typeof r.match.minSizeMB === 'number')).toBe(

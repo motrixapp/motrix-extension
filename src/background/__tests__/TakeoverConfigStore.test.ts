@@ -31,7 +31,7 @@ describe('TakeoverConfigStore', () => {
     const store = new TakeoverConfigStore()
     const cfg = {
       enabled: true,
-      autoOpenPopup: true,
+      openTaskPanelAfterSubmit: true,
       consentAckVersion: 1,
       defaultAction: 'motrix' as const,
       rules: [
@@ -57,7 +57,7 @@ describe('TakeoverConfigStore', () => {
     await browser.storage.local.set({
       'motrix.takeoverConfig': {
         enabled: true,
-        autoOpenPopup: true,
+        openTaskPanelAfterSubmit: true,
         consentAckVersion: 1,
         defaultAction: 'motrix',
         rules: [{ id: 'r', match: {}, action: 'bogus' }],
@@ -68,7 +68,7 @@ describe('TakeoverConfigStore', () => {
 })
 
 it('migrates existing preferences with automatic popup off', async () => {
-  const { autoOpenPopup: _popup, ...legacy } = {
+  const { openTaskPanelAfterSubmit: _popup, ...legacy } = {
     ...TAKEOVER_DEFAULT,
     enabled: true,
     consentAckVersion: 1,
@@ -76,7 +76,7 @@ it('migrates existing preferences with automatic popup off', async () => {
   await browser.storage.local.set({ 'motrix.takeoverConfig': legacy })
   expect(await new TakeoverConfigStore().get()).toEqual({
     ...legacy,
-    autoOpenPopup: false,
+    openTaskPanelAfterSubmit: false,
   })
 })
 
@@ -84,15 +84,65 @@ it('serializes the quick toggle with settings saves and retains the new preferen
   const first = new TakeoverConfigStore()
   const second = new TakeoverConfigStore()
   await Promise.all([
-    first.set({ ...TAKEOVER_DEFAULT, autoOpenPopup: true }),
+    first.set({ ...TAKEOVER_DEFAULT, openTaskPanelAfterSubmit: true }),
     second.patchEnabled(true, 1),
   ])
   expect(await first.get()).toEqual({
     ...TAKEOVER_DEFAULT,
     enabled: true,
-    autoOpenPopup: true,
+    openTaskPanelAfterSubmit: true,
     consentAckVersion: 1,
   })
   await second.patchEnabled(false)
-  expect((await first.get()).autoOpenPopup).toBe(true)
+  expect((await first.get()).openTaskPanelAfterSubmit).toBe(true)
+})
+
+it.each([true, false])(
+  'preserves the legacy autoOpenPopup preference: %s',
+  async (autoOpenPopup) => {
+    const { openTaskPanelAfterSubmit: _popup, ...legacy } = TAKEOVER_DEFAULT
+    await browser.storage.local.set({
+      'motrix.takeoverConfig': { ...legacy, autoOpenPopup },
+    })
+    const store = new TakeoverConfigStore()
+    expect((await store.get()).openTaskPanelAfterSubmit).toBe(autoOpenPopup)
+    await store.patchTaskPanelPreference(!autoOpenPopup)
+    expect((await store.get()).openTaskPanelAfterSubmit).toBe(!autoOpenPopup)
+  }
+)
+
+it('prefers the new field over a conflicting legacy field', async () => {
+  await browser.storage.local.set({
+    'motrix.takeoverConfig': { ...TAKEOVER_DEFAULT, autoOpenPopup: true },
+  })
+  expect((await new TakeoverConfigStore().get()).openTaskPanelAfterSubmit).toBe(
+    false
+  )
+})
+
+it('preserves the latest general preference when saving download takeover settings', async () => {
+  const store = new TakeoverConfigStore()
+  const { openTaskPanelAfterSubmit: _popup, ...downloadSettings } =
+    await store.get()
+  await store.patchTaskPanelPreference(true)
+  await store.patchTakeoverSettings({ ...downloadSettings, enabled: true })
+  expect(await store.get()).toMatchObject({
+    enabled: true,
+    openTaskPanelAfterSubmit: true,
+  })
+})
+
+it('serializes site and task panel patches with a takeover toggle without losing rules', async () => {
+  const store = new TakeoverConfigStore()
+  await Promise.all([
+    store.patchSiteExclusion('example.com', true),
+    store.patchTaskPanelPreference(true),
+    store.patchEnabled(true, 1),
+  ])
+  expect(await store.get()).toMatchObject({
+    enabled: true,
+    openTaskPanelAfterSubmit: true,
+    consentAckVersion: 1,
+    rules: [{ match: { domains: ['example.com'] }, action: 'chrome' }],
+  })
 })

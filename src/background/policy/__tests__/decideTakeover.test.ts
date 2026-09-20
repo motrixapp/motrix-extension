@@ -78,6 +78,22 @@ describe('decideTakeover', () => {
     ).toBe('chrome')
   })
 
+  it('keeps downloads from an excluded page in the browser even when a different CDN serves the file', () => {
+    const c = cfg({
+      rules: [
+        { id: 'site', match: { domains: ['example.com'] }, action: 'chrome' },
+      ],
+    })
+    const download = target({ url: 'https://cdn.other.test/file.zip' })
+    expect(decideTakeover(c, download)).toBe('chrome')
+    expect(
+      decideTakeover(c, { ...download, pageUrl: 'https://notexample.com/page' })
+    ).toBe('motrix')
+    expect(decideTakeover(c, { ...download, origin: 'context-menu' })).toBe(
+      'motrix'
+    )
+  })
+
   it('below-threshold rule routes small files to chrome; large stay motrix', () => {
     const c = cfg({
       rules: [{ id: 't', match: { minSizeMB: 10 }, action: 'chrome' }],

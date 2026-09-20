@@ -162,7 +162,7 @@ async function handleHeld(
     })
     const result = await runHandoff(target, ops)
     if (result?.kind === 'accepted')
-      presentation = { result, guard, enabled: cfg.autoOpenPopup }
+      presentation = { result, guard, enabled: cfg.openTaskPanelAfterSubmit }
   } catch (e) {
     log.debug('[takeover] held handoff aborted', e)
   } finally {

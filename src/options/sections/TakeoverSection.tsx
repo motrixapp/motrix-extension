@@ -2,7 +2,7 @@ import type * as React from 'react'
 import { useEffect, useState } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
+import { TakeoverConsentDialog } from '@/components/takeover-consent-dialog'
 import {
   Field,
   FieldContent,
@@ -18,7 +18,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { SettingSection } from '@/options/components/SettingSection'
 import type { TakeoverFormValues } from '@/options/tabs/schemas'
 import { useTakeoverAvailability } from '@/options/useTakeoverAvailability'
-import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
 import { CONSENT_VERSION } from '@/shared/takeover'
 
 export function TakeoverSection({
@@ -32,8 +31,6 @@ export function TakeoverSection({
 }): React.ReactElement {
   const { t } = useTranslation()
   const availability = useTakeoverAvailability()
-  const enabled = form.watch('enabled')
-  const popupSupported = supportsAutoOpenPopup()
   const [showConsent, setShowConsent] = useState(false)
   useEffect(() => {
     if (availability !== 'local') setShowConsent(false)
@@ -85,37 +82,6 @@ export function TakeoverSection({
           />
           <FormField
             control={form.control}
-            name="autoOpenPopup"
-            render={({ field }) => (
-              <Field orientation="horizontal">
-                <FieldContent>
-                  <FieldLabel htmlFor="download-auto-popup">
-                    {t('options.takeover.autoOpenPopup')}
-                  </FieldLabel>
-                  <FieldDescription id="download-auto-popup-description">
-                    {t(
-                      !popupSupported
-                        ? 'options.takeover.autoOpenUnsupported'
-                        : !enabled || availability !== 'local'
-                          ? 'options.takeover.autoOpenDisabled'
-                          : 'options.takeover.autoOpenDescription'
-                    )}
-                  </FieldDescription>
-                </FieldContent>
-                <Switch
-                  id="download-auto-popup"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={
-                    !popupSupported || !enabled || availability !== 'local'
-                  }
-                  aria-describedby="download-auto-popup-description"
-                />
-              </Field>
-            )}
-          />
-          <FormField
-            control={form.control}
             name="thresholdMB"
             render={({ field, fieldState }) => (
               <Field orientation="responsive">
@@ -159,42 +125,16 @@ export function TakeoverSection({
         </FieldGroup>
       </SettingSection>
 
-      {showConsent && availability === 'local' && (
-        <div
-          className="mt-4 rounded-xl border border-amber-400/70 bg-amber-50 p-3.5 text-xs text-amber-950 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-100"
-          role="dialog"
-          aria-label={t('options.takeover.consentDialogLabel')}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setShowConsent(false)
-          }}
-        >
-          <p className="mb-2.5 leading-relaxed">
-            {t('options.takeover.consentBody')}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => {
-                if (availability !== 'local') return
-                setConsentAck(CONSENT_VERSION)
-                form.setValue('enabled', true, { shouldDirty: true })
-                setShowConsent(false)
-              }}
-            >
-              {t('options.takeover.consentConfirm')}
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              onClick={() => setShowConsent(false)}
-            >
-              {t('options.takeover.consentCancel')}
-            </Button>
-          </div>
-        </div>
-      )}
+      <TakeoverConsentDialog
+        open={showConsent && availability === 'local'}
+        onConfirm={() => {
+          if (availability !== 'local') return
+          setConsentAck(CONSENT_VERSION)
+          form.setValue('enabled', true, { shouldDirty: true })
+          setShowConsent(false)
+        }}
+        onCancel={() => setShowConsent(false)}
+      />
     </>
   )
 }

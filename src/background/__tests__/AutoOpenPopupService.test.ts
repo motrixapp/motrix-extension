@@ -4,7 +4,11 @@ import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 
 function fixture() {
   let now = 100000
-  let config = { ...TAKEOVER_DEFAULT, enabled: true, autoOpenPopup: true }
+  let config = {
+    ...TAKEOVER_DEFAULT,
+    enabled: true,
+    openTaskPanelAfterSubmit: true,
+  }
   let backing: Record<string, unknown> = {}
   const deps = {
     supported: vi.fn(() => true),
@@ -43,6 +47,41 @@ const accepted = (operationId = 'operation-1') => ({
 })
 
 describe('automatic popup presentation', () => {
+  it('opens for explicit submissions with automatic takeover disabled, including remote backends', async () => {
+    const { service, deps, configure } = fixture()
+    configure({ enabled: false })
+    const present = service.captureSubmission()
+    await present(
+      { taskId: 'task-1', operationId: 'op-explicit' },
+      {
+        origin: 'context-menu',
+        endpointId: 'nas',
+        endpointRevision: 2,
+        assertCurrent: () => {},
+      }
+    )
+    expect(deps.open).toHaveBeenCalledExactlyOnceWith(1)
+    expect(await service.receipt(1)).toMatchObject({
+      endpointId: 'nas',
+      endpointRevision: 2,
+    })
+  })
+
+  it('does not open if the preference was disabled when an explicit submission began', async () => {
+    const { service, deps, configure } = fixture()
+    configure({ openTaskPanelAfterSubmit: false })
+    const present = service.captureSubmission()
+    configure({ openTaskPanelAfterSubmit: true })
+    await present(
+      { taskId: 'task-1', operationId: 'op-explicit' },
+      {
+        origin: 'context-menu',
+        endpointId: 'local',
+        assertCurrent: () => {},
+      }
+    )
+    expect(deps.open).not.toHaveBeenCalled()
+  })
   it('opens once per batch, publishes subsequent receipts and starts a new batch after idle', async () => {
     const { service, deps, advance } = fixture()
     await service.present(accepted())
@@ -83,7 +122,7 @@ describe('automatic popup presentation', () => {
   ])('does not present %s', async (reason) => {
     const { service, deps, configure } = fixture()
     const input = accepted()
-    if (reason === 'disabled') configure({ autoOpenPopup: false })
+    if (reason === 'disabled') configure({ openTaskPanelAfterSubmit: false })
     if (reason === 'unsupported') deps.supported.mockReturnValue(false)
     if (reason === 'capture-disabled') input.enabledAtCapture = false
     if (reason === 'no-task') input.taskId = ''
@@ -138,7 +177,7 @@ describe('automatic popup presentation', () => {
   it('rechecks the preference just before presentation', async () => {
     const { service, deps, configure } = fixture()
     deps.focusedWindow.mockImplementation(async () => {
-      configure({ autoOpenPopup: false })
+      configure({ openTaskPanelAfterSubmit: false })
       return 1
     })
     await service.present(accepted())

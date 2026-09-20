@@ -163,11 +163,7 @@
       "title": "Download-Übernahme",
       "remoteUnavailable": "Die automatische Übernahme erfordert derzeit die lokale Motrix App. Remote-Downloads und Berechtigungen für Header oder Cookies aktivieren sie nicht. Sie können Downloads weiterhin manuell oder über das Kontextmenü an diesen Server senden.",
       "availabilityUnknown": "Die Übernahme ist erst verfügbar, wenn das ausgewählte Backend überprüft werden kann.",
-      "remoteUnavailableShort": "Nur lokale App. Senden per Rechtsklick funktioniert mit Servern.",
-      "autoOpenPopup": "Aufgaben nach Übernahme öffnen",
-      "autoOpenDescription": "Öffnet die Aufgaben nach Annahme durch Motrix. Bei mehreren Downloads wird das Fenster nur einmal geöffnet.",
-      "autoOpenDisabled": "Zuerst die Download-Übernahme aktivieren.",
-      "autoOpenUnsupported": "Erfordert Chrome / Edge 127+ oder Firefox 149+."
+      "remoteUnavailableShort": "Nur lokale App. Senden per Rechtsklick funktioniert mit Servern."
     },
     "tabs": {
       "general": "Allgemein",
@@ -209,7 +205,13 @@
       "subtitle": "Dateien aus dem Web mit Motrix herunterladen",
       "website": "Offizielle Website"
     },
-    "title": "Einstellungen der Motrix-Erweiterung"
+    "title": "Einstellungen der Motrix-Erweiterung",
+    "taskPanel": {
+      "title": "Aufgabenbereich",
+      "openAfterSubmit": "Aufgabenbereich nach dem Hinzufügen eines Downloads öffnen",
+      "description": "Öffnet den Aufgabenbereich, sobald ein Download zu Motrix hinzugefügt wurde, auch per Rechtsklick oder automatischer Übernahme. Bei mehreren Downloads kurz hintereinander wird er nur einmal geöffnet.",
+      "unsupported": "Erfordert Chrome / Edge 127+ oder Firefox 149+."
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "Systembenachrichtigungen der Erweiterung steuern",
       "retry": "Erneut versuchen",
       "saveError": "Einstellung nicht gespeichert. Erneut versuchen.",
-      "takeoverDescription": "Browser-Downloads an das aktuelle Motrix-Backend senden"
+      "takeoverDescription": "Browser-Downloads an das aktuelle Motrix-Backend senden",
+      "excludeCurrentSite": "Aktuelle Website ausschließen",
+      "excludeCurrentSiteDescription": "Downloads von {{site}} im Browser lassen",
+      "noCurrentSite": "Diese Seite hat keine ausschließbare Website-Domain.",
+      "inheritedExclusion": "{{site}} ist durch den Ausschluss von {{domain}} abgedeckt. In den vollständigen Einstellungen bearbeiten.",
+      "taskPanelDescription": "Nach dem Hinzufügen von Downloads per Rechtsklick, Übernahme oder anderen Wegen öffnen"
     },
     "quickAdd": {
       "title": "Neue Aufgabe",

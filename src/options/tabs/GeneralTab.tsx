@@ -8,6 +8,7 @@ import { SettingsTabForm } from '@/options/components/SettingsTabForm'
 import { SettingPanel } from '@/options/SettingPanel'
 import { AppearanceSection } from '@/options/sections/AppearanceSection'
 import { NotificationsSection } from '@/options/sections/NotificationsSection'
+import { TaskPanelSection } from '@/options/sections/TaskPanelSection'
 import {
   type GeneralFormValues,
   generalFormSchema,
@@ -24,6 +25,7 @@ export function GeneralTab(): React.ReactElement {
   const form = useForm<GeneralFormValues>({
     resolver: zodFormResolver(generalFormSchema),
     defaultValues: {
+      openTaskPanelAfterSubmit: false,
       theme: 'system',
       language: 'system',
       notifyMaster: NOTIFICATIONS_DEFAULT.master,
@@ -37,14 +39,16 @@ export function GeneralTab(): React.ReactElement {
     let cancelled = false
     void (async () => {
       try {
-        const [theme, locale, notif] = await Promise.all([
+        const [theme, locale, notif, takeover] = await Promise.all([
           getThemeOverride(),
           getLocaleOverride(),
           send('bg.getNotificationsConfig', undefined),
+          send('bg.getTakeoverConfig', undefined),
         ])
         if (cancelled) return
         const n = notif ?? NOTIFICATIONS_DEFAULT
         form.reset({
+          openTaskPanelAfterSubmit: takeover.openTaskPanelAfterSubmit,
           theme: theme ?? 'system',
           language: locale ?? 'system',
           notifyMaster: n.master,
@@ -63,6 +67,11 @@ export function GeneralTab(): React.ReactElement {
   }, [form])
 
   const onSubmit = async (values: GeneralFormValues): Promise<void> => {
+    if (form.getFieldState('openTaskPanelAfterSubmit').isDirty) {
+      await send('bg.patchTaskPanelPreference', {
+        openTaskPanelAfterSubmit: values.openTaskPanelAfterSubmit,
+      })
+    }
     await send('bg.setNotificationsConfig', {
       master: values.notifyMaster,
       confirm: values.notifyConfirm,
@@ -91,6 +100,10 @@ export function GeneralTab(): React.ReactElement {
       {!loadFailed && (
         <SettingsTabForm form={form} onSubmit={onSubmit}>
           <AppearanceSection form={form} />
+
+          <Separator className="my-5" />
+
+          <TaskPanelSection form={form} />
 
           <Separator className="my-5" />
 

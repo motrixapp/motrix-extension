@@ -1,16 +1,7 @@
 import { ChevronRight, Settings } from 'lucide-react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+import { TakeoverConsentDialog } from '@/components/takeover-consent-dialog'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
@@ -102,6 +93,9 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
   const { takeover, notifications } = controller
   const unavailable = takeover === null || notifications === null
   const controlsDisabled = controller.loading || controller.saving
+  const inheritedExclusion =
+    controller.excludedSite !== null &&
+    controller.excludedSite !== controller.currentSite
 
   return (
     <section className={cn('mt-4 flex h-full min-h-0 flex-col', className)}>
@@ -109,7 +103,7 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
 
       <CompactContentCard
         data-testid="quick-settings-card"
-        className="overflow-y-auto"
+        className="flex flex-col overflow-y-auto"
       >
         {unavailable ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
@@ -141,7 +135,7 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
           </div>
         ) : (
           <>
-            <div className="divide-y divide-border">
+            <div className="shrink-0 divide-y divide-border">
               <QuickSettingRow
                 id="quick-takeover-switch"
                 title={t('options.takeover.enableLabel')}
@@ -157,6 +151,46 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
                 }
               />
               <QuickSettingRow
+                id="quick-site-exclusion-switch"
+                title={t('popup.quickSettings.excludeCurrentSite')}
+                description={
+                  controller.currentSite === null
+                    ? t('popup.quickSettings.noCurrentSite')
+                    : t(
+                        inheritedExclusion
+                          ? 'popup.quickSettings.inheritedExclusion'
+                          : 'popup.quickSettings.excludeCurrentSiteDescription',
+                        {
+                          site: controller.currentSite,
+                          domain: controller.excludedSite,
+                        }
+                      )
+                }
+                checked={controller.excludedSite !== null}
+                disabled={
+                  controlsDisabled ||
+                  controller.currentSite === null ||
+                  inheritedExclusion
+                }
+                onCheckedChange={(checked) =>
+                  void controller.setCurrentSiteExcluded(checked)
+                }
+              />
+              <QuickSettingRow
+                id="quick-task-panel-switch"
+                title={t('options.taskPanel.openAfterSubmit')}
+                description={t(
+                  controller.taskPanelSupported
+                    ? 'popup.quickSettings.taskPanelDescription'
+                    : 'options.taskPanel.unsupported'
+                )}
+                checked={takeover.openTaskPanelAfterSubmit}
+                disabled={controlsDisabled || !controller.taskPanelSupported}
+                onCheckedChange={(checked) =>
+                  void controller.setOpenTaskPanelAfterSubmit(checked)
+                }
+              />
+              <QuickSettingRow
                 id="quick-notifications-master-switch"
                 title={t('options.notifications.masterLabel')}
                 description={t(
@@ -168,42 +202,12 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
                   void controller.setNotification('master', checked)
                 }
               />
-              <QuickSettingRow
-                id="quick-notifications-confirm-switch"
-                title={t('options.notifications.confirmLabel')}
-                description={t('options.notifications.confirmDesc')}
-                checked={notifications.confirm}
-                disabled={controlsDisabled || !notifications.master}
-                onCheckedChange={(checked) =>
-                  void controller.setNotification('confirm', checked)
-                }
-              />
-              <QuickSettingRow
-                id="quick-notifications-error-switch"
-                title={t('options.notifications.errorLabel')}
-                description={t('options.notifications.errorDesc')}
-                checked={notifications.error}
-                disabled={controlsDisabled || !notifications.master}
-                onCheckedChange={(checked) =>
-                  void controller.setNotification('error', checked)
-                }
-              />
-              <QuickSettingRow
-                id="quick-notifications-reminder-switch"
-                title={t('options.notifications.reminderLabel')}
-                description={t('options.notifications.reminderDesc')}
-                checked={notifications.reminder}
-                disabled={controlsDisabled || !notifications.master}
-                onCheckedChange={(checked) =>
-                  void controller.setNotification('reminder', checked)
-                }
-              />
             </div>
             <Button
               data-testid="full-settings-row"
               type="button"
               variant="ghost"
-              className="h-auto min-h-[63px] w-full justify-start whitespace-normal rounded-none border-x-0 border-t border-b-0 border-border px-3 py-2 text-left hover:bg-muted/40"
+              className="sticky bottom-0 z-10 mt-auto h-auto min-h-[63px] w-full shrink-0 justify-start whitespace-normal rounded-none border-x-0 border-t border-b-0 border-border bg-card px-3 py-2 text-left hover:bg-muted"
               onClick={onOpenFullSettings}
             >
               <Settings
@@ -236,40 +240,12 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
         </p>
       )}
 
-      <AlertDialog
+      <TakeoverConsentDialog
         open={controller.consentRequired && controller.takeoverSupported}
-        onOpenChange={(open) => {
-          if (!open) controller.cancelTakeoverConsent()
-        }}
-      >
-        <AlertDialogContent size="sm" className="max-w-[360px]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t('options.takeover.consentDialogLabel')}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('options.takeover.consentBody')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              type="button"
-              className="min-w-0"
-              disabled={controller.saving}
-            >
-              {t('options.takeover.consentCancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              type="button"
-              className="min-w-0"
-              disabled={controller.saving}
-              onClick={() => void controller.confirmTakeoverConsent()}
-            >
-              {t('options.takeover.consentConfirm')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        saving={controller.saving}
+        onConfirm={() => void controller.confirmTakeoverConsent()}
+        onCancel={controller.cancelTakeoverConsent}
+      />
     </section>
   )
 })

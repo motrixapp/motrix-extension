@@ -163,11 +163,7 @@
       "title": "Tiếp quản tải xuống",
       "remoteUnavailable": "Tiếp quản tự động hiện yêu cầu Motrix App cục bộ. Tải xuống từ xa và quyền tiêu đề hoặc cookie không bật tính năng này. Bạn vẫn có thể gửi lượt tải xuống tới Server này theo cách thủ công hoặc qua menu chuột phải.",
       "availabilityUnknown": "Chưa thể tiếp quản cho đến khi kiểm tra được dịch vụ đã chọn.",
-      "remoteUnavailableShort": "Chỉ App cục bộ. Gửi qua chuột phải vẫn dùng được với Server.",
-      "autoOpenPopup": "Mở bảng tác vụ sau khi tiếp quản",
-      "autoOpenDescription": "Mở bảng khi Motrix chấp nhận tải xuống. Các lượt tải liên tiếp chỉ mở bảng một lần.",
-      "autoOpenDisabled": "Bật tiếp quản tải xuống để dùng tùy chọn này.",
-      "autoOpenUnsupported": "Yêu cầu Chrome / Edge 127+ hoặc Firefox 149+."
+      "remoteUnavailableShort": "Chỉ App cục bộ. Gửi qua chuột phải vẫn dùng được với Server."
     },
     "tabs": {
       "general": "Chung",
@@ -209,7 +205,13 @@
       "subtitle": "Tải tệp từ web bằng Motrix",
       "website": "Trang web chính thức"
     },
-    "title": "Cài đặt tiện ích Motrix"
+    "title": "Cài đặt tiện ích Motrix",
+    "taskPanel": {
+      "title": "Bảng tác vụ",
+      "openAfterSubmit": "Mở bảng tác vụ sau khi thêm lượt tải xuống",
+      "description": "Tự động mở bảng khi thêm lượt tải xuống vào Motrix, kể cả qua menu chuột phải và tiếp quản tự động. Khi thêm nhiều lượt tải liên tiếp, bảng chỉ mở một lần.",
+      "unsupported": "Yêu cầu Chrome / Edge 127+ hoặc Firefox 149+."
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "Quản lý thông báo hệ thống từ tiện ích",
       "retry": "Thử lại",
       "saveError": "Không lưu được cài đặt. Thử lại.",
-      "takeoverDescription": "Gửi tải xuống từ trình duyệt tới dịch vụ Motrix hiện tại"
+      "takeoverDescription": "Gửi tải xuống từ trình duyệt tới dịch vụ Motrix hiện tại",
+      "excludeCurrentSite": "Loại trừ trang hiện tại",
+      "excludeCurrentSiteDescription": "Giữ lượt tải từ {{site}} trong trình duyệt",
+      "noCurrentSite": "Trang này không có tên miền website để loại trừ.",
+      "inheritedExclusion": "{{site}} thuộc quy tắc loại trừ {{domain}}. Chỉnh sửa trong phần cài đặt đầy đủ.",
+      "taskPanelDescription": "Mở sau khi thêm lượt tải qua chuột phải, tiếp quản tự động hoặc cách khác"
     },
     "quickAdd": {
       "title": "Tác vụ mới",

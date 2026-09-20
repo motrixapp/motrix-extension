@@ -190,12 +190,20 @@ export interface MessageMap {
     request: { windowId: number }
     response: import('@/shared/autoPopup').PopupReceipt | null
   }
+  'bg.patchTaskPanelPreference': {
+    request: { openTaskPanelAfterSubmit: boolean }
+    response: import('@/shared/takeover').TakeoverConfig
+  }
+  'bg.patchSiteExclusion': {
+    request: { domain: string; excluded: boolean }
+    response: import('@/shared/takeover').TakeoverConfig
+  }
   'bg.getTakeoverConfig': {
     request: undefined
     response: import('@/shared/takeover').TakeoverConfig
   }
   'bg.setTakeoverConfig': {
-    request: import('@/shared/takeover').TakeoverConfig
+    request: import('@/shared/takeover').TakeoverSettings
     response: { ok: true }
   }
   'bg.getNotificationsConfig': {

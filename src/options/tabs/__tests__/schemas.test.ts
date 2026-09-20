@@ -52,7 +52,6 @@ describe('takeoverFormSchema', () => {
     expect(
       takeoverFormSchema.safeParse({
         enabled: false,
-        autoOpenPopup: false,
         thresholdMB: '',
         denylist: '',
       }).success
@@ -62,7 +61,6 @@ describe('takeoverFormSchema', () => {
     expect(
       takeoverFormSchema.safeParse({
         enabled: true,
-        autoOpenPopup: true,
         thresholdMB: '-3',
         denylist: '',
       }).success
