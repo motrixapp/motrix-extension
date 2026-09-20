@@ -20,8 +20,8 @@ import { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { ConnectionManager } from '@/background/ConnectionManager'
 import { MediaCredentialStore } from '@/background/capture/MediaCredentialStore'
+import { createContextMenuDownloadRunner } from '@/background/contextMenu/download'
 import {
-  downloadHttpInBrowser,
   registerContextMenu,
   updateContextMenuTitle,
 } from '@/background/contextMenu/register'
@@ -29,8 +29,6 @@ import { DownloadSubmissionService } from '@/background/DownloadSubmissionServic
 import { EndpointCatalogService } from '@/background/EndpointCatalogService'
 import { EndpointConfigStore } from '@/background/EndpointConfigStore'
 import { HandoffEndpointTracker } from '@/background/handoff/guard'
-import { makeOps } from '@/background/handoff/makeOps'
-import { runHandoff } from '@/background/handoff/runHandoff'
 import { registerChromiumInterception } from '@/background/interception/chromium'
 import { registerFirefoxInterception } from '@/background/interception/firefox'
 import { makeLocaleChangeHandler } from '@/background/localeSync'
@@ -54,7 +52,6 @@ import { createNotify } from '@/background/notify'
 import { PairingEndpointService } from '@/background/PairingEndpointService'
 import { createPairingCodeSource } from '@/background/pairing-code-source'
 import { PairNudge } from '@/background/pairNudge'
-import { decideTakeover } from '@/background/policy/decideTakeover'
 import { createPopupDownloadHandlers } from '@/background/popupDownloads'
 import { clearRemoteBackendPoliciesForAuthority } from '@/background/RemoteBackendPolicyStore'
 import { recoverStorageBeforeEndpointAutostart } from '@/background/storage-migrations'
@@ -208,6 +205,7 @@ const pairingEndpointService = new PairingEndpointService(
 )
 
 const submissions = new DownloadSubmissionService({
+  popup: autoPopup,
   manager,
   isPaired: () => pairingEndpointService.isActivePaired(),
   captureGuard: () => handoffEndpoints.capture('context-menu'),
@@ -356,6 +354,12 @@ bus.on('bg.replaceRemoteBackendPolicy', async (replacement) => ({
 bus.on('bg.patchTakeoverEnabled', ({ enabled, consentAckVersion }) =>
   takeoverConfigStore.patchEnabled(enabled, consentAckVersion)
 )
+bus.on('bg.patchTaskPanelPreference', ({ openTaskPanelAfterSubmit }) =>
+  takeoverConfigStore.patchTaskPanelPreference(openTaskPanelAfterSubmit)
+)
+bus.on('bg.patchSiteExclusion', ({ domain, excluded }) =>
+  takeoverConfigStore.patchSiteExclusion(domain, excluded)
+)
 bus.on('bg.getPopupReceipt', async ({ windowId }, sender) => {
   if (
     sender.id !== browser.runtime.id ||
@@ -366,7 +370,7 @@ bus.on('bg.getPopupReceipt', async ({ windowId }, sender) => {
 })
 bus.on('bg.getTakeoverConfig', async () => takeoverConfigStore.get())
 bus.on('bg.setTakeoverConfig', async (payload) => {
-  await takeoverConfigStore.set(payload)
+  await takeoverConfigStore.patchTakeoverSettings(payload)
   return { ok: true } as const
 })
 bus.on('bg.getNotificationsConfig', async () => notificationsConfigStore.get())
@@ -701,26 +705,16 @@ registerContextMenu({
     await endpointLifecycleReady
     return takeoverConfigStore.get()
   },
-  run: async (target) => {
-    await endpointLifecycleReady
-    const cfg = await takeoverConfigStore.get()
-    if (decideTakeover(cfg, target) !== 'motrix') return
-    const guard = await handoffEndpoints.capture(target.origin)
-    if (guard === null) return
-    const ops = makeOps({
-      manager,
-      guard,
-      isPaired: () => pairingEndpointService.isActivePaired(),
-      gate,
-      nudge: pairNudge,
-      cancelNative: async () => {},
-      fallbackToBrowser: () => downloadHttpInBrowser(target.url),
-      // MVP: no blocking confirm UI in the SW, so sensitive domains auto-decline (leaves the native download intact). Real per-download confirm UI is deferred to Plan 2/3.
-      confirmSensitive: async () => false,
-      notify,
-    })
-    await runHandoff(target, ops)
-  },
+  run: createContextMenuDownloadRunner({
+    popup: autoPopup,
+    ready: () => endpointLifecycleReady,
+    captureGuard: () => handoffEndpoints.capture('context-menu'),
+    manager,
+    isPaired: () => pairingEndpointService.isActivePaired(),
+    gate,
+    nudge: pairNudge,
+    notify,
+  }),
 })
 
 void refreshMenuTitle()

@@ -28,6 +28,7 @@ beforeEach(() => {
   browser.runtime.sendMessage = vi.fn(async (env) => {
     if (env.kind === 'bg.getTakeoverConfig')
       return {
+        openTaskPanelAfterSubmit: false,
         enabled: false,
         consentAckVersion: 0,
         defaultAction: 'motrix',
@@ -50,7 +51,7 @@ beforeEach(() => {
 })
 
 describe('options App', () => {
-  it('groups appearance and notifications in General and takeover in Downloads', async () => {
+  it('groups appearance, task panel and notifications in General and takeover in Downloads', async () => {
     const user = userEvent.setup()
     render(<App />)
     for (const name of [
@@ -70,10 +71,20 @@ describe('options App', () => {
     expect(
       screen.getByRole('switch', { name: /system notifications|启用系统通知/i })
     ).toBeTruthy()
+    expect(
+      screen.getByRole('switch', {
+        name: /open task panel after adding a download|添加下载后展开任务面板/i,
+      })
+    ).toBeTruthy()
     expect(screen.queryByRole('spinbutton')).toBeNull()
 
     await user.click(screen.getByRole('tab', { name: /downloads|下载/i }))
     expect(await screen.findByRole('spinbutton')).toBeTruthy()
+    expect(
+      screen.queryByRole('switch', {
+        name: /open task panel after adding a download|添加下载后展开任务面板/i,
+      })
+    ).toBeNull()
     expect(
       screen.getByRole('switch', { name: /send eligible downloads|启用接管/i })
     ).toBeTruthy()

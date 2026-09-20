@@ -1,4 +1,5 @@
 import type { DownloadSubmitParams, DownloadSubmitResult } from '@motrix/mdxp'
+import type { AutoOpenPopupService } from '@/background/AutoOpenPopupService'
 import type { ConnectionManager } from '@/background/ConnectionManager'
 import {
   beforeDeadline,
@@ -36,6 +37,7 @@ export interface DownloadPreparation {
 }
 
 interface SubmissionDeps {
+  popup?: Pick<AutoOpenPopupService, 'captureSubmission'>
   manager: Pick<
     ConnectionManager,
     'ensureReady' | 'submitDownload' | 'clearGateAndStart'
@@ -98,6 +100,7 @@ export class DownloadSubmissionService {
       throw new DownloadPreparationError(DOWNLOAD_ERROR.rejected)
     }
     const deadlineAt = this.now() + (input.pairIfNeeded ? 150_000 : 30_000)
+    const present = this.deps.popup?.captureSubmission()
     const guard = await this.deps.captureGuard()
     if (!guard?.endpointId)
       throw new DownloadPreparationError(DOWNLOAD_ERROR.endpointChanged)
@@ -166,7 +169,11 @@ export class DownloadSubmissionService {
     )
     this.flights.set(record.id, operation)
     try {
-      return await operation
+      const result = await operation
+      void present?.({ ...result, operationId: record.id }, guard).catch(
+        () => {}
+      )
+      return result
     } finally {
       if (this.flights.get(record.id) === operation)
         this.flights.delete(record.id)

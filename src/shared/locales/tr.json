@@ -163,11 +163,7 @@
       "title": "İndirmeleri devralma",
       "remoteUnavailable": "Otomatik devralma şu anda yerel Motrix App gerektirir. Uzak indirmeler ve üstbilgi veya çerez izinleri bu özelliği etkinleştirmez. Bu Server’a elle veya sağ tık menüsünden indirme gönderebilirsiniz.",
       "availabilityUnknown": "Seçili arka uç kontrol edilene kadar devralma kullanılamaz.",
-      "remoteUnavailableShort": "Yalnızca yerel App. Sağ tıkla gönderim Server ile de çalışır.",
-      "autoOpenPopup": "Devralma sonrası görev panelini aç",
-      "autoOpenDescription": "Motrix indirmeyi kabul ettiğinde paneli açar. Art arda indirmelerde panel yalnızca bir kez açılır.",
-      "autoOpenDisabled": "Bu seçenek için indirmeleri devralmayı etkinleştirin.",
-      "autoOpenUnsupported": "Chrome / Edge 127+ veya Firefox 149+ gerektirir."
+      "remoteUnavailableShort": "Yalnızca yerel App. Sağ tıkla gönderim Server ile de çalışır."
     },
     "tabs": {
       "general": "Genel",
@@ -209,7 +205,13 @@
       "subtitle": "Motrix ile web’den dosya indirin",
       "website": "Resmî web sitesi"
     },
-    "title": "Motrix Uzantısı Ayarları"
+    "title": "Motrix Uzantısı Ayarları",
+    "taskPanel": {
+      "title": "Görev paneli",
+      "openAfterSubmit": "İndirme eklendikten sonra görev panelini aç",
+      "description": "Sağ tıkla indirme ve otomatik devralma dahil, Motrix’e bir indirme eklendiğinde paneli otomatik açar. Art arda eklenen indirmelerde yalnızca bir kez açılır.",
+      "unsupported": "Chrome / Edge 127+ veya Firefox 149+ gerektirir."
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "Uzantının sistem bildirimlerini yönet",
       "retry": "Yeniden dene",
       "saveError": "Ayar kaydedilemedi. Tekrar deneyin.",
-      "takeoverDescription": "Tarayıcı indirmelerini mevcut Motrix arka ucuna gönder"
+      "takeoverDescription": "Tarayıcı indirmelerini mevcut Motrix arka ucuna gönder",
+      "excludeCurrentSite": "Geçerli siteyi hariç tut",
+      "excludeCurrentSiteDescription": "{{site}} indirmelerini tarayıcıda tut",
+      "noCurrentSite": "Bu sayfanın hariç tutulabilecek bir alan adı yok.",
+      "inheritedExclusion": "{{site}}, {{domain}} için tanımlanan hariç tutma kuralı kapsamındadır. Tam ayarlardan düzenleyin.",
+      "taskPanelDescription": "Sağ tık, otomatik devralma veya diğer yollarla indirme eklendikten sonra aç"
     },
     "quickAdd": {
       "title": "Yeni görev",

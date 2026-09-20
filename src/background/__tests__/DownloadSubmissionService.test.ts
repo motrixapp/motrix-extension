@@ -74,7 +74,9 @@ function fixture() {
     ),
   }
   const isPaired = vi.fn(async () => true)
-  const deps = { manager, captureGuard, storage, isPaired }
+  const present = vi.fn(async () => {})
+  const popup = { captureSubmission: vi.fn(() => present) }
+  const deps = { manager, captureGuard, storage, isPaired, popup }
   const service = new DownloadSubmissionService(deps)
   const input = {
     idempotencyKey: newDownloadOperationId(),
@@ -90,6 +92,7 @@ function fixture() {
     storage,
     backing,
     deps,
+    present,
   }
 }
 
@@ -102,6 +105,30 @@ afterEach(() => {
 })
 
 describe('DownloadSubmissionService', () => {
+  it.each(['media', 'page', 'manual', 'direct'] as const)(
+    'presents accepted %s downloads once and does not replay presentation for cached results',
+    async (source) => {
+      const f = fixture()
+      const input = { ...f.input, source }
+      await f.service.run(input, async () => params)
+      await f.service.run(input, async () => params)
+      expect(f.present).toHaveBeenCalledExactlyOnceWith(
+        { taskId: 'task-1', operationId: input.idempotencyKey },
+        expect.objectContaining({
+          endpointId: 'local',
+          assertCurrent: f.assertCurrent,
+        })
+      )
+    }
+  )
+
+  it('keeps accepted downloads successful when popup presentation fails', async () => {
+    const f = fixture()
+    f.present.mockRejectedValue(new Error('popup unavailable'))
+    await expect(f.service.run(f.input, async () => params)).resolves.toEqual({
+      taskId: 'task-1',
+    })
+  })
   it('prepares the connection before resolving capabilities and browser credentials', async () => {
     const f = fixture()
     const ready = deferred<void>()
@@ -164,6 +191,7 @@ describe('DownloadSubmissionService', () => {
     )
     expect(f.manager.submitDownload).toHaveBeenCalledOnce()
     expect(await restored.list('local')).toMatchObject([{ state: 'unknown' }])
+    expect(f.present).not.toHaveBeenCalled()
   })
 
   it('treats a persisted sending operation as unknown when its worker disappears', async () => {

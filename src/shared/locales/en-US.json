@@ -163,11 +163,7 @@
       "title": "Download takeover",
       "remoteUnavailable": "Automatic takeover currently requires the local Motrix App. Remote downloads and header or cookie permissions do not enable it. You can still send downloads to this Server manually or from the right-click menu.",
       "availabilityUnknown": "Takeover is unavailable until the selected backend can be checked.",
-      "remoteUnavailableShort": "Local App only. Right-click sending works with Servers.",
-      "autoOpenPopup": "Open task panel after takeover",
-      "autoOpenDescription": "Open the task panel after Motrix accepts a download. Consecutive downloads open it once.",
-      "autoOpenDisabled": "Enable download takeover to use this option.",
-      "autoOpenUnsupported": "Requires Chrome / Edge 127+ or Firefox 149+."
+      "remoteUnavailableShort": "Local App only. Right-click sending works with Servers."
     },
     "tabs": {
       "general": "General",
@@ -209,7 +205,13 @@
       "subtitle": "Download files from the web with Motrix",
       "website": "Official website"
     },
-    "title": "Motrix Extension Settings"
+    "title": "Motrix Extension Settings",
+    "taskPanel": {
+      "title": "Task panel",
+      "openAfterSubmit": "Open task panel after adding a download",
+      "description": "Automatically open the task panel after a download is added to Motrix, including right-click downloads and automatic takeover. Multiple downloads added in quick succession open it only once.",
+      "unsupported": "Requires Chrome / Edge 127+ or Firefox 149+."
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "Manage extension system notifications",
       "retry": "Retry",
       "saveError": "Couldn’t save setting. Try again.",
-      "takeoverDescription": "Send browser downloads to the current Motrix Backend"
+      "takeoverDescription": "Send browser downloads to the current Motrix Backend",
+      "excludeCurrentSite": "Exclude current site",
+      "excludeCurrentSiteDescription": "Keep downloads from {{site}} in the browser",
+      "noCurrentSite": "This page has no website domain to exclude.",
+      "inheritedExclusion": "{{site}} is covered by the exclusion for {{domain}}. Edit it in full settings.",
+      "taskPanelDescription": "Open after right-click downloads, automatic takeover, or other downloads are added"
     },
     "quickAdd": {
       "title": "New task",

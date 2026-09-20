@@ -1,3 +1,4 @@
+import type { HandoffGuard } from '@/background/handoff/guard'
 import { createOperationQueue } from '@/background/mbp1/operation-queue'
 import { rpcDeadline } from '@/background/RpcRecovery'
 import type { PopupReceipt } from '@/shared/autoPopup'
@@ -45,6 +46,33 @@ export class AutoOpenPopupService {
         : null
     } catch {
       return null
+    }
+  }
+
+  /** Capture the originating window and preference before connection/pairing.
+   * Call the returned presenter only after Motrix accepts a task. */
+  captureSubmission(): (
+    result: { taskId: string; operationId: string },
+    guard: HandoffGuard
+  ) => Promise<void> {
+    const captured = rpcDeadline(
+      Promise.all([this.deps.config(), this.captureWindow()]),
+      500,
+      'popup submission context'
+    ).catch(() => null)
+    return async (result, guard) => {
+      const context = await captured
+      if (!context || !guard.endpointId) return
+      const [config, windowId] = context
+      if (windowId === null) return
+      await this.present({
+        ...result,
+        endpointId: guard.endpointId,
+        endpointRevision: guard.endpointRevision ?? 0,
+        windowId,
+        enabledAtCapture: config.openTaskPanelAfterSubmit,
+        assertCurrent: guard.assertCurrent,
+      })
     }
   }
 
@@ -116,7 +144,7 @@ export class AutoOpenPopupService {
             return
           check()
           const config = await this.deps.config()
-          if (!config.enabled || !config.autoOpenPopup) return
+          if (!config.openTaskPanelAfterSubmit) return
           const state = await this.read()
           check()
           if (state.seen.includes(input.operationId)) return
@@ -154,8 +182,7 @@ export class AutoOpenPopupService {
           check()
           if (
             focused !== input.windowId ||
-            !currentConfig.enabled ||
-            !currentConfig.autoOpenPopup
+            !currentConfig.openTaskPanelAfterSubmit
           )
             return
           await this.deps.publish(receipt).catch(() => {})

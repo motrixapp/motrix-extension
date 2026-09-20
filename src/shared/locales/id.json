@@ -163,11 +163,7 @@
       "title": "Pengambilalihan unduhan",
       "remoteUnavailable": "Pengambilalihan otomatis saat ini memerlukan Motrix App lokal. Unduhan jarak jauh serta izin header atau cookie tidak mengaktifkannya. Anda tetap dapat mengirim unduhan ke Server ini secara manual atau melalui menu klik kanan.",
       "availabilityUnknown": "Pengambilalihan tidak tersedia hingga backend yang dipilih dapat diperiksa.",
-      "remoteUnavailableShort": "Hanya App lokal. Pengiriman lewat klik kanan mendukung Server.",
-      "autoOpenPopup": "Buka panel tugas setelah pengambilalihan",
-      "autoOpenDescription": "Buka panel setelah Motrix menerima unduhan. Unduhan berurutan hanya membuka panel sekali.",
-      "autoOpenDisabled": "Aktifkan pengambilalihan unduhan untuk memakai opsi ini.",
-      "autoOpenUnsupported": "Memerlukan Chrome / Edge 127+ atau Firefox 149+."
+      "remoteUnavailableShort": "Hanya App lokal. Pengiriman lewat klik kanan mendukung Server."
     },
     "tabs": {
       "general": "Umum",
@@ -209,7 +205,13 @@
       "subtitle": "Unduh file dari web dengan Motrix",
       "website": "Situs resmi"
     },
-    "title": "Setelan Ekstensi Motrix"
+    "title": "Setelan Ekstensi Motrix",
+    "taskPanel": {
+      "title": "Panel tugas",
+      "openAfterSubmit": "Buka panel tugas setelah menambahkan unduhan",
+      "description": "Otomatis membuka panel setelah unduhan ditambahkan ke Motrix, termasuk melalui klik kanan dan pengambilalihan otomatis. Beberapa unduhan yang ditambahkan berurutan hanya membuka panel sekali.",
+      "unsupported": "Memerlukan Chrome / Edge 127+ atau Firefox 149+."
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "Atur notifikasi sistem dari ekstensi",
       "retry": "Coba lagi",
       "saveError": "Gagal menyimpan setelan. Coba lagi.",
-      "takeoverDescription": "Kirim unduhan browser ke backend Motrix saat ini"
+      "takeoverDescription": "Kirim unduhan browser ke backend Motrix saat ini",
+      "excludeCurrentSite": "Kecualikan situs saat ini",
+      "excludeCurrentSiteDescription": "Tetap unduh dari {{site}} di browser",
+      "noCurrentSite": "Halaman ini tidak memiliki domain situs yang dapat dikecualikan.",
+      "inheritedExclusion": "{{site}} tercakup oleh pengecualian {{domain}}. Ubah di pengaturan lengkap.",
+      "taskPanelDescription": "Buka setelah unduhan ditambahkan lewat klik kanan, pengambilalihan, atau cara lainnya"
     },
     "quickAdd": {
       "title": "Tugas baru",

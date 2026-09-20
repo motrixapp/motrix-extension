@@ -163,11 +163,7 @@
       "title": "Gestión de descargas",
       "remoteUnavailable": "La gestión automática requiere actualmente Motrix App en este equipo. Las descargas remotas y los permisos de cabeceras o cookies no la activan. Puedes seguir enviando descargas a este Server manualmente o desde el menú contextual.",
       "availabilityUnknown": "La gestión de descargas no está disponible hasta que se pueda comprobar el servicio seleccionado.",
-      "remoteUnavailableShort": "Solo App local. El envío con clic derecho funciona con Servers.",
-      "autoOpenPopup": "Abrir tareas tras capturar una descarga",
-      "autoOpenDescription": "Abre las tareas cuando Motrix acepta una descarga. Las descargas consecutivas abren el panel una sola vez.",
-      "autoOpenDisabled": "Activa la captura de descargas para usar esta opción.",
-      "autoOpenUnsupported": "Requiere Chrome / Edge 127+ o Firefox 149+."
+      "remoteUnavailableShort": "Solo App local. El envío con clic derecho funciona con Servers."
     },
     "tabs": {
       "general": "General",
@@ -209,7 +205,13 @@
       "subtitle": "Descarga archivos de la web con Motrix",
       "website": "Sitio web oficial"
     },
-    "title": "Ajustes de la extensión Motrix"
+    "title": "Ajustes de la extensión Motrix",
+    "taskPanel": {
+      "title": "Panel de tareas",
+      "openAfterSubmit": "Abrir el panel de tareas al añadir una descarga",
+      "description": "Abre automáticamente el panel cuando se añade una descarga a Motrix, también desde el menú contextual o mediante captura automática. Si se añaden varias seguidas, se abre solo una vez.",
+      "unsupported": "Requiere Chrome / Edge 127+ o Firefox 149+."
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "Gestionar notificaciones del sistema de la extensión",
       "retry": "Reintentar",
       "saveError": "Error al guardar el ajuste. Reinténtalo.",
-      "takeoverDescription": "Enviar descargas del navegador al servicio Motrix actual"
+      "takeoverDescription": "Enviar descargas del navegador al servicio Motrix actual",
+      "excludeCurrentSite": "Excluir el sitio actual",
+      "excludeCurrentSiteDescription": "Mantener las descargas de {{site}} en el navegador",
+      "noCurrentSite": "Esta página no tiene un dominio que se pueda excluir.",
+      "inheritedExclusion": "{{site}} está cubierto por la exclusión de {{domain}}. Edítala en los ajustes completos.",
+      "taskPanelDescription": "Abrir tras añadir descargas por clic derecho, captura automática u otros medios"
     },
     "quickAdd": {
       "title": "Nueva tarea",

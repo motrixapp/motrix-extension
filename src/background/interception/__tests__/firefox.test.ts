@@ -146,7 +146,7 @@ it.each(['accepted', 'unknown', 'browser', 'skipped', 'failed'] as const)(
         popup,
         getConfig: async () => ({
           enabled: true,
-          autoOpenPopup: true,
+          openTaskPanelAfterSubmit: true,
           defaultAction: 'motrix',
           rules: [],
         }),

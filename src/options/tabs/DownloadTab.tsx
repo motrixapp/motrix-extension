@@ -20,7 +20,6 @@ export function DownloadTab(): React.ReactElement {
   const form = useForm<TakeoverFormValues>({
     resolver: zodFormResolver(takeoverFormSchema),
     defaultValues: {
-      autoOpenPopup: false,
       enabled: false,
       thresholdMB: '',
       denylist: '',

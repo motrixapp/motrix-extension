@@ -277,7 +277,7 @@ it.each(['accepted', 'unknown', 'browser', 'skipped', 'failed'] as const)(
   'presents only an accepted handoff after releasing the native hold: %s',
   async (kind) => {
     const suggest = vi.fn()
-    const deps = makeDeps(enabledConfig({ autoOpenPopup: true }))
+    const deps = makeDeps(enabledConfig({ openTaskPanelAfterSubmit: true }))
     const popup = {
       captureWindow: vi.fn(async () => 42),
       present: vi.fn(async () => {

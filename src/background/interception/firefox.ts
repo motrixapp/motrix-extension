@@ -115,7 +115,7 @@ async function handle(
         endpointId: guard.endpointId,
         endpointRevision: guard.endpointRevision ?? 0,
         windowId,
-        enabledAtCapture: cfg.autoOpenPopup,
+        enabledAtCapture: cfg.openTaskPanelAfterSubmit,
         assertCurrent: guard.assertCurrent,
       })
   }

@@ -7,13 +7,16 @@ export interface TakeoverRule {
 }
 
 export interface TakeoverConfig {
-  autoOpenPopup: boolean
+  /** Applies to every accepted submission, independently of automatic takeover. */
+  openTaskPanelAfterSubmit: boolean
   enabled: boolean
   /** Bumped acknowledgement of the cookie-consent dialog; 0 = never consented. */
   consentAckVersion: number
   defaultAction: 'motrix' | 'chrome'
   rules: TakeoverRule[]
 }
+
+export type TakeoverSettings = Omit<TakeoverConfig, 'openTaskPanelAfterSubmit'>
 
 /** Normalized download under consideration (browser-agnostic). */
 export interface TakeoverTarget {
@@ -42,7 +45,7 @@ export interface RawTarget {
 }
 
 export const TAKEOVER_DEFAULT: TakeoverConfig = {
-  autoOpenPopup: false,
+  openTaskPanelAfterSubmit: false,
   enabled: false,
   consentAckVersion: 0,
   defaultAction: 'motrix',

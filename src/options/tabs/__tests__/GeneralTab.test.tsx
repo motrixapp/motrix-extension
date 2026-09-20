@@ -3,6 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/shared/i18n'
 import { GeneralTab } from '@/options/tabs/GeneralTab'
 import type { NotificationsConfig } from '@/shared/notifications'
+import { TAKEOVER_DEFAULT } from '@/shared/takeover'
+
+vi.mock('@/shared/platformCapabilities', () => ({
+  supportsAutoOpenPopup: () => true,
+}))
 
 declare const browser: {
   runtime: {
@@ -15,7 +20,10 @@ let savedNotify: NotificationsConfig | null
 function mockBg(notif: NotificationsConfig): void {
   savedNotify = null
   browser.runtime.sendMessage = vi.fn(async (env) => {
+    if (env.kind === 'bg.getTakeoverConfig') return TAKEOVER_DEFAULT
     if (env.kind === 'bg.getNotificationsConfig') return notif
+    if (env.kind === 'bg.patchTaskPanelPreference')
+      return { ...TAKEOVER_DEFAULT, ...(env.payload as object) }
     if (env.kind === 'bg.setNotificationsConfig') {
       savedNotify = env.payload as NotificationsConfig
       return { ok: true }
@@ -29,6 +37,31 @@ beforeEach(() => {
 })
 
 describe('GeneralTab', () => {
+  it('loads and saves task panel opening through the same preference used by Popup', async () => {
+    render(<GeneralTab />)
+    await waitFor(() =>
+      expect(browser.runtime.sendMessage).toHaveBeenCalledWith({
+        kind: 'bg.getTakeoverConfig',
+        payload: undefined,
+      })
+    )
+    const control = await screen.findByRole('switch', {
+      name: /open task panel after adding a download/i,
+    })
+    expect(control.hasAttribute('data-disabled')).toBe(false)
+    fireEvent.click(control)
+    fireEvent.click(screen.getByRole('button', { name: /apply/i }))
+    await waitFor(() =>
+      expect(browser.runtime.sendMessage).toHaveBeenCalledWith({
+        kind: 'bg.patchTaskPanelPreference',
+        payload: { openTaskPanelAfterSubmit: true },
+      })
+    )
+    expect(browser.runtime.sendMessage).not.toHaveBeenCalledWith({
+      kind: 'bg.setTakeoverConfig',
+      payload: expect.anything(),
+    })
+  })
   it('hides the three detail switches when master is off', async () => {
     mockBg({ master: false, confirm: false, error: true, reminder: true })
     render(<GeneralTab />)
@@ -70,11 +103,16 @@ describe('GeneralTab', () => {
         error: true,
         reminder: true,
       })
+      expect(browser.runtime.sendMessage).not.toHaveBeenCalledWith({
+        kind: 'bg.patchTaskPanelPreference',
+        payload: expect.anything(),
+      })
     })
   })
 
   it('shows an error instead of saved when the background rejects a setting', async () => {
     browser.runtime.sendMessage = vi.fn(async (env) => {
+      if (env.kind === 'bg.getTakeoverConfig') return TAKEOVER_DEFAULT
       if (env.kind === 'bg.getNotificationsConfig') {
         return { master: true, confirm: false, error: true, reminder: true }
       }

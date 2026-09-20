@@ -163,11 +163,7 @@
       "title": "Prise en charge des téléchargements",
       "remoteUnavailable": "La prise en charge automatique nécessite actuellement Motrix App en local. Les téléchargements distants et les autorisations d’en-têtes ou de cookies ne l’activent pas. Vous pouvez toujours envoyer des téléchargements à ce Server manuellement ou par le menu contextuel.",
       "availabilityUnknown": "La prise en charge reste indisponible tant que le service sélectionné ne peut pas être vérifié.",
-      "remoteUnavailableShort": "App locale uniquement. L’envoi par clic droit fonctionne avec les Servers.",
-      "autoOpenPopup": "Ouvrir les tâches après une capture",
-      "autoOpenDescription": "Ouvre les tâches lorsque Motrix accepte un téléchargement. Les téléchargements successifs ouvrent le panneau une seule fois.",
-      "autoOpenDisabled": "Activez la capture des téléchargements pour utiliser cette option.",
-      "autoOpenUnsupported": "Nécessite Chrome / Edge 127+ ou Firefox 149+."
+      "remoteUnavailableShort": "App locale uniquement. L’envoi par clic droit fonctionne avec les Servers."
     },
     "tabs": {
       "general": "Général",
@@ -209,7 +205,13 @@
       "subtitle": "Téléchargez des fichiers du Web avec Motrix",
       "website": "Site officiel"
     },
-    "title": "Réglages de l’extension Motrix"
+    "title": "Réglages de l’extension Motrix",
+    "taskPanel": {
+      "title": "Panneau des tâches",
+      "openAfterSubmit": "Ouvrir le panneau après l’ajout d’un téléchargement",
+      "description": "Ouvre automatiquement le panneau après l’ajout d’un téléchargement à Motrix, y compris par clic droit ou interception automatique. Plusieurs ajouts rapprochés n’ouvrent le panneau qu’une fois.",
+      "unsupported": "Nécessite Chrome / Edge 127+ ou Firefox 149+."
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "Gérer les notifications système de l’extension",
       "retry": "Réessayer",
       "saveError": "Échec de l’enregistrement du réglage. Réessayez.",
-      "takeoverDescription": "Envoyer les téléchargements du navigateur au service Motrix actuel"
+      "takeoverDescription": "Envoyer les téléchargements du navigateur au service Motrix actuel",
+      "excludeCurrentSite": "Exclure le site actuel",
+      "excludeCurrentSiteDescription": "Conserver les téléchargements de {{site}} dans le navigateur",
+      "noCurrentSite": "Cette page n’a pas de domaine à exclure.",
+      "inheritedExclusion": "{{site}} est couvert par l’exclusion de {{domain}}. Modifiez-la dans les paramètres complets.",
+      "taskPanelDescription": "Ouvrir après l’ajout de téléchargements par clic droit, interception ou autre méthode"
     },
     "quickAdd": {
       "title": "Nouvelle tâche",

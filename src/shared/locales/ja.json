@@ -163,11 +163,7 @@
       "title": "ダウンロードの引き継ぎ",
       "remoteUnavailable": "自動引き継ぎには現在、ローカルの Motrix App が必要です。リモートダウンロードやヘッダー・Cookie の権限では有効になりません。この Server には引き続き手動または右クリックメニューからダウンロードを送信できます。",
       "availabilityUnknown": "選択したバックエンドを確認できるまで、引き継ぎは利用できません。",
-      "remoteUnavailableShort": "ローカル App のみ対応。右クリックでの送信は Server でも利用できます。",
-      "autoOpenPopup": "引き継ぎ成功後にタスクパネルを開く",
-      "autoOpenDescription": "Motrix がダウンロードを受け付けたらパネルを開きます。連続したダウンロードでは一度だけ開きます。",
-      "autoOpenDisabled": "この設定にはダウンロードの引き継ぎを有効にしてください。",
-      "autoOpenUnsupported": "Chrome / Edge 127 以降、または Firefox 149 以降が必要です。"
+      "remoteUnavailableShort": "ローカル App のみ対応。右クリックでの送信は Server でも利用できます。"
     },
     "tabs": {
       "general": "一般",
@@ -209,7 +205,13 @@
       "subtitle": "ウェブ上のファイルを Motrix でダウンロード",
       "website": "公式サイト"
     },
-    "title": "Motrix 拡張機能の設定"
+    "title": "Motrix 拡張機能の設定",
+    "taskPanel": {
+      "title": "タスクパネル",
+      "openAfterSubmit": "ダウンロード追加後にタスクパネルを開く",
+      "description": "Motrix にダウンロードが追加されると自動で開きます。右クリックからのダウンロードや自動引き継ぎにも対応します。複数を続けて追加した場合は一度だけ開きます。",
+      "unsupported": "Chrome / Edge 127 以降、または Firefox 149 以降が必要です。"
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "拡張機能のシステム通知を設定",
       "retry": "再試行",
       "saveError": "設定の保存に失敗しました。再試行してください。",
-      "takeoverDescription": "ブラウザーのダウンロードを現在の Motrix バックエンドに送信"
+      "takeoverDescription": "ブラウザーのダウンロードを現在の Motrix バックエンドに送信",
+      "excludeCurrentSite": "現在のサイトを除外",
+      "excludeCurrentSiteDescription": "{{site}} のダウンロードをブラウザーで処理",
+      "noCurrentSite": "このページには除外できるサイトのドメインがありません。",
+      "inheritedExclusion": "{{site}} は {{domain}} の除外設定に含まれています。詳細設定で変更できます。",
+      "taskPanelDescription": "右クリックや自動引き継ぎなどでダウンロードを追加した後に開く"
     },
     "quickAdd": {
       "title": "新しいタスク",

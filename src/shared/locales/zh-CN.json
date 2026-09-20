@@ -163,11 +163,7 @@
       "title": "下载接管",
       "remoteUnavailable": "自动接管目前仅支持本机 Motrix App。开启远程下载、请求头或 Cookie 权限不会启用自动接管。你仍可手动添加下载或通过右键菜单发送到此 Server。",
       "availabilityUnknown": "确认当前后端之前，自动接管暂不可用。",
-      "remoteUnavailableShort": "仅支持本机 App；远程 Server 可通过右键发送。",
-      "autoOpenPopup": "接管成功后展开任务面板",
-      "autoOpenDescription": "下载交给 Motrix 后，自动展开任务面板。连续下载只展开一次。",
-      "autoOpenDisabled": "启用下载接管后可用。",
-      "autoOpenUnsupported": "需要 Chrome / Edge 127 或 Firefox 149 及以上版本。"
+      "remoteUnavailableShort": "仅支持本机 App；远程 Server 可通过右键发送。"
     },
     "tabs": {
       "general": "通用",
@@ -209,7 +205,13 @@
       "subtitle": "使用 Motrix 下载网页中的文件",
       "website": "官方网站"
     },
-    "title": "Motrix 扩展设置"
+    "title": "Motrix 扩展设置",
+    "taskPanel": {
+      "title": "任务面板",
+      "openAfterSubmit": "添加下载后展开任务面板",
+      "description": "下载成功添加到 Motrix 后自动展开，右键下载和自动接管都适用。连续添加多个下载时只展开一次。",
+      "unsupported": "需要 Chrome / Edge 127 或 Firefox 149 及以上版本。"
+    }
   },
   "popup": {
     "diagnostics": {
@@ -256,7 +258,12 @@
       "notificationsDescription": "控制扩展发送的系统通知",
       "retry": "重试",
       "saveError": "设置保存失败，请重试。",
-      "takeoverDescription": "将浏览器下载交给当前 Motrix 后端"
+      "takeoverDescription": "将浏览器下载交给当前 Motrix 后端",
+      "excludeCurrentSite": "排除当前站点",
+      "excludeCurrentSiteDescription": "不自动接管 {{site}} 的下载",
+      "noCurrentSite": "当前页面没有可排除的网站域名。",
+      "inheritedExclusion": "{{site}} 已被 {{domain}} 的排除规则覆盖，可在完整设置中修改。",
+      "taskPanelDescription": "右键下载、自动接管等任务添加成功后展开"
     },
     "quickAdd": {
       "title": "新建任务",

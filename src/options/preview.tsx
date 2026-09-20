@@ -1,5 +1,6 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
+import { TAKEOVER_DEFAULT, type TakeoverSettings } from '@/shared/takeover'
 
 type PreviewEndpoint = {
   version: 3
@@ -42,6 +43,7 @@ let previewEndpoint: PreviewEndpoint = {
 
 const pairedEndpoints = new Set(['local', 'studio'])
 let nextServerId = 1
+let previewTakeover = { ...TAKEOVER_DEFAULT }
 let previewConnectionState: 'connected' | 'disconnected' = 'connected'
 
 const previewRuntime = {
@@ -232,12 +234,19 @@ const previewRuntime = {
       case 'bg.getState':
         return { state: previewConnectionState }
       case 'bg.getTakeoverConfig':
-        return {
-          enabled: false,
-          consentAckVersion: 0,
-          defaultAction: 'motrix',
-          rules: [],
+        return previewTakeover
+      case 'bg.patchTaskPanelPreference':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as { openTaskPanelAfterSubmit: boolean }),
         }
+        return previewTakeover
+      case 'bg.setTakeoverConfig':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as TakeoverSettings),
+        }
+        return { ok: true }
       case 'bg.getNotificationsConfig':
         return { master: true, confirm: false, error: true, reminder: true }
       case 'bg.listAdapters':
@@ -253,6 +262,7 @@ const storageChanged = {
   removeListener: () => undefined,
 }
 const previewBrowser = {
+  action: { openPopup: async () => undefined },
   runtime: previewRuntime,
   i18n: { getUILanguage: () => 'zh-CN' },
   storage: {

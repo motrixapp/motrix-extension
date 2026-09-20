@@ -58,6 +58,7 @@ describe('DownloadTab', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: /apply|应用/i }))
     await waitFor(() => {
+      expect(savedTakeover).not.toHaveProperty('openTaskPanelAfterSubmit')
       expect(savedTakeover?.enabled).toBe(true)
       expect(savedTakeover?.consentAckVersion).toBe(1)
       expect(browser.runtime.sendMessage).not.toHaveBeenCalledWith({

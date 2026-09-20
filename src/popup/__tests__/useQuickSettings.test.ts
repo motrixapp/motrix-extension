@@ -2,17 +2,22 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/background/MessageBus', () => ({ send: vi.fn() }))
+vi.mock('@/shared/platformCapabilities', () => ({
+  supportsAutoOpenPopup: () => true,
+}))
 
 import * as MessageBus from '@/background/MessageBus'
 import { useQuickSettings } from '@/popup/useQuickSettings'
+import { extensionBrowser } from '@/shared/browser'
 import type { NotificationsConfig } from '@/shared/notifications'
+import { withSiteExcluded } from '@/shared/siteExclusion'
 import { CONSENT_VERSION, type TakeoverConfig } from '@/shared/takeover'
 
 const send = vi.mocked(MessageBus.send)
 
 const TAKEOVER: TakeoverConfig = {
   enabled: false,
-  autoOpenPopup: true,
+  openTaskPanelAfterSubmit: true,
   consentAckVersion: 0,
   defaultAction: 'chrome',
   rules: [
@@ -34,7 +39,18 @@ const NOTIFICATIONS: NotificationsConfig = {
 function mockSuccessfulBus(): void {
   send.mockImplementation(async (kind: string, payload) => {
     if (kind === 'bg.getTakeoverConfig') return structuredClone(TAKEOVER)
-    if (kind === 'bg.patchTakeoverEnabled') return { ...TAKEOVER, ...payload }
+    if (
+      kind === 'bg.patchTakeoverEnabled' ||
+      kind === 'bg.patchTaskPanelPreference'
+    )
+      return { ...TAKEOVER, ...payload }
+    if (kind === 'bg.patchSiteExclusion') {
+      const { domain, excluded } = payload as {
+        domain: string
+        excluded: boolean
+      }
+      return withSiteExcluded(TAKEOVER, domain, excluded)
+    }
     if (kind === 'bg.getNotificationsConfig') {
       return structuredClone(NOTIFICATIONS)
     }
@@ -45,6 +61,9 @@ function mockSuccessfulBus(): void {
 describe('useQuickSettings', () => {
   beforeEach(() => {
     send.mockReset()
+    extensionBrowser.tabs.query = vi.fn(async () => [
+      { id: 4, url: 'https://files.example.com/private?token=secret' },
+    ]) as never
   })
 
   it('loads both background-owned configs', async () => {
@@ -55,6 +74,58 @@ describe('useQuickSettings', () => {
     expect(result.current.takeover).toEqual(TAKEOVER)
     expect(result.current.notifications).toEqual(NOTIFICATIONS)
     expect(result.current.error).toBeNull()
+    expect(result.current.currentSite).toBe('files.example.com')
+  })
+
+  it('patches the task panel preference while takeover is off or remote', async () => {
+    mockSuccessfulBus()
+    const { result } = renderHook(() => useQuickSettings(false))
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    await act(async () => {
+      await result.current.setOpenTaskPanelAfterSubmit(false)
+    })
+    expect(send).toHaveBeenCalledWith('bg.patchTaskPanelPreference', {
+      openTaskPanelAfterSubmit: false,
+    })
+    expect(result.current.takeover).toEqual({
+      ...TAKEOVER,
+      openTaskPanelAfterSubmit: false,
+    })
+  })
+
+  it('toggles the displayed domain exclusion without sending the page URL or changing other settings', async () => {
+    mockSuccessfulBus()
+    const { result } = renderHook(() => useQuickSettings())
+    await waitFor(() =>
+      expect(result.current.currentSite).toBe('files.example.com')
+    )
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    await act(async () => {
+      await result.current.setCurrentSiteExcluded(true)
+    })
+    expect(send).toHaveBeenCalledWith('bg.patchSiteExclusion', {
+      domain: 'files.example.com',
+      excluded: true,
+    })
+    expect(result.current.excludedSite).toBe('files.example.com')
+    expect(result.current.takeover?.rules).toContainEqual(TAKEOVER.rules[0])
+    await act(async () => {
+      await result.current.setCurrentSiteExcluded(false)
+    })
+    expect(result.current.excludedSite).toBeNull()
+    expect(result.current.takeover).toEqual(TAKEOVER)
+  })
+
+  it('rolls back a failed site exclusion save', async () => {
+    mockSuccessfulBus()
+    const { result } = renderHook(() => useQuickSettings())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    send.mockRejectedValueOnce(new Error('storage failed'))
+    await act(async () => {
+      await result.current.setCurrentSiteExcluded(true)
+    })
+    expect(result.current.excludedSite).toBeNull()
+    expect(result.current.error?.operation).toBe('save')
   })
 
   it('blocks remote toggles and consent without overwriting the retained local preference', async () => {
