@@ -1,5 +1,6 @@
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
-import { probeSize } from '@/background/capture/probeSize'
+import { type ProbeResult, probeTarget } from '@/background/capture/probeSize'
+import { isFaithfulReplay } from '@/background/capture/replayFidelity'
 import { makeOps } from '@/background/handoff/makeOps'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
@@ -73,8 +74,16 @@ async function handle(
     typeof item.totalBytes === 'number' && item.totalBytes > 0
       ? item.totalBytes
       : null
+  // Same single-shot probe as the Chromium path: its length feeds minSizeMB
+  // rules, and its Content-Type exposes a download a GET replay cannot
+  // reproduce (see replayFidelity).
+  let probe: ProbeResult | null = null
+  const runProbe = async (): Promise<ProbeResult> => {
+    probe ??= await probeTarget(url, { fetch: globalThis.fetch })
+    return probe
+  }
   if (sizeBytes === null && configHasThreshold(cfg)) {
-    sizeBytes = await probeSize(url, { fetch: globalThis.fetch })
+    sizeBytes = (await runProbe()).sizeBytes
   }
 
   const target = normalizeTarget({
@@ -91,6 +100,22 @@ async function handle(
   })
 
   if (decideTakeover(cfg, target) !== 'motrix') return
+  const { contentType } = await runProbe()
+  if (
+    !isFaithfulReplay({
+      itemMime: item.mime ?? '',
+      suggestedFilename: target.suggestedFilename,
+      probedContentType: contentType,
+    })
+  ) {
+    // Firefox has not cancelled the native download yet; leaving it alone
+    // lets the browser finish the file it actually negotiated.
+    log.debug(
+      '[takeover] declined: GET replay would not be faithful; contentType=',
+      contentType
+    )
+    return
+  }
 
   const ops = makeOps({
     manager: deps.manager,
