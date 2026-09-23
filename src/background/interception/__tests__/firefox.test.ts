@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { probeTarget } from '@/background/capture/probeSize'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
 import {
@@ -9,6 +10,12 @@ import type { Browser } from '@/shared/browser'
 
 vi.mock('@/background/handoff/runHandoff', () => ({
   runHandoff: vi.fn(async () => {}),
+}))
+vi.mock('@/background/capture/probeSize', () => ({
+  probeTarget: vi.fn(async () => ({
+    sizeBytes: null,
+    contentType: 'application/octet-stream',
+  })),
 }))
 
 interface DownloadsStub {
@@ -79,6 +86,35 @@ describe('handleFirefoxDownloadSafely', () => {
       }),
       expect.anything()
     )
+  })
+
+  it('leaves a form-POST download native when its GET replay serves HTML', async () => {
+    // Firefox never holds the native download, so declining before the
+    // handoff simply lets the browser finish the file it negotiated (#2185).
+    vi.mocked(probeTarget).mockResolvedValueOnce({
+      sizeBytes: null,
+      contentType: 'text/html; charset=UTF-8',
+    })
+    vi.mocked(runHandoff).mockClear()
+    await handleFirefoxDownloadSafely(
+      {
+        id: 8,
+        url: 'https://uupdump.net/get.php?id=abc&pack=en-us&edition=core',
+        filename: 'uupdump_abc.zip',
+        mime: 'application/zip',
+        totalBytes: -1,
+      } as Browser.downloads.DownloadItem,
+      {
+        getConfig: async () => ({
+          enabled: true,
+          defaultAction: 'motrix',
+          rules: [],
+        }),
+        captureGuard: async () => ({ assertCurrent: vi.fn() }),
+      } as unknown as ChromiumInterceptionDeps
+    )
+    expect(runHandoff).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
   })
 
   it('does not touch the original remote download or attempt a handoff', async () => {

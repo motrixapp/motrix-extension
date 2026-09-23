@@ -2,7 +2,8 @@ import type { AutoOpenPopupService } from '@/background/AutoOpenPopupService'
 import type { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionManager } from '@/background/ConnectionManager'
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
-import { probeSize } from '@/background/capture/probeSize'
+import { type ProbeResult, probeTarget } from '@/background/capture/probeSize'
+import { isFaithfulReplay } from '@/background/capture/replayFidelity'
 import type { HandoffGuard } from '@/background/handoff/guard'
 import { makeOps } from '@/background/handoff/makeOps'
 import { type HandoffResult, runHandoff } from '@/background/handoff/runHandoff'
@@ -111,8 +112,17 @@ async function handleHeld(
       typeof item.totalBytes === 'number' && item.totalBytes > 0
         ? item.totalBytes
         : null
+    // The probe rehearses Motrix's own GET. Its Content-Type is the only
+    // evidence we get that the browser's download was not a plain GET (see
+    // replayFidelity), and its length feeds minSizeMB rules. Run it at most
+    // once, and never for a download we are going to leave native anyway.
+    let probe: ProbeResult | null = null
+    const runProbe = async (): Promise<ProbeResult> => {
+      probe ??= await probeTarget(url, { fetch: globalThis.fetch })
+      return probe
+    }
     if (sizeBytes === null && configHasThreshold(cfg)) {
-      sizeBytes = await probeSize(url, { fetch: globalThis.fetch })
+      sizeBytes = (await runProbe()).sizeBytes
     }
 
     const target = normalizeTarget({
@@ -144,6 +154,22 @@ async function handleHeld(
       deps.manager.getState()
     )
     if (decision !== 'motrix') return // finally releases the native download
+    const { contentType } = await runProbe()
+    if (
+      !isFaithfulReplay({
+        itemMime: item.mime ?? '',
+        suggestedFilename: target.suggestedFilename,
+        probedContentType: contentType,
+      })
+    ) {
+      // Replaying this URL would fetch a different resource than the browser
+      // is downloading (a form-POST download, typically). Leave it native.
+      log.debug(
+        '[takeover] declined: GET replay would not be faithful; contentType=',
+        contentType
+      )
+      return
+    }
 
     const ops = makeOps({
       manager: deps.manager,

@@ -12,7 +12,10 @@ vi.mock('@/background/handoff/runHandoff', () => ({
   runHandoff: vi.fn(async () => {}),
 }))
 vi.mock('@/background/capture/probeSize', () => ({
-  probeSize: vi.fn(async () => 5 * 1024 * 1024), // 5 MiB
+  probeTarget: vi.fn(async () => ({
+    sizeBytes: 5 * 1024 * 1024, // 5 MiB
+    contentType: 'application/octet-stream',
+  })),
 }))
 
 const mockedRunHandoff = vi.mocked(runHandoff)
@@ -191,8 +194,8 @@ describe('registerChromiumInterception', () => {
     const suggest = vi.fn()
     listener?.(item({ totalBytes: -1 }), suggest)
     await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1))
-    const { probeSize } = await import('@/background/capture/probeSize')
-    expect(probeSize).not.toHaveBeenCalled()
+    const { probeTarget } = await import('@/background/capture/probeSize')
+    expect(probeTarget).not.toHaveBeenCalled()
     expect(mockedRunHandoff).not.toHaveBeenCalled()
     expect(deps.manager.clearGateAndStart).not.toHaveBeenCalled()
     expect(deps.manager.submitDownload).not.toHaveBeenCalled()
@@ -212,12 +215,57 @@ describe('registerChromiumInterception', () => {
     const suggest = vi.fn()
     listener?.(item({ totalBytes: -1 }), suggest)
     await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1))
-    const { probeSize } = await import('@/background/capture/probeSize')
-    expect(vi.mocked(probeSize)).toHaveBeenCalledWith(
+    const { probeTarget } = await import('@/background/capture/probeSize')
+    expect(vi.mocked(probeTarget)).toHaveBeenCalledWith(
       'https://files.example/a.bin',
       expect.anything()
     )
     expect(mockedRunHandoff).not.toHaveBeenCalled()
+  })
+
+  it('declines a form-POST download whose GET replay serves HTML', async () => {
+    // uupdump.net: the browser saved the POST response (a zip); a GET to the
+    // same URL returns the configuration page. Motrix can only replay GET, so
+    // the download must stay native rather than land as a renamed HTML file.
+    const { probeTarget } = await import('@/background/capture/probeSize')
+    vi.mocked(probeTarget).mockResolvedValueOnce({
+      sizeBytes: null,
+      contentType: 'text/html; charset=UTF-8',
+    })
+    register(enabledConfig())
+    const suggest = vi.fn()
+    listener?.(
+      item({
+        url: 'https://uupdump.net/get.php?id=abc&pack=en-us&edition=core',
+        filename: 'uupdump_abc.zip',
+        mime: 'application/zip',
+        totalBytes: -1,
+      }),
+      suggest
+    )
+    await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1))
+    expect(mockedRunHandoff).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+  })
+
+  it('still takes over an HTML page the user genuinely asked to download', async () => {
+    const { probeTarget } = await import('@/background/capture/probeSize')
+    vi.mocked(probeTarget).mockResolvedValueOnce({
+      sizeBytes: null,
+      contentType: 'text/html; charset=UTF-8',
+    })
+    register(enabledConfig())
+    const suggest = vi.fn()
+    listener?.(
+      item({
+        url: 'https://page.example/report.html',
+        filename: 'report.html',
+        mime: 'text/html',
+        totalBytes: -1,
+      }),
+      suggest
+    )
+    await vi.waitFor(() => expect(mockedRunHandoff).toHaveBeenCalledTimes(1))
   })
 
   it('commit path: handoff cancels via ops → cancel+erase, suggest never called', async () => {
