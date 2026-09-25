@@ -1,0 +1,462 @@
+{
+  "badge": {
+    "tooltip": {
+      "connected": "Motrix: csatlakoztatva",
+      "disconnected": "Motrix: nincs kapcsolat",
+      "connecting": "Motrix: csatlakozás…",
+      "downloading": "Motrix: letöltés folyamatban",
+      "denied": "Motrix: párosítás elutasítva — nyisd meg az újrapárosításhoz",
+      "error": "Motrix: a letöltés átadása sikertelen — kattints a részletekért"
+    }
+  },
+  "contextMenu": {
+    "downloadWithMotrix": "Letöltés a Motrixszal",
+    "pairThenDownload": "Motrix párosítása, majd letöltés"
+  },
+  "notify": {
+    "browserFallbackBody": "A Motrix nem érhető el, ezért a böngésző végzi a letöltést.",
+    "browserFallbackTitle": "Letöltés a böngészőben",
+    "downloadComplete": "A letöltés befejeződött",
+    "downloadFailed": "A letöltés sikertelen",
+    "handedToMotrix": "Átadva a Motrixnak",
+    "notConnectedBody": "Párosítsd a Motrixot a letöltések átvételéhez.",
+    "notConnectedTitle": "A Motrix nincs csatlakoztatva",
+    "notReachableBody": "Párosítsd a Motrixot, majd próbáld újra a letöltést.",
+    "notReachableTitle": "A Motrix nem érhető el",
+    "pairNudgeBody": "Nyisd meg a Motrixot a párosítás befejezéséhez.",
+    "pairNudgeTitle": "Motrix párosítása",
+    "pairRevokedBody": "A Motrix visszavonta a böngésző párosítását.",
+    "pairRevokedTitle": "Párosítás visszavonva",
+    "sensitiveSkippedBody": "Az érzékeny webhelyről történő letöltést a böngésző kezeli.",
+    "sensitiveSkippedTitle": "Kihagyva",
+    "submitFailedBody": "A letöltés újraindul a böngészőben.",
+    "submitFailedTitle": "A letöltés átadása a Motrixnak sikertelen"
+  },
+  "options": {
+    "diagnostics": {
+      "adapters": "Adapterek",
+      "extensionId": "Bővítményazonosító",
+      "logLevel": "Naplózási szint",
+      "logLevels": {
+        "silent": "Kikapcsolva",
+        "error": "Hiba",
+        "warn": "Figyelmeztetés",
+        "info": "Információ",
+        "debug": "Hibakeresés"
+      },
+      "noneRegistered": "még nincs regisztrálva",
+      "title": "Diagnosztika",
+      "version": "Verzió"
+    },
+    "endpoint": {
+      "activate": "Használat",
+      "activateAria": "{{name}} használata",
+      "connection": {
+        "bootstrapping": "Indítás",
+        "connected": "Csatlakoztatva",
+        "connecting": "Csatlakozás",
+        "denied": "Elutasítva",
+        "disconnected": "Nincs kapcsolat",
+        "handshaking": "Hitelesítés",
+        "awaiting-code": "Várakozás a kódra"
+      },
+      "currentDescription": "Válassz egy alkalmazást vagy szervert a letöltések, a feladatok és az oldalakon felderített erőforrások kezeléséhez.",
+      "currentTitle": "Motrix-kapcsolatok",
+      "listLabel": "Elérhető Motrix-kapcsolatok",
+      "localDescription": "A Motrix alkalmazáson keresztül felderített helyi számítógép",
+      "localName": "Motrix alkalmazás",
+      "selectLabel": "Letöltések küldése ide"
+    },
+    "language": {
+      "label": "Nyelv",
+      "system": "Rendszerbeállítás követése"
+    },
+    "notifications": {
+      "title": "Rendszerértesítések",
+      "masterLabel": "Rendszerértesítések engedélyezése",
+      "masterAria": "Rendszerértesítések engedélyezése",
+      "confirmLabel": "Sikeres műveletek és visszajelzések",
+      "confirmDesc": "Átadás a Motrixnak, letöltés befejezése",
+      "errorLabel": "Hibák",
+      "errorDesc": "Sikertelen átadás, kapcsolódási hiba, sikertelen letöltés",
+      "reminderLabel": "Emlékeztetők",
+      "reminderDesc": "Párosítási kérések, párosítás visszavonása, kihagyott webhelyek"
+    },
+    "pairing": {
+      "backendTitle": "{{name}} párosítása",
+      "forget": "Párosítás elfelejtése",
+      "loading": "Párosítás állapotának betöltése…",
+      "localHelp": "Kattints a Párosítás gombra a számítógépen futó Motrix felderítéséhez, majd add meg a párosítási kódját.",
+      "localTitle": "Párosítás a Motrix alkalmazáson keresztül",
+      "remoteTitle": "Párosítás a Motrix szerverrel",
+      "remoteHelp": "Kattints a Párosítás gombra, hagyd jóvá a kérést a szerver kezelőfelületén, majd írd be ide a megjelenő kódot. WS- és WSS-kapcsolat is használható; a WSS ajánlott.",
+      "serverRequiredTitle": "Motrix szerver szükséges",
+      "serverRequiredHelp": "Az Androidon futó Firefox a Motrix szerveren keresztül csatlakozik. Adj hozzá fent egy szervert, majd válaszd ki a párosításhoz.",
+      "remoteConsentTitle": "Távoli letöltések",
+      "remoteConsentBody": "A távoli letöltések során a cél URL-je, a forrásoldal URL-je és címe, a fájlnév, a kijelölés és a feladatvezérlési parancsok erre a szerverre kerülnek. A sütik és a kérésfejlécek küldését külön kell engedélyezni.",
+      "remoteConsentOffline": "Az adatküldési engedélyek a hitelesített szerverhez tartoznak. Módosításukhoz előbb csatlakozz.",
+      "remoteHeadersLabel": "Kérésfejlécek küldése",
+      "remoteHeadersHelp": "Engedélyezi az oldalról származó fejlécek, például a Referer és a médialejátszáshoz használt fejlécek küldését. A hitelesítési fejlécekhez az alábbi engedély is szükséges.",
+      "remoteCredentialsLabel": "Sütik és hitelesítési adatok küldése",
+      "remoteCredentialsHelp": "Engedélyezi a sütik és a hitelesítési fejlécek küldését kizárólag ennek a szervernek. Csak saját felügyeleted alatt álló szervernél engedélyezd.",
+      "notPaired": "Nincs párosítva",
+      "paired": "Párosítva a Motrixszal",
+      "pairedHelp": "Ehhez a kapcsolathoz a rendszer elmentette az MBP1-hitelesítő adatot. Az aktuális kapcsolati állapot külön jelenik meg.",
+      "pairedTitle": "Párosítás kész",
+      "reconnect": "Újracsatlakozás",
+      "scopedHelp": "Minden kapcsolat saját párosítási engedéllyel és hitelesítő adatokkal rendelkezik. A kapcsolatok közötti váltáskor a rendszer nem használja fel egy másik kapcsolat engedélyét.",
+      "pair": "Párosítás",
+      "pairDialogTitle": "Párosítás a Motrixszal"
+    },
+    "servers": {
+      "add": "Szerver hozzáadása",
+      "addTitle": "Motrix szerver hozzáadása",
+      "current": "Aktuális",
+      "delete": "Szerver törlése",
+      "deleteActiveDescription": "Törlöd a(z) {{name}} szervert a helyben tárolt párosítási hitelesítő adataival és engedélyeivel együtt? Az aktuális kapcsolat visszaáll a Motrix alkalmazásra, de nem csatlakozik hozzá és nem indítja el.",
+      "deleteActiveServerOnlyDescription": "Törlöd a(z) {{name}} szervert a helyben tárolt párosítási hitelesítő adataival és engedélyeivel együtt? A letöltéshez másik Motrix szervert kell hozzáadnod vagy kiválasztanod.",
+      "deleteAria": "{{name}} törlése",
+      "deleteDescription": "Törlöd a(z) {{name}} szervert a helyben tárolt párosítási hitelesítő adataival és engedélyeivel együtt? Ez a szerveren semmit nem von vissza.",
+      "deleteTitle": "Törlöd a Motrix szervert?",
+      "description": "Ments el több Motrix szervercímet, és válts közöttük a beállításokban vagy a felugró ablakban.",
+      "dialogDescription": "Adj nevet a kapcsolatnak, és írd be a WebSocket alap-URL-jét.",
+      "editAria": "{{name}} szerkesztése",
+      "editTitle": "Motrix szerver szerkesztése",
+      "emptyDescription": "Adj hozzá egy szervert, hogy egy másik gépen futó Motrixhoz csatlakozhass.",
+      "emptyTitle": "Még nincs Motrix szerver",
+      "footer": "A szervercím módosítása után újra kell párosítani. A párosítási adatok nem kerülnek át egyik címről a másikra.",
+      "nameLabel": "Szerver neve",
+      "namePlaceholder": "Otthoni szerver",
+      "nameRequired": "A szerver nevét meg kell adni",
+      "save": "Szerver mentése",
+      "statusAuthority": "Szerver címe: {{value}}",
+      "statusRuntime": "Motrix-verzió: {{name}} {{version}}",
+      "statusTitle": "Szerver adatai",
+      "statusTransportSecure": "Kapcsolat biztonsága: WSS használatban, a TLS ellenőrzi a szerver azonosságát",
+      "statusTransportPlain": "Kapcsolat biztonsága: titkosított, de a WS nem tudja ellenőrizni a szerver azonosságát, és a kapcsolat egyes adatai láthatóvá válhatnak. A WSS ajánlott",
+      "title": "Motrix szerverek",
+      "urlDescription": "Adj meg egy ws:// vagy wss:// alap-URL-t. A megadott útvonal változatlanul megmarad a fordított proxy útvonal-előtagjaként. A WSS ajánlott.",
+      "urlDuplicate": "Ez a Motrix szervercím már el van mentve",
+      "urlInvalid": "Adj meg egy érvényes ws:// vagy wss:// alap-URL-t szóközök, hitelesítési adatok, lekérdezési paraméterek és töredékazonosító nélkül",
+      "urlLabel": "WebSocket URL",
+      "urlPlaceholder": "ws(s)://host[:port][/base-path]",
+      "transportWarningTitle": "Ez a kapcsolat nem használ WSS-t",
+      "transportWarningBody": "A Motrixszal váltott tartalom továbbra is titkosított, de a WS nem tudja ellenőrizni a szerver azonosságát, és a kapcsolat egyes adatai láthatóvá válhatnak. Használj WSS-t, ha a NAS-od támogatja.",
+      "urlRequired": "A WebSocket URL-t meg kell adni"
+    },
+    "takeover": {
+      "consentBody": "A Motrix megkapja a webhely bejelentkezési sütijeit a fájlok letöltéséhez. Az érzékeny webhelyek letöltéseit továbbra is a böngésző kezeli.",
+      "consentCancel": "Mégse",
+      "consentConfirm": "Engedélyezés",
+      "consentDialogLabel": "Átadod a letöltéseket a Motrixnak?",
+      "denylistLabel": "Kivételek (soronként egy gépnév — ezeket mindig a böngésző kezeli)",
+      "enableAria": "Letöltések átvételének engedélyezése",
+      "enableLabel": "A feltételeknek megfelelő letöltések átadása a Motrixnak",
+      "loading": "Letöltésátvételi beállítások betöltése…",
+      "minSizeLabel": "Minimális méret (MB)",
+      "minSizePlaceholder": "0 = minden méret",
+      "thresholdInvalid": "A minimális méret nem lehet negatív szám",
+      "save": "Mentés",
+      "saved": "Mentve",
+      "title": "Letöltések átvétele",
+      "remoteUnavailable": "Az automatikus átvételhez jelenleg a helyi Motrix alkalmazás szükséges. A távoli letöltések, illetve a fejlécek vagy sütik küldésének engedélyezése ezt nem teszi lehetővé. Kézzel vagy a jobb gombos menüből továbbra is küldhetsz letöltéseket erre a szerverre.",
+      "availabilityUnknown": "A letöltések átvétele nem érhető el, amíg a kiválasztott kapcsolat ellenőrzése meg nem történik.",
+      "remoteUnavailableShort": "Csak a helyi alkalmazással. A jobb gombos küldés szerverekkel is működik."
+    },
+    "tabs": {
+      "general": "Általános",
+      "download": "Letöltések",
+      "integration": "Integráció",
+      "help": "Súgó"
+    },
+    "common": {
+      "apply": "Alkalmaz",
+      "cancel": "Mégse",
+      "loadError": "A beállítások nem tölthetők be, mert a bővítmény háttérfolyamata nem indult el. Töltsd újra a bővítményt, majd próbáld újra.",
+      "saved": "Mentve",
+      "saving": "Mentés…",
+      "saveError": "A mentés sikertelen"
+    },
+    "appearance": {
+      "title": "Megjelenés",
+      "theme": {
+        "label": "Téma",
+        "system": "Rendszerbeállítás követése",
+        "light": "Világos",
+        "dark": "Sötét"
+      }
+    },
+    "help": {
+      "title": "Súgó és támogatás",
+      "description": "Böngészd az útmutatókat, kérj segítséget, és tekintsd meg a bővítmény diagnosztikai adatait.",
+      "reportBug": "Probléma bejelentése",
+      "reportBugDescription": "Nyiss hibajegyet a GitHubon, vagy küldj visszajelzést.",
+      "issues": "GitHub-hibajegyek",
+      "docs": "Dokumentáció",
+      "docsDescription": "Útmutatók a beállításhoz, párosításhoz, a letöltések átvételéhez és a hibaelhárításhoz.",
+      "copyDiagnostics": "Diagnosztikai adatok másolása",
+      "copied": "Másolva",
+      "diagnostics": "Diagnosztika",
+      "diagnosticsDescription": "Állítsd be a naplózást, és másold ki a hibaelhárításhoz hasznos adatokat."
+    },
+    "about": {
+      "subtitle": "Fájlok letöltése az internetről a Motrixszal",
+      "website": "Hivatalos webhely"
+    },
+    "title": "A Motrix bővítmény beállításai"
+  },
+  "popup": {
+    "diagnostics": {
+      "run": "Diagnosztika",
+      "running": "Diagnosztika folyamatban…",
+      "rerun": "Újrafuttatás",
+      "title": "Diagnosztikai eredmények",
+      "runningHelp": "Hibakeresési naplózás bekapcsolása és a kapcsolati környezet ellenőrzése. Ez általában néhány másodpercet vesz igénybe.",
+      "firstLaunchHint": "Indítsd el kézzel a Motrixot, olvasd el az első indításkor megjelenő feltételeket, és fogadd el őket, ha egyetértesz velük. A főablak megjelenése után próbáld újra a párosítást.",
+      "homebrewHint": "Homebrew-val telepítetted? Egy felhasználónál a hivatalos kiadás telepítése és az első indítási beállítások elvégzése helyreállította a párosítást.",
+      "appReleases": "Hivatalos Motrix-kiadások",
+      "allowlistHint": "Fejlesztői vagy kicsomagolt telepítésnél ellenőrizd, hogy a bővítmény azonosítója szerepel-e a Motrix Beállítások → Integráció → Megbízható bővítmények listáján és a Native Host engedélyezési listáján."
+    },
+    "backend": {
+      "app": "Motrix alkalmazás",
+      "appDescription": "Ez a számítógép",
+      "choose": "Motrix-kapcsolat kiválasztása",
+      "configureServer": "Motrix szerverek kezelése",
+      "notConfigured": "Nincs beállítva",
+      "server": "Motrix szerver",
+      "version": "v{{version}}"
+    },
+    "controlPanel": {
+      "engineState": "Motor: {{state}}",
+      "noDownloads": "Nincsenek letöltések",
+      "pause": "Szüneteltetés",
+      "remove": "Eltávolítás",
+      "resume": "Folytatás",
+      "statsSummary": "{{active}} aktív, {{waiting}} várakozik"
+    },
+    "dashboard": {
+      "activity": "Aktivitás",
+      "resources": "Találatok",
+      "showResources": "Az oldal erőforrásainak megjelenítése",
+      "showTasks": "Aktív feladatok megjelenítése",
+      "title": "Adatforgalmi áttekintés"
+    },
+    "loading": "Betöltés…",
+    "quickSettings": {
+      "fullSettings": "Összes beállítás",
+      "fullSettingsDescription": "Általános, letöltések, kapcsolatok, súgó",
+      "loadError": "A gyorsbeállítások betöltése sikertelen.",
+      "notificationsDescription": "A bővítmény rendszerértesítéseinek kezelése",
+      "retry": "Újrapróbálás",
+      "saveError": "A beállítás mentése sikertelen. Próbáld újra.",
+      "takeoverDescription": "A böngésző letöltéseinek átadása az aktuális Motrix-kapcsolatnak"
+    },
+    "quickAdd": {
+      "title": "Új feladat",
+      "description": "Illessz be egy HTTP-, HTTPS- vagy magnet-hivatkozást.",
+      "inputLabel": "Letöltési cím",
+      "placeholder": "https://example.com/file.zip",
+      "cancel": "Mégse",
+      "add": "Hozzáadás",
+      "submitting": "Hozzáadás…",
+      "error": {
+        "empty": "Adj meg egy letöltési címet.",
+        "unsupported": "Csak HTTP-, HTTPS- és magnet-hivatkozások használhatók.",
+        "invalid": "A letöltési cím érvénytelen.",
+        "submitFailed": "A feladat hozzáadása sikertelen. Próbáld újra."
+      }
+    },
+    "reconnect": "Csatlakozás",
+    "settings": "Beállítások megnyitása",
+    "sniffer": {
+      "clearFilters": "Szűrők törlése",
+      "detected": "{{count}} elem",
+      "downloadCount": "{{count}} elem letöltése",
+      "downloadSelected": "Kijelöltek letöltése",
+      "downloadedResource": "{{name}} elküldve",
+      "downloadingResource": "{{name}} letöltése",
+      "emptyDescription": "Indítsd el a médialejátszást, majd próbáld újra.",
+      "emptyFilter": "Nincs megfelelő erőforrás",
+      "emptyTitle": "Nem található média",
+      "filteredCount": "{{matched}} / {{total}} kép",
+      "filters": {
+        "all": "Összes",
+        "audio": "Hang",
+        "image": "Képek",
+        "video": "Videó"
+      },
+      "imageFilters": {
+        "activeCount": "{{count}} aktív szűrő",
+        "dimensions": "Képméretek és fájlméret",
+        "done": "Kész",
+        "fields": {
+          "height": "Magasság",
+          "size": "Fájlméret",
+          "width": "Szélesség"
+        },
+        "formatOptionLabel": "{{format}} formátumú képek szűrése",
+        "formats": "Képformátum",
+        "operatorLabel": "{{label}} összehasonlítása",
+        "reset": "Visszaállítás",
+        "result": "{{matched}} / {{total}}",
+        "sizeUnitLabel": "Fájlméret mértékegysége",
+        "title": "Gyorsszűrők",
+        "trigger": "Szűrés",
+        "valueLabel": "{{label}} értéke"
+      },
+      "imageCount": "{{count}} kép",
+      "noImageMatches": "Nincs megfelelő kép",
+      "pageAction": {
+        "bilibili": "A bilibili-videó küldése",
+        "youtube": "A YouTube-videó küldése"
+      },
+      "pageSubmitted": "Videó elküldve a Motrixnak: {{taskId}}",
+      "pageResources": "Az oldal erőforrásai",
+      "quickDownloadResource": "{{name}} gyors letöltése",
+      "connectToSubmit": "Csatlakozz a Motrixhoz az erőforrások küldéséhez.",
+      "scan": "Új keresés",
+      "scanning": "Keresés…",
+      "selectAll": "Összes kijelölése",
+      "selected": "{{count}} kijelölve",
+      "selectResource": "{{name}} kijelölése",
+      "sourceHost": "Forrás: {{host}}",
+      "sendResource": "{{name}} küldése a Motrixnak",
+      "sent": "Elküldve",
+      "sending": "Küldés",
+      "submitFailed": "Az erőforrás küldése sikertelen. Próbáld újra.",
+      "title": "Felderítő",
+      "unavailableDescription": "Válts másik oldalra, vagy próbáld újra később.",
+      "unavailableTitle": "Az oldal nem vizsgálható",
+      "unsupported": "ffmpeg szükséges",
+      "unsupportedReason": "A kiválasztott kapcsolat nem tud {{kind}} típusú erőforrásokat küldeni, mert az ffmpeg-támogatás nem érhető el.",
+      "unsupportedSelectionReason": "A kiválasztott kapcsolat nem tudja elküldeni a kijelölt erőforrástípusok valamelyikét.",
+      "unsupportedResource": "{{name}} nem küldhető el. {{reason}}"
+    },
+    "speed": {
+      "download": "Letöltés",
+      "upload": "Feltöltés"
+    },
+    "status": {
+      "bootstrapping": "Motrix keresése…",
+      "connected": "Csatlakoztatva",
+      "connecting": "Csatlakozás…",
+      "denied": "Párosítás elutasítva",
+      "disconnected": "Nincs kapcsolat",
+      "handshaking": "Hitelesítés folyamatban",
+      "awaiting-code": "Várakozás a párosítási kódra…"
+    },
+    "tabs": {
+      "settings": "Beállítások",
+      "sniffer": "Felderítő",
+      "tasks": "Feladatok"
+    },
+    "takeover": {
+      "aria": "Letöltések átvételének kapcsolása",
+      "label": "Átvétel"
+    },
+    "tasks": {
+      "actions": "{{name}} műveletei",
+      "openFolder": "Tartalmazó mappa megnyitása a Motrixban",
+      "openFolderError": "A feladat mappájának megnyitása sikertelen. Próbáld újra.",
+      "openFolderMetadataPending": "A mappa megnyitása előtt várd meg a feladat metaadatainak betöltését",
+      "openFolderTask": "Tartalmazó mappa megnyitása: {{name}}",
+      "openFolderUnsupported": "A mappák megnyitásához frissítsd a Motrixot",
+      "pauseTask": "{{name}} szüneteltetése",
+      "removeTask": "{{name}} eltávolítása",
+      "removeConfirmTitle": "Eltávolítod a feladatot?",
+      "removeConfirmDescription": "A(z) „{{name}}” eltávolításra kerül a letöltési listából.",
+      "removeDeleteFilesLabel": "Letöltött fájlok törlése",
+      "removeConfirmAction": "Eltávolítás",
+      "resumeTask": "{{name}} folytatása",
+      "bytes": "{{done}} / {{total}}",
+      "disconnectedDescription": "Csatlakozz a feladatok megtekintéséhez.",
+      "disconnectedTitle": "A Motrix nem érhető el",
+      "empty": {
+        "active": "Nincsenek aktív feladatok",
+        "failed": "Nincsenek sikertelen feladatok",
+        "recent": "Nincsenek befejezett feladatok"
+      },
+      "filters": {
+        "active": "Aktív",
+        "failed": "Sikertelen",
+        "recent": "Befejezett"
+      },
+      "loading": "Feladatok betöltése",
+      "status": {
+        "completed": "Befejezve",
+        "downloading": "Letöltés",
+        "error": "Sikertelen",
+        "fetching_metadata": "Metaadatok lekérése",
+        "finalizing": "Véglegesítés",
+        "paused": "Szüneteltetve",
+        "queued": "Várakozik",
+        "seeding": "Visszaosztás"
+      },
+      "title": "Feladatok"
+    },
+    "pairing": {
+      "attemptOf": "Próbálkozás: {{run}} / {{maxRuns}}",
+      "attemptsRemaining": "{{attemptsRemaining}} próbálkozás maradt",
+      "codeLabel": "Párosítási kód",
+      "codeDescription": "Add meg a Motrix párosítási ablakában látható 8 karakteres kódot.",
+      "codeInvalid": "Add meg a párosítási ablakban látható 8 karakteres kódot.",
+      "dialogTitle": "Párosítási kód megadása",
+      "dismissPrompt": "Megadás később, böngészés folytatása",
+      "enterCode": "Párosítási kód megadása",
+      "expiresIn": "Lejárat: {{time}} múlva",
+      "pairButton": "Párosítás",
+      "pickerHelp": "Több futó Motrixot találtunk. Válassz egyet a párosításhoz.",
+      "rescan": "Új keresés",
+      "noCandidates": "Nem található futó Motrix.",
+      "candidatesLabel": "Felderített Motrix-példányok",
+      "candidatePort": "Port: {{port}}",
+      "candidateDetail": "{{instanceId}} · v{{appVersion}}",
+      "unknownVersion": "ismeretlen verzió",
+      "choose": "Kiválasztás",
+      "backoffTitle": "Túl sok párosítási próbálkozás",
+      "backoffBody": "Próbáld újra ekkor: {{time}}.",
+      "retryIn": "Újrapróbálás {{seconds}} másodperc múlva",
+      "permissionMissingTitle": "Engedély szükséges",
+      "permissionMissingBody": "Engedélyezd a localhost elérését a számítógépen futó Motrix felderítéséhez.",
+      "grantPermission": "Engedély megadása",
+      "degradedTitle": "A Motrix csatlakoztatva",
+      "degradedBody": "A Motrix a megszokott módon használható. Ez a kapcsolat csak alapvető ellenőrzéssel rendelkezik. Az erősebb védelemhez frissítsd a Motrixot, és párosítsd újra.",
+      "recoveryExhaustedTitle": "Az automatikus újracsatlakozás sikertelen",
+      "recoveryExhaustedBody": "A mentett párosítással nem sikerült újracsatlakozni. Próbálj újra csatlakozni, vagy az újrapárosítás előtt válaszd a Beállítások → Integráció → Párosítás elfelejtése lehetőséget."
+    }
+  },
+  "errors": {
+    "connection": {
+      "generic": "A csatlakozás sikertelen. Próbáld újra.",
+      "backoffLocked": "Túl sok párosítási próbálkozás. Próbáld újra később.",
+      "staleAttempt": "Újabb csatlakozási próbálkozás indult az előző helyett.",
+      "aborted": "A párosítás megszakítva.",
+      "deadlineExceeded": "A próbálkozás túllépte az időkorlátot. Próbáld újra.",
+      "runsExhausted": "Túl sok hibás kódot adtál meg. Indítsd újra a párosítást egy új kódért.",
+      "invalidCode": "A kód formátuma nem megfelelő. Ellenőrizd a Motrix párbeszédablakában.",
+      "missingNonce": "A Motrix nem biztosított párosítási lehetőséget. Ellenőrizd, hogy fut-e, majd próbáld újra.",
+      "unsupportedBrowser": "Ez a böngésző nem támogatja a párosítást.",
+      "ticketPreparationFailed": "A párosítás előkészítése sikertelen. Próbáld újra.",
+      "protocolViolation": "A Motrix váratlan választ küldött. Próbáld újra.",
+      "unsupportedVersion": "A bővítmény és a Motrix eltérő protokollverziót használ. Frissítsd mindkettőt, majd próbáld újra.",
+      "backendUpgradeRequired": "Ez a Motrix-verzió túl régi a biztonságos párosításhoz. Frissítsd a Motrixot, majd próbáld újra.",
+      "extensionUpgradeRequired": "Ez a bővítményverzió túl régi ehhez a Motrixhoz. Frissítsd a Motrix bővítményt, majd próbáld újra.",
+      "unsupportedRemote": "A hitelesített Motrix nem az ehhez a kapcsolathoz kiválasztott alkalmazás vagy szerver. Ellenőrizd a kapcsolati címet, majd próbáld újra.",
+      "remoteDiscoveryUnavailable": "A távoli Motrix szerver nem érhető el. Ellenőrizd a címét, a kapcsolatok fogadásának beállításait és a hálózatot. WSS esetén a tanúsítványt és a fordított proxyt is ellenőrizd.",
+      "remotePairingUnavailable": "A távoli Motrix szerver nem tudott biztonságos párosítási munkamenetet indítani. Próbáld újra hamarosan.",
+      "remoteTransportUnavailable": "A távoli Motrix szerverhez való csatlakozás sikertelen. Ellenőrizd a címét, a kapcsolatok fogadásának beállításait, a DNS-t és a hálózatot. WSS esetén a tanúsítványt és a fordított proxyt is ellenőrizd. A böngésző nem tudja megállapítani, melyik okozta a hibát.",
+      "peerRejected": "A Motrix elutasította a párosítást.",
+      "peerBusy": "A Motrix túl sok párosítási kérést kezel. Próbáld újra hamarosan.",
+      "securityCheckFailed": "A kapcsolat biztonsági ellenőrzése sikertelen volt, ezért megszakadt.",
+      "peerNotAuthentic": "A másik fél nem tudta igazolni, hogy a te Motrixod. A kapcsolat megszakadt.",
+      "credentialPhaseFailed": "A párosítás mentése sikertelen. Próbáld újra a párosítást.",
+      "internalError": "Hiba történt a bővítményben. Próbáld újra.",
+      "authFailed": "A Motrix nem ismerte fel ezt a párosítást. Lehet, hogy visszavonták — próbáld újra a párosítást.",
+      "serverMacMismatch": "A válasz ellenőrzése sikertelen, ezért a kapcsolat megszakadt. Lehet, hogy nem a te Motrixod válaszolt.",
+      "channelClosed": "A kapcsolat lezárult. A folytatáshoz csatlakozz újra.",
+      "channelUnavailable": "A Motrix jelenleg nem érhető el. Ellenőrizd, hogy fut-e.",
+      "diagnosticsCopyFailed": "A diagnosztikai adatok másolása sikertelen. Próbáld újra.",
+      "storedPairingUnavailable": "A mentett párosítással nem sikerült újracsatlakozni. Próbálj újra csatlakozni, vagy az újrapárosítás előtt válaszd a Beállítások → Integráció → Párosítás elfelejtése lehetőséget."
+    }
+  }
+}
