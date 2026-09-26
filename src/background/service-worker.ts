@@ -219,15 +219,23 @@ const submissions = new DownloadSubmissionService({
 const endpointLifecycleReady = recoverStorageBeforeEndpointAutostart({
   recoverPendingEndpointCleanup: () =>
     endpointCatalogService.recoverPendingCleanup(),
-  autostart: () => manager.autostart(),
 }).catch(() => {
   log.warn('pre-autostart storage recovery failed; autostart suppressed')
   throw new Error('background startup unavailable')
 })
-// The original promise intentionally stays rejected so every later entry point
-// fails closed. This observer prevents an unhandled-rejection report when no UI
-// message happens to arrive during a failed service-worker wake.
-void endpointLifecycleReady.catch(() => undefined)
+// A recovered catalogue is ready for dispatch even while Motrix is offline or
+// its handshake is pending. Awaiting autostart in the shared barrier held ALL
+// popup/content messages until the network attempt completed (#28).
+// Observe recovery rejection without starting a connection; the original
+// promise remains rejected so every later entry point still fails closed.
+void endpointLifecycleReady
+  .then(
+    () => manager.autostart(),
+    () => undefined
+  )
+  .catch(() => {
+    log.warn('backend autostart failed after storage recovery')
+  })
 
 manager.onStateChange((s) => {
   log.info('connection state →', s)

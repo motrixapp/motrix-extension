@@ -48,6 +48,32 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers())
 
 describe('bounded RPC recovery', () => {
+  it('bounds the initial read, failed probe, reconnect and retry to 30 seconds total', async () => {
+    const { rpc, send, reconnect, replacementSend } = fixture()
+    send.mockImplementation(never)
+    replacementSend.mockImplementation(never)
+    const replace = reconnect.getMockImplementation()!
+    reconnect.mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 8000))
+      return replace()
+    })
+    const done = vi.fn()
+    const result = rpc.request(Methods.TaskList, {})
+    const rejection = expect(result).rejects.toThrow('timed out')
+    void result.then(done, done)
+
+    // 15s ordinary read + 2s liveness probe + 8s reconnect + 5s retry.
+    await vi.advanceTimersByTimeAsync(29_999)
+    expect(done).not.toHaveBeenCalled()
+    expect(rpc.snapshot().health).toBe('checking')
+    expect(reconnect).toHaveBeenCalledOnce()
+    expect(replacementSend).toHaveBeenCalledOnce()
+    await vi.advanceTimersByTimeAsync(1)
+    await rejection
+    expect(done).toHaveBeenCalledOnce()
+    expect(rpc.snapshot().health).toBe('unresponsive')
+  })
+
   it('probes a live socket, cancels the timed-out read and replays it only once', async () => {
     const { rpc, send, reconnect } = fixture()
     let cancelled = false

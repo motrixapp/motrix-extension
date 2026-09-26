@@ -2695,6 +2695,47 @@ describe('ConnectionManager MBP1 — autostart with a stored credential', () => 
   // disconnected rather than falling back to fresh pairing). Both
   // guarantees are also covered by the exhausted-order test below: an
   // autostart retry may recover but cannot fall through to fresh pairing.
+  it('keeps the lifecycle queue available during a slow startup initialize', async () => {
+    vi.useFakeTimers()
+    const coordinator = new BackendOperationCoordinator()
+    const conn = makeFakeConn()
+    const reply = await conn.sendRequest(Methods.MotrixInitialize, {} as never)
+    let finishInitialize!: (value: unknown) => void
+    vi.mocked(conn.sendRequest).mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finishInitialize = resolve
+        }) as never
+    )
+    const mgr = makeManager({
+      credentials: [makeStoredCredential('cred-1')],
+      pins: { 'cred-1': { port: 16802, instanceId: 'pinned-instance' } },
+      discovery: { discoverForReconnect: async () => makeDiscoveryResult() },
+      reconnectOutcomes: { 'cred-1': { envelope: fakeEnvelope() } },
+      backendOperationCoordinator: coordinator,
+      createEnvelopeConnection: () => conn,
+    })
+    try {
+      const completed = vi.fn()
+      const startup = mgr.autostart().then(completed)
+      await vi.advanceTimersByTimeAsync(0)
+      expect(finishInitialize).toBeTypeOf('function')
+      expect(mgr.getState()).not.toBe('connected')
+      const read = vi.fn()
+      void coordinator.run(async () => mgr.getState()).then(read)
+      await vi.advanceTimersByTimeAsync(30_000)
+      expect(read).toHaveBeenCalledOnce()
+      expect(completed).not.toHaveBeenCalled()
+      expect(mgr.getLastAttemptIntent()).toBe('background-probe')
+      finishInitialize(reply)
+      await startup
+      expect(mgr.getState()).toBe('connected')
+    } finally {
+      mgr.stop()
+      vi.useRealTimers()
+    }
+  })
+
   it('attempts a reconnect via discoveryService, never NativeBootstrap.discover, when a credential is stored', async () => {
     const credential = makeStoredCredential('cred-1')
     const mgr = makeManager({

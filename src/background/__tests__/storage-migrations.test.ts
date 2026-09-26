@@ -82,7 +82,7 @@ describe('purgeRetiredPairTokenStorage', () => {
 })
 
 describe('service-worker storage migration barrier', () => {
-  it('does not autostart until the retired namespaces are durably removed', async () => {
+  it('does not recover endpoints until the retired namespaces are durably removed', async () => {
     const events: string[] = []
     let releaseRemove = (): void => undefined
     const removeBlocked = new Promise<void>((resolve) => {
@@ -95,51 +95,41 @@ describe('service-worker storage migration barrier', () => {
         events.push('purge-done')
       }),
     }
-    const autostart = vi.fn(async () => {
-      events.push('autostart')
-    })
     const recoverPendingEndpointCleanup = vi.fn(async () => {
       events.push('recover')
     })
 
     const startup = recoverStorageBeforeEndpointAutostart(
-      { recoverPendingEndpointCleanup, autostart },
+      { recoverPendingEndpointCleanup },
       storage
     )
     await vi.waitFor(() => expect(events).toEqual(['purge-start']))
-    expect(autostart).not.toHaveBeenCalled()
+    expect(recoverPendingEndpointCleanup).not.toHaveBeenCalled()
     releaseRemove()
     await startup
 
-    expect(events).toEqual([
-      'purge-start',
-      'purge-done',
-      'recover',
-      'autostart',
-    ])
+    expect(events).toEqual(['purge-start', 'purge-done', 'recover'])
   })
 
-  it('suppresses autostart when retired storage removal fails', async () => {
+  it('rejects before endpoint recovery when retired storage removal fails', async () => {
     const failure = new Error('storage unavailable')
     const storage: StorageKeyRemover = {
       remove: vi.fn(async () => {
         throw failure
       }),
     }
-    const autostart = vi.fn(async () => undefined)
     const recoverPendingEndpointCleanup = vi.fn(async () => undefined)
 
     await expect(
       recoverStorageBeforeEndpointAutostart(
-        { recoverPendingEndpointCleanup, autostart },
+        { recoverPendingEndpointCleanup },
         storage
       )
     ).rejects.toBe(failure)
     expect(recoverPendingEndpointCleanup).not.toHaveBeenCalled()
-    expect(autostart).not.toHaveBeenCalled()
   })
 
-  it('suppresses autostart when interrupted endpoint cleanup cannot finish', async () => {
+  it('rejects when interrupted endpoint cleanup cannot finish', async () => {
     const failure = new Error('authority retirement unavailable')
     const events: string[] = []
     const storage: StorageKeyRemover = {
@@ -151,17 +141,13 @@ describe('service-worker storage migration barrier', () => {
       events.push('recover')
       throw failure
     })
-    const autostart = vi.fn(async () => {
-      events.push('autostart')
-    })
 
     await expect(
       recoverStorageBeforeEndpointAutostart(
-        { recoverPendingEndpointCleanup, autostart },
+        { recoverPendingEndpointCleanup },
         storage
       )
     ).rejects.toBe(failure)
     expect(events).toEqual(['purge', 'recover'])
-    expect(autostart).not.toHaveBeenCalled()
   })
 })
