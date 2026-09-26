@@ -11,7 +11,7 @@
   },
   "contextMenu": {
     "downloadWithMotrix": "Descargar con Motrix",
-    "pairThenDownload": "Vincular Motrix y descargar"
+    "pairThenDownload": "Vincular Motrix y después descargar"
   },
   "notify": {
     "browserFallbackBody": "Motrix no está disponible. El navegador se encargará de la descarga.",
@@ -40,7 +40,7 @@
       "extensionId": "ID de la extensión",
       "logLevel": "Nivel de registro",
       "logLevels": {
-        "silent": "Sin registros",
+        "silent": "Sin registro",
         "error": "Error",
         "warn": "Advertencia",
         "info": "Información",
@@ -62,7 +62,7 @@
         "handshaking": "Autorizando",
         "awaiting-code": "Esperando el código"
       },
-      "currentDescription": "Elige una App o un Server para las descargas, las tareas y los recursos detectados en las páginas.",
+      "currentDescription": "Elige una aplicación o un servidor para las descargas, las tareas y los recursos detectados en las páginas.",
       "currentTitle": "Servicios Motrix",
       "listLabel": "Servicios Motrix disponibles",
       "localDescription": "Este equipo, detectado mediante Motrix App",
@@ -71,7 +71,7 @@
     },
     "language": {
       "label": "Idioma",
-      "system": "Seguir al sistema"
+      "system": "Seguir el sistema"
     },
     "notifications": {
       "title": "Notificaciones del sistema",
@@ -87,20 +87,20 @@
     "pairing": {
       "backendTitle": "Vinculando {{name}}",
       "forget": "Olvidar vinculación",
-      "loading": "Cargando estado de vinculación…",
+      "loading": "Cargando el estado de vinculación…",
       "localHelp": "Haz clic en Vincular para buscar Motrix en este equipo e introduce su código de vinculación.",
       "localTitle": "Vincular mediante Motrix App",
       "remoteTitle": "Vincular con Motrix Server",
-      "remoteHelp": "Haz clic en Vincular, confirma la solicitud en la interfaz de administración del Server e introduce aquí el código mostrado. Se admiten conexiones WS y WSS; se recomienda WSS.",
+      "remoteHelp": "Haz clic en Vincular, confirma la solicitud en la interfaz de administración del servidor e introduce aquí el código mostrado. Se admiten conexiones WS y WSS; se recomienda WSS.",
       "serverRequiredTitle": "Se requiere Motrix Server",
-      "serverRequiredHelp": "Firefox para Android se conecta mediante Motrix Server. Añade un Server arriba y selecciónalo para vincularlo.",
+      "serverRequiredHelp": "Firefox para Android se conecta mediante Motrix Server. Añade un servidor arriba y selecciónalo para vincularlo.",
       "remoteConsentTitle": "Descargas remotas",
-      "remoteConsentBody": "Las descargas remotas envían a este Server la URL de destino, la URL y el título de la página de origen, el nombre del archivo, la selección y los controles de tareas. Las cookies y las cabeceras de solicitud solo se envían si se activan por separado.",
-      "remoteConsentOffline": "Los permisos de datos están asociados al Server autenticado. Conéctate antes de modificarlos.",
+      "remoteConsentBody": "Las descargas remotas envían a este servidor la URL de destino, la URL y el título de la página de origen, el nombre del archivo, la selección y los controles de tareas. Las cookies y las cabeceras de solicitud solo se envían si se activan por separado.",
+      "remoteConsentOffline": "Los permisos de datos están asociados al servidor autenticado. Conéctate antes de modificarlos.",
       "remoteHeadersLabel": "Enviar cabeceras de solicitud",
       "remoteHeadersHelp": "Permite cabeceras obtenidas de la página, como Referer y las de reproducción multimedia. Las cabeceras de autenticación siguen requiriendo el permiso de credenciales indicado abajo.",
       "remoteCredentialsLabel": "Enviar cookies y autenticación",
-      "remoteCredentialsHelp": "Permite cookies y cabeceras de credenciales solo para este Server. Actívalo únicamente en un Server que controles.",
+      "remoteCredentialsHelp": "Permite cookies y cabeceras de credenciales solo para este servidor. Actívalo únicamente en un servidor que controles.",
       "notPaired": "Sin vincular",
       "paired": "Vinculado con Motrix",
       "pairedHelp": "Se conserva una credencial MBP1 confirmada para este servicio. El estado actual de la conexión se muestra por separado.",
@@ -121,11 +121,11 @@
       "deleteDescription": "¿Eliminar {{name}} y sus credenciales de vinculación y consentimientos guardados localmente? Esto no revoca nada en el servidor.",
       "deleteTitle": "¿Eliminar Motrix Server?",
       "description": "Guarda varias direcciones de Motrix Server y cambia entre ellas desde las opciones o la ventana emergente.",
-      "dialogDescription": "Asigna un nombre reconocible a este servicio e introduce su URL base de WebSocket.",
+      "dialogDescription": "Asigna un nombre a este servicio e introduce su URL base de WebSocket.",
       "editAria": "Editar {{name}}",
       "editTitle": "Editar Motrix Server",
       "emptyDescription": "Añade un servidor para conectarte a Motrix fuera de este equipo.",
-      "emptyTitle": "Aún sin Motrix Servers",
+      "emptyTitle": "Aún no hay servidores Motrix",
       "footer": "Cambiar la dirección de un servidor requiere volver a vincularlo. La información de vinculación nunca se comparte entre direcciones.",
       "nameLabel": "Nombre del servidor",
       "namePlaceholder": "Servidor doméstico",
@@ -161,9 +161,9 @@
       "save": "Guardar",
       "saved": "Guardado",
       "title": "Gestión de descargas",
-      "remoteUnavailable": "La gestión automática requiere actualmente Motrix App en este equipo. Las descargas remotas y los permisos de cabeceras o cookies no la activan. Puedes seguir enviando descargas a este Server manualmente o desde el menú contextual.",
+      "remoteUnavailable": "La gestión automática requiere actualmente Motrix App en este equipo. Las descargas remotas y los permisos de cabeceras o cookies no la activan. Puedes seguir enviando descargas a este servidor manualmente o desde el menú contextual.",
       "availabilityUnknown": "La gestión de descargas no está disponible hasta que se pueda comprobar el servicio seleccionado.",
-      "remoteUnavailableShort": "Solo App local. El envío con clic derecho funciona con Servers."
+      "remoteUnavailableShort": "Solo la aplicación local. El envío con clic derecho funciona con servidores."
     },
     "tabs": {
       "general": "General",
@@ -174,7 +174,7 @@
     "common": {
       "apply": "Aplicar",
       "cancel": "Cancelar",
-      "loadError": "No se pudieron cargar los ajustes porque el proceso en segundo plano de la extensión no se inició. Recarga la extensión e reinténtalo.",
+      "loadError": "No se pudieron cargar los ajustes porque el proceso en segundo plano de la extensión no se inició. Recarga la extensión y vuelve a intentarlo.",
       "saved": "Guardado",
       "saving": "Guardando…",
       "saveError": "Error al guardar"
@@ -183,7 +183,7 @@
       "title": "Apariencia",
       "theme": {
         "label": "Tema",
-        "system": "Seguir al sistema",
+        "system": "Seguir el sistema",
         "light": "Claro",
         "dark": "Oscuro"
       }
@@ -193,7 +193,7 @@
       "description": "Consulta guías, ayuda y diagnóstico de la extensión.",
       "reportBug": "Informar de un problema",
       "reportBugDescription": "Abre una incidencia en GitHub o envía tus comentarios.",
-      "issues": "GitHub Issues",
+      "issues": "Incidencias de GitHub",
       "docs": "Documentación",
       "docsDescription": "Consulta las guías de configuración, vinculación, gestión de descargas y resolución de problemas.",
       "copyDiagnostics": "Copiar diagnóstico",
@@ -209,7 +209,7 @@
     "taskPanel": {
       "title": "Panel de tareas",
       "openAfterSubmit": "Abrir el panel de tareas al añadir una descarga",
-      "description": "Abre automáticamente el panel cuando se añade una descarga a Motrix, también desde el menú contextual o mediante captura automática. Si se añaden varias seguidas, se abre solo una vez.",
+      "description": "Abre automáticamente el panel de tareas al añadir una descarga a Motrix, también mediante clic derecho o gestión automática. Varias descargas añadidas seguidas lo abren una sola vez.",
       "unsupported": "Requiere Chrome / Edge 127+ o Firefox 149+."
     }
   },
@@ -219,9 +219,9 @@
       "running": "Diagnosticando…",
       "rerun": "Repetir diagnóstico",
       "title": "Resultados del diagnóstico",
-      "runningHelp": "Activando los registros debug y comprobando la conexión. Suele tardar unos segundos.",
-      "firstLaunchHint": "Abre Motrix manualmente, revisa y acepta los términos del primer inicio si estás de acuerdo, y vuelve a intentar el emparejamiento cuando aparezca la ventana principal.",
-      "latestVersionHint": "Prueba a descargar e instalar la última versión de Motrix, completa la configuración inicial y vuelve a intentar el emparejamiento.",
+      "runningHelp": "Activando el registro de depuración y comprobando el entorno de conexión. Esto suele tardar unos segundos.",
+      "firstLaunchHint": "Abre Motrix manualmente, revisa los términos del primer inicio y acéptalos si estás de acuerdo. Vuelve a intentar la vinculación cuando aparezca la ventana principal.",
+      "latestVersionHint": "Descarga e instala la última versión de Motrix, completa la configuración inicial y vuelve a intentar la vinculación.",
       "appReleases": "Descargar la última versión de Motrix",
       "advanced": "Solución de problemas avanzada",
       "allowlistHint": "Si instalaste una versión de desarrollo o sin empaquetar, comprueba que su ID esté en Motrix: Ajustes → Integración → extensiones de confianza y en la lista permitida del Native Host."
@@ -230,7 +230,7 @@
       "app": "Motrix App",
       "appDescription": "Este equipo",
       "choose": "Elegir servicio de Motrix",
-      "configureServer": "Gestionar Motrix Servers",
+      "configureServer": "Gestionar servidores Motrix",
       "notConfigured": "Sin configurar",
       "server": "Motrix Server",
       "version": "v{{version}}"
@@ -263,7 +263,7 @@
       "excludeCurrentSiteDescription": "Mantener las descargas de {{site}} en el navegador",
       "noCurrentSite": "Esta página no tiene un dominio que se pueda excluir.",
       "inheritedExclusion": "{{site}} está cubierto por la exclusión de {{domain}}. Edítala en los ajustes completos.",
-      "taskPanelDescription": "Abrir tras añadir descargas por clic derecho, captura automática u otros medios"
+      "taskPanelDescription": "Abrir tras añadir descargas mediante clic derecho, gestión automática u otros medios"
     },
     "quickAdd": {
       "title": "Nueva tarea",
@@ -291,8 +291,8 @@
       "downloadingResource": "Descargando {{name}}",
       "emptyDescription": "Reproduce multimedia y reinténtalo.",
       "emptyFilter": "Sin recursos coincidentes",
-      "emptyTitle": "Sin contenido multimedia",
-      "filteredCount": "{{matched}} / {{total}} imágenes",
+      "emptyTitle": "No se encontró contenido multimedia",
+      "filteredCount": "Imágenes: {{matched}} / {{total}}",
       "filters": {
         "all": "Todo",
         "audio": "Audio",
@@ -325,7 +325,7 @@
         "youtube": "Enviar este vídeo de YouTube"
       },
       "pageSubmitted": "Vídeo enviado a Motrix {{taskId}}",
-      "pageResources": "Recursos",
+      "pageResources": "Recursos de la página",
       "quickDownloadResource": "Descarga rápida de {{name}}",
       "connectToSubmit": "Conéctate a Motrix para enviar recursos.",
       "scan": "Volver a analizar",
@@ -367,7 +367,7 @@
     },
     "takeover": {
       "aria": "Alternar gestión de descargas",
-      "label": "Interceptar"
+      "label": "Gestión de descargas"
     },
     "tasks": {
       "actions": "Acciones para {{name}}",
@@ -438,7 +438,7 @@
       "degradedTitle": "Motrix está conectado",
       "degradedBody": "Puedes usar Motrix con normalidad. Esta conexión solo tiene verificación básica. Para una mayor protección, actualiza Motrix y vuelve a vincularlo.",
       "recoveryExhaustedTitle": "No se pudo reconectar automáticamente",
-      "recoveryExhaustedBody": "No se pudo restablecer la vinculación guardada. Reintenta la conexión o elige Olvidar vinculación en Configuración → Integración antes de volver a vincular."
+      "recoveryExhaustedBody": "No se pudo conectar con la vinculación guardada. Reintenta la conexión o elige «Olvidar vinculación» en Ajustes → Integración antes de volver a vincular."
     },
     "integration": {
       "pairedTitle": "Vinculado. Puedes enviar descargas.",
@@ -450,7 +450,7 @@
       "pairingRequired": "Vincula Motrix para enviar esta descarga.",
       "connectionFailed": "No se pudo conectar con Motrix. Abre la aplicación e inténtalo de nuevo. Se conserva la vinculación guardada.",
       "resultUnknown": "Resultado del envío desconocido. Revisa las tareas antes de volver a enviar.",
-      "contextChanged": "La página o el servidor seleccionado ha cambiado. Selecciona la descarga de nuevo.",
+      "contextChanged": "La página o el servicio seleccionado ha cambiado. Selecciona la descarga de nuevo.",
       "preparing": "Preparando descarga…",
       "sending": "Enviando descarga…",
       "pairedStatus": "Vinculado"
@@ -471,14 +471,14 @@
       "deadlineExceeded": "Se agotó el tiempo de espera. Reinténtalo.",
       "runsExhausted": "Demasiados códigos incorrectos. Inicia de nuevo la vinculación para obtener otro código.",
       "invalidCode": "El código no tiene el formato esperado. Revisa el diálogo de Motrix.",
-      "missingNonce": "Motrix no ofreció una sesión de vinculación. Comprueba que esté en ejecución e reinténtalo.",
+      "missingNonce": "Motrix no ofreció una sesión de vinculación. Comprueba que esté en ejecución y vuelve a intentarlo.",
       "unsupportedBrowser": "Este navegador no admite la vinculación.",
       "ticketPreparationFailed": "No se pudo preparar la vinculación. Reinténtalo.",
       "protocolViolation": "Motrix envió una respuesta inesperada. Reinténtalo.",
-      "unsupportedVersion": "La extensión y Motrix usan versiones distintas del protocolo. Actualiza ambos e reinténtalo.",
-      "backendUpgradeRequired": "Esta versión de Motrix es demasiado antigua para una vinculación segura. Actualiza Motrix e reinténtalo.",
-      "extensionUpgradeRequired": "Esta versión de la extensión es demasiado antigua para este Motrix. Actualiza la extensión Motrix e reinténtalo.",
-      "unsupportedRemote": "El Motrix autenticado no es la App ni el Server seleccionado para esta conexión. Revisa el destino e reinténtalo.",
+      "unsupportedVersion": "La extensión y Motrix usan versiones distintas del protocolo. Actualiza ambos y vuelve a intentarlo.",
+      "backendUpgradeRequired": "Esta versión de Motrix es demasiado antigua para una vinculación segura. Actualiza Motrix y vuelve a intentarlo.",
+      "extensionUpgradeRequired": "Esta versión de la extensión es demasiado antigua para este Motrix. Actualiza la extensión Motrix y vuelve a intentarlo.",
+      "unsupportedRemote": "El Motrix autenticado no es la aplicación ni el servidor seleccionado para esta conexión. Revisa el destino y vuelve a intentarlo.",
       "remoteDiscoveryUnavailable": "No se pudo acceder al Motrix Server remoto. Revisa la dirección, el servicio de escucha y la red; para WSS, revisa también el certificado y el proxy inverso.",
       "remotePairingUnavailable": "El Motrix Server remoto no pudo abrir una sesión de vinculación segura. Inténtalo en unos instantes.",
       "remoteTransportUnavailable": "Falló la conexión con el Motrix Server remoto. Revisa la dirección, el servicio de escucha, el DNS y la red; para WSS, revisa también el certificado y el proxy inverso. El navegador no puede identificar cuál falló.",

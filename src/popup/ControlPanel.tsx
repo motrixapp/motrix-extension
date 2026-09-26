@@ -125,12 +125,12 @@ const TaskIdentity = memo(function TaskIdentity({
   return (
     <>
       <span
-        className={`absolute top-[17px] left-4 flex size-10 items-center justify-center rounded-[10px] ${taskIconClassName(status)}`}
+        className={`absolute top-[17px] start-4 flex size-10 items-center justify-center rounded-[10px] ${taskIconClassName(status)}`}
       >
         <Icon className="size-5" strokeWidth={1.8} aria-hidden="true" />
       </span>
       <span
-        className="absolute top-[9px] right-2 left-[72px] truncate text-[13px]/5 font-normal"
+        className="absolute top-[9px] end-2 start-[72px] truncate text-[13px]/5 font-normal"
         title={name}
       >
         {name}
@@ -177,7 +177,7 @@ const TaskLiveMetrics = memo(function TaskLiveMetrics({
     <>
       <span
         id={secondaryId}
-        className="absolute top-[31px] right-2 left-[72px] truncate text-[11px]/4 text-muted-foreground"
+        className="absolute top-[31px] end-2 start-[72px] truncate text-[11px]/4 text-muted-foreground"
         title={secondary}
       >
         {secondary}
@@ -186,7 +186,7 @@ const TaskLiveMetrics = memo(function TaskLiveMetrics({
         <Progress
           value={progressPercent}
           aria-label={`${name} ${progressPercent}%`}
-          className={`absolute top-[55px] right-2 left-[72px] h-1 gap-0 [&_[data-slot=progress-track]]:h-1 [&_[data-slot=progress-track]]:bg-muted ${
+          className={`absolute top-[55px] end-2 start-[72px] h-1 gap-0 [&_[data-slot=progress-track]]:h-1 [&_[data-slot=progress-track]]:bg-muted ${
             status === 'paused'
               ? '[&_[data-slot=progress-indicator]]:bg-muted-foreground'
               : '[&_[data-slot=progress-indicator]]:bg-speed-download'
@@ -243,7 +243,7 @@ const TaskActions = memo(function TaskActions({
   return (
     <div
       data-testid={`task-actions-${taskId}`}
-      className="absolute top-[23px] right-3 z-10 flex w-[88px] items-center justify-end gap-0.5"
+      className="absolute top-[23px] end-3 z-10 flex w-[88px] items-center justify-end gap-0.5"
     >
       <Button
         type="button"
@@ -372,7 +372,7 @@ const TaskRow = memo(function TaskRow({
           data-testid={`task-main-${task.id}`}
           data-task-id={task.id}
           data-task-action="main"
-          className="absolute inset-0 text-left transition-colors hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="absolute inset-0 text-start transition-colors hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 focus-visible:outline-none"
           title={openAppLabel}
           aria-describedby={secondaryId}
           tabIndex={0}
@@ -380,7 +380,7 @@ const TaskRow = memo(function TaskRow({
           <span className="sr-only">{openAppLabel}</span>
         </a>
       )}
-      <div className="pointer-events-none absolute inset-y-0 right-[108px] left-0">
+      <div className="pointer-events-none absolute inset-y-0 end-[108px] start-0">
         <TaskIdentity name={task.name} type={task.type} status={task.status} />
         <TaskLiveMetrics
           name={task.name}

@@ -115,7 +115,7 @@ export function BackendListSection({
                   {backend.description}
                 </ItemDescription>
               </ItemContent>
-              <ItemActions className="ml-auto max-w-full flex-wrap justify-end">
+              <ItemActions className="ms-auto max-w-full flex-wrap justify-end">
                 {current ? (
                   <>
                     <Badge variant="secondary">

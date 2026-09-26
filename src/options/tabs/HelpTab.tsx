@@ -137,7 +137,7 @@ export function HelpTab(): React.ReactElement {
               />
             </ItemActions>
           </Item>
-          <ItemSeparator className="my-0 ml-16" />
+          <ItemSeparator className="my-0 ms-16" />
           <Item
             variant="muted"
             className="rounded-none transition-[color,background-color,border-color,transform] duration-100 ease-out active:scale-[0.995] motion-reduce:transform-none"
@@ -243,7 +243,7 @@ export function HelpTab(): React.ReactElement {
               <span className="font-mono text-xs">{version}</span>
             </SettingRow>
             <SettingRow label={t('options.diagnostics.adapters')}>
-              <span className="max-w-72 text-right text-xs">
+              <span className="max-w-72 text-end text-xs">
                 {adapters.length
                   ? adapters.join(', ')
                   : t('options.diagnostics.noneRegistered')}

@@ -6,7 +6,7 @@
       "connecting": "Motrix : connexion…",
       "downloading": "Motrix : téléchargement en cours",
       "denied": "Motrix : association refusée — ouvrir pour réassocier",
-      "error": "Motrix : transfert échoué — cliquer pour les détails"
+      "error": "Motrix : échec du transfert — cliquer pour les détails"
     }
   },
   "contextMenu": {
@@ -40,13 +40,13 @@
       "extensionId": "Identifiant de l’extension",
       "logLevel": "Niveau de journalisation",
       "logLevels": {
-        "silent": "Aucun",
+        "silent": "Aucune journalisation",
         "error": "Erreur",
         "warn": "Avertissement",
         "info": "Information",
         "debug": "Débogage"
       },
-      "noneRegistered": "Aucun enregistré",
+      "noneRegistered": "Aucun adaptateur enregistré pour le moment",
       "title": "Diagnostic",
       "version": "Version"
     },
@@ -62,7 +62,7 @@
         "handshaking": "Autorisation",
         "awaiting-code": "En attente du code"
       },
-      "currentDescription": "Choisissez une App ou un Server pour les téléchargements, les tâches et les ressources détectées sur les pages.",
+      "currentDescription": "Choisissez une application ou un serveur pour les téléchargements, les tâches et les ressources détectées sur les pages.",
       "currentTitle": "Services Motrix",
       "listLabel": "Services Motrix disponibles",
       "localDescription": "Cet ordinateur, détecté via Motrix App",
@@ -91,19 +91,19 @@
       "localHelp": "Cliquez sur Associer pour détecter Motrix sur cet ordinateur, puis saisissez son code d’association.",
       "localTitle": "Associer via Motrix App",
       "remoteTitle": "Associer à Motrix Server",
-      "remoteHelp": "Cliquez sur Associer, confirmez la demande dans l’interface d’administration du Server, puis saisissez ici le code affiché. WS et WSS sont pris en charge ; WSS est recommandé.",
+      "remoteHelp": "Cliquez sur Associer, confirmez la demande dans l’interface d’administration du serveur, puis saisissez ici le code affiché. WS et WSS sont pris en charge ; WSS est recommandé.",
       "serverRequiredTitle": "Motrix Server requis",
-      "serverRequiredHelp": "Firefox pour Android se connecte via Motrix Server. Ajoutez un Server ci-dessus, puis sélectionnez-le pour l’associer.",
+      "serverRequiredHelp": "Firefox pour Android se connecte via Motrix Server. Ajoutez un serveur ci-dessus, puis sélectionnez-le pour l’associer.",
       "remoteConsentTitle": "Téléchargements distants",
-      "remoteConsentBody": "Les téléchargements distants transmettent à ce Server l’URL cible, l’URL et le titre de la page source, le nom du fichier, la sélection et les commandes des tâches. Les cookies et les en-têtes de requête ne sont envoyés que s’ils sont activés séparément.",
-      "remoteConsentOffline": "Les autorisations de données sont liées au Server authentifié. Connectez-vous avant de les modifier.",
+      "remoteConsentBody": "Les téléchargements distants transmettent à ce serveur l’URL cible, l’URL et le titre de la page source, le nom du fichier, la sélection et les commandes des tâches. Les cookies et les en-têtes de requête restent désactivés tant que vous ne les activez pas séparément.",
+      "remoteConsentOffline": "Les autorisations de données sont liées au serveur authentifié. Connectez-vous avant de les modifier.",
       "remoteHeadersLabel": "Envoyer les en-têtes de requête",
       "remoteHeadersHelp": "Autorise les en-têtes issus des pages, comme Referer et les en-têtes de lecture multimédia. Les en-têtes d’authentification nécessitent toujours l’autorisation d’identifiants ci-dessous.",
-      "remoteCredentialsLabel": "Envoyer les cookies et l’authentification",
-      "remoteCredentialsHelp": "Autorise les cookies et les en-têtes d’identifiants pour ce Server uniquement. À activer uniquement pour un Server que vous contrôlez.",
+      "remoteCredentialsLabel": "Envoyer les cookies et les données d’authentification",
+      "remoteCredentialsHelp": "Autorise les cookies et les en-têtes d’identifiants pour ce serveur uniquement. À activer uniquement pour un serveur que vous contrôlez.",
       "notPaired": "Non associé",
       "paired": "Associé à Motrix",
-      "pairedHelp": "Un identifiant MBP1 confirmé est conservé pour ce service. L’état actuel de la connexion est affiché séparément.",
+      "pairedHelp": "Des données d’authentification MBP1 confirmées sont conservées pour ce service. L’état actuel de la connexion est affiché séparément.",
       "pairedTitle": "Association prête",
       "reconnect": "Reconnecter",
       "scopedHelp": "La confiance et les identifiants d’association sont propres à chaque service. Changer de service ne réutilise jamais la confiance accordée à un autre.",
@@ -121,11 +121,11 @@
       "deleteDescription": "Supprimer {{name}}, ses identifiants d’association et ses consentements stockés localement ? Cela ne révoque rien sur le serveur.",
       "deleteTitle": "Supprimer Motrix Server ?",
       "description": "Enregistrez plusieurs adresses Motrix Server et passez de l’une à l’autre depuis les options ou la fenêtre contextuelle.",
-      "dialogDescription": "Donnez un nom reconnaissable à ce service et saisissez son URL de base WebSocket.",
+      "dialogDescription": "Nommez ce service et saisissez son URL de base WebSocket.",
       "editAria": "Modifier {{name}}",
       "editTitle": "Modifier Motrix Server",
       "emptyDescription": "Ajoutez un serveur pour vous connecter à Motrix sur une autre machine.",
-      "emptyTitle": "Aucun Motrix Server ajouté",
+      "emptyTitle": "Aucun serveur Motrix pour le moment",
       "footer": "Changer l’adresse d’un serveur nécessite une nouvelle association. Les informations d’association ne sont jamais partagées entre les adresses.",
       "nameLabel": "Nom du serveur",
       "namePlaceholder": "Serveur domestique",
@@ -139,7 +139,7 @@
       "title": "Serveurs Motrix",
       "urlDescription": "Utilisez une URL de base ws:// ou wss://. Le chemin facultatif est conservé comme préfixe exact du proxy inverse ; WSS est recommandé.",
       "urlDuplicate": "Cette adresse Motrix Server est déjà enregistrée",
-      "urlInvalid": "Saisissez une URL de base ws:// ou wss:// valide, sans espace, identifiants, réglages de requête ni fragment",
+      "urlInvalid": "Saisissez une URL de base ws:// ou wss:// valide, sans espace, identifiants, paramètres de requête ni fragment",
       "urlLabel": "URL WebSocket",
       "urlPlaceholder": "ws(s)://host[:port][/base-path]",
       "transportWarningTitle": "Cette connexion n’utilise pas WSS",
@@ -161,9 +161,9 @@
       "save": "Enregistrer",
       "saved": "Enregistré",
       "title": "Prise en charge des téléchargements",
-      "remoteUnavailable": "La prise en charge automatique nécessite actuellement Motrix App en local. Les téléchargements distants et les autorisations d’en-têtes ou de cookies ne l’activent pas. Vous pouvez toujours envoyer des téléchargements à ce Server manuellement ou par le menu contextuel.",
+      "remoteUnavailable": "La prise en charge automatique nécessite actuellement Motrix App en local. Les téléchargements distants et les autorisations d’en-têtes ou de cookies ne l’activent pas. Vous pouvez toujours envoyer des téléchargements à ce serveur manuellement ou par le menu contextuel.",
       "availabilityUnknown": "La prise en charge reste indisponible tant que le service sélectionné ne peut pas être vérifié.",
-      "remoteUnavailableShort": "App locale uniquement. L’envoi par clic droit fonctionne avec les Servers."
+      "remoteUnavailableShort": "Application locale uniquement. L’envoi par clic droit fonctionne avec les serveurs."
     },
     "tabs": {
       "general": "Général",
@@ -190,10 +190,10 @@
     },
     "help": {
       "title": "Aide et assistance",
-      "description": "Consultez guides, aide et diagnostic de l’extension.",
+      "description": "Consultez les guides, obtenez de l’aide et affichez les diagnostics de l’extension.",
       "reportBug": "Signaler un problème",
       "reportBugDescription": "Ouvrez un ticket sur GitHub ou partagez vos commentaires.",
-      "issues": "GitHub Issues",
+      "issues": "Tickets GitHub",
       "docs": "Documentation",
       "docsDescription": "Consultez les guides de configuration, d’association, de prise en charge des téléchargements et de dépannage.",
       "copyDiagnostics": "Copier le diagnostic",
@@ -208,8 +208,8 @@
     "title": "Réglages de l’extension Motrix",
     "taskPanel": {
       "title": "Panneau des tâches",
-      "openAfterSubmit": "Ouvrir le panneau après l’ajout d’un téléchargement",
-      "description": "Ouvre automatiquement le panneau après l’ajout d’un téléchargement à Motrix, y compris par clic droit ou interception automatique. Plusieurs ajouts rapprochés n’ouvrent le panneau qu’une fois.",
+      "openAfterSubmit": "Ouvrir le panneau des tâches après l’ajout d’un téléchargement",
+      "description": "Ouvre automatiquement le panneau des tâches lorsqu’un téléchargement est ajouté à Motrix, y compris par clic droit ou prise en charge automatique. Plusieurs ajouts rapprochés ne l’ouvrent qu’une fois.",
       "unsupported": "Nécessite Chrome / Edge 127+ ou Firefox 149+."
     }
   },
@@ -219,18 +219,18 @@
       "running": "Diagnostic en cours…",
       "rerun": "Relancer",
       "title": "Résultats du diagnostic",
-      "runningHelp": "Activation des journaux debug et vérification de la connexion. Cela prend généralement quelques secondes.",
+      "runningHelp": "Activation de la journalisation de débogage et vérification de l’environnement de connexion. Cela prend généralement quelques secondes.",
       "firstLaunchHint": "Ouvrez Motrix manuellement, lisez les conditions du premier lancement et acceptez-les si vous êtes d’accord. Réessayez l’association une fois la fenêtre principale affichée.",
-      "latestVersionHint": "Essayez de télécharger et d’installer la dernière version de Motrix, terminez la configuration initiale, puis réessayez l’association.",
+      "latestVersionHint": "Téléchargez et installez la dernière version de Motrix, terminez la configuration initiale, puis réessayez l’association.",
       "appReleases": "Télécharger la dernière version de Motrix",
       "advanced": "Dépannage avancé",
-      "allowlistHint": "Pour une version de développement ou non empaquetée, vérifiez son ID dans Motrix : Paramètres → Intégration → extensions de confiance et dans la liste autorisée du Native Host."
+      "allowlistHint": "Pour le développement ou une installation non empaquetée, vérifiez que l’ID de cette extension figure dans Réglages de Motrix → Intégration → extensions de confiance et dans la liste autorisée du Native Host."
     },
     "backend": {
       "app": "Motrix App",
       "appDescription": "Cet ordinateur",
       "choose": "Choisir un service Motrix",
-      "configureServer": "Gérer les Motrix Servers",
+      "configureServer": "Gérer les serveurs Motrix",
       "notConfigured": "Non configuré",
       "server": "Motrix Server",
       "version": "v{{version}}"
@@ -262,8 +262,8 @@
       "excludeCurrentSite": "Exclure le site actuel",
       "excludeCurrentSiteDescription": "Conserver les téléchargements de {{site}} dans le navigateur",
       "noCurrentSite": "Cette page n’a pas de domaine à exclure.",
-      "inheritedExclusion": "{{site}} est couvert par l’exclusion de {{domain}}. Modifiez-la dans les paramètres complets.",
-      "taskPanelDescription": "Ouvrir après l’ajout de téléchargements par clic droit, interception ou autre méthode"
+      "inheritedExclusion": "{{site}} est couvert par l’exclusion de {{domain}}. Modifiez-la dans tous les réglages.",
+      "taskPanelDescription": "Ouvrir après l’ajout de téléchargements par clic droit, prise en charge automatique ou toute autre méthode"
     },
     "quickAdd": {
       "title": "Nouvelle tâche",
@@ -291,8 +291,8 @@
       "downloadingResource": "Téléchargement de {{name}}",
       "emptyDescription": "Lisez un média, puis réessayez.",
       "emptyFilter": "Aucune ressource correspondante",
-      "emptyTitle": "Aucun média",
-      "filteredCount": "{{matched}} / {{total}} images",
+      "emptyTitle": "Aucun média trouvé",
+      "filteredCount": "Images : {{matched}} / {{total}}",
       "filters": {
         "all": "Tout",
         "audio": "Audio",
@@ -325,7 +325,7 @@
         "youtube": "Envoyer cette vidéo YouTube"
       },
       "pageSubmitted": "Vidéo envoyée à Motrix {{taskId}}",
-      "pageResources": "Ressources",
+      "pageResources": "Ressources de la page",
       "quickDownloadResource": "Téléchargement rapide de {{name}}",
       "connectToSubmit": "Connectez-vous à Motrix pour envoyer des ressources.",
       "scan": "Analyser à nouveau",
@@ -345,7 +345,7 @@
       "unsupportedReason": "FFmpeg est nécessaire pour télécharger ce contenu.",
       "unsupportedSelectionReason": "Le service sélectionné ne peut pas envoyer un ou plusieurs types de ressources sélectionnés.",
       "unsupportedResource": "Impossible d’envoyer {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "Configurez FFmpeg dans les paramètres de Motrix, puis cliquez sur « Analyser à nouveau »."
+      "refreshCapabilitiesHint": "Configurez FFmpeg dans les réglages de Motrix, puis cliquez sur « Analyser à nouveau »."
     },
     "speed": {
       "download": "Téléchargement",
@@ -367,7 +367,7 @@
     },
     "takeover": {
       "aria": "Basculer la prise en charge des téléchargements",
-      "label": "Intercepter"
+      "label": "Prise en charge"
     },
     "tasks": {
       "actions": "Actions pour {{name}}",
@@ -414,8 +414,8 @@
       "attemptOf": "Tentative {{run}} sur {{maxRuns}}",
       "attemptsRemaining": "Tentatives restantes : {{attemptsRemaining}}",
       "codeLabel": "Code d’association",
-      "codeDescription": "Saisissez le code à 8 caractères du dialogue d’association Motrix.",
-      "codeInvalid": "Saisissez le code à 8 caractères du dialogue d’association.",
+      "codeDescription": "Saisissez le code à 8 caractères affiché dans la boîte de dialogue d’association de Motrix.",
+      "codeInvalid": "Saisissez le code à 8 caractères affiché dans la boîte de dialogue d’association.",
       "dialogTitle": "Saisir le code d’association",
       "dismissPrompt": "Saisir plus tard et continuer à naviguer",
       "enterCode": "Saisir le code d’association",
@@ -438,7 +438,7 @@
       "degradedTitle": "Motrix est connecté",
       "degradedBody": "Vous pouvez utiliser Motrix normalement. Cette connexion ne dispose que d’une vérification de base. Pour une meilleure protection, mettez Motrix à jour et associez-le à nouveau.",
       "recoveryExhaustedTitle": "Reconnexion automatique impossible",
-      "recoveryExhaustedBody": "Impossible de rétablir l’association enregistrée. Réessayez la connexion ou oubliez l’association dans Paramètres → Intégration avant de recommencer."
+      "recoveryExhaustedBody": "L’association enregistrée n’a pas permis de rétablir la connexion. Réessayez ou sélectionnez « Oublier l’association » dans Réglages → Intégration avant d’associer à nouveau."
     },
     "integration": {
       "pairedTitle": "Associé. Vous pouvez envoyer des téléchargements.",
@@ -450,7 +450,7 @@
       "pairingRequired": "Associez Motrix pour envoyer ce téléchargement.",
       "connectionFailed": "Connexion à Motrix impossible. Ouvrez l’application et réessayez. L’association enregistrée est conservée.",
       "resultUnknown": "Résultat de l’envoi inconnu. Vérifiez les tâches avant de renvoyer.",
-      "contextChanged": "La page ou le serveur sélectionné a changé. Sélectionnez à nouveau le téléchargement.",
+      "contextChanged": "La page ou le service sélectionné a changé. Sélectionnez à nouveau le téléchargement.",
       "preparing": "Préparation du téléchargement…",
       "sending": "Envoi du téléchargement…",
       "pairedStatus": "Associé"
@@ -478,7 +478,7 @@
       "unsupportedVersion": "Cette extension et Motrix utilisent des versions de protocole différentes. Mettez les deux à jour, puis réessayez.",
       "backendUpgradeRequired": "Cette version de Motrix est trop ancienne pour une association sécurisée. Mettez Motrix à jour, puis réessayez.",
       "extensionUpgradeRequired": "Cette version de l’extension est trop ancienne pour ce Motrix. Mettez l’extension Motrix à jour, puis réessayez.",
-      "unsupportedRemote": "Le Motrix authentifié n’est pas l’App ou le Server sélectionné pour cette connexion. Vérifiez le point de connexion et réessayez.",
+      "unsupportedRemote": "Le Motrix authentifié n’est pas l’application ou le serveur sélectionné pour cette connexion. Vérifiez le point de connexion et réessayez.",
       "remoteDiscoveryUnavailable": "Le Motrix Server distant est inaccessible. Vérifiez son adresse, son service d’écoute et le réseau ; pour WSS, vérifiez aussi le certificat et le proxy inverse.",
       "remotePairingUnavailable": "Le Motrix Server distant n’a pas pu ouvrir de session d’association sécurisée. Réessayez dans un instant.",
       "remoteTransportUnavailable": "La connexion au Motrix Server distant a échoué. Vérifiez son adresse, son service d’écoute, le DNS et le réseau ; pour WSS, vérifiez aussi le certificat et le proxy inverse. Le navigateur ne peut pas identifier l’élément en cause.",

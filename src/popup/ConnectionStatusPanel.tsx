@@ -71,7 +71,7 @@ export function ConnectionStatusPanel({
   onNewTask,
   actionLabel,
 }: Props): React.ReactElement {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   // Called unconditionally, before the loading early-return below — React's
   // rules of hooks don't bend for it.
   const permissionMissing = usePermissionMissing()
@@ -133,7 +133,9 @@ export function ConnectionStatusPanel({
           <AlertTitle>{t('popup.pairing.backoffTitle')}</AlertTitle>
           <AlertDescription>
             {t('popup.pairing.backoffBody', {
-              time: new Date(state.backoff.retryAtMs).toLocaleTimeString(),
+              time: new Date(state.backoff.retryAtMs).toLocaleTimeString(
+                i18n.resolvedLanguage
+              ),
             })}
           </AlertDescription>
         </Alert>

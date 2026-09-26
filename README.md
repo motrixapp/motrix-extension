@@ -196,19 +196,33 @@ same keys; `src/__tests__/manifest-locales.test.ts` checks that all locales
 stay complete and in sync. The in-app UI strings are separate
 (`src/shared/locales/*.json`, i18next).
 
-The extension currently ships store metadata for 16 high-coverage, non-RTL
-languages: `de`, `en`, `es`, `fr`, `hi`, `id`, `it`, `ja`, `ko`, `pt_BR`,
-`ru`, `th`, `tr`, `vi`, `zh_CN`, and `zh_TW`. These directory names follow
-the locale codes accepted by Chrome Web Store and Firefox WebExtensions. RTL
-locales should be added only after the extension surfaces and store assets have
-dedicated bidirectional-layout testing.
+The extension ships 27 UI languages and matching store metadata: `ar`, `bg`,
+`ca`, `de`, `el`, `en-US`, `es`, `fa`, `fr`, `hi`, `hu`, `id`,
+`it`, `ja`, `ko`, `nb`, `nl`, `pl`, `pt-BR`, `ro`, `ru`, `th`,
+`tr`, `uk`, `vi`, `zh-CN`, and `zh-TW`. Existing Hindi support is retained.
+Store directories use browser locale codes: `en` for `en-US`, `no` for
+Norwegian Bokmål (`nb`), and underscores in `pt_BR`, `zh_CN`, and `zh_TW`.
 
-The same 16 languages are available in the extension UI under **General →
-Language**, with automatic browser-language detection and a saved override.
-UI locale tags use BCP 47 (`en-US`, `pt-BR`, `zh-CN`, `zh-TW`). Traditional
-Chinese is selected for `zh-TW`, `zh-HK`, `zh-MO`, and `zh-Hant`. When adding
-an interface language, register it in `src/shared/supportedLocales.ts` and
-`src/shared/i18n.ts`; locale tests verify every key and interpolation placeholder.
+All languages are available under **General → Language**, with automatic
+browser-language detection and a saved override. Traditional Chinese is selected
+for `zh-TW`, `zh-HK`, `zh-MO`, and `zh-Hant`; Norwegian `no` maps to `nb`.
+Arabic and Persian use right-to-left layouts and keyboard navigation. URLs and
+pairing codes retain left-to-right input order. Open extension pages update when
+the language preference changes.
+
+English and Chinese are the editorial reference translations. Keep their approved
+copy intact when retranslating other languages. Translate every key from these
+references, preserve interpolation placeholders and technical identifiers, and
+use consistent terms for pairing, download takeover, and server permissions.
+Count labels can use number-independent wording; sentences that need grammatical
+plural forms should use i18next plural variants.
+
+When adding a language, register it in `src/shared/supportedLocales.ts` and
+`src/shared/i18n.ts`, and add its store metadata. Locale tests verify every key
+and interpolation placeholder. If the i18n-expert skill is installed, use its audit script to check static
+translation calls; dynamic keys also need manual review. Run the locale and page-direction tests,
+then inspect the popup and options previews with `?lang=ar` or `?lang=fa` for RTL
+changes.
 
 ### Browser APIs and types
 

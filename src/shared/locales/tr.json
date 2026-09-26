@@ -46,7 +46,7 @@
         "info": "Bilgi",
         "debug": "Hata ayıklama"
       },
-      "noneRegistered": "Henüz kayıtlı değil",
+      "noneRegistered": "Henüz kayıtlı bağdaştırıcı yok",
       "title": "Tanılama",
       "version": "Sürüm"
     },
@@ -62,7 +62,7 @@
         "handshaking": "Yetkilendiriliyor",
         "awaiting-code": "Kod bekleniyor"
       },
-      "currentDescription": "İndirmeler, görevler ve sayfada algılanan kaynaklar için bir App veya Server seçin.",
+      "currentDescription": "İndirmeler, görevler ve sayfalarda algılanan kaynaklar için bir uygulama veya sunucu seçin.",
       "currentTitle": "Motrix arka uçları",
       "listLabel": "Kullanılabilir Motrix arka uçları",
       "localDescription": "Motrix App ile bulunan bu bilgisayar",
@@ -71,7 +71,7 @@
     },
     "language": {
       "label": "Dil",
-      "system": "Sistemi izle"
+      "system": "Sistem ayarını kullan"
     },
     "notifications": {
       "title": "Sistem bildirimleri",
@@ -91,16 +91,16 @@
       "localHelp": "Bu bilgisayardaki Motrix’i bulmak için Eşleştir’e tıklayın ve eşleştirme kodunu girin.",
       "localTitle": "Motrix App üzerinden eşleştir",
       "remoteTitle": "Motrix Server ile eşleştir",
-      "remoteHelp": "Eşleştir’e tıklayın, Server yönetim arayüzünde isteği onaylayın ve gösterilen kodu buraya girin. WS ve WSS uç noktaları desteklenir; WSS önerilir.",
+      "remoteHelp": "Eşleştir’e tıklayın, sunucu yönetim arayüzünde isteği onaylayın ve gösterilen kodu buraya girin. WS ve WSS desteklenir; WSS önerilir.",
       "serverRequiredTitle": "Motrix Server gerekli",
-      "serverRequiredHelp": "Android için Firefox, Motrix Server üzerinden bağlanır. Yukarıdan bir Server ekleyip eşleştirmek için seçin.",
+      "serverRequiredHelp": "Android için Firefox, Motrix Server üzerinden bağlanır. Yukarıdan bir sunucu ekleyin, ardından eşleştirmek için seçin.",
       "remoteConsentTitle": "Uzak indirmeler",
-      "remoteConsentBody": "Uzak indirmeler hedef URL’yi, kaynak sayfanın URL’sini ve başlığını, dosya adını, seçimi ve görev komutlarını bu Server’a gönderir. Çerezler ve istek üstbilgileri ayrı olarak etkinleştirilmedikçe gönderilmez.",
-      "remoteConsentOffline": "Veri izinleri, kimliği doğrulanmış Server’a bağlıdır. Değiştirmeden önce bağlanın.",
+      "remoteConsentBody": "Uzak indirmelerde hedef URL, kaynak sayfanın URL’si ve başlığı, dosya adı, seçilen öğeler ve görev komutları bu sunucuya gönderilir. Çerezler ve istek üstbilgileri ayrıca etkinleştirilmedikçe gönderilmez.",
+      "remoteConsentOffline": "Veri izinleri kimliği doğrulanmış sunucuya bağlıdır. Bu izinleri değiştirmeden önce bağlanın.",
       "remoteHeadersLabel": "İstek üstbilgilerini gönder",
       "remoteHeadersHelp": "Referer ve medya oynatma üstbilgileri gibi sayfadan alınan üstbilgilere izin verir. Kimlik doğrulama üstbilgileri için aşağıdaki kimlik bilgisi izni yine gereklidir.",
       "remoteCredentialsLabel": "Çerezleri ve kimlik doğrulama bilgilerini gönder",
-      "remoteCredentialsHelp": "Çerezlere ve kimlik bilgisi üstbilgilerine yalnızca bu Server için izin verir. Yalnızca kontrol ettiğiniz bir Server için etkinleştirin.",
+      "remoteCredentialsHelp": "Çerezlere ve kimlik bilgisi üstbilgilerine yalnızca bu sunucu için izin verir. Yalnızca kontrol ettiğiniz bir sunucu için etkinleştirin.",
       "notPaired": "Eşleştirilmedi",
       "paired": "Motrix ile eşleştirildi",
       "pairedHelp": "Bu arka uç için onaylanmış bir MBP1 kimlik bilgisi saklanır. Güncel bağlantı durumu ayrı gösterilir.",
@@ -120,12 +120,12 @@
       "deleteAria": "{{name}} sil",
       "deleteDescription": "{{name}} ve yerel olarak saklanan eşleştirme kimlik bilgileri ile onayları silinsin mi? Bu işlem sunucuda hiçbir şeyi iptal etmez.",
       "deleteTitle": "Motrix Server silinsin mi?",
-      "description": "Birden fazla Motrix Server adresi kaydedin ve seçeneklerden veya açılır pencereden aralarında geçiş yapın.",
-      "dialogDescription": "Bu arka uca tanınabilir bir ad verin ve WebSocket temel URL’sini girin.",
+      "description": "Birden fazla Motrix Server adresi kaydedin ve ayarlardan veya açılır pencereden aralarında geçiş yapın.",
+      "dialogDescription": "Bu arka uca bir ad verin ve WebSocket temel URL’sini girin.",
       "editAria": "{{name}} düzenle",
       "editTitle": "Motrix Server’ı düzenle",
       "emptyDescription": "Bu bilgisayarın dışındaki Motrix’e bağlanmak için sunucu ekleyin.",
-      "emptyTitle": "Henüz Motrix Server yok",
+      "emptyTitle": "Henüz Motrix sunucusu yok",
       "footer": "Sunucu adresi değiştiğinde yeniden eşleştirme gerekir. Eşleştirme bilgileri adresler arasında asla paylaşılmaz.",
       "nameLabel": "Sunucu adı",
       "namePlaceholder": "Ev sunucusu",
@@ -161,9 +161,9 @@
       "save": "Kaydet",
       "saved": "Kaydedildi",
       "title": "İndirmeleri devralma",
-      "remoteUnavailable": "Otomatik devralma şu anda yerel Motrix App gerektirir. Uzak indirmeler ve üstbilgi veya çerez izinleri bu özelliği etkinleştirmez. Bu Server’a elle veya sağ tık menüsünden indirme gönderebilirsiniz.",
+      "remoteUnavailable": "Otomatik devralma şu anda yerel Motrix App gerektirir. Uzak indirmeler ve üstbilgi veya çerez izinleri bu özelliği etkinleştirmez. Bu sunucuya elle veya sağ tık menüsünden indirme gönderebilirsiniz.",
       "availabilityUnknown": "Seçili arka uç kontrol edilene kadar devralma kullanılamaz.",
-      "remoteUnavailableShort": "Yalnızca yerel App. Sağ tıkla gönderim Server ile de çalışır."
+      "remoteUnavailableShort": "Yalnızca yerel uygulama. Sağ tıkla gönderim sunucularla da çalışır."
     },
     "tabs": {
       "general": "Genel",
@@ -183,7 +183,7 @@
       "title": "Görünüm",
       "theme": {
         "label": "Tema",
-        "system": "Sistemi izle",
+        "system": "Sistem ayarını kullan",
         "light": "Açık",
         "dark": "Koyu"
       }
@@ -193,7 +193,7 @@
       "description": "Kılavuz, destek ve uzantı tanılama bilgilerini inceleyin.",
       "reportBug": "Sorun bildir",
       "reportBugDescription": "GitHub’da bir sorun kaydı açın veya geri bildirim paylaşın.",
-      "issues": "GitHub Issues",
+      "issues": "GitHub sorunları",
       "docs": "Belgeler",
       "docsDescription": "Kurulum, eşleştirme, indirmeleri devralma ve sorun giderme kılavuzlarını okuyun.",
       "copyDiagnostics": "Tanılama bilgilerini kopyala",
@@ -219,18 +219,18 @@
       "running": "Tanılanıyor…",
       "rerun": "Yeniden denetle",
       "title": "Tanılama sonuçları",
-      "runningHelp": "Debug günlükleri açılıyor ve bağlantı denetleniyor. Genellikle birkaç saniye sürer.",
+      "runningHelp": "Hata ayıklama günlükleri etkinleştiriliyor ve bağlantı ortamı denetleniyor. Bu işlem genellikle birkaç saniye sürer.",
       "firstLaunchHint": "Motrix’i elle açın, ilk açılış koşullarını okuyup kabul ediyorsanız onaylayın. Ana pencere açıldığında eşleştirmeyi yeniden deneyin.",
-      "latestVersionHint": "Motrix’in en son sürümünü indirip yüklemeyi deneyin, ilk kurulumu tamamlayın ve ardından yeniden eşleştirmeyi deneyin.",
+      "latestVersionHint": "Motrix’in en son sürümünü indirip yükleyin, ilk kurulumu tamamlayın ve ardından yeniden eşleştirmeyi deneyin.",
       "appReleases": "Motrix’in en son sürümünü indir",
       "advanced": "Gelişmiş sorun giderme",
-      "allowlistHint": "Geliştirme veya paketlenmemiş sürümlerde uzantı kimliğini Motrix: Ayarlar → Entegrasyon → güvenilen uzantılar ve Native Host izin listesinde kontrol edin."
+      "allowlistHint": "Geliştirme veya paketlenmemiş kurulumlarda bu uzantı kimliğinin Motrix Ayarları → Entegrasyon → güvenilen uzantılar bölümünde ve Native Host izin listesinde bulunduğunu kontrol edin."
     },
     "backend": {
       "app": "Motrix App",
       "appDescription": "Bu bilgisayar",
       "choose": "Motrix arka ucunu seç",
-      "configureServer": "Motrix Server’ları yönet",
+      "configureServer": "Motrix sunucularını yönet",
       "notConfigured": "Yapılandırılmadı",
       "server": "Motrix Server",
       "version": "v{{version}}"
@@ -262,7 +262,7 @@
       "excludeCurrentSite": "Geçerli siteyi hariç tut",
       "excludeCurrentSiteDescription": "{{site}} indirmelerini tarayıcıda tut",
       "noCurrentSite": "Bu sayfanın hariç tutulabilecek bir alan adı yok.",
-      "inheritedExclusion": "{{site}}, {{domain}} için tanımlanan hariç tutma kuralı kapsamındadır. Tam ayarlardan düzenleyin.",
+      "inheritedExclusion": "{{site}}, {{domain}} için tanımlanan hariç tutma kuralı kapsamındadır. Tüm ayarlar bölümünden düzenleyin.",
       "taskPanelDescription": "Sağ tık, otomatik devralma veya diğer yollarla indirme eklendikten sonra aç"
     },
     "quickAdd": {
@@ -325,7 +325,7 @@
         "youtube": "Bu YouTube videosunu gönder"
       },
       "pageSubmitted": "Video Motrix’e gönderildi {{taskId}}",
-      "pageResources": "Kaynaklar",
+      "pageResources": "Sayfa kaynakları",
       "quickDownloadResource": "{{name}} hızlı indir",
       "connectToSubmit": "Kaynak göndermek için Motrix’e bağlanın.",
       "scan": "Yeniden tara",
@@ -362,7 +362,7 @@
     },
     "tabs": {
       "settings": "Ayarlar",
-      "sniffer": "Kaynaklar",
+      "sniffer": "Kaynak algılama",
       "tasks": "Görevler"
     },
     "takeover": {
@@ -390,12 +390,12 @@
       "empty": {
         "active": "Etkin görev yok",
         "failed": "Başarısız görev yok",
-        "recent": "Biten görev yok"
+        "recent": "Tamamlanan görev yok"
       },
       "filters": {
         "active": "Etkin",
         "failed": "Başarısız",
-        "recent": "Bitenler"
+        "recent": "Tamamlananlar"
       },
       "loading": "Görevler yükleniyor",
       "status": {
@@ -438,7 +438,7 @@
       "degradedTitle": "Motrix bağlı",
       "degradedBody": "Motrix’i normal şekilde kullanabilirsiniz. Bu bağlantı yalnızca temel doğrulamaya sahiptir. Daha güçlü koruma için Motrix’i güncelleyip yeniden eşleştirin.",
       "recoveryExhaustedTitle": "Otomatik olarak yeniden bağlanılamadı",
-      "recoveryExhaustedBody": "Kayıtlı eşleştirmeyle yeniden bağlanılamadı. Bağlantıyı yeniden deneyin veya tekrar eşleştirmeden önce Ayarlar → Entegrasyon bölümünde eşleştirmeyi unutun."
+      "recoveryExhaustedBody": "Kayıtlı eşleştirmeyle yeniden bağlanılamadı. Bağlantıyı yeniden deneyin veya tekrar eşleştirmeden önce Ayarlar → Entegrasyon bölümünde “Eşleştirmeyi unut” seçeneğini kullanın."
     },
     "integration": {
       "pairedTitle": "Eşleştirildi. İndirme gönderebilirsiniz.",
@@ -446,11 +446,11 @@
       "pairedRemoteBody": "İndirmeleri doğrudan gönderin. Görev ilerlemesini görmek için bağlanın.",
       "viewTasks": "Görevleri göster",
       "waking": "Motrix açılıyor…",
-      "pairingUnavailable": "Eşleştirme bilgileri okunamıyor. Tekrar deneyin.",
+      "pairingUnavailable": "Eşleştirme bilgileri kullanılamıyor. Tekrar deneyin.",
       "pairingRequired": "Bu indirmeyi göndermek için Motrix ile eşleştirin.",
       "connectionFailed": "Motrix bağlantısı kurulamadı. Uygulamayı açıp tekrar deneyin. Kayıtlı eşleştirme korunur.",
       "resultUnknown": "Gönderim sonucu bilinmiyor. Tekrar göndermeden önce görevleri kontrol edin.",
-      "contextChanged": "Sayfa veya seçilen sunucu değişti. İndirmeyi yeniden seçin.",
+      "contextChanged": "Sayfa veya seçilen arka uç değişti. İndirmeyi yeniden seçin.",
       "preparing": "İndirme hazırlanıyor…",
       "sending": "İndirme gönderiliyor…",
       "pairedStatus": "Eşleştirildi"
@@ -471,14 +471,14 @@
       "deadlineExceeded": "Deneme zaman aşımına uğradı. Tekrar deneyin.",
       "runsExhausted": "Çok fazla yanlış kod girildi. Yeni bir kod almak için eşleştirmeyi yeniden başlatın.",
       "invalidCode": "Kod beklenen biçimde değil. Motrix penceresini kontrol edin.",
-      "missingNonce": "Motrix bir eşleştirme yuvası sunmadı. Motrix’in çalıştığından emin olup tekrar deneyin.",
+      "missingNonce": "Motrix bir eşleştirme oturumu sunmadı. Motrix’in çalıştığından emin olup tekrar deneyin.",
       "unsupportedBrowser": "Bu tarayıcıda eşleştirme desteklenmiyor.",
       "ticketPreparationFailed": "Eşleştirme hazırlanamadı. Tekrar deneyin.",
       "protocolViolation": "Motrix beklenmeyen bir yanıt gönderdi. Tekrar deneyin.",
       "unsupportedVersion": "Bu uzantı ve Motrix farklı protokol sürümleri kullanıyor. İkisini de güncelleyip tekrar deneyin.",
       "backendUpgradeRequired": "Bu Motrix sürümü güvenli eşleştirme için çok eski. Motrix’i güncelleyip tekrar deneyin.",
       "extensionUpgradeRequired": "Bu uzantı sürümü bu Motrix için çok eski. Motrix uzantısını güncelleyip tekrar deneyin.",
-      "unsupportedRemote": "Kimliği doğrulanan Motrix, bu bağlantı için seçilen App veya Server değil. Uç noktayı kontrol edip tekrar deneyin.",
+      "unsupportedRemote": "Kimliği doğrulanan Motrix, bu bağlantı için seçilen uygulama veya sunucu değil. Uç noktayı kontrol edip tekrar deneyin.",
       "remoteDiscoveryUnavailable": "Uzak Motrix Server’a ulaşılamadı. Adresi, dinleme hizmetini ve ağı kontrol edin; WSS için sertifikayı ve ters vekili de kontrol edin.",
       "remotePairingUnavailable": "Uzak Motrix Server güvenli bir eşleştirme oturumu açamadı. Biraz sonra tekrar deneyin.",
       "remoteTransportUnavailable": "Uzak Motrix Server bağlantısı başarısız. Adresi, dinleme hizmetini, DNS’i ve ağı kontrol edin; WSS için sertifikayı ve ters vekili de kontrol edin. Tarayıcı hangisinin başarısız olduğunu belirleyemez.",
