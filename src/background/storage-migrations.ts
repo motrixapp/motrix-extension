@@ -28,16 +28,16 @@ export async function purgeRetiredPairTokenStorage(
   await storage.remove([...RETIRED_PAIR_TOKEN_STORAGE_KEYS])
 }
 
-/** Testable startup barrier: autostart is unreachable until both the blind
- * token tombstone and interrupted authority cleanup have completed. */
+/** Durable startup barrier shared by message dispatch and endpoint autostart.
+ * Only storage recovery belongs here: discovery, socket authentication and
+ * initialize can take seconds (or fail) without making the extension unusable.
+ * The caller starts the connection separately after this promise resolves. */
 export async function recoverStorageBeforeEndpointAutostart(
   deps: {
     recoverPendingEndpointCleanup: () => Promise<void>
-    autostart: () => Promise<void>
   },
   storage: StorageKeyRemover = browser.storage.local
 ): Promise<void> {
   await purgeRetiredPairTokenStorage(storage)
   await deps.recoverPendingEndpointCleanup()
-  await deps.autostart()
 }
