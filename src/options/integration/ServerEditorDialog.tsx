@@ -108,6 +108,7 @@ export function ServerEditorDialog({
               </FieldLabel>
               <Input
                 id="motrix-server-url"
+                dir="ltr"
                 autoComplete="url"
                 inputMode="url"
                 placeholder={t('options.servers.urlPlaceholder')}

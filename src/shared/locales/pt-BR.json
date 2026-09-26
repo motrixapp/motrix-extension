@@ -11,7 +11,7 @@
   },
   "contextMenu": {
     "downloadWithMotrix": "Baixar com o Motrix",
-    "pairThenDownload": "Parear o Motrix e baixar"
+    "pairThenDownload": "Parear o Motrix e depois baixar"
   },
   "notify": {
     "browserFallbackBody": "O Motrix está indisponível. O navegador fará o download.",
@@ -19,7 +19,7 @@
     "downloadComplete": "Download concluído",
     "downloadFailed": "Falha no download",
     "handedToMotrix": "Enviado ao Motrix",
-    "notConnectedBody": "Pareie o Motrix para gerenciar os downloads.",
+    "notConnectedBody": "Pareie o Motrix para que ele assuma os downloads.",
     "notConnectedTitle": "Motrix desconectado",
     "notReachableBody": "Não foi possível conectar ao Motrix. Abra o aplicativo e tente novamente. O pareamento salvo é mantido.",
     "notReachableTitle": "Motrix inacessível",
@@ -40,7 +40,7 @@
       "extensionId": "ID da extensão",
       "logLevel": "Nível de registro",
       "logLevels": {
-        "silent": "Sem registros",
+        "silent": "Sem registro",
         "error": "Erro",
         "warn": "Aviso",
         "info": "Informações",
@@ -62,7 +62,7 @@
         "handshaking": "Autorizando",
         "awaiting-code": "Aguardando código"
       },
-      "currentDescription": "Escolha um App ou Server para downloads, tarefas e recursos detectados nas páginas.",
+      "currentDescription": "Escolha um aplicativo ou servidor para downloads, tarefas e recursos detectados nas páginas.",
       "currentTitle": "Serviços Motrix",
       "listLabel": "Serviços Motrix disponíveis",
       "localDescription": "Este computador, detectado pelo Motrix App",
@@ -91,16 +91,16 @@
       "localHelp": "Clique em Parear para encontrar o Motrix neste computador e digite o código de pareamento.",
       "localTitle": "Parear pelo Motrix App",
       "remoteTitle": "Parear com o Motrix Server",
-      "remoteHelp": "Clique em Parear, confirme a solicitação na interface de administração do Server e digite aqui o código exibido. Conexões WS e WSS são aceitas; recomenda-se WSS.",
+      "remoteHelp": "Clique em Parear, confirme a solicitação na interface de administração do servidor e digite aqui o código exibido. Conexões WS e WSS são aceitas; recomenda-se WSS.",
       "serverRequiredTitle": "Motrix Server necessário",
-      "serverRequiredHelp": "O Firefox para Android se conecta pelo Motrix Server. Adicione um Server acima e selecione-o para parear.",
+      "serverRequiredHelp": "O Firefox para Android se conecta pelo Motrix Server. Adicione um servidor acima e selecione-o para parear.",
       "remoteConsentTitle": "Downloads remotos",
-      "remoteConsentBody": "Os downloads remotos enviam a este Server a URL de destino, a URL e o título da página de origem, o nome do arquivo, a seleção e os comandos das tarefas. Cookies e cabeçalhos de requisição só são enviados se ativados separadamente.",
-      "remoteConsentOffline": "As permissões de dados estão vinculadas ao Server autenticado. Conecte-se antes de alterá-las.",
+      "remoteConsentBody": "Os downloads remotos enviam a este servidor a URL de destino, a URL e o título da página de origem, o nome do arquivo, a seleção e os comandos das tarefas. Cookies e cabeçalhos de requisição só são enviados se ativados separadamente.",
+      "remoteConsentOffline": "As permissões de dados estão vinculadas ao servidor autenticado. Conecte-se antes de alterá-las.",
       "remoteHeadersLabel": "Enviar cabeçalhos de requisição",
       "remoteHeadersHelp": "Permite cabeçalhos obtidos da página, como Referer e cabeçalhos de reprodução de mídia. Cabeçalhos de autenticação ainda exigem a permissão de credenciais abaixo.",
-      "remoteCredentialsLabel": "Enviar cookies e autenticação",
-      "remoteCredentialsHelp": "Permite cookies e cabeçalhos de credenciais apenas para este Server. Ative somente para um Server que você controla.",
+      "remoteCredentialsLabel": "Enviar cookies e dados de autenticação",
+      "remoteCredentialsHelp": "Permite cookies e cabeçalhos de credenciais apenas para este servidor. Ative somente para um servidor que você controla.",
       "notPaired": "Não pareado",
       "paired": "Pareado com o Motrix",
       "pairedHelp": "Uma credencial MBP1 confirmada é mantida para este serviço. O status atual da conexão é exibido separadamente.",
@@ -121,7 +121,7 @@
       "deleteDescription": "Excluir {{name}} e suas credenciais de pareamento e consentimentos salvos localmente? Isso não revoga nada no servidor.",
       "deleteTitle": "Excluir Motrix Server?",
       "description": "Salve vários endereços do Motrix Server e alterne entre eles nas opções ou no popup.",
-      "dialogDescription": "Dê um nome reconhecível a este serviço e insira sua URL base WebSocket.",
+      "dialogDescription": "Dê um nome a este serviço e insira sua URL base WebSocket.",
       "editAria": "Editar {{name}}",
       "editTitle": "Editar Motrix Server",
       "emptyDescription": "Adicione um servidor para se conectar ao Motrix fora deste computador.",
@@ -161,9 +161,9 @@
       "save": "Salvar",
       "saved": "Salvo",
       "title": "Captura de downloads",
-      "remoteUnavailable": "A captura automática exige atualmente o Motrix App local. Downloads remotos e permissões de cabeçalhos ou cookies não a ativam. Você ainda pode enviar downloads a este Server manualmente ou pelo menu de contexto.",
+      "remoteUnavailable": "A captura automática exige atualmente o Motrix App local. Downloads remotos e permissões de cabeçalhos ou cookies não a ativam. Você ainda pode enviar downloads a este servidor manualmente ou pelo menu de contexto.",
       "availabilityUnknown": "A captura fica indisponível até que o serviço selecionado possa ser verificado.",
-      "remoteUnavailableShort": "Somente App local. O envio por clique direito funciona com Servers."
+      "remoteUnavailableShort": "Somente aplicativo local. O envio pelo botão direito funciona com servidores."
     },
     "tabs": {
       "general": "Geral",
@@ -192,8 +192,8 @@
       "title": "Ajuda e suporte",
       "description": "Consulte guias, suporte e diagnóstico da extensão.",
       "reportBug": "Relatar um problema",
-      "reportBugDescription": "Abra uma issue no GitHub ou envie seus comentários.",
-      "issues": "GitHub Issues",
+      "reportBugDescription": "Abra uma ocorrência no GitHub ou envie seus comentários.",
+      "issues": "Ocorrências no GitHub",
       "docs": "Documentação",
       "docsDescription": "Leia os guias de configuração, pareamento, captura de downloads e solução de problemas.",
       "copyDiagnostics": "Copiar diagnóstico",
@@ -208,7 +208,7 @@
     "title": "Configurações da extensão Motrix",
     "taskPanel": {
       "title": "Painel de tarefas",
-      "openAfterSubmit": "Abrir o painel após adicionar um download",
+      "openAfterSubmit": "Abrir o painel de tarefas após adicionar um download",
       "description": "Abre automaticamente o painel quando um download é adicionado ao Motrix, inclusive pelo botão direito ou pela captura automática. Vários downloads adicionados em sequência abrem o painel apenas uma vez.",
       "unsupported": "Requer Chrome / Edge 127+ ou Firefox 149+."
     }
@@ -219,9 +219,9 @@
       "running": "Diagnosticando…",
       "rerun": "Diagnosticar novamente",
       "title": "Resultados do diagnóstico",
-      "runningHelp": "Ativando logs debug e verificando a conexão. Isso costuma levar alguns segundos.",
+      "runningHelp": "Ativando os registros de depuração e verificando o ambiente de conexão. Isso costuma levar alguns segundos.",
       "firstLaunchHint": "Abra o Motrix manualmente, leia os termos da primeira execução e aceite se concordar. Tente parear novamente quando a janela principal aparecer.",
-      "latestVersionHint": "Tente baixar e instalar a versão mais recente do Motrix, conclua a configuração inicial e tente parear novamente.",
+      "latestVersionHint": "Baixe e instale a versão mais recente do Motrix, conclua a configuração inicial e tente parear novamente.",
       "appReleases": "Baixar a versão mais recente do Motrix",
       "advanced": "Solução de problemas avançada",
       "allowlistHint": "Para versões de desenvolvimento ou descompactadas, confira o ID em Motrix: Configurações → Integração → extensões confiáveis e na lista de permissões do Native Host."
@@ -230,7 +230,7 @@
       "app": "Motrix App",
       "appDescription": "Este computador",
       "choose": "Escolher serviço do Motrix",
-      "configureServer": "Gerenciar Motrix Servers",
+      "configureServer": "Gerenciar servidores Motrix",
       "notConfigured": "Não configurado",
       "server": "Motrix Server",
       "version": "v{{version}}"
@@ -252,12 +252,12 @@
     },
     "loading": "Carregando…",
     "quickSettings": {
-      "fullSettings": "Todos os ajustes",
+      "fullSettings": "Todas as configurações",
       "fullSettingsDescription": "Geral, downloads, serviço e ajuda",
-      "loadError": "Falha ao carregar ajustes rápidos.",
+      "loadError": "Não foi possível carregar as configurações rápidas.",
       "notificationsDescription": "Gerenciar notificações do sistema da extensão",
       "retry": "Tentar de novo",
-      "saveError": "Falha ao salvar o ajuste. Tente novamente.",
+      "saveError": "Não foi possível salvar a configuração. Tente novamente.",
       "takeoverDescription": "Enviar downloads do navegador ao serviço atual do Motrix",
       "excludeCurrentSite": "Excluir o site atual",
       "excludeCurrentSiteDescription": "Manter os downloads de {{site}} no navegador",
@@ -291,8 +291,8 @@
       "downloadingResource": "Baixando {{name}}",
       "emptyDescription": "Reproduza uma mídia e tente novamente.",
       "emptyFilter": "Nenhum recurso correspondente",
-      "emptyTitle": "Nenhuma mídia",
-      "filteredCount": "{{matched}} / {{total}} imagens",
+      "emptyTitle": "Nenhuma mídia encontrada",
+      "filteredCount": "Imagens: {{matched}} / {{total}}",
       "filters": {
         "all": "Todos",
         "audio": "Áudio",
@@ -325,7 +325,7 @@
         "youtube": "Enviar este vídeo do YouTube"
       },
       "pageSubmitted": "Vídeo enviado ao Motrix {{taskId}}",
-      "pageResources": "Recursos",
+      "pageResources": "Recursos da página",
       "quickDownloadResource": "Download rápido de {{name}}",
       "connectToSubmit": "Conecte-se ao Motrix para enviar recursos.",
       "scan": "Verificar novamente",
@@ -361,7 +361,7 @@
       "awaiting-code": "Aguardando código de pareamento…"
     },
     "tabs": {
-      "settings": "Ajustes",
+      "settings": "Configurações",
       "sniffer": "Recursos",
       "tasks": "Tarefas"
     },
@@ -404,7 +404,7 @@
         "error": "Com falha",
         "fetching_metadata": "Obtendo metadados",
         "finalizing": "Finalizando",
-        "paused": "Pausado",
+        "paused": "Em pausa",
         "queued": "Na fila",
         "seeding": "Semeando"
       },
@@ -438,19 +438,19 @@
       "degradedTitle": "O Motrix está conectado",
       "degradedBody": "Você pode usar o Motrix normalmente. Esta conexão tem apenas verificação básica. Para maior proteção, atualize o Motrix e pareie novamente.",
       "recoveryExhaustedTitle": "Não foi possível reconectar automaticamente",
-      "recoveryExhaustedBody": "Não foi possível reconectar o pareamento salvo. Tente novamente ou escolha Esquecer pareamento em Configurações → Integração antes de parear novamente."
+      "recoveryExhaustedBody": "O pareamento salvo não permitiu restabelecer a conexão. Tente novamente ou selecione «Esquecer pareamento» em Configurações → Integração antes de parear de novo."
     },
     "integration": {
       "pairedTitle": "Pareado. Você pode enviar downloads.",
-      "pairedBody": "O Motrix abre quando necessário. Conecte para ver o progresso das tarefas.",
-      "pairedRemoteBody": "Envie downloads diretamente. Conecte para ver o progresso das tarefas.",
+      "pairedBody": "O Motrix abre quando necessário. Conecte-se para ver o progresso das tarefas.",
+      "pairedRemoteBody": "Envie downloads diretamente. Conecte-se para ver o progresso das tarefas.",
       "viewTasks": "Ver tarefas",
       "waking": "Abrindo o Motrix…",
-      "pairingUnavailable": "Não foi possível ler os dados de pareamento. Tente novamente.",
+      "pairingUnavailable": "As informações de pareamento não estão disponíveis. Tente novamente.",
       "pairingRequired": "Pareie o Motrix para enviar este download.",
       "connectionFailed": "Não foi possível conectar ao Motrix. Abra o aplicativo e tente novamente. O pareamento salvo é mantido.",
       "resultUnknown": "Resultado do envio desconhecido. Confira as tarefas antes de enviar novamente.",
-      "contextChanged": "A página ou o servidor selecionado mudou. Selecione o download novamente.",
+      "contextChanged": "A página ou o serviço selecionado mudou. Selecione o download novamente.",
       "preparing": "Preparando download…",
       "sending": "Enviando download…",
       "pairedStatus": "Pareado"
@@ -478,7 +478,7 @@
       "unsupportedVersion": "A extensão e o Motrix usam versões diferentes do protocolo. Atualize ambos e tente novamente.",
       "backendUpgradeRequired": "Esta versão do Motrix é antiga demais para um pareamento seguro. Atualize o Motrix e tente novamente.",
       "extensionUpgradeRequired": "Esta versão da extensão é antiga demais para este Motrix. Atualize a extensão Motrix e tente novamente.",
-      "unsupportedRemote": "O Motrix autenticado não é o App ou Server selecionado para esta conexão. Verifique o endpoint e tente novamente.",
+      "unsupportedRemote": "O Motrix autenticado não é o aplicativo ou servidor selecionado para esta conexão. Verifique o endereço e tente novamente.",
       "remoteDiscoveryUnavailable": "Não foi possível acessar o Motrix Server remoto. Verifique endereço, serviço de escuta e rede; para WSS, confira também o certificado e o proxy reverso.",
       "remotePairingUnavailable": "O Motrix Server remoto não conseguiu abrir uma sessão segura de pareamento. Tente novamente em instantes.",
       "remoteTransportUnavailable": "A conexão com o Motrix Server remoto falhou. Verifique endereço, serviço de escuta, DNS e rede; para WSS, confira também o certificado e o proxy reverso. O navegador não consegue identificar qual deles falhou.",

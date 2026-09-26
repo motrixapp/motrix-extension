@@ -110,7 +110,7 @@ export function BackendSelector({
             statusClass(connection, pairing, attention, checking)
           )}
         />
-        <span className="min-w-0 flex-1 truncate text-left font-normal">
+        <span className="min-w-0 flex-1 truncate text-start font-normal">
           {backendName}
         </span>
         <ChevronDown

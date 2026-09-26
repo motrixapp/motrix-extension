@@ -11,28 +11,28 @@
   },
   "contextMenu": {
     "downloadWithMotrix": "Mit Motrix herunterladen",
-    "pairThenDownload": "Motrix koppeln und herunterladen"
+    "pairThenDownload": "Motrix koppeln, dann herunterladen"
   },
   "notify": {
-    "browserFallbackBody": "Motrix ist nicht verfügbar. Der Download wird vom Browser übernommen.",
+    "browserFallbackBody": "Motrix ist nicht verfügbar. Der Browser übernimmt den Download.",
     "browserFallbackTitle": "Download im Browser",
     "downloadComplete": "Download abgeschlossen",
     "downloadFailed": "Download fehlgeschlagen",
     "handedToMotrix": "An Motrix übergeben",
     "notConnectedBody": "Koppeln Sie Motrix, um Downloads zu übernehmen.",
     "notConnectedTitle": "Motrix nicht verbunden",
-    "notReachableBody": "Keine Verbindung zu Motrix. App öffnen und erneut versuchen. Die gespeicherte Kopplung bleibt erhalten.",
+    "notReachableBody": "Die Verbindung zu Motrix ist fehlgeschlagen. Öffnen Sie die App und versuchen Sie es erneut. Die gespeicherte Kopplung bleibt erhalten.",
     "notReachableTitle": "Motrix nicht erreichbar",
     "pairNudgeBody": "Öffnen Sie Motrix, um die Kopplung abzuschließen.",
     "pairNudgeTitle": "Motrix koppeln",
     "pairRevokedBody": "Motrix hat die Kopplung dieses Browsers widerrufen.",
     "pairRevokedTitle": "Kopplung widerrufen",
-    "sensitiveSkippedBody": "Downloads von sensiblen Websites verbleiben im Browser.",
+    "sensitiveSkippedBody": "Downloads von sensiblen Websites bleiben im Browser.",
     "sensitiveSkippedTitle": "Übersprungen",
     "submitFailedBody": "Download wird erneut im Browser gestartet.",
     "submitFailedTitle": "Übermittlung an Motrix fehlgeschlagen",
-    "submitUnknownTitle": "Sendeergebnis unbekannt. Vor erneutem Senden die Aufgaben prüfen.",
-    "submitUnknownBody": "Sendeergebnis unbekannt. Vor erneutem Senden die Aufgaben prüfen."
+    "submitUnknownTitle": "Sendeergebnis unbekannt. Prüfen Sie die Aufgaben, bevor Sie erneut senden.",
+    "submitUnknownBody": "Sendeergebnis unbekannt. Prüfen Sie die Aufgaben, bevor Sie erneut senden."
   },
   "options": {
     "diagnostics": {
@@ -59,13 +59,13 @@
         "connecting": "Verbindung wird hergestellt",
         "denied": "Abgelehnt",
         "disconnected": "Getrennt",
-        "handshaking": "Autorisierung läuft",
-        "awaiting-code": "Warten auf Code"
+        "handshaking": "Wird autorisiert",
+        "awaiting-code": "Warten auf den Code"
       },
       "currentDescription": "Wählen Sie eine App oder einen Server für Downloads, Aufgaben und auf Webseiten erkannte Ressourcen.",
       "currentTitle": "Motrix-Backends",
       "listLabel": "Verfügbare Motrix-Backends",
-      "localDescription": "Dieser Computer, erkannt über Motrix App",
+      "localDescription": "Dieser Computer, über Motrix App gefunden",
       "localName": "Motrix App",
       "selectLabel": "Downloads senden an"
     },
@@ -87,26 +87,26 @@
     "pairing": {
       "backendTitle": "Kopplung mit {{name}}",
       "forget": "Kopplung vergessen",
-      "loading": "Kopplungsstatus laden…",
+      "loading": "Kopplungsstatus wird geladen…",
       "localHelp": "Klicken Sie auf „Koppeln“, um Motrix auf diesem Computer zu finden, und geben Sie den Kopplungscode ein.",
       "localTitle": "Über Motrix App koppeln",
       "remoteTitle": "Mit Motrix Server koppeln",
-      "remoteHelp": "Klicken Sie auf „Koppeln“, bestätigen Sie die Anfrage in der Verwaltungsoberfläche des Servers und geben Sie den angezeigten Code hier ein. WS- und WSS-Endpunkte werden unterstützt; WSS wird empfohlen.",
+      "remoteHelp": "Klicken Sie auf „Koppeln“, bestätigen Sie die Anfrage in der Serververwaltung und geben Sie den dort angezeigten Code hier ein. WS und WSS werden unterstützt. WSS wird empfohlen.",
       "serverRequiredTitle": "Motrix Server erforderlich",
       "serverRequiredHelp": "Firefox für Android verbindet sich über Motrix Server. Fügen Sie oben einen Server hinzu und wählen Sie ihn zum Koppeln aus.",
       "remoteConsentTitle": "Remote-Downloads",
-      "remoteConsentBody": "Bei Remote-Downloads werden Ziel-URL, URL und Titel der Quellseite, Dateiname, Auswahl und Aufgabensteuerung an diesen Server gesendet. Cookies und Anfrageheader werden nur bei gesonderter Aktivierung gesendet.",
+      "remoteConsentBody": "Remote-Downloads senden die Ziel-URL, URL und Titel der Quellseite, den Dateinamen, die Auswahl und Aufgabenbefehle an diesen Server. Cookies und Anfrageheader bleiben deaktiviert, bis Sie sie separat freigeben.",
       "remoteConsentOffline": "Datenberechtigungen sind an den authentifizierten Server gebunden. Stellen Sie vor Änderungen eine Verbindung her.",
       "remoteHeadersLabel": "Anfrageheader senden",
-      "remoteHeadersHelp": "Erlaubt aus Webseiten abgeleitete Header wie Referer und Medienwiedergabe-Header. Authentifizierungsheader benötigen weiterhin die unten stehende Berechtigung für Zugangsdaten.",
+      "remoteHeadersHelp": "Erlaubt Header von der Webseite, etwa Referer und Header zur Medienwiedergabe. Authentifizierungsheader erfordern zusätzlich die folgende Berechtigung für Zugangsdaten.",
       "remoteCredentialsLabel": "Cookies und Authentifizierungsdaten senden",
-      "remoteCredentialsHelp": "Erlaubt Cookies und Zugangsdaten-Header nur für diesen Server. Aktivieren Sie dies nur für einen Server, den Sie kontrollieren.",
+      "remoteCredentialsHelp": "Erlaubt Cookies und Header mit Zugangsdaten ausschließlich für diesen Server. Aktivieren Sie dies nur für einen Server unter Ihrer Kontrolle.",
       "notPaired": "Nicht gekoppelt",
       "paired": "Mit Motrix gekoppelt",
       "pairedHelp": "Für dieses Backend sind bestätigte MBP1-Zugangsdaten gespeichert. Der aktuelle Verbindungsstatus wird separat angezeigt.",
       "pairedTitle": "Kopplung bereit",
       "reconnect": "Erneut verbinden",
-      "scopedHelp": "Kopplungsvertrauen und Zugangsdaten sind für jedes Backend getrennt. Beim Wechsel wird das Vertrauen eines anderen Backends niemals übernommen.",
+      "scopedHelp": "Vertrauen und Zugangsdaten der Kopplung sind pro Backend getrennt. Beim Wechsel wird die Vertrauensstellung eines anderen Backends nie wiederverwendet.",
       "pair": "Koppeln",
       "pairDialogTitle": "Mit Motrix koppeln"
     },
@@ -121,12 +121,12 @@
       "deleteDescription": "{{name}} sowie die lokal gespeicherten Kopplungsdaten und Einwilligungen löschen? Auf dem Server wird dadurch nichts widerrufen.",
       "deleteTitle": "Motrix Server löschen?",
       "description": "Speichern Sie mehrere Motrix-Server-Adressen und wechseln Sie in den Einstellungen oder im Popup zwischen ihnen.",
-      "dialogDescription": "Geben Sie diesem Backend einen aussagekräftigen Namen und tragen Sie seine WebSocket-Basis-URL ein.",
+      "dialogDescription": "Benennen Sie dieses Backend und geben Sie seine WebSocket-Basis-URL ein.",
       "editAria": "{{name}} bearbeiten",
       "editTitle": "Motrix Server bearbeiten",
       "emptyDescription": "Fügen Sie einen Server hinzu, um Motrix außerhalb dieses Computers zu nutzen.",
       "emptyTitle": "Noch keine Motrix Server",
-      "footer": "Nach einer Adressänderung muss der Server erneut gekoppelt werden. Kopplungsdaten werden niemals zwischen Adressen geteilt.",
+      "footer": "Eine Änderung der Serveradresse erfordert eine neue Kopplung. Kopplungsdaten werden nie zwischen Adressen geteilt.",
       "nameLabel": "Servername",
       "namePlaceholder": "Heimserver",
       "nameRequired": "Ein Servername ist erforderlich",
@@ -137,7 +137,7 @@
       "statusTransportSecure": "Verbindungssicherheit: WSS wird verwendet und TLS prüft die Serveridentität",
       "statusTransportPlain": "Verbindungssicherheit: verschlüsselt, aber WS kann die Serveridentität nicht prüfen und kann Verbindungsinformationen offenlegen. WSS wird empfohlen",
       "title": "Motrix Server",
-      "urlDescription": "Verwenden Sie eine ws://- oder wss://-Basis-URL. Ein optionaler Pfad bleibt als exaktes Reverse-Proxy-Präfix erhalten; WSS wird empfohlen.",
+      "urlDescription": "Verwenden Sie eine Basis-URL mit ws:// oder wss://. Ein optionaler Pfad wird unverändert als Präfix für den Reverse-Proxy beibehalten. WSS wird empfohlen.",
       "urlDuplicate": "Diese Motrix-Server-Adresse ist bereits gespeichert",
       "urlInvalid": "Geben Sie eine gültige ws://- oder wss://-Basis-URL ohne Leerzeichen, Zugangsdaten, Abfrage oder Fragment ein",
       "urlLabel": "WebSocket-URL",
@@ -154,7 +154,7 @@
       "denylistLabel": "Sperrliste (ein Host pro Zeile – Downloads bleiben immer im Browser)",
       "enableAria": "Download-Übernahme aktivieren",
       "enableLabel": "Geeignete Downloads an Motrix senden",
-      "loading": "Übernahmeeinstellungen laden…",
+      "loading": "Übernahmeeinstellungen werden geladen…",
       "minSizeLabel": "Mindestgröße (MB)",
       "minSizePlaceholder": "0 = alle",
       "thresholdInvalid": "Die Mindestgröße muss eine nicht negative Zahl sein",
@@ -162,8 +162,8 @@
       "saved": "Gespeichert",
       "title": "Download-Übernahme",
       "remoteUnavailable": "Die automatische Übernahme erfordert derzeit die lokale Motrix App. Remote-Downloads und Berechtigungen für Header oder Cookies aktivieren sie nicht. Sie können Downloads weiterhin manuell oder über das Kontextmenü an diesen Server senden.",
-      "availabilityUnknown": "Die Übernahme ist erst verfügbar, wenn das ausgewählte Backend überprüft werden kann.",
-      "remoteUnavailableShort": "Nur lokale App. Senden per Rechtsklick funktioniert mit Servern."
+      "availabilityUnknown": "Die Übernahme ist nicht verfügbar, solange das ausgewählte Backend nicht geprüft werden kann.",
+      "remoteUnavailableShort": "Nur für die lokale App. Senden per Rechtsklick funktioniert auch mit Servern."
     },
     "tabs": {
       "general": "Allgemein",
@@ -190,10 +190,10 @@
     },
     "help": {
       "title": "Hilfe und Support",
-      "description": "Anleitungen, Hilfe und Diagnosedaten der Erweiterung ansehen.",
+      "description": "Lesen Sie Anleitungen, erhalten Sie Hilfe und sehen Sie die Diagnosedaten der Erweiterung ein.",
       "reportBug": "Problem melden",
       "reportBugDescription": "Erstellen Sie ein GitHub-Issue oder geben Sie Feedback.",
-      "issues": "GitHub Issues",
+      "issues": "GitHub-Issues",
       "docs": "Dokumentation",
       "docsDescription": "Lesen Sie Anleitungen zu Einrichtung, Kopplung, Download-Übernahme und Fehlerbehebung.",
       "copyDiagnostics": "Diagnosedaten kopieren",
@@ -219,12 +219,12 @@
       "running": "Diagnose läuft…",
       "rerun": "Erneut prüfen",
       "title": "Diagnoseergebnisse",
-      "runningHelp": "Debug-Protokollierung wird aktiviert und die Verbindung geprüft. Dies dauert meist einige Sekunden.",
-      "firstLaunchHint": "Öffne Motrix manuell, lies die Bedingungen beim ersten Start und akzeptiere sie, wenn du zustimmst. Versuche die Kopplung erneut, sobald das Hauptfenster erscheint.",
-      "latestVersionHint": "Versuche, die neueste Version von Motrix herunterzuladen und zu installieren. Schließe die Ersteinrichtung ab und versuche dann erneut, die Verbindung herzustellen.",
+      "runningHelp": "Die Debug-Protokollierung wird aktiviert und die Verbindungsumgebung geprüft. Das dauert normalerweise wenige Sekunden.",
+      "firstLaunchHint": "Öffnen Sie Motrix manuell, lesen Sie die Bedingungen beim ersten Start und akzeptieren Sie sie, wenn Sie einverstanden sind. Versuchen Sie die Kopplung erneut, sobald das Hauptfenster erscheint.",
+      "latestVersionHint": "Laden Sie die neueste Motrix-Version herunter, installieren Sie sie und schließen Sie die Ersteinrichtung ab. Versuchen Sie anschließend die Kopplung erneut.",
       "appReleases": "Neueste Motrix-Version herunterladen",
       "advanced": "Erweiterte Fehlerbehebung",
-      "allowlistHint": "Bei Entwicklungs- oder entpackten Versionen: Prüfe die Erweiterungs-ID in Motrix unter Einstellungen → Integration → vertrauenswürdige Erweiterungen und in der Native-Host-Freigabeliste."
+      "allowlistHint": "Prüfen Sie bei Entwicklungs- oder entpackten Installationen, ob diese Erweiterungs-ID unter Motrix-Einstellungen → Integration → vertrauenswürdige Erweiterungen und in der Native-Host-Freigabeliste steht."
     },
     "backend": {
       "app": "Motrix App",
@@ -253,16 +253,16 @@
     "loading": "Wird geladen…",
     "quickSettings": {
       "fullSettings": "Alle Einstellungen",
-      "fullSettingsDescription": "Allgemein, Downloads, Backend und Hilfe",
-      "loadError": "Schnelleinstellungen nicht geladen.",
+      "fullSettingsDescription": "Allgemein, Downloads, Backend, Hilfe",
+      "loadError": "Die Schnelleinstellungen konnten nicht geladen werden.",
       "notificationsDescription": "Systembenachrichtigungen der Erweiterung steuern",
       "retry": "Erneut versuchen",
-      "saveError": "Einstellung nicht gespeichert. Erneut versuchen.",
+      "saveError": "Die Einstellung konnte nicht gespeichert werden. Versuchen Sie es erneut.",
       "takeoverDescription": "Browser-Downloads an das aktuelle Motrix-Backend senden",
       "excludeCurrentSite": "Aktuelle Website ausschließen",
       "excludeCurrentSiteDescription": "Downloads von {{site}} im Browser lassen",
-      "noCurrentSite": "Diese Seite hat keine ausschließbare Website-Domain.",
-      "inheritedExclusion": "{{site}} ist durch den Ausschluss von {{domain}} abgedeckt. In den vollständigen Einstellungen bearbeiten.",
+      "noCurrentSite": "Diese Seite hat keine Website-Domain, die ausgeschlossen werden kann.",
+      "inheritedExclusion": "{{site}} fällt unter den Ausschluss für {{domain}}. Bearbeiten Sie ihn in den vollständigen Einstellungen.",
       "taskPanelDescription": "Nach dem Hinzufügen von Downloads per Rechtsklick, Übernahme oder anderen Wegen öffnen"
     },
     "quickAdd": {
@@ -289,10 +289,10 @@
       "downloadSelected": "Auswahl herunterladen",
       "downloadedResource": "{{name}} gesendet",
       "downloadingResource": "{{name}} wird heruntergeladen",
-      "emptyDescription": "Medien abspielen und erneut versuchen.",
+      "emptyDescription": "Spielen Sie Medien ab und versuchen Sie es erneut.",
       "emptyFilter": "Keine passenden Ressourcen",
-      "emptyTitle": "Keine Medien",
-      "filteredCount": "{{matched}} / {{total}} Bilder",
+      "emptyTitle": "Keine Medien gefunden",
+      "filteredCount": "Bilder: {{matched}} / {{total}}",
       "filters": {
         "all": "Alle",
         "audio": "Audio",
@@ -324,7 +324,7 @@
         "bilibili": "Dieses bilibili-Video senden",
         "youtube": "Dieses YouTube-Video senden"
       },
-      "pageSubmitted": "Video an Motrix gesendet {{taskId}}",
+      "pageSubmitted": "Video an Motrix gesendet: {{taskId}}",
       "pageResources": "Seitenressourcen",
       "quickDownloadResource": "{{name}} schnell herunterladen",
       "connectToSubmit": "Zum Senden von Ressourcen mit Motrix verbinden.",
@@ -339,13 +339,13 @@
       "sending": "Wird gesendet",
       "submitFailed": "Die Ressource konnte nicht gesendet werden. Bitte erneut versuchen.",
       "title": "Ressourcen erkennen",
-      "unavailableDescription": "Seite wechseln oder später erneut versuchen.",
-      "unavailableTitle": "Seite nicht scanbar",
+      "unavailableDescription": "Wechseln Sie die Seite oder versuchen Sie es später erneut.",
+      "unavailableTitle": "Die Seite kann nicht gescannt werden",
       "unsupported": "Erfordert ffmpeg",
       "unsupportedReason": "Für diesen Download wird FFmpeg benötigt.",
       "unsupportedSelectionReason": "Das ausgewählte Backend kann einen oder mehrere der ausgewählten Ressourcentypen nicht übermitteln.",
       "unsupportedResource": "{{name}} kann nicht gesendet werden. {{reason}}",
-      "refreshCapabilitiesHint": "Richte FFmpeg in den Motrix-Einstellungen ein und klicke dann auf „Erneut scannen“."
+      "refreshCapabilitiesHint": "Richten Sie FFmpeg in den Motrix-Einstellungen ein und klicken Sie auf „Erneut scannen“."
     },
     "speed": {
       "download": "Download",
@@ -374,7 +374,7 @@
       "openTaskInApp": "Aufgabendetails in Motrix App anzeigen",
       "openFolder": "Enthaltenden Ordner in Motrix öffnen",
       "openFolderError": "Der Aufgabenordner konnte nicht geöffnet werden. Bitte erneut versuchen.",
-      "openFolderMetadataPending": "Vor dem Öffnen des Ordners auf Aufgabenmetadaten warten",
+      "openFolderMetadataPending": "Warten Sie auf die Aufgabenmetadaten, bevor Sie den Ordner öffnen",
       "openFolderTask": "Ordner mit {{name}} öffnen",
       "openFolderUnsupported": "Aktualisieren Sie Motrix, um Ordner zu öffnen",
       "pauseTask": "{{name}} pausieren",
@@ -389,13 +389,13 @@
       "disconnectedTitle": "Motrix ist offline",
       "empty": {
         "active": "Keine aktiven Aufgaben",
-        "failed": "Keine gescheiterten Aufgaben",
-        "recent": "Keine fertigen Aufgaben"
+        "failed": "Keine fehlgeschlagenen Aufgaben",
+        "recent": "Keine abgeschlossenen Aufgaben"
       },
       "filters": {
         "active": "Aktiv",
-        "failed": "Gescheitert",
-        "recent": "Fertig"
+        "failed": "Fehlgeschlagen",
+        "recent": "Abgeschlossen"
       },
       "loading": "Aufgaben werden geladen",
       "status": {
@@ -414,8 +414,8 @@
       "attemptOf": "Versuch {{run}} von {{maxRuns}}",
       "attemptsRemaining": "Verbleibende Versuche: {{attemptsRemaining}}",
       "codeLabel": "Kopplungscode",
-      "codeDescription": "8-stelligen Code aus dem Motrix-Kopplungsdialog eingeben.",
-      "codeInvalid": "8-stelligen Code aus dem Kopplungsdialog eingeben.",
+      "codeDescription": "Geben Sie den 8-stelligen Code aus dem Motrix-Kopplungsdialog ein.",
+      "codeInvalid": "Geben Sie den 8-stelligen Code aus dem Kopplungsdialog ein.",
       "dialogTitle": "Kopplungscode eingeben",
       "dismissPrompt": "Später eingeben und weitersurfen",
       "enterCode": "Kopplungscode eingeben",
@@ -438,19 +438,19 @@
       "degradedTitle": "Motrix ist verbunden",
       "degradedBody": "Sie können Motrix normal nutzen. Diese Verbindung wurde nur grundlegend überprüft. Aktualisieren Sie Motrix und koppeln Sie es erneut, um den Schutz zu verbessern.",
       "recoveryExhaustedTitle": "Automatische Wiederverbindung fehlgeschlagen",
-      "recoveryExhaustedBody": "Die gespeicherte Kopplung konnte nicht wiederhergestellt werden. Versuche die Verbindung erneut oder entferne die Kopplung unter Einstellungen → Integration, bevor du erneut koppelst."
+      "recoveryExhaustedBody": "Mit der gespeicherten Kopplung konnte keine Verbindung hergestellt werden. Versuchen Sie es erneut oder wählen Sie unter Einstellungen → Integration „Kopplung vergessen“, bevor Sie erneut koppeln."
     },
     "integration": {
       "pairedTitle": "Gekoppelt. Downloads können gesendet werden.",
-      "pairedBody": "Motrix wird bei Bedarf geöffnet. Verbinden, um den Aufgabenfortschritt zu sehen.",
-      "pairedRemoteBody": "Downloads direkt senden. Verbinden, um den Aufgabenfortschritt zu sehen.",
+      "pairedBody": "Motrix wird bei Bedarf geöffnet. Stellen Sie eine Verbindung her, um den Aufgabenfortschritt zu sehen.",
+      "pairedRemoteBody": "Senden Sie Downloads direkt. Stellen Sie eine Verbindung her, um den Aufgabenfortschritt zu sehen.",
       "viewTasks": "Aufgaben ansehen",
       "waking": "Motrix wird geöffnet…",
-      "pairingUnavailable": "Kopplungsinformationen sind nicht verfügbar. Erneut versuchen.",
+      "pairingUnavailable": "Kopplungsinformationen sind nicht verfügbar. Versuchen Sie es erneut.",
       "pairingRequired": "Motrix koppeln, um diesen Download zu senden.",
-      "connectionFailed": "Keine Verbindung zu Motrix. App öffnen und erneut versuchen. Die gespeicherte Kopplung bleibt erhalten.",
-      "resultUnknown": "Sendeergebnis unbekannt. Vor erneutem Senden die Aufgaben prüfen.",
-      "contextChanged": "Die Seite oder das gewählte Backend hat sich geändert. Download erneut auswählen.",
+      "connectionFailed": "Die Verbindung zu Motrix ist fehlgeschlagen. Öffnen Sie die App und versuchen Sie es erneut. Die gespeicherte Kopplung bleibt erhalten.",
+      "resultUnknown": "Sendeergebnis unbekannt. Prüfen Sie die Aufgaben, bevor Sie erneut senden.",
+      "contextChanged": "Die Seite oder das ausgewählte Backend wurde geändert. Wählen Sie den Download erneut aus.",
       "preparing": "Download wird vorbereitet…",
       "sending": "Download wird gesendet…",
       "pairedStatus": "Gekoppelt"
@@ -471,7 +471,7 @@
       "deadlineExceeded": "Zeitüberschreitung. Bitte erneut versuchen.",
       "runsExhausted": "Zu viele falsche Codes. Starten Sie die Kopplung neu, um einen neuen Code zu erhalten.",
       "invalidCode": "Der Code hat nicht das erwartete Format. Prüfen Sie den Motrix-Dialog.",
-      "missingNonce": "Motrix hat keinen Kopplungsplatz angeboten. Stellen Sie sicher, dass Motrix läuft, und versuchen Sie es erneut.",
+      "missingNonce": "Motrix hat keine Kopplungssitzung angeboten. Stellen Sie sicher, dass Motrix läuft, und versuchen Sie es erneut.",
       "unsupportedBrowser": "Dieser Browser unterstützt keine Kopplung.",
       "ticketPreparationFailed": "Die Kopplung konnte nicht vorbereitet werden. Bitte erneut versuchen.",
       "protocolViolation": "Motrix hat eine unerwartete Antwort gesendet. Bitte erneut versuchen.",
@@ -492,8 +492,8 @@
       "serverMacMismatch": "Die Antwort konnte nicht verifiziert werden. Die Verbindung wurde beendet, da es möglicherweise nicht Ihr Motrix ist.",
       "channelClosed": "Die Verbindung wurde geschlossen. Verbinden Sie sich erneut, um fortzufahren.",
       "channelUnavailable": "Motrix ist derzeit nicht erreichbar. Stellen Sie sicher, dass es läuft.",
-      "diagnosticsCopyFailed": "Diagnoseinformationen konnten nicht kopiert werden. Versuche es erneut.",
-      "storedPairingUnavailable": "Keine Verbindung zu Motrix. App öffnen und erneut versuchen. Die gespeicherte Kopplung bleibt erhalten."
+      "diagnosticsCopyFailed": "Die Diagnosedaten konnten nicht kopiert werden. Versuchen Sie es erneut.",
+      "storedPairingUnavailable": "Die Verbindung zu Motrix ist fehlgeschlagen. Öffnen Sie die App und versuchen Sie es erneut. Die gespeicherte Kopplung bleibt erhalten."
     }
   }
 }

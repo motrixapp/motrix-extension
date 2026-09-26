@@ -44,7 +44,7 @@ export function SettingsTabForm<T extends FieldValues>({
           {error !== null && (
             <span className="text-xs text-destructive">{error}</span>
           )}
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ms-auto flex items-center gap-2">
             <Button
               type="button"
               size="sm"

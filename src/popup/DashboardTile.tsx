@@ -49,7 +49,8 @@ function DashboardTileContent({
       </span>
       <span
         data-slot="dashboard-tile-value-row"
-        className="flex min-h-[22px] min-w-0 items-baseline gap-0.5 whitespace-nowrap"
+        dir="ltr"
+        className="flex min-h-[22px] min-w-0 items-baseline justify-self-start gap-0.5 whitespace-nowrap"
       >
         <span
           data-slot="dashboard-tile-value"
@@ -70,7 +71,7 @@ function DashboardTileContent({
         <Icon
           aria-hidden="true"
           data-slot="dashboard-tile-icon"
-          className={cn('absolute right-2 bottom-3 size-4', iconClassName)}
+          className={cn('absolute end-2 bottom-3 size-4', iconClassName)}
           strokeWidth={2}
         />
       ) : null}
@@ -80,7 +81,7 @@ function DashboardTileContent({
 }
 
 const TILE_CLASS_NAME =
-  'relative row-span-3 grid min-h-20 min-w-0 grid-rows-subgrid gap-y-2 overflow-hidden p-2 pb-4 rounded-[10px] border border-border bg-card text-left shadow-card'
+  'relative row-span-3 grid min-h-20 min-w-0 grid-rows-subgrid gap-y-2 overflow-hidden p-2 pb-4 rounded-[10px] border border-border bg-card text-start shadow-card'
 
 export function DashboardTile(props: DashboardTileProps): React.ReactElement {
   const {

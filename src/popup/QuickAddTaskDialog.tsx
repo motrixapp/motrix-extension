@@ -116,6 +116,7 @@ export function QuickAddTaskDialog({
             </FieldLabel>
             <Textarea
               id="quick-add-task-input"
+              dir="ltr"
               className="min-h-[88px] max-h-32 resize-none [overflow-wrap:anywhere]"
               rows={3}
               value={controller.input}

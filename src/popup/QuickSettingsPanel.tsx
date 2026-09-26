@@ -207,7 +207,7 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
               data-testid="full-settings-row"
               type="button"
               variant="ghost"
-              className="sticky bottom-0 z-10 mt-auto h-auto min-h-[63px] w-full shrink-0 justify-start whitespace-normal rounded-none border-x-0 border-t border-b-0 border-border bg-card px-3 py-2 text-left hover:bg-muted"
+              className="sticky bottom-0 z-10 mt-auto h-auto min-h-[63px] w-full shrink-0 justify-start whitespace-normal rounded-none border-x-0 border-t border-b-0 border-border bg-card px-3 py-2 text-start hover:bg-muted"
               onClick={onOpenFullSettings}
             >
               <Settings

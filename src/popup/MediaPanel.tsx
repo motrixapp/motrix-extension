@@ -445,7 +445,7 @@ function ResourceRow({
       variant="ghost"
       size="icon-sm"
       className={cn(
-        'mr-3 size-8 shrink-0 rounded-lg text-muted-foreground',
+        'me-3 size-8 shrink-0 rounded-lg text-muted-foreground',
         disabledReason
           ? 'cursor-not-allowed opacity-50 hover:bg-transparent hover:text-muted-foreground active:translate-y-0 dark:hover:bg-transparent'
           : 'hover:bg-speed-download/[0.1] hover:text-speed-download',
@@ -475,7 +475,7 @@ function ResourceRow({
       data-testid={`resource-row-${mediaDomKey(media)}`}
       className="relative flex min-h-[68px] shrink-0 items-center py-2 transition-colors after:absolute after:inset-x-4 after:bottom-0 after:h-px after:bg-border last:after:hidden hover:bg-muted/40 focus-within:bg-muted/40"
     >
-      <div className="flex min-w-0 flex-1 items-center gap-2 pr-1.5 pl-3">
+      <div className="flex min-w-0 flex-1 items-center gap-2 pe-1.5 ps-3">
         <SelectionCheckbox
           checked={selected}
           disabled={state === 'sending'}

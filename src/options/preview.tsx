@@ -1,5 +1,6 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
+import { resolveLocale } from '@/shared/supportedLocales'
 import { TAKEOVER_DEFAULT, type TakeoverSettings } from '@/shared/takeover'
 
 type PreviewEndpoint = {
@@ -264,7 +265,12 @@ const storageChanged = {
 const previewBrowser = {
   action: { openPopup: async () => undefined },
   runtime: previewRuntime,
-  i18n: { getUILanguage: () => 'zh-CN' },
+  i18n: {
+    getUILanguage: () =>
+      resolveLocale(
+        new URLSearchParams(location.search).get('lang') ?? 'zh-CN'
+      ),
+  },
   storage: {
     local: {
       get: async () => ({}),
@@ -278,14 +284,21 @@ const previewBrowser = {
 ;(globalThis as unknown as { browser: unknown }).browser = previewBrowser
 ;(globalThis as unknown as { chrome: unknown }).chrome = previewBrowser
 
-const [{ App }, { initI18n }, { initTheme }] = await Promise.all([
-  import('@/options/App'),
-  import('@/shared/i18n'),
-  import('@/shared/theme'),
-])
+const [{ App }, { initI18n }, { initTheme }, { LocaleProvider }] =
+  await Promise.all([
+    import('@/options/App'),
+    import('@/shared/i18n'),
+    import('@/shared/theme'),
+    import('@/shared/LocaleProvider'),
+  ])
 
 initTheme()
 await initI18n()
 
 const root = document.getElementById('root')
-if (root) createRoot(root).render(<App />)
+if (root)
+  createRoot(root).render(
+    <LocaleProvider>
+      <App />
+    </LocaleProvider>
+  )

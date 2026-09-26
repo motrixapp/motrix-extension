@@ -1,18 +1,29 @@
 /** Canonical BCP 47 tags shared by storage, settings, and i18next. */
 export const SUPPORTED_LOCALES = [
-  'en-US',
+  'ar',
+  'bg',
+  'ca',
   'de',
+  'el',
+  'en-US',
   'es',
+  'fa',
   'fr',
   'hi',
+  'hu',
   'id',
   'it',
   'ja',
   'ko',
+  'nb',
+  'nl',
+  'pl',
   'pt-BR',
+  'ro',
   'ru',
   'th',
   'tr',
+  'uk',
   'vi',
   'zh-CN',
   'zh-TW',
@@ -21,6 +32,17 @@ export const SUPPORTED_LOCALES = [
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number]
 
 export const LOCALE_NAMES: Record<SupportedLocale, string> = {
+  ar: 'العربية',
+  bg: 'Български',
+  ca: 'Català',
+  el: 'Ελληνικά',
+  fa: 'فارسی',
+  hu: 'Magyar',
+  nb: 'Norsk bokmål',
+  nl: 'Nederlands',
+  pl: 'Polski',
+  ro: 'Română',
+  uk: 'Українська',
   'en-US': 'English',
   de: 'Deutsch',
   es: 'Español',
@@ -54,6 +76,7 @@ export function resolveLocale(language: string): SupportedLocale {
       ? 'zh-TW'
       : 'zh-CN'
   }
+  if (base === 'no') return 'nb'
   if (base === 'pt') return 'pt-BR'
   if (isSupportedLocale(base)) return base
   return 'en-US'

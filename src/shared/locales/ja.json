@@ -11,7 +11,7 @@
   },
   "contextMenu": {
     "downloadWithMotrix": "Motrix でダウンロード",
-    "pairThenDownload": "Motrix をペアリングしてダウンロード"
+    "pairThenDownload": "Motrix とペアリングしてからダウンロード"
   },
   "notify": {
     "browserFallbackBody": "Motrix を利用できないため、ブラウザーでダウンロードします。",
@@ -19,7 +19,7 @@
     "downloadComplete": "ダウンロード完了",
     "downloadFailed": "ダウンロード失敗",
     "handedToMotrix": "Motrix に送信しました",
-    "notConnectedBody": "Motrix をペアリングすると、ダウンロードを引き継げます。",
+    "notConnectedBody": "Motrix とペアリングすると、ブラウザーのダウンロードを引き継げます。",
     "notConnectedTitle": "Motrix 未接続",
     "notReachableBody": "Motrix に接続できません。アプリを開いて再試行してください。保存済みのペアリングは保持されます。",
     "notReachableTitle": "Motrix に接続できません",
@@ -62,10 +62,10 @@
         "handshaking": "認証中",
         "awaiting-code": "コード待機中"
       },
-      "currentDescription": "ダウンロード、タスク、ページから検出したリソースに使用する App または Server を選択します。",
+      "currentDescription": "ダウンロード、タスク、ページで検出したリソースに使用するアプリまたはサーバーを選択してください。",
       "currentTitle": "Motrix バックエンド",
       "listLabel": "利用可能な Motrix バックエンド",
-      "localDescription": "Motrix App で検出されたこのコンピューター",
+      "localDescription": "Motrix App を通じて検出されたこのコンピューター",
       "localName": "Motrix App",
       "selectLabel": "ダウンロードの送信先"
     },
@@ -91,20 +91,20 @@
       "localHelp": "「ペアリング」をクリックしてこのコンピューター上の Motrix を検出し、ペアリングコードを入力してください。",
       "localTitle": "Motrix App 経由でペアリング",
       "remoteTitle": "Motrix Server とペアリング",
-      "remoteHelp": "「ペアリング」をクリックし、Server の管理画面でリクエストを承認してから、表示されたコードをここに入力してください。WS と WSS の両方に対応しています。WSS を推奨します。",
+      "remoteHelp": "「ペアリング」をクリックし、サーバー の管理画面でリクエストを承認してから、表示されたコードをここに入力してください。WS と WSS の両方に対応しています。WSS を推奨します。",
       "serverRequiredTitle": "Motrix Server が必要です",
-      "serverRequiredHelp": "Android 版 Firefox は Motrix Server 経由で接続します。上で Server を追加し、選択してペアリングしてください。",
+      "serverRequiredHelp": "Android 版 Firefox は Motrix Server 経由で接続します。上で サーバー を追加し、選択してペアリングしてください。",
       "remoteConsentTitle": "リモートダウンロード",
-      "remoteConsentBody": "リモートダウンロードでは、対象 URL、元のページの URL とタイトル、ファイル名、選択内容、タスク操作をこの Server に送信します。Cookie とリクエストヘッダーは、個別に有効にしない限り送信しません。",
-      "remoteConsentOffline": "データの権限は認証済みの Server に紐づきます。変更する前に接続してください。",
+      "remoteConsentBody": "リモートダウンロードでは、対象 URL、元のページの URL とタイトル、ファイル名、選択内容、タスク操作をこの サーバー に送信します。Cookie とリクエストヘッダーは、個別に有効にしない限り送信しません。",
+      "remoteConsentOffline": "データの権限は認証済みの サーバー に紐づきます。変更する前に接続してください。",
       "remoteHeadersLabel": "リクエストヘッダーを送信",
       "remoteHeadersHelp": "Referer やメディア再生用ヘッダーなど、ページ由来のヘッダーを許可します。認証ヘッダーには、下の認証情報の権限が別途必要です。",
       "remoteCredentialsLabel": "Cookie と認証情報を送信",
-      "remoteCredentialsHelp": "この Server に限り、Cookie と認証情報ヘッダーを許可します。自分で管理する Server にのみ有効にしてください。",
+      "remoteCredentialsHelp": "この サーバー に限り、Cookie と認証情報ヘッダーを許可します。自分で管理する サーバー にのみ有効にしてください。",
       "notPaired": "未ペアリング",
       "paired": "Motrix とペアリング済み",
       "pairedHelp": "このバックエンドには確定済みの MBP1 認証情報が保存されています。現在の接続状態は別途表示されます。",
-      "pairedTitle": "ペアリング準備完了",
+      "pairedTitle": "ペアリング済み",
       "reconnect": "再接続",
       "scopedHelp": "ペアリングの信頼関係と認証情報はバックエンドごとに分離されています。切り替えても、別のバックエンドの信頼関係は引き継ぎません。",
       "pair": "ペアリング",
@@ -121,7 +121,7 @@
       "deleteDescription": "{{name}} と、ローカルに保存されたペアリング認証情報および同意を削除しますか？サーバー側の情報や権限は取り消されません。",
       "deleteTitle": "Motrix Server を削除しますか？",
       "description": "複数の Motrix Server のアドレスを保存し、設定画面やポップアップから切り替えられます。",
-      "dialogDescription": "このバックエンドにわかりやすい名前を付け、WebSocket のベース URL を入力してください。",
+      "dialogDescription": "このバックエンドの名前と WebSocket のベース URL を入力してください。",
       "editAria": "{{name}} を編集",
       "editTitle": "Motrix Server を編集",
       "emptyDescription": "サーバーを追加すると、別のコンピューター上の Motrix に接続できます。",
@@ -161,9 +161,9 @@
       "save": "保存",
       "saved": "保存しました",
       "title": "ダウンロードの引き継ぎ",
-      "remoteUnavailable": "自動引き継ぎには現在、ローカルの Motrix App が必要です。リモートダウンロードやヘッダー・Cookie の権限では有効になりません。この Server には引き続き手動または右クリックメニューからダウンロードを送信できます。",
+      "remoteUnavailable": "自動引き継ぎには現在、ローカルの Motrix App が必要です。リモートダウンロードやヘッダー・Cookie の権限では有効になりません。この サーバー には引き続き手動または右クリックメニューからダウンロードを送信できます。",
       "availabilityUnknown": "選択したバックエンドを確認できるまで、引き継ぎは利用できません。",
-      "remoteUnavailableShort": "ローカル App のみ対応。右クリックでの送信は Server でも利用できます。"
+      "remoteUnavailableShort": "ローカルアプリのみ対応。右クリックでの送信はサーバーでも利用できます。"
     },
     "tabs": {
       "general": "一般",
@@ -193,7 +193,7 @@
       "description": "ガイド、サポート、拡張機能の診断情報を確認できます。",
       "reportBug": "問題を報告",
       "reportBugDescription": "GitHub で Issue を作成するか、フィードバックをお寄せください。",
-      "issues": "GitHub Issues",
+      "issues": "GitHub の Issue",
       "docs": "ドキュメント",
       "docsDescription": "設定、ペアリング、ダウンロードの引き継ぎ、トラブルシューティングのガイドを確認できます。",
       "copyDiagnostics": "診断情報をコピー",
@@ -209,7 +209,7 @@
     "taskPanel": {
       "title": "タスクパネル",
       "openAfterSubmit": "ダウンロード追加後にタスクパネルを開く",
-      "description": "Motrix にダウンロードが追加されると自動で開きます。右クリックからのダウンロードや自動引き継ぎにも対応します。複数を続けて追加した場合は一度だけ開きます。",
+      "description": "Motrix にダウンロードを追加すると、タスクパネルが自動で開きます。右クリックや自動引き継ぎによる追加にも対応し、短時間に複数追加した場合は一度だけ開きます。",
       "unsupported": "Chrome / Edge 127 以降、または Firefox 149 以降が必要です。"
     }
   },
@@ -219,12 +219,12 @@
       "running": "診断中…",
       "rerun": "再診断",
       "title": "診断結果",
-      "runningHelp": "debug ログを有効にして接続環境を確認しています。通常は数秒かかります。",
+      "runningHelp": "デバッグログを有効にして接続環境を確認しています。通常は数秒かかります。",
       "firstLaunchHint": "Motrix を手動で開き、初回起動時の規約を確認して同意する場合は承認してください。メイン画面が表示されたらペアリングを再試行してください。",
-      "latestVersionHint": "最新版の Motrix のダウンロードとインストールをお試しください。初回設定を完了してから、もう一度ペアリングをお試しください。",
+      "latestVersionHint": "最新版の Motrix をダウンロードしてインストールし、初回設定を完了してからペアリングを再試行してください。",
       "appReleases": "最新版の Motrix をダウンロード",
       "advanced": "高度なトラブルシューティング",
-      "allowlistHint": "開発版やパッケージ化されていない拡張機能では、現在の拡張機能 ID が Motrix の「設定 → 統合 → 信頼する拡張機能」と Native Host の許可リストに登録されているか確認してください。"
+      "allowlistHint": "開発版やパッケージ化されていない拡張機能では、この拡張機能 ID が Motrix の「設定 → 連携 → 信頼する拡張機能」と Native Host の許可リストに登録されているか確認してください。"
     },
     "backend": {
       "app": "Motrix App",
@@ -262,7 +262,7 @@
       "excludeCurrentSite": "現在のサイトを除外",
       "excludeCurrentSiteDescription": "{{site}} のダウンロードをブラウザーで処理",
       "noCurrentSite": "このページには除外できるサイトのドメインがありません。",
-      "inheritedExclusion": "{{site}} は {{domain}} の除外設定に含まれています。詳細設定で変更できます。",
+      "inheritedExclusion": "{{site}} は {{domain}} の除外設定に含まれています。「すべての設定」で変更してください。",
       "taskPanelDescription": "右クリックや自動引き継ぎなどでダウンロードを追加した後に開く"
     },
     "quickAdd": {
@@ -325,7 +325,7 @@
         "youtube": "この YouTube 動画を送信"
       },
       "pageSubmitted": "動画を Motrix に送信しました {{taskId}}",
-      "pageResources": "リソース",
+      "pageResources": "ページのリソース",
       "quickDownloadResource": "{{name}} をクイックダウンロード",
       "connectToSubmit": "リソースを送信するには Motrix に接続してください。",
       "scan": "再スキャン",
@@ -340,7 +340,7 @@
       "submitFailed": "リソースを送信できませんでした。再試行してください。",
       "title": "リソース検出",
       "unavailableDescription": "ページを変えるか、後で再試行してください。",
-      "unavailableTitle": "このページはスキャン不可",
+      "unavailableTitle": "このページはスキャンできません",
       "unsupported": "ffmpeg が必要です",
       "unsupportedReason": "このコンテンツのダウンロードには FFmpeg が必要です。",
       "unsupportedSelectionReason": "選択したバックエンドでは、選択されたリソースの一部またはすべての種類を送信できません。",
@@ -438,7 +438,7 @@
       "degradedTitle": "Motrix に接続しました",
       "degradedBody": "Motrix を通常どおり使用できます。この接続は基本的な検証のみ行われています。保護を強化するには、Motrix を更新して再ペアリングしてください。",
       "recoveryExhaustedTitle": "自動再接続できませんでした",
-      "recoveryExhaustedBody": "保存されたペアリングで再接続できませんでした。接続を再試行するか、設定 → 連携でペアリングを解除してから再度ペアリングしてください。"
+      "recoveryExhaustedBody": "保存済みのペアリングで再接続できませんでした。接続を再試行するか、「設定 → 連携」で「ペアリング情報を削除」を選択してから再ペアリングしてください。"
     },
     "integration": {
       "pairedTitle": "ペアリング済み。ダウンロードを送信できます。",
@@ -446,14 +446,14 @@
       "pairedRemoteBody": "ダウンロードを直接送信できます。接続するとタスクの進行状況を確認できます。",
       "viewTasks": "タスクを表示",
       "waking": "Motrix を起動中…",
-      "pairingUnavailable": "ペアリング情報を読み込めません。もう一度お試しください。",
+      "pairingUnavailable": "ペアリング情報を利用できません。再試行してください。",
       "pairingRequired": "このダウンロードを送信するには Motrix とペアリングしてください。",
       "connectionFailed": "Motrix に接続できません。アプリを開いて再試行してください。保存済みのペアリングは保持されます。",
       "resultUnknown": "送信結果を確認できません。再送信する前にタスクを確認してください。",
-      "contextChanged": "ページまたは選択した接続先が変更されました。ダウンロードを選び直してください。",
+      "contextChanged": "ページまたは選択したバックエンドが変更されました。ダウンロードを選び直してください。",
       "preparing": "ダウンロードを準備中…",
       "sending": "ダウンロードを送信中…",
-      "pairedStatus": "ペア済み"
+      "pairedStatus": "ペアリング済み"
     },
     "rpc": {
       "checking": "Motrix の応答が遅れています。接続を確認中…",
@@ -471,14 +471,14 @@
       "deadlineExceeded": "試行がタイムアウトしました。再試行してください。",
       "runsExhausted": "コードの入力間違いが多すぎます。ペアリングをやり直して、新しいコードを取得してください。",
       "invalidCode": "コードの形式が正しくありません。Motrix のダイアログを確認してください。",
-      "missingNonce": "Motrix がペアリング枠を提供しませんでした。Motrix が起動していることを確認して、再試行してください。",
+      "missingNonce": "Motrix がペアリングセッションを用意できませんでした。Motrix が起動していることを確認して、再試行してください。",
       "unsupportedBrowser": "このブラウザーはペアリングに対応していません。",
       "ticketPreparationFailed": "ペアリングを準備できませんでした。再試行してください。",
       "protocolViolation": "Motrix から予期しない応答がありました。再試行してください。",
       "unsupportedVersion": "この拡張機能と Motrix のプロトコルバージョンが異なります。両方を更新して、再試行してください。",
       "backendUpgradeRequired": "この Motrix は古すぎるため、安全にペアリングできません。Motrix を更新して、再試行してください。",
       "extensionUpgradeRequired": "この拡張機能は古すぎるため、この Motrix に対応していません。Motrix 拡張機能を更新して、再試行してください。",
-      "unsupportedRemote": "認証された Motrix は、この接続で選択した App または Server ではありません。接続先を確認して、再試行してください。",
+      "unsupportedRemote": "認証された Motrix は、この接続で選択したアプリまたはサーバーではありません。接続先を確認して、再試行してください。",
       "remoteDiscoveryUnavailable": "リモートの Motrix Server に接続できません。アドレス、待ち受けサービス、ネットワークを確認してください。WSS の場合は証明書とリバースプロキシも確認してください。",
       "remotePairingUnavailable": "リモートの Motrix Server が安全なペアリングセッションを開始できませんでした。しばらくしてから再試行してください。",
       "remoteTransportUnavailable": "リモートの Motrix Server への接続に失敗しました。アドレス、待ち受けサービス、DNS、ネットワークを確認してください。WSS の場合は証明書とリバースプロキシも確認してください。ブラウザーでは原因を特定できません。",

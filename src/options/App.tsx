@@ -20,11 +20,7 @@ export function App(): React.ReactElement {
           <div className="space-y-5 rounded-[1.625rem] border border-border/70 bg-accent pt-5 p-2.5 shadow-card">
             <header className="flex flex-wrap items-center gap-4 px-3">
               <div className="flex min-w-0 items-center gap-4">
-                <img
-                  src="/app-icon.png"
-                  alt="Motrix App Icon"
-                  className="size-14 shrink-0"
-                />
+                <img src="/app-icon.png" alt="" className="size-14 shrink-0" />
                 <div className="flex min-w-0 flex-col">
                   <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                     {t('options.title')}
@@ -36,7 +32,7 @@ export function App(): React.ReactElement {
               </div>
               <nav
                 aria-label="Motrix"
-                className="ml-auto flex shrink-0 items-center gap-1"
+                className="ms-auto flex shrink-0 items-center gap-1"
               >
                 <a
                   href={LINKS.website}

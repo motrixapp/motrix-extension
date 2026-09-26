@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Motrix-extensie",
+    "description": "Extension name shown in the browser and in store listings."
+  },
+  "appDescription": {
+    "message": "Verzend downloads naar Motrix",
+    "description": "Short summary shown under the name in the browser and in store listings."
+  }
+}

@@ -281,14 +281,21 @@ const previewChrome = {
 ;(globalThis as unknown as { browser: unknown }).browser = previewBrowser
 ;(globalThis as unknown as { chrome: unknown }).chrome = previewChrome
 
-const [{ App }, { initI18n }, { initTheme }] = await Promise.all([
-  import('@/popup/App'),
-  import('@/shared/i18n'),
-  import('@/shared/theme'),
-])
+const [{ App }, { initI18n }, { initTheme }, { LocaleProvider }] =
+  await Promise.all([
+    import('@/popup/App'),
+    import('@/shared/i18n'),
+    import('@/shared/theme'),
+    import('@/shared/LocaleProvider'),
+  ])
 
 initTheme()
 await initI18n()
 
 const root = document.getElementById('root')
-if (root) createRoot(root).render(<App />)
+if (root)
+  createRoot(root).render(
+    <LocaleProvider>
+      <App />
+    </LocaleProvider>
+  )
