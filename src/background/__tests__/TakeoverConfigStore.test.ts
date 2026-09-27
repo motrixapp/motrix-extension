@@ -34,6 +34,7 @@ describe('TakeoverConfigStore', () => {
       openTaskPanelAfterSubmit: true,
       consentAckVersion: 1,
       defaultAction: 'motrix' as const,
+      unknownSizeAction: 'motrix' as const,
       rules: [
         {
           id: 'r1',
@@ -51,6 +52,33 @@ describe('TakeoverConfigStore', () => {
     await browser.storage.local.set({ 'motrix.takeoverConfig': 'garbage' })
     expect(await new TakeoverConfigStore().get()).toEqual(TAKEOVER_DEFAULT)
   })
+
+  it.each([undefined, 'invalid', 'chrome', 'motrix'])(
+    'normalizes the unknown-size preference from existing storage: %s',
+    async (unknownSizeAction) => {
+      await browser.storage.local.set({
+        'motrix.takeoverConfig': { ...TAKEOVER_DEFAULT, unknownSizeAction },
+      })
+      expect((await new TakeoverConfigStore().get()).unknownSizeAction).toBe(
+        unknownSizeAction === 'motrix' ? 'motrix' : 'chrome'
+      )
+    }
+  )
+
+  it.each(['chrome', 'motrix'] as const)(
+    'persists the selected unknown-size handler through other setting patches: %s',
+    async (unknownSizeAction) => {
+      const store = new TakeoverConfigStore()
+      await store.patchTakeoverSettings({
+        ...TAKEOVER_DEFAULT,
+        unknownSizeAction,
+      })
+      await store.patchEnabled(true, 1)
+      await store.patchSiteExclusion('example.com', true)
+      await store.patchTaskPanelPreference(true)
+      expect((await store.get()).unknownSizeAction).toBe(unknownSizeAction)
+    }
+  )
 
   it('falls back to default when a stored rule has an invalid action', async () => {
     const _store = new TakeoverConfigStore()

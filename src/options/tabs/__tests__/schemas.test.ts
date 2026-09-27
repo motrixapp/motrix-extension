@@ -53,6 +53,7 @@ describe('takeoverFormSchema', () => {
       takeoverFormSchema.safeParse({
         enabled: false,
         thresholdMB: '',
+        unknownSizeAction: 'chrome',
         denylist: '',
       }).success
     ).toBe(true)
@@ -62,6 +63,7 @@ describe('takeoverFormSchema', () => {
       takeoverFormSchema.safeParse({
         enabled: true,
         thresholdMB: '-3',
+        unknownSizeAction: 'chrome',
         denylist: '',
       }).success
     ).toBe(false)

@@ -157,6 +157,9 @@
       "loading": "載入接管設定…",
       "minSizeLabel": "最小大小（MB）",
       "minSizePlaceholder": "0 = 全部",
+      "unknownSizeLabel": "檔案大小未知時",
+      "unknownSizeBrowser": "由瀏覽器下載",
+      "unknownSizeMotrix": "由 Motrix 下載",
       "thresholdInvalid": "最小大小必須為非負數",
       "save": "儲存",
       "saved": "已儲存",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "調整記錄設定，並複製有助於疑難排解的資訊。"
     },
     "about": {
-      "subtitle": "使用 Motrix 下載網頁中的檔案",
+      "subtitle": "Motrix 官方瀏覽器擴充功能，將下載交給 Motrix。",
       "website": "官方網站"
     },
     "title": "Motrix 擴充功能設定",

@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "Motrix-bővítmény",
+    "message": "Hivatalos Motrix-böngészőbővítmény",
     "description": "Extension name shown in the browser and in store listings."
   },
   "appDescription": {
-    "message": "Letöltések küldése a Motrixnak",
+    "message": "Hivatalos Motrix-böngészőbővítmény. Letöltések küldése a Motrixnak.",
     "description": "Short summary shown under the name in the browser and in store listings."
   }
 }

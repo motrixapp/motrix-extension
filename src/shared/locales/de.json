@@ -157,6 +157,9 @@
       "loading": "Übernahmeeinstellungen werden geladen…",
       "minSizeLabel": "Mindestgröße (MB)",
       "minSizePlaceholder": "0 = alle",
+      "unknownSizeLabel": "Bei unbekannter Dateigröße",
+      "unknownSizeBrowser": "Mit dem Browser herunterladen",
+      "unknownSizeMotrix": "Mit Motrix herunterladen",
       "thresholdInvalid": "Die Mindestgröße muss eine nicht negative Zahl sein",
       "save": "Speichern",
       "saved": "Gespeichert",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Passen Sie die Protokollierung an und kopieren Sie hilfreiche Informationen zur Fehlerbehebung."
     },
     "about": {
-      "subtitle": "Dateien aus dem Web mit Motrix herunterladen",
+      "subtitle": "Offizielle Motrix-Browsererweiterung. Downloads an Motrix senden.",
       "website": "Offizielle Website"
     },
     "title": "Einstellungen der Motrix-Erweiterung",

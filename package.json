@@ -2,7 +2,7 @@
   "name": "@motrix/extension",
   "version": "0.1.14",
   "private": true,
-  "description": "Motrix browser extension for Chrome, Microsoft Edge, and Firefox (Manifest V3)",
+  "description": "Official Motrix browser extension for Chrome, Microsoft Edge, and Firefox (Manifest V3)",
   "type": "module",
   "packageManager": "pnpm@12.4.2",
   "engines": {

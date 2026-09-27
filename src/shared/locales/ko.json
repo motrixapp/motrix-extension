@@ -157,6 +157,9 @@
       "loading": "다운로드 인계 설정 불러오는 중…",
       "minSizeLabel": "최소 크기(MB)",
       "minSizePlaceholder": "0 = 모두",
+      "unknownSizeLabel": "파일 크기를 알 수 없을 때",
+      "unknownSizeBrowser": "브라우저로 다운로드",
+      "unknownSizeMotrix": "Motrix로 다운로드",
       "thresholdInvalid": "최소 크기는 0 이상의 숫자여야 합니다",
       "save": "저장",
       "saved": "저장됨",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "로그 설정을 조정하고 문제 해결에 도움이 되는 정보를 복사하세요."
     },
     "about": {
-      "subtitle": "Motrix로 웹에서 파일 다운로드",
+      "subtitle": "Motrix 공식 브라우저 확장 프로그램. 다운로드를 Motrix로 보냅니다.",
       "website": "공식 웹사이트"
     },
     "title": "Motrix 확장 프로그램 설정",

@@ -7,6 +7,7 @@ describe('takeoverForm', () => {
     expect(configToForm(TAKEOVER_DEFAULT)).toEqual({
       enabled: false,
       thresholdMB: '',
+      unknownSizeAction: 'chrome',
       denylist: '',
     })
   })
@@ -15,6 +16,7 @@ describe('takeoverForm', () => {
     const form = {
       enabled: true,
       thresholdMB: '10',
+      unknownSizeAction: 'motrix' as const,
       denylist: 'ads.example.com\ntracker.test',
     }
     const cfg = formToConfig(form, TAKEOVER_DEFAULT.consentAckVersion)
@@ -35,6 +37,7 @@ describe('takeoverForm', () => {
       {
         enabled: true,
         thresholdMB: '0',
+        unknownSizeAction: 'chrome',
         denylist: '',
       },
       1

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/shared/i18n'
 import { ENDPOINT_CONFIG_STORAGE_KEY } from '@/background/EndpointConfigStore'
@@ -27,6 +28,7 @@ beforeEach(() => {
     if (env.kind === 'bg.getEndpointConfig')
       return { activeEndpointId: 'local' }
     if (env.kind === 'bg.getTakeoverConfig') {
+      if (savedTakeover) return savedTakeover
       return {
         enabled: false,
         consentAckVersion: 0,
@@ -43,6 +45,38 @@ beforeEach(() => {
 })
 
 describe('DownloadTab', () => {
+  it('saves and reloads the user choice for downloads of unknown size', async () => {
+    const user = userEvent.setup({ pointerEventsCheck: 0 })
+    const first = render(<DownloadTab />)
+    const control = await screen.findByRole('combobox', {
+      name: /when file size is unknown/i,
+    })
+    expect(control.textContent).toContain('Download with browser')
+    await user.click(control)
+    await user.click(
+      await screen.findByRole('option', { name: 'Download with Motrix' })
+    )
+    await user.click(screen.getByRole('button', { name: /apply/i }))
+    await waitFor(() => expect(savedTakeover?.unknownSizeAction).toBe('motrix'))
+    first.unmount()
+
+    render(<DownloadTab />)
+    await waitFor(() =>
+      expect(
+        screen.getByRole('combobox', { name: /when file size is unknown/i })
+          .textContent
+      ).toContain('Download with Motrix')
+    )
+    await user.click(
+      screen.getByRole('combobox', { name: /when file size is unknown/i })
+    )
+    await user.click(
+      await screen.findByRole('option', { name: 'Download with browser' })
+    )
+    await user.click(screen.getByRole('button', { name: /apply/i }))
+    await waitFor(() => expect(savedTakeover?.unknownSizeAction).toBe('chrome'))
+  })
+
   it('gates first enable on consent, then Apply persists the takeover config', async () => {
     render(<DownloadTab />)
     await screen.findByRole('switch', {

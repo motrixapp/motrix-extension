@@ -157,6 +157,9 @@
       "loading": "Carregant la configuració de gestió de baixades…",
       "minSizeLabel": "Mida mínima (MB)",
       "minSizePlaceholder": "0 = totes",
+      "unknownSizeLabel": "Quan es desconeix la mida del fitxer",
+      "unknownSizeBrowser": "Baixa amb el navegador",
+      "unknownSizeMotrix": "Baixa amb Motrix",
       "thresholdInvalid": "La mida mínima ha de ser un nombre no negatiu",
       "save": "Desa",
       "saved": "Desat",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Ajusta el registre i copia informació útil per resoldre problemes."
     },
     "about": {
-      "subtitle": "Baixa fitxers del web amb Motrix",
+      "subtitle": "Extensió oficial de Motrix per al navegador. Envia les baixades a Motrix.",
       "website": "Lloc web oficial"
     },
     "title": "Configuració de l'extensió Motrix",

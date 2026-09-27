@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "افزونهٔ Motrix",
+    "message": "افزونهٔ رسمی Motrix برای مرورگر",
     "description": "Extension name shown in the browser and in store listings."
   },
   "appDescription": {
-    "message": "دانلودها را به Motrix بفرستید",
+    "message": "افزونهٔ رسمی Motrix برای مرورگر. دانلودها را به Motrix بفرستید.",
     "description": "Short summary shown under the name in the browser and in store listings."
   }
 }

@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "Motrix-utvidelse",
+    "message": "Offisiell Motrix-nettleserutvidelse",
     "description": "Extension name shown in the browser and in store listings."
   },
   "appDescription": {
-    "message": "Send nedlastinger til Motrix",
+    "message": "Offisiell Motrix-nettleserutvidelse. Send nedlastinger til Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
   }
 }

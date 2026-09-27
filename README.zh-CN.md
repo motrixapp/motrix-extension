@@ -1,8 +1,8 @@
-# Motrix 浏览器扩展
+# Motrix 官方浏览器扩展
 
 [English](./README.md) | 简体中文
 
-把浏览器里的下载交给 [Motrix](https://motrix.app)，然后在同一个地方查看进度、调整任务，或者从当前网页挑出真正想保存的视频、音频和图片。
+这是 [Motrix](https://motrix.app) 的官方浏览器扩展。把浏览器里的下载交给 Motrix，然后在同一个地方查看进度、调整任务，或者从当前网页挑出真正想保存的视频、音频和图片。
 
 ## 你可以用它做什么
 
@@ -151,7 +151,7 @@ Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入
 
 ### 为什么 Chrome 开发版无法连接 Motrix？
 
-先检查扩展 ID 是否已经加入 Motrix 的“设置 → 集成 → 浏览器扩展 → 受信任的扩展”。ID 可以在 `chrome://extensions` 的 Motrix Extension 卡片上找到。开发版换了加载目录后，ID 可能与之前不同，Motrix 里的记录也要跟着更新。
+先检查扩展 ID 是否已经加入 Motrix 的“设置 → 集成 → 浏览器扩展 → 受信任的扩展”。ID 可以在 `chrome://extensions` 的“Motrix 官方浏览器扩展”卡片上找到。开发版换了加载目录后，ID 可能与之前不同，Motrix 里的记录也要跟着更新。
 
 ### 为什么一直找不到本机 Motrix？
 

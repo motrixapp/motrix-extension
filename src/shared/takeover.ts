@@ -13,6 +13,8 @@ export interface TakeoverConfig {
   /** Bumped acknowledgement of the cookie-consent dialog; 0 = never consented. */
   consentAckVersion: number
   defaultAction: 'motrix' | 'chrome'
+  /** Automatic downloads whose size remains unknown after probing. */
+  unknownSizeAction: 'motrix' | 'chrome'
   rules: TakeoverRule[]
 }
 
@@ -49,6 +51,7 @@ export const TAKEOVER_DEFAULT: TakeoverConfig = {
   enabled: false,
   consentAckVersion: 0,
   defaultAction: 'motrix',
+  unknownSizeAction: 'chrome',
   rules: [],
 }
 

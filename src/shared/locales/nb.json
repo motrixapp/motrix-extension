@@ -157,6 +157,9 @@
       "loading": "Laster innstillinger for overtakelse…",
       "minSizeLabel": "Minstestørrelse (MB)",
       "minSizePlaceholder": "0 = alle",
+      "unknownSizeLabel": "Når filstørrelsen er ukjent",
+      "unknownSizeBrowser": "Last ned med nettleseren",
+      "unknownSizeMotrix": "Last ned med Motrix",
       "thresholdInvalid": "Minstestørrelsen må være et ikke-negativt tall",
       "save": "Lagre",
       "saved": "Lagret",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Juster loggingen og kopier informasjon som er nyttig ved feilsøking."
     },
     "about": {
-      "subtitle": "Last ned filer fra nettet med Motrix",
+      "subtitle": "Offisiell Motrix-nettleserutvidelse. Send nedlastinger til Motrix.",
       "website": "Offisielt nettsted"
     },
     "title": "Innstillinger for Motrix-utvidelsen",

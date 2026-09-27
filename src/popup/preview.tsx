@@ -79,6 +79,7 @@ let previewTakeover: TakeoverConfig = {
   enabled: true,
   consentAckVersion: 1,
   defaultAction: 'motrix',
+  unknownSizeAction: 'chrome',
   rules: [],
 }
 let previewNotifications: NotificationsConfig = {

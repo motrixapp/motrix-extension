@@ -13,6 +13,13 @@ import {
 } from '@/components/ui/field'
 import { FormField } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { SettingSection } from '@/options/components/SettingSection'
@@ -30,6 +37,10 @@ export function TakeoverSection({
   setConsentAck: (version: number) => void
 }): React.ReactElement {
   const { t } = useTranslation()
+  const unknownSizeItems = {
+    chrome: t('options.takeover.unknownSizeBrowser'),
+    motrix: t('options.takeover.unknownSizeMotrix'),
+  }
   const availability = useTakeoverAvailability()
   const [showConsent, setShowConsent] = useState(false)
   useEffect(() => {
@@ -103,6 +114,41 @@ export function TakeoverSection({
                     errors={[{ message: t(fieldState.error?.message ?? '') }]}
                   />
                 )}
+              </Field>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="unknownSizeAction"
+            render={({ field }) => (
+              <Field orientation="responsive">
+                <FieldContent>
+                  <FieldLabel htmlFor="download-unknown-size">
+                    {t('options.takeover.unknownSizeLabel')}
+                  </FieldLabel>
+                </FieldContent>
+                <Select
+                  items={unknownSizeItems}
+                  value={field.value}
+                  onValueChange={(value) => {
+                    if (value !== null) field.onChange(value)
+                  }}
+                >
+                  <SelectTrigger
+                    id="download-unknown-size"
+                    className="min-w-48"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="chrome">
+                      {unknownSizeItems.chrome}
+                    </SelectItem>
+                    <SelectItem value="motrix">
+                      {unknownSizeItems.motrix}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </Field>
             )}
           />

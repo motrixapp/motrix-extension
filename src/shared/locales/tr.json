@@ -157,6 +157,9 @@
       "loading": "Devralma ayarları yükleniyor…",
       "minSizeLabel": "En küçük boyut (MB)",
       "minSizePlaceholder": "0 = tümü",
+      "unknownSizeLabel": "Dosya boyutu bilinmediğinde",
+      "unknownSizeBrowser": "Tarayıcıyla indir",
+      "unknownSizeMotrix": "Motrix ile indir",
       "thresholdInvalid": "En küçük boyut negatif olmayan bir sayı olmalıdır",
       "save": "Kaydet",
       "saved": "Kaydedildi",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Günlük kaydını ayarlayın ve sorun gidermeye yardımcı bilgileri kopyalayın."
     },
     "about": {
-      "subtitle": "Motrix ile web’den dosya indirin",
+      "subtitle": "Resmî Motrix Tarayıcı Uzantısı. İndirmeleri Motrix'e gönderin.",
       "website": "Resmî web sitesi"
     },
     "title": "Motrix Uzantısı Ayarları",

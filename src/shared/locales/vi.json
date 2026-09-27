@@ -157,6 +157,9 @@
       "loading": "Đang tải cài đặt tiếp quản…",
       "minSizeLabel": "Kích thước tối thiểu (MB)",
       "minSizePlaceholder": "0 = tất cả",
+      "unknownSizeLabel": "Khi không xác định được kích thước tệp",
+      "unknownSizeBrowser": "Tải xuống bằng trình duyệt",
+      "unknownSizeMotrix": "Tải xuống bằng Motrix",
       "thresholdInvalid": "Kích thước tối thiểu phải là số không âm",
       "save": "Lưu",
       "saved": "Đã lưu",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Điều chỉnh nhật ký và sao chép thông tin hữu ích để khắc phục sự cố."
     },
     "about": {
-      "subtitle": "Tải tệp từ web bằng Motrix",
+      "subtitle": "Tiện ích trình duyệt chính thức của Motrix. Gửi nội dung tải xuống đến Motrix.",
       "website": "Trang web chính thức"
     },
     "title": "Cài đặt tiện ích Motrix",

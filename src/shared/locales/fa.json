@@ -157,6 +157,9 @@
       "loading": "در حال بارگیری تنظیمات واگذاری دانلودها…",
       "minSizeLabel": "حداقل اندازه (MB)",
       "minSizePlaceholder": "0 = همه",
+      "unknownSizeLabel": "وقتی اندازهٔ فایل مشخص نیست",
+      "unknownSizeBrowser": "دانلود با مرورگر",
+      "unknownSizeMotrix": "دانلود با Motrix",
       "thresholdInvalid": "حداقل اندازه باید عددی نامنفی باشد",
       "save": "ذخیره",
       "saved": "ذخیره شد",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "ثبت گزارش را تنظیم و اطلاعات مفید برای رفع مشکل را کپی کنید."
     },
     "about": {
-      "subtitle": "دانلود فایل‌های وب با Motrix",
+      "subtitle": "افزونهٔ رسمی Motrix برای مرورگر. دانلودها را به Motrix بفرستید.",
       "website": "وب‌سایت رسمی"
     },
     "title": "تنظیمات افزونهٔ Motrix",

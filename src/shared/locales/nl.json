@@ -157,6 +157,9 @@
       "loading": "Instellingen voor downloadovername laden…",
       "minSizeLabel": "Minimumgrootte (MB)",
       "minSizePlaceholder": "0 = alles",
+      "unknownSizeLabel": "Als de bestandsgrootte onbekend is",
+      "unknownSizeBrowser": "Downloaden met de browser",
+      "unknownSizeMotrix": "Downloaden met Motrix",
       "thresholdInvalid": "De minimumgrootte moet een niet-negatief getal zijn",
       "save": "Opslaan",
       "saved": "Opgeslagen",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Pas de logging aan en kopieer nuttige gegevens voor probleemoplossing."
     },
     "about": {
-      "subtitle": "Download bestanden van het web met Motrix",
+      "subtitle": "Officiële Motrix-browserextensie. Verzend downloads naar Motrix.",
       "website": "Officiële website"
     },
     "title": "Instellingen van de Motrix-extensie",

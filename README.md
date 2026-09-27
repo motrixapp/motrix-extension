@@ -1,8 +1,8 @@
-# Motrix Browser Extension
+# Motrix Official Browser Extension
 
 English | [简体中文](./README.zh-CN.md)
 
-Send downloads from your browser to [Motrix](https://motrix.app), then check their progress and manage the tasks from the same small window. The extension can also find video, audio, and images loaded by the current page so you can choose what to save.
+The official browser extension for [Motrix](https://motrix.app). Send downloads from your browser to Motrix, then check their progress and manage the tasks from the same small window. The extension can also find video, audio, and images loaded by the current page so you can choose what to save.
 
 I think of it as a bridge between the browser and Motrix. The browser is good at finding resources; Motrix is good at downloading them reliably. That division of labor is simple, and it feels right in daily use.
 
@@ -157,7 +157,7 @@ After diagnosis, use **Connect** to reproduce the failure and inspect subsequent
 
 ### Why can't the Chrome or Edge development build connect to Motrix?
 
-Check that its extension ID appears under **Settings → Integration → Browser extensions → Trusted extensions** in Motrix. You can copy the ID from the Motrix Extension card on `chrome://extensions` or `edge://extensions`. If you loaded the build from a different directory, the browser may have assigned a new ID, so update the Motrix entry as well.
+Check that its extension ID appears under **Settings → Integration → Browser extensions → Trusted extensions** in Motrix. You can copy the ID from the Motrix Official Browser Extension card on `chrome://extensions` or `edge://extensions`. If you loaded the build from a different directory, the browser may have assigned a new ID, so update the Motrix entry as well.
 
 ### Why can't the extension find Motrix on this computer?
 

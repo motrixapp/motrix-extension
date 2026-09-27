@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "Extensión de Motrix",
+    "message": "Extensión oficial de Motrix para el navegador",
     "description": "Extension name shown in the browser and in store listings."
   },
   "appDescription": {
-    "message": "Envía descargas a Motrix",
+    "message": "Extensión oficial de Motrix para el navegador. Envía descargas a Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
   }
 }

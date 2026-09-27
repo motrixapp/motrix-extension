@@ -3,6 +3,7 @@ import type { TakeoverRule, TakeoverSettings } from '@/shared/takeover'
 export interface TakeoverForm {
   enabled: boolean
   thresholdMB: string // '' = none
+  unknownSizeAction: TakeoverSettings['unknownSizeAction']
   denylist: string // newline-separated hosts
 }
 
@@ -20,6 +21,7 @@ export function configToForm(config: TakeoverSettings): TakeoverForm {
   return {
     enabled: config.enabled,
     thresholdMB: typeof threshold === 'number' ? String(threshold) : '',
+    unknownSizeAction: config.unknownSizeAction ?? 'chrome',
     denylist: denylist.join('\n'),
   }
 }
@@ -52,6 +54,7 @@ export function formToConfig(
     enabled: form.enabled,
     consentAckVersion,
     defaultAction: 'motrix',
+    unknownSizeAction: form.unknownSizeAction,
     rules,
   }
 }

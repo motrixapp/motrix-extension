@@ -45,6 +45,7 @@ export class TakeoverConfigStore {
       enabled: c.enabled,
       consentAckVersion: c.consentAckVersion,
       defaultAction: c.defaultAction,
+      unknownSizeAction: c.unknownSizeAction === 'motrix' ? 'motrix' : 'chrome',
       rules: c.rules,
     }
   }
@@ -87,6 +88,8 @@ export class TakeoverConfigStore {
           enabled: settings.enabled,
           consentAckVersion: settings.consentAckVersion,
           defaultAction: settings.defaultAction,
+          unknownSizeAction:
+            settings.unknownSizeAction === 'motrix' ? 'motrix' : 'chrome',
           rules: settings.rules,
         },
       })

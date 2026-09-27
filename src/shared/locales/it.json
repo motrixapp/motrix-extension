@@ -157,6 +157,9 @@
       "loading": "Caricamento impostazioni di gestione dei download…",
       "minSizeLabel": "Dimensione minima (MB)",
       "minSizePlaceholder": "0 = tutti",
+      "unknownSizeLabel": "Quando la dimensione del file è sconosciuta",
+      "unknownSizeBrowser": "Scarica con il browser",
+      "unknownSizeMotrix": "Scarica con Motrix",
       "thresholdInvalid": "La dimensione minima deve essere un numero non negativo",
       "save": "Salva",
       "saved": "Salvato",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Regola la registrazione e copia le informazioni utili per risolvere i problemi."
     },
     "about": {
-      "subtitle": "Scarica file dal web con Motrix",
+      "subtitle": "Estensione ufficiale di Motrix per il browser. Invia i download a Motrix.",
       "website": "Sito ufficiale"
     },
     "title": "Impostazioni dell’estensione Motrix",

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { probeTarget } from '@/background/capture/probeSize'
 import type { HandoffOps } from '@/background/handoff/runHandoff'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import {
@@ -6,6 +7,7 @@ import {
   HOLD_DEADLINE_MS,
   registerChromiumInterception,
 } from '@/background/interception/chromium'
+import { formToConfig } from '@/options/takeoverForm'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 vi.mock('@/background/handoff/runHandoff', () => ({
@@ -42,6 +44,7 @@ function enabledConfig(
     enabled: true,
     consentAckVersion: 1,
     defaultAction: 'motrix',
+    unknownSizeAction: 'chrome',
     rules: [],
     ...overrides,
   }
@@ -83,6 +86,12 @@ function item(
 }
 
 beforeEach(() => {
+  vi.mocked(probeTarget)
+    .mockReset()
+    .mockResolvedValue({
+      sizeBytes: 5 * 1024 * 1024,
+      contentType: 'application/octet-stream',
+    })
   listener = undefined
   downloads = {
     onDeterminingFilename: {
@@ -223,6 +232,82 @@ describe('registerChromiumInterception', () => {
     expect(mockedRunHandoff).not.toHaveBeenCalled()
   })
 
+  it.each([
+    { totalBytes: 1024, probedSize: null, handoff: false },
+    { totalBytes: -1, probedSize: 1024, handoff: false },
+    { totalBytes: -1, probedSize: null, handoff: false },
+    { totalBytes: 0, probedSize: null, handoff: false },
+    { totalBytes: 10 * 1024 * 1024, probedSize: null, handoff: true },
+    { totalBytes: -1, probedSize: 10 * 1024 * 1024, handoff: true },
+  ])(
+    'honors a saved 10 MB minimum for TXT: browser=$totalBytes, probe=$probedSize',
+    async ({ totalBytes, probedSize, handoff }) => {
+      vi.mocked(probeTarget).mockResolvedValue({
+        sizeBytes: probedSize,
+        contentType: 'text/plain',
+      })
+      register(
+        enabledConfig(
+          formToConfig(
+            {
+              enabled: true,
+              thresholdMB: '10',
+              unknownSizeAction: 'chrome',
+              denylist: '',
+            },
+            1
+          )
+        )
+      )
+      const suggest = vi.fn()
+      listener?.(
+        item({
+          url: 'https://files.example/report.txt',
+          filename: 'report.txt',
+          mime: 'text/plain',
+          totalBytes,
+        }),
+        suggest
+      )
+      await vi.waitFor(() => expect(suggest).toHaveBeenCalledOnce())
+      expect(mockedRunHandoff).toHaveBeenCalledTimes(handoff ? 1 : 0)
+      expect(probeTarget).toHaveBeenCalledTimes(totalBytes === 1024 ? 0 : 1)
+      expect(downloads.cancel).not.toHaveBeenCalled()
+      expect(downloads.download).not.toHaveBeenCalled()
+    }
+  )
+
+  it.each(['', '10'])(
+    'uses the chosen handler for unknown TXT sizes with threshold %s',
+    async (thresholdMB) => {
+      for (const unknownSizeAction of ['chrome', 'motrix'] as const) {
+        vi.clearAllMocks()
+        vi.mocked(probeTarget).mockResolvedValue({
+          sizeBytes: null,
+          contentType: 'text/plain',
+        })
+        register(
+          enabledConfig(
+            formToConfig(
+              { enabled: true, thresholdMB, unknownSizeAction, denylist: '' },
+              1
+            )
+          )
+        )
+        const suggest = vi.fn()
+        listener?.(
+          item({ totalBytes: -1, mime: 'text/plain', filename: 'report.txt' }),
+          suggest
+        )
+        await vi.waitFor(() => expect(suggest).toHaveBeenCalledOnce())
+        expect(mockedRunHandoff).toHaveBeenCalledTimes(
+          unknownSizeAction === 'motrix' ? 1 : 0
+        )
+        expect(probeTarget).toHaveBeenCalledOnce()
+      }
+    }
+  )
+
   it('declines a form-POST download whose GET replay serves HTML', async () => {
     // uupdump.net: the browser saved the POST response (a zip); a GET to the
     // same URL returns the configuration page. Motrix can only replay GET, so
@@ -232,7 +317,7 @@ describe('registerChromiumInterception', () => {
       sizeBytes: null,
       contentType: 'text/html; charset=UTF-8',
     })
-    register(enabledConfig())
+    register(enabledConfig({ unknownSizeAction: 'motrix' }))
     const suggest = vi.fn()
     listener?.(
       item({
@@ -254,7 +339,7 @@ describe('registerChromiumInterception', () => {
       sizeBytes: null,
       contentType: 'text/html; charset=UTF-8',
     })
-    register(enabledConfig())
+    register(enabledConfig({ unknownSizeAction: 'motrix' }))
     const suggest = vi.fn()
     listener?.(
       item({

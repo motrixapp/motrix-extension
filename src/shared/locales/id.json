@@ -157,6 +157,9 @@
       "loading": "Memuat setelan pengambilalihan…",
       "minSizeLabel": "Ukuran minimum (MB)",
       "minSizePlaceholder": "0 = semua",
+      "unknownSizeLabel": "Saat ukuran file tidak diketahui",
+      "unknownSizeBrowser": "Unduh dengan browser",
+      "unknownSizeMotrix": "Unduh dengan Motrix",
       "thresholdInvalid": "Ukuran minimum harus berupa angka nonnegatif",
       "save": "Simpan",
       "saved": "Disimpan",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Atur pencatatan log dan salin informasi yang berguna untuk pemecahan masalah."
     },
     "about": {
-      "subtitle": "Unduh file dari web dengan Motrix",
+      "subtitle": "Ekstensi Browser Resmi Motrix. Kirim unduhan ke Motrix.",
       "website": "Situs resmi"
     },
     "title": "Setelan Ekstensi Motrix",

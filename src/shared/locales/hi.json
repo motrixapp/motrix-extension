@@ -157,6 +157,9 @@
       "loading": "टेकओवर सेटिंग लोड हो रही हैं…",
       "minSizeLabel": "न्यूनतम आकार (MB)",
       "minSizePlaceholder": "0 = सभी",
+      "unknownSizeLabel": "जब फ़ाइल का आकार अज्ञात हो",
+      "unknownSizeBrowser": "ब्राउज़र से डाउनलोड करें",
+      "unknownSizeMotrix": "Motrix से डाउनलोड करें",
       "thresholdInvalid": "न्यूनतम आकार शून्य या उससे बड़ा होना चाहिए",
       "save": "सहेजें",
       "saved": "सहेजा गया",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "लॉगिंग बदलें और समस्या निवारण के लिए उपयोगी जानकारी कॉपी करें।"
     },
     "about": {
-      "subtitle": "Motrix से वेब पर मौजूद फ़ाइलें डाउनलोड करें",
+      "subtitle": "Motrix का आधिकारिक ब्राउज़र एक्सटेंशन. डाउनलोड Motrix को भेजें.",
       "website": "आधिकारिक वेबसाइट"
     },
     "title": "Motrix एक्सटेंशन सेटिंग",

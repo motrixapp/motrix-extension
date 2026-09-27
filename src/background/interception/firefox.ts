@@ -8,11 +8,6 @@ import { isEligibleDownload } from '@/background/interception/eligibility'
 import { log } from '@/background/log'
 import { decideTakeover } from '@/background/policy/decideTakeover'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
-import type { TakeoverConfig } from '@/shared/takeover'
-
-function configHasThreshold(cfg: TakeoverConfig): boolean {
-  return cfg.rules.some((r) => typeof r.match.minSizeMB === 'number')
-}
 
 export async function cancelFirefoxDownload(id: number): Promise<void> {
   await browser.downloads.cancel(id)
@@ -82,7 +77,7 @@ async function handle(
     probe ??= await probeTarget(url, { fetch: globalThis.fetch })
     return probe
   }
-  if (sizeBytes === null && configHasThreshold(cfg)) {
+  if (sizeBytes === null) {
     sizeBytes = (await runProbe()).sizeBytes
   }
 

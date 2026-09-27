@@ -157,6 +157,9 @@
       "loading": "Loading takeover settings…",
       "minSizeLabel": "Minimum size (MB)",
       "minSizePlaceholder": "0 = all",
+      "unknownSizeLabel": "When file size is unknown",
+      "unknownSizeBrowser": "Download with browser",
+      "unknownSizeMotrix": "Download with Motrix",
       "thresholdInvalid": "Minimum size must be a non-negative number",
       "save": "Save",
       "saved": "Saved",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Adjust logging and copy details useful for troubleshooting."
     },
     "about": {
-      "subtitle": "Download files from the web with Motrix",
+      "subtitle": "The official Motrix browser extension. Send downloads to Motrix.",
       "website": "Official website"
     },
     "title": "Motrix Extension Settings",

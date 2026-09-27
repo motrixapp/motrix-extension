@@ -22,6 +22,7 @@ export function DownloadTab(): React.ReactElement {
     defaultValues: {
       enabled: false,
       thresholdMB: '',
+      unknownSizeAction: 'chrome',
       denylist: '',
     },
   })

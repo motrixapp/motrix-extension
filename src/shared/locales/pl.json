@@ -157,6 +157,9 @@
       "loading": "Wczytywanie ustawień przejmowania…",
       "minSizeLabel": "Minimalny rozmiar (MB)",
       "minSizePlaceholder": "0 = wszystkie",
+      "unknownSizeLabel": "Gdy rozmiar pliku jest nieznany",
+      "unknownSizeBrowser": "Pobierz przez przeglądarkę",
+      "unknownSizeMotrix": "Pobierz przez Motrix",
       "thresholdInvalid": "Minimalny rozmiar nie może być ujemny",
       "save": "Zapisz",
       "saved": "Zapisano",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Dostosuj rejestrowanie i skopiuj dane przydatne do rozwiązywania problemów."
     },
     "about": {
-      "subtitle": "Pobieraj pliki z internetu za pomocą Motrix",
+      "subtitle": "Oficjalne rozszerzenie Motrix do przeglądarki. Wysyłaj pobieranie do Motrix.",
       "website": "Oficjalna strona"
     },
     "title": "Ustawienia rozszerzenia Motrix",

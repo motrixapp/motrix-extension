@@ -24,7 +24,7 @@ function ruleMatches(rule: TakeoverRule, target: TakeoverTarget): boolean {
       return false
   }
   if (typeof match.minSizeMB === 'number') {
-    // Criterion matches downloads whose KNOWN size is BELOW the threshold; unknown never matches.
+    // Unknown sizes use unknownSizeAction after the other rules are checked.
     if (target.sizeBytes === null) return false
     if (target.sizeBytes >= match.minSizeMB * MIB) return false
   }
@@ -50,5 +50,7 @@ export function decideTakeover(
       return rule.action === 'motrix' ? 'motrix' : 'chrome' // 'ask' reserved for Plan 2 -> chrome
     }
   }
-  return config.defaultAction
+  return target.sizeBytes === null
+    ? (config.unknownSizeAction ?? 'chrome')
+    : config.defaultAction
 }

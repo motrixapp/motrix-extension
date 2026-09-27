@@ -157,6 +157,9 @@
       "loading": "Átvételi beállítások betöltése…",
       "minSizeLabel": "Minimális méret (MB)",
       "minSizePlaceholder": "0 = mind",
+      "unknownSizeLabel": "Ha a fájl mérete ismeretlen",
+      "unknownSizeBrowser": "Letöltés a böngészővel",
+      "unknownSizeMotrix": "Letöltés a Motrixszal",
       "thresholdInvalid": "A minimális méret nem lehet negatív",
       "save": "Mentés",
       "saved": "Mentve",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Állítsd be a naplózást, és másold ki a hibaelhárítást segítő adatokat."
     },
     "about": {
-      "subtitle": "Fájlok letöltése az internetről a Motrix segítségével",
+      "subtitle": "Hivatalos Motrix-böngészőbővítmény. Letöltések küldése a Motrixnak.",
       "website": "Hivatalos webhely"
     },
     "title": "Motrix-bővítmény beállításai",

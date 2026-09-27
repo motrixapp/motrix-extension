@@ -51,10 +51,6 @@ interface DeterminingItem {
   mime?: string
 }
 
-function configHasThreshold(cfg: TakeoverConfig): boolean {
-  return cfg.rules.some((r) => typeof r.match.minSizeMB === 'number')
-}
-
 export function registerChromiumInterception(
   deps: ChromiumInterceptionDeps
 ): void {
@@ -115,13 +111,13 @@ async function handleHeld(
     // The probe rehearses Motrix's own GET. Its Content-Type is the only
     // evidence we get that the browser's download was not a plain GET (see
     // replayFidelity), and its length feeds minSizeMB rules. Run it at most
-    // once, and never for a download we are going to leave native anyway.
+    // once; apply unknownSizeAction only if the probe also cannot find a size.
     let probe: ProbeResult | null = null
     const runProbe = async (): Promise<ProbeResult> => {
       probe ??= await probeTarget(url, { fetch: globalThis.fetch })
       return probe
     }
-    if (sizeBytes === null && configHasThreshold(cfg)) {
+    if (sizeBytes === null) {
       sizeBytes = (await runProbe()).sizeBytes
     }
 

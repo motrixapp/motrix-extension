@@ -1,8 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 import { probeTarget } from '@/background/capture/probeSize'
 
-function res(ok: boolean, headers: Record<string, string>): Response {
-  return { ok, headers: new Headers(headers) } as unknown as Response
+function res(
+  ok: boolean,
+  headers: Record<string, string>,
+  status = ok ? 200 : 405
+): Response {
+  return { ok, status, headers: new Headers(headers) } as unknown as Response
 }
 
 describe('probeTarget size', () => {
@@ -39,6 +43,58 @@ describe('probeTarget size', () => {
         })
       ).sizeBytes
     ).toBeNull()
+  })
+
+  it.each([
+    { status: 200, headers: { 'content-length': '4096' }, expected: 4096 },
+    {
+      status: 206,
+      headers: { 'content-range': 'bytes 0-0/20971520', 'content-length': '1' },
+      expected: 20971520,
+    },
+    { status: 206, headers: { 'content-length': '1' }, expected: null },
+    { status: 200, headers: {}, expected: null },
+    { status: 403, headers: { 'content-length': '100' }, expected: null },
+  ])(
+    'reads the full size from a $status fallback ($expected bytes) and cancels its body',
+    async ({ status, headers, expected }) => {
+      const cancel = vi.fn(async () => {})
+      const fetchImpl = vi
+        .fn()
+        .mockResolvedValueOnce(res(false, {}))
+        .mockResolvedValueOnce({
+          ...res(status < 400, headers, status),
+          body: { cancel },
+        })
+      expect(
+        (await probeTarget('https://h/file.txt', { fetch: fetchImpl }))
+          .sizeBytes
+      ).toBe(expected)
+      expect(fetchImpl).toHaveBeenNthCalledWith(
+        2,
+        'https://h/file.txt',
+        expect.objectContaining({
+          method: 'GET',
+          headers: { Range: 'bytes=0-0' },
+        })
+      )
+      expect(cancel).toHaveBeenCalledOnce()
+    }
+  )
+
+  it('keeps the discovered size if cancelling the probe body fails', async () => {
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValueOnce(res(false, {}))
+      .mockResolvedValueOnce({
+        ...res(true, { 'content-length': '4096' }),
+        body: {
+          cancel: vi.fn(async () => Promise.reject(new Error('closed'))),
+        },
+      })
+    expect(
+      (await probeTarget('https://h/file.txt', { fetch: fetchImpl })).sizeBytes
+    ).toBe(4096)
   })
 })
 

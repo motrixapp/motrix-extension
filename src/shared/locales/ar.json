@@ -157,6 +157,9 @@
       "loading": "جارٍ تحميل إعدادات تولّي التنزيلات…",
       "minSizeLabel": "الحد الأدنى للحجم (MB)",
       "minSizePlaceholder": "0 = الكل",
+      "unknownSizeLabel": "عندما يكون حجم الملف غير معروف",
+      "unknownSizeBrowser": "التنزيل باستخدام المتصفح",
+      "unknownSizeMotrix": "التنزيل باستخدام Motrix",
       "thresholdInvalid": "يجب أن يكون الحد الأدنى للحجم عددًا غير سالب",
       "save": "حفظ",
       "saved": "تم الحفظ",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "اضبط التسجيل وانسخ التفاصيل المفيدة لاستكشاف الأخطاء."
     },
     "about": {
-      "subtitle": "تنزيل الملفات من الويب باستخدام Motrix",
+      "subtitle": "إضافة Motrix الرسمية للمتصفح. أرسل التنزيلات إلى Motrix.",
       "website": "الموقع الرسمي"
     },
     "title": "إعدادات إضافة Motrix",

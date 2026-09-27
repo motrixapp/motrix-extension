@@ -157,6 +157,9 @@
       "loading": "Se încarcă setările de preluare…",
       "minSizeLabel": "Dimensiune minimă (MB)",
       "minSizePlaceholder": "0 = toate",
+      "unknownSizeLabel": "Când dimensiunea fișierului este necunoscută",
+      "unknownSizeBrowser": "Descarcă prin browser",
+      "unknownSizeMotrix": "Descarcă prin Motrix",
       "thresholdInvalid": "Dimensiunea minimă trebuie să fie un număr nenegativ",
       "save": "Salvează",
       "saved": "Salvat",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Ajustează jurnalizarea și copiază informații utile pentru depanare."
     },
     "about": {
-      "subtitle": "Descarcă fișiere de pe web cu Motrix",
+      "subtitle": "Extensia oficială Motrix pentru browser. Trimite descărcările către Motrix.",
       "website": "Site oficial"
     },
     "title": "Setările extensiei Motrix",

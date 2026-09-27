@@ -6,6 +6,7 @@ import {
   cancelFirefoxDownload,
   handleFirefoxDownloadSafely,
 } from '@/background/interception/firefox'
+import { formToConfig } from '@/options/takeoverForm'
 import type { Browser } from '@/shared/browser'
 
 vi.mock('@/background/handoff/runHandoff', () => ({
@@ -26,6 +27,10 @@ interface DownloadsStub {
 let downloads: DownloadsStub
 
 beforeEach(() => {
+  vi.mocked(probeTarget).mockReset().mockResolvedValue({
+    sizeBytes: null,
+    contentType: 'application/octet-stream',
+  })
   downloads = {
     cancel: vi.fn(async () => {}),
     erase: vi.fn(async () => {}),
@@ -62,6 +67,80 @@ describe('cancelFirefoxDownload', () => {
 })
 
 describe('handleFirefoxDownloadSafely', () => {
+  it.each([
+    { totalBytes: 1024, probedSize: null, handoff: false },
+    { totalBytes: -1, probedSize: 1024, handoff: false },
+    { totalBytes: -1, probedSize: null, handoff: false },
+    { totalBytes: -1, probedSize: 10 * 1024 * 1024, handoff: true },
+  ])(
+    'honors a saved 10 MB minimum for TXT: browser=$totalBytes, probe=$probedSize',
+    async ({ totalBytes, probedSize, handoff }) => {
+      vi.mocked(probeTarget).mockResolvedValue({
+        sizeBytes: probedSize,
+        contentType: 'text/plain',
+      })
+      await handleFirefoxDownloadSafely(
+        {
+          id: 7,
+          url: 'https://example.com/report.txt',
+          filename: 'report.txt',
+          mime: 'text/plain',
+          totalBytes,
+        } as Browser.downloads.DownloadItem,
+        {
+          getConfig: async () =>
+            formToConfig(
+              {
+                enabled: true,
+                thresholdMB: '10',
+                unknownSizeAction: 'chrome',
+                denylist: '',
+              },
+              1
+            ),
+          captureGuard: async () => ({ assertCurrent: vi.fn() }),
+        } as unknown as ChromiumInterceptionDeps
+      )
+      expect(runHandoff).toHaveBeenCalledTimes(handoff ? 1 : 0)
+      expect(probeTarget).toHaveBeenCalledTimes(totalBytes === 1024 ? 0 : 1)
+      expect(downloads.cancel).not.toHaveBeenCalled()
+    }
+  )
+
+  it.each(['', '10'])(
+    'uses the chosen handler for unknown TXT sizes with threshold %s',
+    async (thresholdMB) => {
+      for (const unknownSizeAction of ['chrome', 'motrix'] as const) {
+        vi.clearAllMocks()
+        vi.mocked(probeTarget).mockResolvedValue({
+          sizeBytes: null,
+          contentType: 'text/plain',
+        })
+        await handleFirefoxDownloadSafely(
+          {
+            id: 7,
+            url: 'https://example.com/report.txt',
+            filename: 'report.txt',
+            mime: 'text/plain',
+            totalBytes: -1,
+          } as Browser.downloads.DownloadItem,
+          {
+            getConfig: async () =>
+              formToConfig(
+                { enabled: true, thresholdMB, unknownSizeAction, denylist: '' },
+                1
+              ),
+            captureGuard: async () => ({ assertCurrent: vi.fn() }),
+          } as unknown as ChromiumInterceptionDeps
+        )
+        expect(runHandoff).toHaveBeenCalledTimes(
+          unknownSizeAction === 'motrix' ? 1 : 0
+        )
+        expect(probeTarget).toHaveBeenCalledOnce()
+      }
+    }
+  )
+
   it('passes only the leaf of a Windows download path to handoff', async () => {
     await handleFirefoxDownloadSafely(
       {
@@ -74,6 +153,7 @@ describe('handleFirefoxDownloadSafely', () => {
         getConfig: async () => ({
           enabled: true,
           defaultAction: 'motrix',
+          unknownSizeAction: 'motrix',
           rules: [],
         }),
         captureGuard: async () => ({ assertCurrent: vi.fn() }),
@@ -108,6 +188,7 @@ describe('handleFirefoxDownloadSafely', () => {
         getConfig: async () => ({
           enabled: true,
           defaultAction: 'motrix',
+          unknownSizeAction: 'motrix',
           rules: [],
         }),
         captureGuard: async () => ({ assertCurrent: vi.fn() }),

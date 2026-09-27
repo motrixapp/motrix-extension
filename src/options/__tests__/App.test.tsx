@@ -81,16 +81,24 @@ describe('options App', () => {
     await user.click(screen.getByRole('tab', { name: /downloads|下载/i }))
     expect(await screen.findByRole('spinbutton')).toBeTruthy()
     expect(
-      screen.queryByRole('switch', {
-        name: /open task panel after adding a download|添加下载后展开任务面板/i,
-      })
-    ).toBeNull()
-    expect(
       screen.getByRole('switch', { name: /send eligible downloads|启用接管/i })
     ).toBeTruthy()
-    await waitFor(() =>
-      expect(screen.queryAllByRole('combobox')).toHaveLength(0)
-    )
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('switch', {
+          name: /open task panel after adding a download|添加下载后展开任务面板/i,
+        })
+      ).toBeNull()
+      expect(screen.queryByRole('combobox', { name: /theme|主题/i })).toBeNull()
+      expect(
+        screen.queryByRole('combobox', { name: /language|语言/i })
+      ).toBeNull()
+      expect(
+        screen.getByRole('combobox', {
+          name: /when file size is unknown|文件大小未知时/i,
+        })
+      ).toBeTruthy()
+    })
     expect(
       screen.queryByRole('switch', {
         name: /system notifications|启用系统通知/i,

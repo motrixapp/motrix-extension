@@ -50,7 +50,7 @@ export async function probeTarget(
   } catch {
     return EMPTY
   }
-  // HEAD unsupported or no length: try a 1-byte ranged GET and read Content-Range total.
+  // HEAD unsupported or no length: try a 1-byte ranged GET.
   const remaining = deadline - now()
   if (remaining <= 0) return { sizeBytes: null, contentType }
   try {
@@ -60,12 +60,21 @@ export async function probeTarget(
       headers: { Range: 'bytes=0-0' },
       signal: AbortSignal.timeout(remaining),
     })
-    if (!ranged.ok && ranged.status !== 206)
-      return { sizeBytes: null, contentType }
-    contentType = ranged.headers.get('content-type') ?? contentType
-    const cr = ranged.headers.get('content-range') // e.g. "bytes 0-0/12345"
-    const total = cr?.split('/')[1]
-    return { sizeBytes: parseLen(total ?? null), contentType }
+    try {
+      if (!ranged.ok) return { sizeBytes: null, contentType }
+      contentType = ranged.headers.get('content-type') ?? contentType
+      // A 206 Content-Length describes just the requested slice. A server
+      // that ignores Range returns 200, whose Content-Length is the full size.
+      const length =
+        ranged.status === 206
+          ? (ranged.headers.get('content-range')?.split('/')[1] ?? null)
+          : ranged.headers.get('content-length')
+      return { sizeBytes: parseLen(length), contentType }
+    } finally {
+      // Only the headers are needed, especially if Range was ignored and
+      // the server started sending the whole file.
+      await ranged.body?.cancel().catch(() => {})
+    }
   } catch {
     return { sizeBytes: null, contentType }
   }

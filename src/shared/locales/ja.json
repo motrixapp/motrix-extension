@@ -157,6 +157,9 @@
       "loading": "引き継ぎ設定を読み込み中…",
       "minSizeLabel": "最小サイズ（MB）",
       "minSizePlaceholder": "0 = すべて",
+      "unknownSizeLabel": "ファイルサイズが不明な場合",
+      "unknownSizeBrowser": "ブラウザーでダウンロード",
+      "unknownSizeMotrix": "Motrix でダウンロード",
       "thresholdInvalid": "最小サイズには 0 以上の数値を指定してください",
       "save": "保存",
       "saved": "保存しました",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "ログ設定を調整し、問題の解決に役立つ情報をコピーできます。"
     },
     "about": {
-      "subtitle": "ウェブ上のファイルを Motrix でダウンロード",
+      "subtitle": "Motrix 公式ブラウザー拡張機能。ダウンロードを Motrix に送信します。",
       "website": "公式サイト"
     },
     "title": "Motrix 拡張機能の設定",

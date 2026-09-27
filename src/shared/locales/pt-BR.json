@@ -157,6 +157,9 @@
       "loading": "Carregando configurações de captura…",
       "minSizeLabel": "Tamanho mínimo (MB)",
       "minSizePlaceholder": "0 = todos",
+      "unknownSizeLabel": "Quando o tamanho do arquivo for desconhecido",
+      "unknownSizeBrowser": "Baixar com o navegador",
+      "unknownSizeMotrix": "Baixar com o Motrix",
       "thresholdInvalid": "O tamanho mínimo deve ser um número não negativo",
       "save": "Salvar",
       "saved": "Salvo",
@@ -202,7 +205,7 @@
       "diagnosticsDescription": "Ajuste os registros e copie informações úteis para solucionar problemas."
     },
     "about": {
-      "subtitle": "Baixe arquivos da web com o Motrix",
+      "subtitle": "Extensão oficial do Motrix para navegadores. Envie downloads para o Motrix.",
       "website": "Site oficial"
     },
     "title": "Configurações da extensão Motrix",

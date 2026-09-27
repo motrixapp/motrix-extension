@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "ส่วนขยาย Motrix",
+    "message": "ส่วนขยายเบราว์เซอร์อย่างเป็นทางการของ Motrix",
     "description": "Extension name shown in the browser and in store listings."
   },
   "appDescription": {
-    "message": "ส่งการดาวน์โหลดไปยัง Motrix",
+    "message": "ส่วนขยายเบราว์เซอร์อย่างเป็นทางการของ Motrix. ส่งการดาวน์โหลดไปยัง Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
   }
 }

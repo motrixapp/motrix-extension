@@ -1,10 +1,10 @@
 {
   "appName": {
-    "message": "Extensia Motrix",
+    "message": "Extensia oficială Motrix pentru browser",
     "description": "Extension name shown in the browser and in store listings."
   },
   "appDescription": {
-    "message": "Trimite descărcările către Motrix",
+    "message": "Extensia oficială Motrix pentru browser. Trimite descărcările către Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
   }
 }
