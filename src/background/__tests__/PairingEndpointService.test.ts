@@ -5,10 +5,12 @@ import { EndpointCatalogService } from '@/background/EndpointCatalogService'
 import {
   CorruptEndpointConfigStoreError,
   EndpointConfigStore,
+  WINDOWS_STORE_ENDPOINT_ID,
 } from '@/background/EndpointConfigStore'
 import {
   createRemoteBackendAuthority,
   LOCAL_BACKEND_AUTHORITY,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 import { getClientInstallationId } from '@/background/mbp1/client-installation-id'
 import {
@@ -99,7 +101,7 @@ async function setup(): Promise<{
 }> {
   const endpointStore = new EndpointConfigStore()
   await endpointStore.setForTest({
-    version: 3,
+    version: 4,
     activeEndpointId: 'local',
     servers: [
       {
@@ -152,7 +154,7 @@ async function raceSetup(): Promise<{
 }> {
   const endpointStore = new EndpointConfigStore()
   await endpointStore.setForTest({
-    version: 3,
+    version: 4,
     activeEndpointId: 'server-a',
     servers: [
       {
@@ -236,7 +238,7 @@ describe('endpoint-safe pairing message operations', () => {
       'instance-b'
     )
     await endpointStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         {
@@ -287,7 +289,7 @@ describe('endpoint-safe pairing message operations', () => {
   it('clears only the active remote authority gate when that Server is unpaired', async () => {
     const { endpointStore, credentialStore, pinStore } = await setup()
     await endpointStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         {
@@ -368,7 +370,7 @@ describe('endpoint-safe pairing message operations', () => {
     expect(await service.isActivePaired()).toBe(true)
 
     await endpointStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         {
@@ -495,4 +497,48 @@ describe('atomic popup pairing snapshot', () => {
       service.readActiveSnapshot(() => ({ state: 'disconnected' }))
     ).resolves.toMatchObject({ pairing: 'none' })
   })
+})
+
+it('forgets Store credentials and pins without touching the default installation', async () => {
+  const { endpointStore, credentialStore, pinStore, service } = await setup()
+  const storePins = new PinStore(WINDOWS_STORE_BACKEND_AUTHORITY)
+  await pairLocal(credentialStore, 'same-id')
+  const storeCredentials = credentialStore.forAuthorityForTest(
+    WINDOWS_STORE_BACKEND_AUTHORITY
+  )
+  const owner = await principal()
+  await storeCredentials.writeProvisionalUnacked(
+    owner,
+    { credentialId: 'same-id', mutualKey: 'store-key' },
+    'store-instance'
+  )
+  await storeCredentials.commitAndActivate('same-id', owner, 'store-instance')
+  await pinStore.commit('same-id', {
+    port: 16802,
+    instanceId: 'direct-instance',
+  })
+  await storePins.commit('same-id', {
+    port: 16803,
+    instanceId: 'store-instance',
+  })
+  await endpointStore.setForTest({
+    ...(await endpointStore.get()),
+    activeEndpointId: WINDOWS_STORE_ENDPOINT_ID,
+  })
+  expect(await service.isActivePaired()).toBe(true)
+  expect(await service.unpair(WINDOWS_STORE_ENDPOINT_ID)).toEqual({
+    active: true,
+  })
+  expect(await service.getStatus(WINDOWS_STORE_ENDPOINT_ID)).toEqual({
+    paired: false,
+  })
+  expect(await service.getStatus('local')).toEqual({ paired: true })
+  expect(await storePins.get('same-id')).toBeNull()
+  expect(await pinStore.get('same-id')).toEqual({
+    port: 16802,
+    instanceId: 'direct-instance',
+  })
+  expect(
+    pairingAuthorityForEndpoint({ mode: 'local', target: 'windows-store' })
+  ).toBe(WINDOWS_STORE_BACKEND_AUTHORITY)
 })

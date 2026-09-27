@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Diagnosticul nu a putut fi copiat. Reîncearcă.",
       "storedPairingUnavailable": "Conectarea la Motrix a eșuat. Deschide aplicația și reîncearcă; asocierea salvată se păstrează."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Versiune Microsoft Store, asociată separat.",
+    "launch": "Deschide aplicația Store",
+    "pairingHelp": "Deschide Motrix instalat din Microsoft Store, selectează instanța sa și introdu codul afișat în acea aplicație. Browserul poate cere confirmarea deschiderii.",
+    "unavailable": "Această destinație necesită un browser desktop pe Windows."
   }
 }

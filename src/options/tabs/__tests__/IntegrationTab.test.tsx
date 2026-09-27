@@ -35,7 +35,7 @@ const serverB = {
 }
 
 let config = {
-  version: 3 as const,
+  version: 4 as const,
   activeEndpointId: LOCAL_ENDPOINT_ID,
   servers: [serverA, serverB],
   cleanupTombstones: [],
@@ -75,7 +75,7 @@ function messagesOfKind(kind: string): MessageEnvelope[] {
 
 beforeEach(() => {
   config = {
-    version: 3,
+    version: 4,
     activeEndpointId: LOCAL_ENDPOINT_ID,
     servers: [serverA, serverB],
     cleanupTombstones: [],
@@ -186,6 +186,7 @@ beforeEach(() => {
       )
       return {
         state: connectionState,
+        endpoint: config,
         ...(connectionState === 'connected'
           ? {
               server:
@@ -215,7 +216,14 @@ beforeEach(() => {
     }
     if (env.kind === 'bg.listPairCandidates') {
       return {
-        candidates: [{ port: 16802, instanceId: 'i-1', appVersion: '2.0.0' }],
+        candidates: [
+          {
+            selectionId: 'selected-1',
+            port: 16802,
+            instanceId: 'i-1',
+            appVersion: '2.0.0',
+          },
+        ],
       }
     }
     if (env.kind === 'bg.chooseCandidate') return { ok: true }
@@ -1022,4 +1030,45 @@ describe('IntegrationTab', () => {
     ).toBeTruthy()
     expect(screen.queryByText('no pairing code request is pending')).toBeNull()
   })
+})
+
+it('offers Store pairing without auto-selecting the single discovery responder', async () => {
+  const ua = vi
+    .spyOn(navigator, 'userAgent', 'get')
+    .mockReturnValue('Mozilla/5.0 (Windows NT 10.0; Win64; x64)')
+  const tabs = Reflect.get(browser, 'tabs') as Record<string, unknown>
+  const originalCreate = tabs.create
+  tabs.create = vi.fn()
+  try {
+    config = { ...config, activeEndpointId: 'local-windows-store' }
+    render(
+      <TooltipProvider>
+        <IntegrationTab />
+      </TooltipProvider>
+    )
+    const user = userEvent.setup()
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Pair' }).hasAttribute('disabled')
+      ).toBe(false)
+    )
+    await user.click(screen.getByRole('button', { name: 'Pair' }))
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Pair with Motrix',
+    })
+    await within(dialog).findByRole('button', { name: 'Choose' })
+    expect(messagesOfKind('bg.chooseCandidate')).toHaveLength(0)
+    expect(messagesOfKind('bg.listPairCandidates').at(-1)?.payload).toEqual({
+      endpointId: 'local-windows-store',
+    })
+    await user.click(within(dialog).getByRole('button', { name: 'Choose' }))
+    expect(messagesOfKind('bg.chooseCandidate').at(-1)?.payload).toEqual({
+      port: 16802,
+      selectionId: 'selected-1',
+    })
+  } finally {
+    ua.mockRestore()
+    if (originalCreate === undefined) Reflect.deleteProperty(tabs, 'create')
+    else tabs.create = originalCreate
+  }
 })

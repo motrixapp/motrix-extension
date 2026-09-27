@@ -4,7 +4,7 @@ import { resolveLocale } from '@/shared/supportedLocales'
 import { TAKEOVER_DEFAULT, type TakeoverSettings } from '@/shared/takeover'
 
 type PreviewEndpoint = {
-  version: 3
+  version: 4
   activeEndpointId: string
   servers: Array<{
     id: string
@@ -21,7 +21,7 @@ type PreviewEndpoint = {
 }
 
 let previewEndpoint: PreviewEndpoint = {
-  version: 3,
+  version: 4,
   activeEndpointId: 'studio',
   servers: [
     {
@@ -232,8 +232,22 @@ const previewRuntime = {
           ? 'connected'
           : 'disconnected'
         return { ok: true }
+      case 'bg.listPairCandidates':
+        return {
+          candidates: [
+            {
+              selectionId: 'preview-choice',
+              port: 16803,
+              instanceId: 'preview-store-instance',
+              appVersion: '2.0.0',
+            },
+          ],
+        }
+      case 'bg.launchStore':
+      case 'bg.chooseCandidate':
+        return { ok: true }
       case 'bg.getState':
-        return { state: previewConnectionState }
+        return { state: previewConnectionState, endpoint: previewEndpoint }
       case 'bg.getTakeoverConfig':
         return previewTakeover
       case 'bg.patchDownloadMode':
@@ -271,6 +285,7 @@ const storageChanged = {
 const previewBrowser = {
   action: { openPopup: async () => undefined },
   runtime: previewRuntime,
+  tabs: { create: async () => ({ id: 1 }) },
   i18n: {
     getUILanguage: () =>
       resolveLocale(

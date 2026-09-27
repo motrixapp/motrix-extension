@@ -12,6 +12,7 @@ import {
   type EndpointConfig,
   LOCAL_ENDPOINT_ID,
   type MotrixServerEndpoint,
+  WINDOWS_STORE_ENDPOINT_ID,
 } from '@/background/EndpointConfigStore'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -26,6 +27,7 @@ import {
   ItemTitle,
 } from '@/components/ui/item'
 import { SettingSection } from '@/options/components/SettingSection'
+import { supportsWindowsStoreTarget } from '@/shared/platformCapabilities'
 
 interface BackendListSectionProps {
   config: EndpointConfig | null
@@ -66,6 +68,17 @@ export function BackendListSection({
             id: LOCAL_ENDPOINT_ID,
             name: t('options.endpoint.localName'),
             description: t('options.endpoint.localDescription'),
+            server: null,
+          },
+        ]
+      : []),
+    ...(supportsWindowsStoreTarget() ||
+    activeEndpointId === WINDOWS_STORE_ENDPOINT_ID
+      ? [
+          {
+            id: WINDOWS_STORE_ENDPOINT_ID,
+            name: t('storeTarget.name'),
+            description: t('storeTarget.description'),
             server: null,
           },
         ]

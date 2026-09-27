@@ -27,11 +27,15 @@ import {
   type Mbp1FrameChannel,
 } from '@/background/ConnectionManager'
 import { EndpointCatalogService } from '@/background/EndpointCatalogService'
-import { EndpointConfigStore } from '@/background/EndpointConfigStore'
+import {
+  EndpointConfigStore,
+  WINDOWS_STORE_ENDPOINT_ID,
+} from '@/background/EndpointConfigStore'
 import {
   type BackendAuthority,
   createRemoteBackendAuthority,
   LOCAL_BACKEND_AUTHORITY,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 import { getClientInstallationId } from '@/background/mbp1/client-installation-id'
 import {
@@ -137,6 +141,7 @@ function makeFakeDiscoveryService(overrides: {
   discoverForFirstPair?: (opts: {
     allowLaunch: boolean
     bindingPub?: Uint8Array
+    preferredCandidatePort?: number
   }) => Promise<DiscoveryResult[]>
   preflightCompatibility?: (result: DiscoveryResult) => Promise<DiscoveryResult>
   ensureNonce?: (result: DiscoveryResult) => Promise<DiscoveryResult | null>
@@ -393,7 +398,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
   it('keeps websocket transport closed when remote discovery is unavailable', async () => {
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [
         {
@@ -434,7 +439,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
       wsBase: 'wss://nas.local:9090',
     })
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [
         {
@@ -480,7 +485,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
     async (_transport, serverUrl, expectedPairUrl) => {
       const endpointConfigStore = new EndpointConfigStore()
       await endpointConfigStore.setForTest({
-        version: 3,
+        version: 4,
         activeEndpointId: 'nas',
         servers: [
           {
@@ -537,7 +542,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
   it('maps a remote pairing WebSocket open failure to one non-specific transport reason', async () => {
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [
         {
@@ -589,7 +594,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
   it('maps a remote reconnect WebSocket open failure to the same transport reason', async () => {
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [
         {
@@ -643,7 +648,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
   it('blocks remote submits until scoped consent and strips sensitive data by default', async () => {
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [
         {
@@ -776,7 +781,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
   it('reconnects remote credentials with the authenticated instance id, not discovery hint', async () => {
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [
         {
@@ -834,7 +839,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
       wsBase: 'wss://nas.local:9090',
     })
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [
         {
@@ -880,7 +885,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
       state: 'ready' as const,
     }
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: serverA.id,
       servers: [serverA, serverB],
       cleanupTombstones: [],
@@ -913,7 +918,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
     expect(mgr.getPendingPairingCode()).toBeNull()
 
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: serverB.id,
       servers: [serverA, serverB],
       cleanupTombstones: [],
@@ -939,7 +944,7 @@ describe('ConnectionManager MBP1 — local vs remote routing', () => {
       wsBase: 'wss://nas-new.local:9090',
     })
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [
         {
@@ -1040,7 +1045,7 @@ describe('ConnectionManager MBP1 — remote incarnation edit/delete readiness', 
         state: 'ready' as const,
       }
       await endpointConfigStore.setForTest({
-        version: 3,
+        version: 4,
         activeEndpointId: server.id,
         servers: [server],
         cleanupTombstones: [],
@@ -1153,7 +1158,7 @@ describe('ConnectionManager MBP1 — remote incarnation edit/delete readiness', 
       wsBase: 'wss://b.example/bridge',
     })
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         {
@@ -1238,6 +1243,13 @@ describe('ConnectionManager MBP1 — remote incarnation edit/delete readiness', 
   })
 })
 
+async function selectCandidate(manager: ConnectionManager, port: number) {
+  const candidates = await manager.listPairCandidates({ allowLaunch: false })
+  const candidate = candidates.find((item) => item.port === port)
+  if (!candidate) throw new Error('test candidate missing')
+  await manager.choosePairCandidate(port, candidate.selectionId)
+}
+
 describe('ConnectionManager MBP1 — candidate choice ownership', () => {
   const candidates = [
     makeDiscoveryResult({ wsPort: 16802 }),
@@ -1256,10 +1268,31 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
       },
     })
 
-    mgr.choosePairCandidate(16803)
+    await selectCandidate(mgr, 16803)
     await mgr.clearGateAndStart()
 
     expect(selectedPort).toBe(16803)
+  })
+
+  it('never replaces a missing explicit candidate with another live installation', async () => {
+    const ensureNonce = vi.fn(async (result: DiscoveryResult) => result)
+    const onPairingRun = vi.fn()
+    const discoverForFirstPair = vi
+      .fn(async () => [candidates[0]!])
+      .mockResolvedValueOnce(candidates)
+    const mgr = makeManager({
+      discovery: { discoverForFirstPair, ensureNonce },
+      onPairingRun,
+    })
+    await selectCandidate(mgr, 16803)
+    await mgr.clearGateAndStart()
+
+    expect(discoverForFirstPair).toHaveBeenCalledWith(
+      expect.objectContaining({ preferredCandidatePort: 16803 })
+    )
+    expect(ensureNonce).not.toHaveBeenCalled()
+    expect(onPairingRun).not.toHaveBeenCalled()
+    expect(mgr.getState()).toBe('disconnected')
   })
 
   it('drops an unclaimed candidate choice when stop invalidates the lifecycle', async () => {
@@ -1274,7 +1307,7 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
       },
     })
 
-    mgr.choosePairCandidate(16803)
+    await selectCandidate(mgr, 16803)
     mgr.stop()
     await mgr.connect({ allowLaunch: true, userInitiated: true })
 
@@ -1296,7 +1329,7 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
       discovery: {
         discoverForFirstPair: async () => {
           discoveryCalls += 1
-          if (discoveryCalls === 1) {
+          if (discoveryCalls === 2) {
             firstDiscoveryEntered()
             await firstBlocked
           }
@@ -1309,7 +1342,7 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
       },
     })
 
-    mgr.choosePairCandidate(16803)
+    await selectCandidate(mgr, 16803)
     const first = mgr.connect({ allowLaunch: true, userInitiated: true })
     await firstEntered
 
@@ -1869,7 +1902,7 @@ describe('ConnectionManager MBP1 — awaiting-code state', () => {
       state: 'ready' as const,
     }
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [server],
       cleanupTombstones: [],
@@ -1927,7 +1960,7 @@ describe('ConnectionManager MBP1 — awaiting-code state', () => {
     await coordinator.run(async () => {
       mgr.stop()
       await endpointConfigStore.setForTest({
-        version: 3,
+        version: 4,
         activeEndpointId: server.id,
         servers: [server],
         cleanupTombstones: [],
@@ -1966,7 +1999,7 @@ describe('ConnectionManager MBP1 — awaiting-code state', () => {
       state: 'ready' as const,
     }
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [server],
       cleanupTombstones: [],
@@ -2038,7 +2071,7 @@ describe('ConnectionManager MBP1 — awaiting-code state', () => {
       .run(async () => {
         mgr.stop()
         await endpointConfigStore.setForTest({
-          version: 3,
+          version: 4,
           activeEndpointId: server.id,
           servers: [server],
           cleanupTombstones: [],
@@ -2100,7 +2133,7 @@ describe('ConnectionManager MBP1 — reconnect lifecycle races', () => {
       state: 'ready' as const,
     }
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [server],
       cleanupTombstones: [],
@@ -2179,7 +2212,7 @@ describe('ConnectionManager MBP1 — reconnect lifecycle races', () => {
     await coordinator.run(async () => {
       mgr.stop()
       await endpointConfigStore.setForTest({
-        version: 3,
+        version: 4,
         activeEndpointId: server.id,
         servers: [server],
         cleanupTombstones: [],
@@ -2218,7 +2251,7 @@ describe('ConnectionManager MBP1 — terminal lifecycle races', () => {
       state: 'ready' as const,
     }
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [server],
       cleanupTombstones: [],
@@ -2268,7 +2301,7 @@ describe('ConnectionManager MBP1 — terminal lifecycle races', () => {
       await endpointChangeGate
       mgr.stop()
       await endpointConfigStore.setForTest({
-        version: 3,
+        version: 4,
         activeEndpointId: server.id,
         servers: [server],
         cleanupTombstones: [],
@@ -2315,7 +2348,7 @@ describe('ConnectionManager MBP1 — terminal lifecycle races', () => {
       state: 'ready' as const,
     }
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [server],
       cleanupTombstones: [],
@@ -2363,7 +2396,7 @@ describe('ConnectionManager MBP1 — terminal lifecycle races', () => {
       await endpointChangeGate
       mgr.stop()
       await endpointConfigStore.setForTest({
-        version: 3,
+        version: 4,
         activeEndpointId: server.id,
         servers: [server],
         cleanupTombstones: [],
@@ -2764,7 +2797,7 @@ describe('ConnectionManager MBP1 — autostart with a stored credential', () => 
   it('keeps an unpaired remote endpoint dormant without discovery', async () => {
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [
         {
@@ -3173,3 +3206,440 @@ it.each(['probe', 'retry', 'stop'])(
     }
   }
 )
+
+describe('ConnectionManager Windows Store target', () => {
+  async function storeConfig() {
+    const config = new EndpointConfigStore()
+    await config.setForTest({
+      version: 4,
+      activeEndpointId: WINDOWS_STORE_ENDPOINT_ID,
+      servers: [],
+      cleanupTombstones: [],
+    })
+    return config
+  }
+
+  async function retain(
+    root: CredentialStore,
+    authority: BackendAuthority,
+    instanceId: string
+  ) {
+    const owner = {
+      browser: CLIENT_INFO.browser,
+      verifiedOrigin: computeVerifiedOrigin(),
+      clientInstallationId: await getClientInstallationId(),
+    }
+    const credentials = root.forAuthorityForTest(authority)
+    await credentials.writeProvisionalUnacked(
+      owner,
+      { credentialId: 'same-id', mutualKey: `${instanceId}-key` },
+      instanceId
+    )
+    await credentials.commitAndActivate('same-id', owner, instanceId)
+  }
+
+  it('does not inherit default pairing on startup or auto-select a first-pair candidate', async () => {
+    const endpointConfigStore = await storeConfig()
+    const root = new CredentialStore()
+    await retain(root, LOCAL_BACKEND_AUTHORITY, 'direct-instance')
+    const direct = makeFakeDiscoveryService({})
+    const store = makeFakeDiscoveryService({
+      discoverForFirstPair: async () => [
+        makeDiscoveryResult({ wsPort: 16802, instanceId: 'direct-instance' }),
+      ],
+    })
+    const onPairingRun = vi.fn()
+    const manager = makeManager({
+      endpointConfigStore,
+      credentialStore: root,
+      discoveryService: direct,
+      windowsStoreDiscoveryService: store,
+      onPairingRun,
+    })
+    await manager.autostart()
+    expect(store.discoverForReconnect).not.toHaveBeenCalled()
+    expect(store.discoverForFirstPair).not.toHaveBeenCalled()
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    expect(manager.getState()).toBe('disconnected')
+    expect(onPairingRun).not.toHaveBeenCalled()
+    expect(direct.discoverForFirstPair).not.toHaveBeenCalled()
+    expect(direct.discoverForReconnect).not.toHaveBeenCalled()
+    expect(store.wakeForReconnect).not.toHaveBeenCalled()
+  })
+
+  it('uses Store credentials, pins and authenticated identity even when default hints disagree', async () => {
+    const endpointConfigStore = await storeConfig()
+    const root = new CredentialStore()
+    await retain(root, LOCAL_BACKEND_AUTHORITY, 'direct-instance')
+    await retain(root, WINDOWS_STORE_BACKEND_AUTHORITY, 'store-instance')
+    const direct = makeFakeDiscoveryService({})
+    const store = makeFakeDiscoveryService({
+      discoverForReconnect: async () =>
+        makeDiscoveryResult({ wsPort: 16803, instanceId: 'untrusted-hint' }),
+    })
+    const storePins = makeFakePinStore({
+      'same-id': { port: 16803, instanceId: 'stale-pin' },
+    })
+    const directPins = makeFakePinStore()
+    const run = vi.fn(async () => ({ envelope: fakeEnvelope() }))
+    const createReconnectFlow = vi.fn(() => ({ run }))
+    const manager = makeManager({
+      endpointConfigStore,
+      credentialStore: root,
+      discoveryService: direct,
+      windowsStoreDiscoveryService: store,
+      pinStore: directPins,
+      windowsStorePinStore: storePins,
+      createReconnectFlow,
+    })
+    await manager.connect({ allowLaunch: false, userInitiated: true })
+    expect(manager.getState()).toBe('connected')
+    expect(store.discoverForReconnect).toHaveBeenCalledWith(
+      'same-id',
+      'store-instance'
+    )
+    expect(run).toHaveBeenCalledWith(
+      expect.objectContaining({
+        credential: expect.objectContaining({
+          mutualKey: 'store-instance-key',
+        }),
+        instanceId: 'store-instance',
+      })
+    )
+    expect(createReconnectFlow).toHaveBeenCalledWith(
+      expect.objectContaining({ pins: storePins })
+    )
+    expect(direct.discoverForReconnect).not.toHaveBeenCalled()
+    expect(directPins.get).not.toHaveBeenCalled()
+    manager.stop()
+  })
+
+  it('passes only retained Store identities to explicit wake and never wakes during unattended recovery', async () => {
+    const endpointConfigStore = await storeConfig()
+    const root = new CredentialStore()
+    await retain(root, WINDOWS_STORE_BACKEND_AUTHORITY, 'store-instance')
+    const direct = makeFakeDiscoveryService({})
+    const store = makeFakeDiscoveryService({})
+    const manager = makeManager({
+      endpointConfigStore,
+      credentialStore: root,
+      discoveryService: direct,
+      windowsStoreDiscoveryService: store,
+    })
+    await manager.autostart()
+    expect(store.wakeForReconnect).not.toHaveBeenCalled()
+    await manager.connect({
+      allowLaunch: true,
+      userInitiated: true,
+      allowFirstPair: false,
+    })
+    expect(store.wakeForReconnect).toHaveBeenCalledWith(
+      ['same-id'],
+      new Map([['same-id', 'store-instance']]),
+      expect.any(AbortSignal)
+    )
+    expect(store.discoverForFirstPair).not.toHaveBeenCalled()
+    expect(direct.wakeForReconnect).not.toHaveBeenCalled()
+  })
+
+  it.each(['automatic-download', 'view-tasks'] as const)(
+    'does not open a Store URI during %s preparation',
+    async (intent) => {
+      const endpointConfigStore = await storeConfig()
+      const root = new CredentialStore()
+      await retain(root, WINDOWS_STORE_BACKEND_AUTHORITY, 'store-instance')
+      const store = makeFakeDiscoveryService({})
+      const manager = makeManager({
+        endpointConfigStore,
+        credentialStore: root,
+        windowsStoreDiscoveryService: store,
+      })
+      await expect(manager.ensureReady({ intent })).rejects.toThrow()
+      expect(store.discoverForReconnect).toHaveBeenCalled()
+      expect(store.wakeForReconnect).not.toHaveBeenCalled()
+      expect(store.discoverForFirstPair).not.toHaveBeenCalled()
+    }
+  )
+
+  it('keeps Store recovery independent of a paused default gate', async () => {
+    const endpointConfigStore = await storeConfig()
+    const root = new CredentialStore()
+    await retain(root, WINDOWS_STORE_BACKEND_AUTHORITY, 'store-instance')
+    await new ConnectionGate().pauseDenied('direct denied')
+    const store = makeFakeDiscoveryService({
+      discoverForReconnect: async () =>
+        makeDiscoveryResult({ instanceId: 'store-instance' }),
+    })
+    const manager = makeManager({
+      endpointConfigStore,
+      credentialStore: root,
+      windowsStoreDiscoveryService: store,
+      reconnectOutcomes: { 'same-id': { envelope: fakeEnvelope() } },
+    })
+    await manager.autostart()
+    expect(manager.getState()).toBe('connected')
+    manager.stop()
+  })
+
+  it('aborts a pending Store wake on stop and discards its late result', async () => {
+    const endpointConfigStore = await storeConfig()
+    const root = new CredentialStore()
+    await retain(root, WINDOWS_STORE_BACKEND_AUTHORITY, 'store-instance')
+    const store = makeFakeDiscoveryService({})
+    let finish!: (value: Map<string, DiscoveryResult>) => void
+    let entered!: () => void
+    const started = new Promise<void>((resolve) => {
+      entered = resolve
+    })
+    vi.mocked(store.wakeForReconnect).mockImplementation(async () => {
+      entered()
+      return new Promise((resolve) => {
+        finish = resolve
+      })
+    })
+    const onReconnectRun = vi.fn()
+    const manager = makeManager({
+      endpointConfigStore,
+      credentialStore: root,
+      windowsStoreDiscoveryService: store,
+      onReconnectRun,
+    })
+    const connecting = manager.connect({
+      allowLaunch: true,
+      userInitiated: true,
+    })
+    await started
+    const signal = vi.mocked(store.wakeForReconnect).mock.calls[0]?.[2]
+    expect(signal?.aborted).toBe(false)
+    manager.stop()
+    expect(signal?.aborted).toBe(true)
+    finish(
+      new Map([
+        ['same-id', makeDiscoveryResult({ instanceId: 'store-instance' })],
+      ])
+    )
+    await connecting
+    expect(onReconnectRun).not.toHaveBeenCalled()
+    expect(manager.getState()).toBe('disconnected')
+  })
+
+  it('uses scoped discovery for the picker and pairs only its explicit candidate', async () => {
+    const endpointConfigStore = await storeConfig()
+    const direct = makeFakeDiscoveryService({})
+    const store = makeFakeDiscoveryService({
+      discoverForFirstPair: async () => [
+        makeDiscoveryResult({ wsPort: 16803, instanceId: 'store-instance' }),
+      ],
+      ensureNonce: async (candidate) => ({
+        ...candidate,
+        nonce: 'store-nonce',
+      }),
+    })
+    const storePins = makeFakePinStore()
+    const run = vi.fn(async () => ({
+      credentialId: 'new-store',
+      envelope: fakeEnvelope(),
+      instanceId: 'store-instance',
+    }))
+    const createPairingFlow = vi.fn(() => ({ run }))
+    const manager = makeManager({
+      endpointConfigStore,
+      discoveryService: direct,
+      windowsStoreDiscoveryService: store,
+      windowsStorePinStore: storePins,
+      createPairingFlow,
+    })
+    expect(await manager.listPairCandidates({ allowLaunch: true })).toEqual([
+      {
+        selectionId: expect.any(String),
+        port: 16803,
+        instanceId: 'store-instance',
+        appVersion: null,
+      },
+    ])
+    await selectCandidate(manager, 16803)
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    expect(manager.getState()).toBe('connected')
+    expect(store.discoverForFirstPair).toHaveBeenLastCalledWith(
+      expect.objectContaining({ preferredCandidatePort: 16803 })
+    )
+    expect(createPairingFlow).toHaveBeenCalledWith(
+      expect.objectContaining({ pins: storePins })
+    )
+    expect(run).toHaveBeenCalledWith(
+      expect.not.objectContaining({ bindingKeypair: expect.anything() })
+    )
+    expect(direct.discoverForFirstPair).not.toHaveBeenCalled()
+    manager.stop()
+  })
+
+  it('discards old Store discovery after catalogue activation stops the attempt', async () => {
+    const endpointConfigStore = await storeConfig()
+    const coordinator = new BackendOperationCoordinator()
+    let resolve!: (value: DiscoveryResult | null) => void
+    let entered!: () => void
+    const started = new Promise<void>((done) => {
+      entered = done
+    })
+    const pending = new Promise<DiscoveryResult | null>((done) => {
+      resolve = done
+    })
+    const store = makeFakeDiscoveryService({
+      discoverForReconnect: async () => {
+        entered()
+        return pending
+      },
+    })
+    const root = new CredentialStore()
+    await retain(root, WINDOWS_STORE_BACKEND_AUTHORITY, 'store-instance')
+    let manager: ConnectionManager
+    const catalog = new EndpointCatalogService(
+      endpointConfigStore,
+      { retire: async () => {} },
+      { coordinator, beforeConnectionChange: () => manager.stop() }
+    )
+    const onReconnectRun = vi.fn()
+    manager = makeManager({
+      endpointConfigStore,
+      credentialStore: root,
+      windowsStoreDiscoveryService: store,
+      endpointLifecycleService: catalog,
+      backendOperationCoordinator: coordinator,
+      onReconnectRun,
+    })
+    const connecting = manager.connect({
+      allowLaunch: true,
+      userInitiated: true,
+    })
+    await started
+    await catalog.activate('local')
+    resolve(
+      makeDiscoveryResult({ wsPort: 16803, instanceId: 'store-instance' })
+    )
+    await connecting
+    expect(manager.getState()).toBe('disconnected')
+    expect(onReconnectRun).not.toHaveBeenCalled()
+    expect(store.wakeForReconnect).not.toHaveBeenCalled()
+    expect((await endpointConfigStore.get()).activeEndpointId).toBe('local')
+  })
+})
+
+describe('picker handles bind candidate and lifecycle', () => {
+  it('rejects unknown, mismatched and reused handles', async () => {
+    const manager = makeManager({
+      discovery: {
+        discoverForFirstPair: async () => [
+          makeDiscoveryResult({ wsPort: 16803, instanceId: 'chosen' }),
+        ],
+      },
+    })
+    await expect(manager.choosePairCandidate(16803, 'forged')).rejects.toThrow(
+      'expired'
+    )
+    const [candidate] = await manager.listPairCandidates({ allowLaunch: false })
+    await expect(
+      manager.choosePairCandidate(16802, candidate!.selectionId)
+    ).rejects.toThrow('expired')
+    await expect(
+      manager.choosePairCandidate(16803, candidate!.selectionId)
+    ).rejects.toThrow('expired')
+    const [fresh] = await manager.listPairCandidates({ allowLaunch: false })
+    await manager.choosePairCandidate(16803, fresh!.selectionId)
+    await expect(
+      manager.choosePairCandidate(16803, fresh!.selectionId)
+    ).rejects.toThrow('expired')
+  })
+
+  it('rejects a stopped or expired list and a scan for another active target', async () => {
+    const discovery = makeFakeDiscoveryService({
+      discoverForFirstPair: async () => [
+        makeDiscoveryResult({ wsPort: 16803, instanceId: 'chosen' }),
+      ],
+    })
+    const manager = makeManager({ discoveryService: discovery })
+    await expect(
+      manager.listPairCandidates({
+        allowLaunch: false,
+        expectedEndpointId: WINDOWS_STORE_ENDPOINT_ID,
+      })
+    ).rejects.toThrow()
+    expect(discovery.discoverForFirstPair).not.toHaveBeenCalled()
+    const [stopped] = await manager.listPairCandidates({ allowLaunch: false })
+    manager.stop()
+    await expect(
+      manager.choosePairCandidate(16803, stopped!.selectionId)
+    ).rejects.toThrow('expired')
+    const [expired] = await manager.listPairCandidates({ allowLaunch: false })
+    const now = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 300_001)
+    await expect(
+      manager.choosePairCandidate(16803, expired!.selectionId)
+    ).rejects.toThrow('expired')
+    now.mockRestore()
+  })
+
+  it('rejects replacement of the selected instance at the same port before fetching a nonce', async () => {
+    let instanceId = 'chosen'
+    const ensureNonce = vi.fn(async (candidate: DiscoveryResult) => ({
+      ...candidate,
+      nonce: 'unused',
+    }))
+    const onPairingRun = vi.fn()
+    const manager = makeManager({
+      discovery: {
+        discoverForFirstPair: async () => [
+          makeDiscoveryResult({ wsPort: 16803, instanceId }),
+        ],
+        ensureNonce,
+      },
+      onPairingRun,
+    })
+    await selectCandidate(manager, 16803)
+    instanceId = 'replacement'
+    await manager.clearGateAndStart()
+    expect(manager.getState()).toBe('disconnected')
+    expect(ensureNonce).not.toHaveBeenCalled()
+    expect(onPairingRun).not.toHaveBeenCalled()
+  })
+
+  it('only launches the currently selected Store scope from its explicit command', async () => {
+    const config = new EndpointConfigStore()
+    const wakeAndPoll = vi.fn(async () => [])
+    const store = {
+      ...makeFakeDiscoveryService({}),
+      wakeAndPoll,
+    } as unknown as DiscoveryService
+    const manager = makeManager({
+      endpointConfigStore: config,
+      windowsStoreDiscoveryService: store,
+    })
+    await expect(
+      manager.launchStoreForPairing(WINDOWS_STORE_ENDPOINT_ID)
+    ).rejects.toThrow()
+    expect(wakeAndPoll).not.toHaveBeenCalled()
+    await config.setForTest({
+      version: 4,
+      activeEndpointId: WINDOWS_STORE_ENDPOINT_ID,
+      servers: [],
+      cleanupTombstones: [],
+    })
+    await manager.launchStoreForPairing(WINDOWS_STORE_ENDPOINT_ID)
+    expect(wakeAndPoll).toHaveBeenCalledExactlyOnceWith(expect.any(AbortSignal))
+  })
+})
+
+it('claims the selected candidate before the selection message is acknowledged', async () => {
+  const manager = makeManager({
+    discovery: {
+      discoverForFirstPair: async () => [
+        makeDiscoveryResult({ wsPort: 16803, instanceId: 'chosen' }),
+      ],
+    },
+  })
+  const [candidate] = await manager.listPairCandidates({ allowLaunch: false })
+  const start = vi.spyOn(manager, 'clearGateAndStart')
+  await manager.choosePairCandidate(16803, candidate!.selectionId, true)
+  expect(start).toHaveBeenCalledTimes(1)
+  manager.stop()
+  await start.mock.results[0]?.value.catch(() => undefined)
+  expect(manager.getState()).toBe('disconnected')
+})

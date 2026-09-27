@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Impossibile copiare le informazioni diagnostiche. Riprova.",
       "storedPairingUnavailable": "Impossibile connettersi a Motrix. Apri l’app e riprova. L’associazione salvata viene mantenuta."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Versione Microsoft Store, abbinata separatamente.",
+    "launch": "Apri la versione Store",
+    "pairingHelp": "Apri Motrix installato da Microsoft Store, seleziona la sua istanza e inserisci il codice mostrato in tale applicazione. Il browser potrebbe chiedere conferma prima di aprirla.",
+    "unavailable": "Questa destinazione richiede un browser desktop su Windows."
   }
 }

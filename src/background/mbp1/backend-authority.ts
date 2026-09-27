@@ -18,6 +18,8 @@ const issuedAuthorities = new WeakSet<object>()
 export interface LocalBackendAuthority {
   readonly [BACKEND_AUTHORITY_BRAND]: true
   readonly kind: 'local'
+  /** User-selected installation scope, not a claim about package identity. */
+  readonly target: 'default' | 'windows-store'
 }
 
 export interface RemoteBackendAuthority {
@@ -38,7 +40,15 @@ function issueAuthority<T extends BackendAuthority>(authority: T): T {
 export const LOCAL_BACKEND_AUTHORITY: LocalBackendAuthority = issueAuthority({
   [BACKEND_AUTHORITY_BRAND]: true,
   kind: 'local',
+  target: 'default',
 })
+
+export const WINDOWS_STORE_BACKEND_AUTHORITY: LocalBackendAuthority =
+  issueAuthority({
+    [BACKEND_AUTHORITY_BRAND]: true,
+    kind: 'local',
+    target: 'windows-store',
+  })
 
 export interface RemoteBackendAuthorityInput {
   endpointId: string
@@ -155,7 +165,15 @@ export function createRemoteBackendAuthority(
 export function backendAuthorityKey(authority: BackendAuthority): string {
   assertBackendAuthority(authority)
   if (authority.kind === 'local') {
-    return b64uEncode(concatBytes(enc(AUTHORITY_KEY_DOMAIN), enc('local')))
+    // Preserve the existing local key byte-for-byte. Store selection gets a
+    // separate namespace; it must never inherit existing local credentials.
+    return b64uEncode(
+      concatBytes(
+        enc(AUTHORITY_KEY_DOMAIN),
+        enc('local'),
+        ...(authority.target === 'windows-store' ? [enc('windows-store')] : [])
+      )
+    )
   }
 
   // Re-normalize after issuance validation as defense in depth. A factory

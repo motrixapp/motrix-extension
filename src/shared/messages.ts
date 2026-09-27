@@ -233,15 +233,17 @@ export interface MessageMap {
   /** Sweeps for live local Motrix instances to pair with. Read-only — does
    *  not start pairing. Safe to call repeatedly (a picker's "rescan"). */
   'bg.listPairCandidates': {
-    request: undefined
+    request: { endpointId: string }
     response: { candidates: PairCandidate[] }
   }
+  /** Opens the fixed Store protocol URI only after an explicit user action. */
+  'bg.launchStore': { request: { endpointId: string }; response: { ok: true } }
   /** Commits to one discovered candidate and starts a first-pair attempt
    *  against it. Returns once the attempt has been *started*, not once
    *  pairing finishes — a full session can take minutes; poll `bg.getState`
    *  for progress and for the `pairingCode` prompt that follows. */
   'bg.chooseCandidate': {
-    request: { port: number }
+    request: { port: number; selectionId: string }
     response: { ok: boolean; error?: string }
   }
   /** Answers the currently-outstanding `pairingCode` prompt from

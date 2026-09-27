@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Kan de diagnostiek niet kopiëren. Probeer het opnieuw.",
       "storedPairingUnavailable": "Kan geen verbinding maken met Motrix. Open de app en probeer het opnieuw. Je opgeslagen koppeling blijft behouden."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store-versie, afzonderlijk gekoppeld.",
+    "launch": "Store-app openen",
+    "pairingHelp": "Open Motrix uit de Microsoft Store, selecteer de bijbehorende instantie en voer de code uit die app in. De browser kan om toestemming vragen om de app te openen.",
+    "unavailable": "Dit doel vereist een desktopbrowser op Windows."
   }
 }

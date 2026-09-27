@@ -3,8 +3,10 @@ import type * as React from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { PairCandidate } from '@/background/ConnectionManager'
+import { WINDOWS_STORE_ENDPOINT_ID } from '@/background/EndpointConfigStore'
 import { send } from '@/background/MessageBus'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -16,6 +18,7 @@ import { assertMessageSucceeded } from '@/options/integration/messages'
 import { InstancePicker } from '@/popup/InstancePicker'
 import { PairingCodePanel } from '@/popup/PairingCodePanel'
 import { connectionErrorKey } from '@/shared/errorCopy'
+import { supportsWindowsStoreTarget } from '@/shared/platformCapabilities'
 
 interface PairingCodeState {
   run: number
@@ -24,6 +27,7 @@ interface PairingCodeState {
 }
 
 interface PairingDialogProps {
+  endpointId: string
   open: boolean
   remote: boolean
   onOpenChange: (open: boolean) => void
@@ -41,12 +45,15 @@ interface PairingDialogProps {
  * `pairAccept`.
  */
 export function PairingDialog({
+  endpointId,
   open,
   remote,
   onOpenChange,
   onPaired,
 }: PairingDialogProps): React.ReactElement {
   const { t } = useTranslation()
+  const storeTarget = endpointId === WINDOWS_STORE_ENDPOINT_ID
+  const [launching, setLaunching] = useState(false)
   const [candidates, setCandidates] = useState<PairCandidate[] | null>(null)
   const [scanning, setScanning] = useState(false)
   const [chosen, setChosen] = useState(false)
@@ -59,7 +66,7 @@ export function PairingDialog({
     setScanning(true)
     setDialogError(null)
     try {
-      const response = await send('bg.listPairCandidates', undefined)
+      const response = await send('bg.listPairCandidates', { endpointId })
       assertMessageSucceeded(response)
       setCandidates(response.candidates)
     } catch {
@@ -67,7 +74,7 @@ export function PairingDialog({
     } finally {
       setScanning(false)
     }
-  }, [t])
+  }, [t, endpointId])
 
   useEffect(() => {
     if (!open) {
@@ -99,26 +106,37 @@ export function PairingDialog({
       setChosen(true)
       setDialogError(null)
       try {
-        const response = await send('bg.chooseCandidate', { port })
+        const candidate = candidates?.find((entry) => entry.port === port)
+        if (!candidate) throw new Error('pairing candidate expired')
+        const response = await send('bg.chooseCandidate', {
+          port,
+          selectionId: candidate.selectionId,
+        })
         assertMessageSucceeded(response)
-        if (!response.ok) {
-          setDialogError(t('errors.connection.generic'))
-        }
+        if (!response.ok) throw new Error('pairing candidate rejected')
       } catch {
+        setChosen(false)
+        setCandidates(null)
         setDialogError(t('errors.connection.generic'))
       }
     },
-    [t]
+    [t, candidates]
   )
 
   // A picker with exactly one row to click is friction, not a choice.
   useEffect(() => {
-    if (!open || chosen || candidates === null || candidates.length !== 1) {
+    if (
+      storeTarget ||
+      !open ||
+      chosen ||
+      candidates === null ||
+      candidates.length !== 1
+    ) {
       return
     }
     const only = candidates[0]
     if (only !== undefined) void choose(only.port)
-  }, [open, chosen, candidates, choose])
+  }, [open, chosen, candidates, choose, storeTarget])
 
   // Poll for the pairingCode prompt (or completion/failure) once a
   // candidate has been chosen and the attempt is under way.
@@ -130,6 +148,10 @@ export function PairingDialog({
         const response = await send('bg.getState', undefined)
         assertMessageSucceeded(response)
         if (cancelled) return
+        if (response.endpoint?.activeEndpointId !== endpointId) {
+          setDialogError(t('errors.connection.generic'))
+          return
+        }
         if (response.state === 'connected') {
           onPaired()
           onOpenChange(false)
@@ -159,7 +181,7 @@ export function PairingDialog({
       cancelled = true
       clearInterval(timer)
     }
-  }, [chosen, onOpenChange, onPaired, t])
+  }, [chosen, onOpenChange, onPaired, t, endpointId])
 
   // The MV3 heartbeat exists for exactly this window — while the popup (or,
   // here, this dialog) is showing the code-entry prompt — and must stop the
@@ -200,41 +222,72 @@ export function PairingDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90dvh] flex-col [overflow-wrap:anywhere]">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t('options.pairing.pairDialogTitle')}</DialogTitle>
         </DialogHeader>
-        {dialogError !== null && (
-          <Alert variant="destructive">
-            <CircleAlertIcon />
-            <AlertDescription>{dialogError}</AlertDescription>
-          </Alert>
-        )}
-        {!remote && !chosen && (
-          <InstancePicker
-            candidates={candidates ?? []}
-            onChoose={(port) => void choose(port)}
-            onRescan={() => void rescan()}
-            disabled={scanning}
-            rescanning={scanning}
-          />
-        )}
-        {chosen && pairingCode === null && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Spinner />
-            {t('options.pairing.loading')}
-          </div>
-        )}
-        {chosen && pairingCode !== null && (
-          <PairingCodePanel
-            onSubmit={(code) => void submitCode(code)}
-            size="lg"
-            run={pairingCode.run}
-            maxRuns={pairingCode.maxRuns}
-            attemptsRemaining={pairingCode.attemptsRemaining}
-            disabled={submitting}
-          />
-        )}
+        <div className="min-h-0 space-y-4 overflow-y-auto px-1 py-1">
+          {dialogError !== null && (
+            <Alert variant="destructive">
+              <CircleAlertIcon />
+              <AlertDescription>{dialogError}</AlertDescription>
+            </Alert>
+          )}
+          {storeTarget && !chosen && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {t('storeTarget.pairingHelp')}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={launching || !supportsWindowsStoreTarget()}
+                onClick={async () => {
+                  setLaunching(true)
+                  setDialogError(null)
+                  try {
+                    const response = await send('bg.launchStore', {
+                      endpointId,
+                    })
+                    assertMessageSucceeded(response)
+                    await rescan()
+                  } catch {
+                    setDialogError(t('errors.connection.generic'))
+                  } finally {
+                    setLaunching(false)
+                  }
+                }}
+              >
+                {t('storeTarget.launch')}
+              </Button>
+            </div>
+          )}
+          {!remote && !chosen && (
+            <InstancePicker
+              candidates={candidates ?? []}
+              onChoose={(port) => void choose(port)}
+              onRescan={() => void rescan()}
+              disabled={scanning || launching}
+              rescanning={scanning}
+            />
+          )}
+          {chosen && pairingCode === null && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Spinner />
+              {t('options.pairing.loading')}
+            </div>
+          )}
+          {chosen && pairingCode !== null && (
+            <PairingCodePanel
+              onSubmit={(code) => void submitCode(code)}
+              size="lg"
+              run={pairingCode.run}
+              maxRuns={pairingCode.maxRuns}
+              attemptsRemaining={pairingCode.attemptsRemaining}
+              disabled={submitting}
+            />
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   )

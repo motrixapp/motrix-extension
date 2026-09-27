@@ -19,3 +19,13 @@ export function supportsAutoOpenPopup(
   const chromium = /(?:Chrome|Chromium)\/(\d+)/.exec(userAgent)
   return chromium !== null && Number(chromium[1]) >= 127
 }
+
+/** UI availability hint only; neither OS identity nor package authentication. */
+export function supportsWindowsStoreTarget(
+  userAgent = navigator.userAgent
+): boolean {
+  return (
+    /Windows NT/i.test(userAgent) &&
+    typeof extensionBrowser.tabs?.create === 'function'
+  )
+}

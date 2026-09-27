@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Không thể sao chép thông tin chẩn đoán. Hãy thử lại.",
       "storedPairingUnavailable": "Không thể kết nối với Motrix. Hãy mở Motrix rồi thử lại; thông tin ghép đôi đã lưu vẫn được giữ nguyên."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Bản cài từ Microsoft Store, ghép nối riêng.",
+    "launch": "Mở ứng dụng Store",
+    "pairingHelp": "Mở Motrix đã cài từ Microsoft Store, chọn phiên tương ứng rồi nhập mã hiển thị trong ứng dụng đó. Trình duyệt có thể hỏi xác nhận trước khi mở.",
+    "unavailable": "Đích này cần trình duyệt máy tính trên Windows."
   }
 }

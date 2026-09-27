@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "复制诊断信息失败，请重试。",
       "storedPairingUnavailable": "暂时无法连接 Motrix。请打开 App 后重试，已保存的配对会保留。"
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store 安装版，单独配对。",
+    "launch": "打开商店版应用",
+    "pairingHelp": "打开 Microsoft Store 安装的 Motrix，选择对应实例，再输入该应用中显示的配对码。浏览器可能询问是否允许打开应用。",
+    "unavailable": "此目标需要 Windows 桌面浏览器。"
   }
 }

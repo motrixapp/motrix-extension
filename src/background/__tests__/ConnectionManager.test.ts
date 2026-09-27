@@ -1346,7 +1346,7 @@ describe('ConnectionManager — remote endpoint', () => {
       remoteServer('server-b', 'Server B', 'wss://nas.local:9090'),
     ]
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers,
       cleanupTombstones: [],
@@ -1384,7 +1384,7 @@ describe('ConnectionManager — remote endpoint', () => {
     localUrls.push(mgr.lastConnectUrl ?? '')
     mgr.stop()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers,
       cleanupTombstones: [],
@@ -1393,7 +1393,7 @@ describe('ConnectionManager — remote endpoint', () => {
     expect(mgr.getLastErrorReason()).toBe('remoteDiscoveryUnavailable')
     mgr.stop()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-b',
       servers,
       cleanupTombstones: [],
@@ -1402,7 +1402,7 @@ describe('ConnectionManager — remote endpoint', () => {
     expect(mgr.getLastErrorReason()).toBe('remoteDiscoveryUnavailable')
     mgr.stop()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers,
       cleanupTombstones: [],
@@ -1417,7 +1417,7 @@ describe('ConnectionManager — remote endpoint', () => {
   it('discovers a remote URL without native bootstrap or legacy socket creation', async () => {
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [remoteServer('nas', 'NAS', 'wss://nas.local:9090')],
       cleanupTombstones: [],
@@ -1446,7 +1446,7 @@ describe('ConnectionManager — remote endpoint', () => {
   it('does not open a websocket when secure remote discovery is unavailable', async () => {
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'secure',
       servers: [
         remoteServer('secure', 'Secure', 'wss://MOTRIX.example:443/bridge/'),
@@ -1476,7 +1476,7 @@ describe('ConnectionManager — remote endpoint', () => {
     // New behavior: single attempt then dormant. No automatic reconnect storm.
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [remoteServer('nas', 'NAS', 'wss://nas.local:9090')],
       cleanupTombstones: [],
@@ -1570,7 +1570,7 @@ describe('ConnectionManager — local MBP1 async ownership', () => {
 
   function switchableDependencies() {
     const get = vi.fn(async () => ({
-      version: 3 as const,
+      version: 4 as const,
       activeEndpointId: 'local',
       servers,
       cleanupTombstones: [],

@@ -222,10 +222,11 @@ export async function runConnectionDiagnostics(
     }
   })
   if (endpoint.mode === 'local') {
-    await check('extension-allowlist', async () => ({
-      status: 'warn',
-      detail: `Check Motrix Settings > Integration > trusted extensions for this ID: ${browser.runtime.id}\nNative host: ${NATIVE_HOST}\n${browser.runtime.getURL('').startsWith('moz-extension:') ? `allowed_extensions must include ${JSON.stringify(browser.runtime.id)}` : `allowed_origins must include ${JSON.stringify(`chrome-extension://${browser.runtime.id}/`)}`}\nThe App trust registry and browser native-host manifest are separate checks. Their contents cannot be read by this extension.`,
-    }))
+    if (endpoint.target !== 'windows-store')
+      await check('extension-allowlist', async () => ({
+        status: 'warn',
+        detail: `Check Motrix Settings > Integration > trusted extensions for this ID: ${browser.runtime.id}\nNative host: ${NATIVE_HOST}\n${browser.runtime.getURL('').startsWith('moz-extension:') ? `allowed_extensions must include ${JSON.stringify(browser.runtime.id)}` : `allowed_origins must include ${JSON.stringify(`chrome-extension://${browser.runtime.id}/`)}`}\nThe App trust registry and browser native-host manifest are separate checks. Their contents cannot be read by this extension.`,
+      }))
     await check('loopback-permission', async () => {
       const granted = await diagnosticDeadline(hasLoopbackPermission(), 1000)
       return {
@@ -237,6 +238,12 @@ export async function runConnectionDiagnostics(
     })
     let nativePort: number | undefined
     await check('native-host', async () => {
+      if (endpoint.target === 'windows-store')
+        return {
+          status: 'skip',
+          detail:
+            'Windows Store target selected. Default Native Messaging registration does not identify this installation. Open the Store app and pair normally; diagnostics do not launch it.',
+        }
       if (!hasNativeMessagingSupport())
         return {
           status: 'fail',

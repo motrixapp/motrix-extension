@@ -8,7 +8,7 @@ import {
 
 function fixture() {
   let config: EndpointConfig = {
-    version: 3,
+    version: 4,
     activeEndpointId: 'local',
     servers: [],
     cleanupTombstones: [],

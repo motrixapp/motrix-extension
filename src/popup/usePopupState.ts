@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import {
   type EndpointConfig,
+  isLocalEndpointId,
   LOCAL_ENDPOINT_ID,
   type MotrixServerEndpoint,
+  WINDOWS_STORE_ENDPOINT_ID,
 } from '@/background/EndpointConfigStore'
 import { send } from '@/background/MessageBus'
 import { snapshotEqual } from '@/popup/snapshotEqual'
@@ -191,7 +193,8 @@ export function usePopupState(): {
     const snapshot = stateRef.current
     try {
       await send(
-        snapshot.pairing === 'stored' &&
+        snapshot.endpoint?.activeEndpointId !== WINDOWS_STORE_ENDPOINT_ID &&
+          snapshot.pairing === 'stored' &&
           snapshot.connection === 'disconnected' &&
           (snapshot.lastError === null ||
             snapshot.attemptIntent === 'background-probe')
@@ -228,7 +231,7 @@ export function usePopupState(): {
         return
       }
       if (
-        endpointId !== LOCAL_ENDPOINT_ID &&
+        !isLocalEndpointId(endpointId) &&
         !currentEndpoint.servers.some((server) => server.id === endpointId)
       ) {
         throw new Error('Motrix Server is not configured')

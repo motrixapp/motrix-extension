@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "診断情報をコピーできませんでした。もう一度お試しください。",
       "storedPairingUnavailable": "Motrix に接続できません。アプリを開いて再試行してください。保存済みのペアリングは保持されます。"
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store 版。個別にペアリングします。",
+    "launch": "Store 版を開く",
+    "pairingHelp": "Microsoft Store 版の Motrix を開き、対応するインスタンスを選択して、そのアプリに表示されたコードを入力します。ブラウザーで起動の確認が表示される場合があります。",
+    "unavailable": "この接続先には Windows のデスクトップブラウザーが必要です。"
   }
 }

@@ -287,7 +287,7 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
         state={baseState({
           lastError: 'connection failed',
           endpoint: {
-            version: 3,
+            version: 4,
             activeEndpointId: 'local',
             servers: [],
             cleanupTombstones: [],
@@ -362,7 +362,7 @@ describe('ConnectionStatusPanel diagnostic copy', () => {
     const state = baseState({
       lastError: 'failed',
       endpoint: {
-        version: 3,
+        version: 4,
         activeEndpointId: 'local',
         servers: [],
         cleanupTombstones: [],

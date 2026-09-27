@@ -280,8 +280,8 @@ function readV2Credential(value: unknown): PersistedCredential | null {
   ) {
     return null
   }
-  // v1 is migrated only into the one known local authority. Every non-local
-  // v2 row therefore represents a remote authority and must carry the server
+  // v1 migrates only into the original local authority. Store and remote
+  // scopes require instance binding and must carry the server
   // identity authenticated by confirmB/reconnectAccept. Retaining a null row
   // would hide it from recovery while still letting it occupy a state-machine
   // slot indefinitely.
@@ -517,26 +517,24 @@ function newestFirst(a: PersistedCredential, b: PersistedCredential): number {
 }
 
 function validateAuthenticatedInstanceId(
-  remote: boolean,
+  instanceBound: boolean,
   authenticatedInstanceId: string | null
 ): void {
   if (
     !isNullableInstanceId(authenticatedInstanceId) ||
-    (remote && authenticatedInstanceId === null)
+    (instanceBound && authenticatedInstanceId === null)
   ) {
-    throw new Error(
-      'authenticated instance id is required for remote authority'
-    )
+    throw new Error('authenticated instance id is required for this authority')
   }
 }
 
 function assertAuthorityInstanceContinuity(
   set: StoredCredentialSetV2,
   authorityKey: string,
-  remote: boolean,
+  instanceBound: boolean,
   authenticatedInstanceId: string | null
 ): void {
-  if (!remote) return
+  if (!instanceBound) return
   for (const credential of set.credentials) {
     if (
       credential.authorityKey === authorityKey &&
@@ -584,7 +582,7 @@ const authorityCredentialStoreIssuance = Symbol('AuthorityCredentialStore')
 export class AuthorityCredentialStore implements CredentialAttemptStore {
   readonly [credentialLifecycleStoreBrand] = true as const
   private readonly authorityKey: string
-  private readonly remote: boolean
+  private readonly instanceBound: boolean
   private readonly authorityGeneration: number
 
   constructor(
@@ -595,7 +593,8 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
       throw new TypeError('authority credential store was not issued')
     }
     this.authorityKey = backendAuthorityKey(authority)
-    this.remote = authority.kind === 'remote'
+    this.instanceBound =
+      authority.kind === 'remote' || authority.target === 'windows-store'
     const revocation = authorityRevocationState(this.authorityKey)
     // A view obtained while Forget is in flight is never allowed to become a
     // delayed post-revocation writer. The coordinator must acquire a new view
@@ -625,11 +624,14 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
       const key = principalKey(principal)
       const set = await loadSet(true)
       if (set === null) throw new UnsupportedCredentialStoreVersionError()
-      validateAuthenticatedInstanceId(this.remote, authenticatedInstanceId)
+      validateAuthenticatedInstanceId(
+        this.instanceBound,
+        authenticatedInstanceId
+      )
       assertAuthorityInstanceContinuity(
         set,
         this.authorityKey,
-        this.remote,
+        this.instanceBound,
         authenticatedInstanceId
       )
 
@@ -715,13 +717,13 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
       if (target === undefined) {
         throw new Error('markCommitUncertain: unknown credential')
       }
-      if (this.remote && target.authenticatedInstanceId === null) {
+      if (this.instanceBound && target.authenticatedInstanceId === null) {
         throw new CredentialInstanceMismatchError()
       }
       assertAuthorityInstanceContinuity(
         set,
         this.authorityKey,
-        this.remote,
+        this.instanceBound,
         target.authenticatedInstanceId
       )
       if (target.state === 'committed' || target.sub === 'commit-uncertain') {
@@ -744,7 +746,10 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
       const key = principalKey(principal)
       const set = await loadSet(true)
       if (set === null) throw new UnsupportedCredentialStoreVersionError()
-      validateAuthenticatedInstanceId(this.remote, authenticatedInstanceId)
+      validateAuthenticatedInstanceId(
+        this.instanceBound,
+        authenticatedInstanceId
+      )
       const index = set.credentials.findIndex(
         (credential) =>
           credential.authorityKey === this.authorityKey &&
@@ -767,11 +772,11 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
       }
       const storedInstanceId =
         target.authenticatedInstanceId ?? authenticatedInstanceId
-      validateAuthenticatedInstanceId(this.remote, storedInstanceId)
+      validateAuthenticatedInstanceId(this.instanceBound, storedInstanceId)
       assertAuthorityInstanceContinuity(
         set,
         this.authorityKey,
-        this.remote,
+        this.instanceBound,
         storedInstanceId
       )
 
@@ -810,7 +815,10 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
       const key = principalKey(principal)
       const set = await loadSet(true)
       if (set === null) throw new UnsupportedCredentialStoreVersionError()
-      validateAuthenticatedInstanceId(this.remote, authenticatedInstanceId)
+      validateAuthenticatedInstanceId(
+        this.instanceBound,
+        authenticatedInstanceId
+      )
 
       const target = set.credentials.find(
         (credential) =>
@@ -833,11 +841,11 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
       }
       const storedInstanceId =
         target.authenticatedInstanceId ?? authenticatedInstanceId
-      validateAuthenticatedInstanceId(this.remote, storedInstanceId)
+      validateAuthenticatedInstanceId(this.instanceBound, storedInstanceId)
       assertAuthorityInstanceContinuity(
         set,
         this.authorityKey,
-        this.remote,
+        this.instanceBound,
         storedInstanceId
       )
 
@@ -928,14 +936,17 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
       const key = principalKey(principal)
       const set = await loadSet(false)
       if (set === null) return []
-      if (this.remote && authorityHasInstanceConflict(set, this.authorityKey)) {
+      if (
+        this.instanceBound &&
+        authorityHasInstanceConflict(set, this.authorityKey)
+      ) {
         return []
       }
       const mine = set.credentials.filter(
         (credential) =>
           credential.authorityKey === this.authorityKey &&
           credential.principalKey === key &&
-          (!this.remote || credential.authenticatedInstanceId !== null)
+          (!this.instanceBound || credential.authenticatedInstanceId !== null)
       )
       const activeId =
         set.activeCredentialIds[
@@ -971,14 +982,18 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
       const key = principalKey(principal)
       const set = await loadSet(false)
       if (set === null) return false
-      if (this.remote && authorityHasInstanceConflict(set, this.authorityKey)) {
+      if (
+        this.instanceBound &&
+        authorityHasInstanceConflict(set, this.authorityKey)
+      ) {
         return false
       }
       return set.credentials.some(
         (credential) =>
           credential.authorityKey === this.authorityKey &&
           credential.principalKey === key &&
-          (!this.remote || credential.authenticatedInstanceId !== null) &&
+          (!this.instanceBound ||
+            credential.authenticatedInstanceId !== null) &&
           credential.state === 'committed'
       )
     })

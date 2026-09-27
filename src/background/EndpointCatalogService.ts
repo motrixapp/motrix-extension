@@ -7,14 +7,17 @@ import type {
 } from '@/background/EndpointConfigStore'
 import {
   type EndpointConfigStore,
+  isLocalEndpointId,
   LOCAL_ENDPOINT_ID,
   resolveActiveEndpoint,
   resolveEndpointById,
+  WINDOWS_STORE_ENDPOINT_ID,
 } from '@/background/EndpointConfigStore'
 import {
   createRemoteBackendAuthority,
   LOCAL_BACKEND_AUTHORITY,
   type RemoteBackendAuthority,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 import { normalizeRemoteEndpoint } from '@/shared/endpoint'
 
@@ -161,7 +164,7 @@ export class EndpointCatalogService {
         endpoint === null ||
         (endpointId === undefined &&
           endpoint.mode === 'local' &&
-          config.activeEndpointId !== LOCAL_ENDPOINT_ID)
+          !isLocalEndpointId(config.activeEndpointId))
       ) {
         throw new RemoteBackendAttemptRequiredError()
       }
@@ -170,11 +173,19 @@ export class EndpointCatalogService {
       })
       issuedAttemptLeases.set(lease, {
         endpointId:
-          endpoint.mode === 'local' ? LOCAL_ENDPOINT_ID : endpoint.endpointId,
+          endpoint.mode === 'local'
+            ? endpoint.target === 'windows-store'
+              ? WINDOWS_STORE_ENDPOINT_ID
+              : LOCAL_ENDPOINT_ID
+            : endpoint.endpointId,
         canonicalWsBase: endpoint.mode === 'local' ? null : endpoint.remoteUrl,
         revision: endpoint.mode === 'local' ? 0 : endpoint.revision,
         incarnationGeneration: endpointIncarnationGeneration(
-          endpoint.mode === 'local' ? LOCAL_ENDPOINT_ID : endpoint.endpointId
+          endpoint.mode === 'local'
+            ? endpoint.target === 'windows-store'
+              ? WINDOWS_STORE_ENDPOINT_ID
+              : LOCAL_ENDPOINT_ID
+            : endpoint.endpointId
         ),
       })
       return lease
@@ -210,7 +221,9 @@ export class EndpointCatalogService {
       }
       const authority =
         endpoint.mode === 'local'
-          ? LOCAL_BACKEND_AUTHORITY
+          ? endpoint.target === 'windows-store'
+            ? WINDOWS_STORE_BACKEND_AUTHORITY
+            : LOCAL_BACKEND_AUTHORITY
           : createRemoteBackendAuthority({
               endpointId: endpoint.endpointId,
               wsBase: endpoint.remoteUrl,
@@ -219,7 +232,11 @@ export class EndpointCatalogService {
         Object.freeze({
           authority,
           endpointId:
-            endpoint.mode === 'local' ? LOCAL_ENDPOINT_ID : endpoint.endpointId,
+            endpoint.mode === 'local'
+              ? endpoint.target === 'windows-store'
+                ? WINDOWS_STORE_ENDPOINT_ID
+                : LOCAL_ENDPOINT_ID
+              : endpoint.endpointId,
           canonicalWsBase:
             endpoint.mode === 'local' ? null : endpoint.remoteUrl,
           revision: endpoint.mode === 'local' ? 0 : endpoint.revision,
@@ -389,7 +406,7 @@ export class EndpointCatalogService {
     wasActive: boolean
   }> {
     return this.enqueue(async () => {
-      if (endpointId === LOCAL_ENDPOINT_ID) {
+      if (isLocalEndpointId(endpointId)) {
         throw new Error('the local App endpoint cannot be removed')
       }
       const previous = await this.endpointConfigStore.getForLifecycleMutation()

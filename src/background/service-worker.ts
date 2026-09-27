@@ -430,18 +430,24 @@ bus.on('bg.unpair', async ({ endpointId }) => {
 // The popup calls it every ~20s while the pairing code-entry prompt is open,
 // so the worker survives that window instead of being torn down mid-pairing.
 bus.on('bg.pairHeartbeat', async () => ({ ok: true }) as const)
-bus.on('bg.listPairCandidates', async () => {
-  const candidates = await manager.listPairCandidates({ allowLaunch: true })
+bus.on('bg.listPairCandidates', async ({ endpointId }) => {
+  const candidates = await manager.listPairCandidates({
+    allowLaunch: true,
+    expectedEndpointId: endpointId,
+  })
   return { candidates }
 })
-bus.on('bg.chooseCandidate', async ({ port }) => {
-  manager.choosePairCandidate(port)
+bus.on('bg.launchStore', async ({ endpointId }) => {
+  await manager.launchStoreForPairing(endpointId)
+  return { ok: true } as const
+})
+bus.on('bg.chooseCandidate', async ({ port, selectionId }) => {
+  await manager.choosePairCandidate(port, selectionId, true)
   // Fire-and-forget: a first-pair session can take minutes end to end (it
   // waits on the user's code entry), so this returns once the attempt has
   // started, not once it finishes. The popup tracks progress — and the
   // pairingCode prompt that follows — by polling bg.getState, the same way
   // it already tracks a plain reconnect.
-  void manager.clearGateAndStart()
   return { ok: true } as const
 })
 bus.on('bg.submitPairingCode', async ({ code }) => {

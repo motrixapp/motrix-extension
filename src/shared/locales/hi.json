@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "निदान जानकारी कॉपी नहीं हो सकी। फिर कोशिश करें।",
       "storedPairingUnavailable": "Motrix से कनेक्ट नहीं हो सका। Motrix खोलकर फिर कोशिश करें। सहेजी गई पेयरिंग बनी रहेगी।"
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store संस्करण, अलग से पेयर किया जाता है।",
+    "launch": "Store ऐप खोलें",
+    "pairingHelp": "Microsoft Store से इंस्टॉल किया गया Motrix खोलें, उसका इंस्टेंस चुनें, फिर उसी ऐप में दिखाया गया कोड दर्ज करें। ब्राउज़र ऐप खोलने से पहले पुष्टि माँग सकता है।",
+    "unavailable": "इस लक्ष्य के लिए Windows डेस्कटॉप ब्राउज़र चाहिए।"
   }
 }

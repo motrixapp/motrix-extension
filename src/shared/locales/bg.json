@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Диагностиката не може да се копира. Опитайте отново.",
       "storedPairingUnavailable": "Неуспешна връзка с Motrix. Отворете го и опитайте отново; запазеното сдвояване се запазва."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Версия от Microsoft Store с отделно сдвояване.",
+    "launch": "Отваряне на версията от Store",
+    "pairingHelp": "Отворете Motrix, инсталиран от Microsoft Store, изберете неговата инстанция и въведете кода, показан в приложението. Браузърът може да поиска потвърждение за отваряне.",
+    "unavailable": "Тази цел изисква настолен браузър под Windows."
   }
 }
