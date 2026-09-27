@@ -455,8 +455,8 @@ export class DiscoveryService {
    * Enumerates every endpoint a first pairing could target, for the user to
    * choose from.
    *
-   * The NM bootstrap is preferred when a host port is injected: it is the only
-   * path that can produce a §9.2 attestation ticket, and it returns a nonce
+   * Without an explicit picker choice, the injected NM bootstrap is preferred:
+   * it is the only path that can produce a §9.2 attestation ticket and a nonce
    * for free. On success it is the *only* result — a host that answered has
    * already told us which instance it speaks for, so offering a choice
    * alongside it would just invite the user to pick a less-attested route.
@@ -465,19 +465,33 @@ export class DiscoveryService {
    * fetching one per candidate would burn the server's budget on candidates
    * the user never picks. Call `ensureNonce` on the selected result instead.
    *
-   * `allowLaunch` is forwarded to the host, which wakes a sleeping Motrix only
-   * when it is literally `true`. This method does not escalate to
+   * With no picker choice, `allowLaunch` is forwarded to the host, which wakes
+   * a sleeping Motrix only when it is literally `true`. This method does not escalate to
    * `wakeAndPoll` on an empty sweep: that needs a user gesture to open a tab,
    * so it is the caller's decision, not a silent side effect of discovery.
    */
   async discoverForFirstPair(opts: {
     allowLaunch: boolean
     bindingPub?: Uint8Array
+    /** An explicit picker choice is a routing constraint, never authority. */
+    preferredCandidatePort?: number
   }): Promise<DiscoveryResult[]> {
+    const selectedPort = opts.preferredCandidatePort
+    if (selectedPort !== undefined && !isValidPort(selectedPort)) return []
     const viaNm = await this.tryNativeBootstrap(
-      opts.allowLaunch,
+      selectedPort === undefined ? opts.allowLaunch : false,
       opts.bindingPub
     )
+    if (selectedPort !== undefined) {
+      // A default host can belong to another installation. It must neither
+      // launch that installation nor replace the candidate the user chose.
+      if (viaNm?.wsPort === selectedPort) return [viaNm]
+      const selected = await this.probe(
+        selectedPort,
+        this.config.discoveryTimeoutMs
+      )
+      return selected === null ? [] : [toProbeResult(selected)]
+    }
     if (viaNm !== null) return [viaNm]
     const live = await this.sweepCandidates()
     return live.map(toProbeResult)

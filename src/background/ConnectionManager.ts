@@ -2083,13 +2083,13 @@ export class ConnectionManager {
     const candidates = await this.discoveryService.discoverForFirstPair({
       allowLaunch,
       bindingPub: bindingKeypair.pub,
+      ...(preferredCandidatePort === null ? {} : { preferredCandidatePort }),
     })
     this.ensureCurrentAttempt(generation)
     const candidate =
       preferredCandidatePort === null
         ? candidates[0]
-        : (candidates.find((c) => c.wsPort === preferredCandidatePort) ??
-          candidates[0])
+        : candidates.find((c) => c.wsPort === preferredCandidatePort)
     if (candidate === undefined) {
       throw new Error('no Motrix instance found to pair with')
     }
