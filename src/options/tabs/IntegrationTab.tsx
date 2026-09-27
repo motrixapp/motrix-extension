@@ -2,7 +2,10 @@ import { CircleAlertIcon } from 'lucide-react'
 import type * as React from 'react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LOCAL_ENDPOINT_ID } from '@/background/EndpointConfigStore'
+import {
+  LOCAL_ENDPOINT_ID,
+  WINDOWS_STORE_ENDPOINT_ID,
+} from '@/background/EndpointConfigStore'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   AlertDialog,
@@ -23,7 +26,10 @@ import { RemoteServerCard } from '@/options/integration/RemoteServerCard'
 import { ServerEditorDialog } from '@/options/integration/ServerEditorDialog'
 import { useIntegrationSettings } from '@/options/integration/useIntegrationSettings'
 import { SettingPanel } from '@/options/SettingPanel'
-import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
+import {
+  hasNativeMessagingSupport,
+  supportsWindowsStoreTarget,
+} from '@/shared/platformCapabilities'
 
 export function IntegrationTab(): React.ReactElement {
   const { t } = useTranslation()
@@ -58,14 +64,18 @@ export function IntegrationTab(): React.ReactElement {
     refreshAfterPairing,
   } = useIntegrationSettings()
   const localBackendUnavailable =
-    !localBackendAvailable && activeEndpointId === LOCAL_ENDPOINT_ID
+    activeEndpointId === WINDOWS_STORE_ENDPOINT_ID
+      ? !supportsWindowsStoreTarget()
+      : !localBackendAvailable && activeEndpointId === LOCAL_ENDPOINT_ID
   const selectedEndpointName =
-    activeServer?.name ??
-    t(
-      localBackendAvailable
-        ? 'options.endpoint.localName'
-        : 'popup.backend.server'
-    )
+    activeEndpointId === WINDOWS_STORE_ENDPOINT_ID
+      ? t('storeTarget.name')
+      : (activeServer?.name ??
+        t(
+          localBackendAvailable
+            ? 'options.endpoint.localName'
+            : 'popup.backend.server'
+        ))
 
   return (
     <>
@@ -95,6 +105,7 @@ export function IntegrationTab(): React.ReactElement {
 
         <BackendPairingSection
           selectedEndpointName={selectedEndpointName}
+          storeTarget={activeEndpointId === WINDOWS_STORE_ENDPOINT_ID}
           localBackendUnavailable={localBackendUnavailable}
           isRemote={isRemote}
           pairingLoading={pairingLoading}
@@ -127,6 +138,8 @@ export function IntegrationTab(): React.ReactElement {
       />
 
       <PairingDialog
+        key={activeEndpointId}
+        endpointId={activeEndpointId}
         open={pairDialogOpen}
         remote={isRemote}
         onOpenChange={setPairDialogOpen}

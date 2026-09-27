@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Informasi diagnostik tidak dapat disalin. Coba lagi.",
       "storedPairingUnavailable": "Tidak dapat terhubung ke Motrix. Buka Motrix dan coba lagi; penyandingan yang tersimpan tetap dipertahankan."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Versi Microsoft Store, dipasangkan secara terpisah.",
+    "launch": "Buka aplikasi Store",
+    "pairingHelp": "Buka Motrix yang dipasang dari Microsoft Store, pilih instansinya, lalu masukkan kode yang ditampilkan di aplikasi tersebut. Browser mungkin meminta konfirmasi sebelum membukanya.",
+    "unavailable": "Tujuan ini memerlukan browser desktop Windows."
   }
 }

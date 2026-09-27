@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "کپی اطلاعات عیب‌یابی ممکن نشد. دوباره تلاش کنید.",
       "storedPairingUnavailable": "اتصال به Motrix ممکن نشد. آن را باز کنید و دوباره تلاش کنید؛ جفت‌سازی ذخیره‌شده حفظ می‌شود."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "نسخهٔ Microsoft Store با جفت‌سازی جداگانه.",
+    "launch": "باز کردن برنامهٔ Store",
+    "pairingHelp": "Motrix نصب‌شده از Microsoft Store را باز کنید، نمونهٔ مربوط به آن را انتخاب کنید و سپس کد نمایش‌داده‌شده در همان برنامه را وارد کنید. مرورگر ممکن است پیش از باز کردن برنامه تأیید بخواهد.",
+    "unavailable": "این مقصد به مرورگر دسکتاپ Windows نیاز دارد."
   }
 }

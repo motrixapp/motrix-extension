@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Die Diagnosedaten konnten nicht kopiert werden. Versuchen Sie es erneut.",
       "storedPairingUnavailable": "Die Verbindung zu Motrix ist fehlgeschlagen. Öffnen Sie die App und versuchen Sie es erneut. Die gespeicherte Kopplung bleibt erhalten."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft-Store-Version mit eigener Kopplung.",
+    "launch": "Store-App öffnen",
+    "pairingHelp": "Öffnen Sie Motrix aus dem Microsoft Store, wählen Sie die zugehörige Instanz und geben Sie den dort angezeigten Code ein. Der Browser kann vor dem Öffnen nachfragen.",
+    "unavailable": "Dieses Ziel erfordert einen Desktop-Browser unter Windows."
   }
 }

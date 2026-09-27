@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Nem sikerült másolni a diagnosztikát. Próbáld újra.",
       "storedPairingUnavailable": "Nem sikerült kapcsolódni a Motrixhoz. Nyisd meg és próbáld újra; a mentett párosítás megmarad."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store-verzió, külön párosítással.",
+    "launch": "Store-alkalmazás megnyitása",
+    "pairingHelp": "Nyissa meg a Microsoft Store-ból telepített Motrixot, válassza ki a példányát, majd írja be az abban megjelenő kódot. A böngésző megerősítést kérhet a megnyitáshoz.",
+    "unavailable": "Ehhez a célhoz Windows asztali böngésző szükséges."
   }
 }

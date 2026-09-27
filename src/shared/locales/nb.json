@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Kunne ikke kopiere diagnostikken. Prøv igjen.",
       "storedPairingUnavailable": "Kunne ikke koble til Motrix. Åpne appen og prøv igjen. Den lagrede paringen beholdes."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store-versjon med separat sammenkobling.",
+    "launch": "Åpne Store-appen",
+    "pairingHelp": "Åpne Motrix installert fra Microsoft Store, velg riktig instans og skriv inn koden som vises i appen. Nettleseren kan be om bekreftelse før appen åpnes.",
+    "unavailable": "Dette målet krever en nettleser for Windows på datamaskin."
   }
 }

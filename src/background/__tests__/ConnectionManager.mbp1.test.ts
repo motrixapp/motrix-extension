@@ -1243,6 +1243,13 @@ describe('ConnectionManager MBP1 — remote incarnation edit/delete readiness', 
   })
 })
 
+async function selectCandidate(manager: ConnectionManager, port: number) {
+  const candidates = await manager.listPairCandidates({ allowLaunch: false })
+  const candidate = candidates.find((item) => item.port === port)
+  if (!candidate) throw new Error('test candidate missing')
+  await manager.choosePairCandidate(port, candidate.selectionId)
+}
+
 describe('ConnectionManager MBP1 — candidate choice ownership', () => {
   const candidates = [
     makeDiscoveryResult({ wsPort: 16802 }),
@@ -1261,7 +1268,7 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
       },
     })
 
-    mgr.choosePairCandidate(16803)
+    await selectCandidate(mgr, 16803)
     await mgr.clearGateAndStart()
 
     expect(selectedPort).toBe(16803)
@@ -1270,12 +1277,14 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
   it('never replaces a missing explicit candidate with another live installation', async () => {
     const ensureNonce = vi.fn(async (result: DiscoveryResult) => result)
     const onPairingRun = vi.fn()
-    const discoverForFirstPair = vi.fn(async () => [candidates[0]!])
+    const discoverForFirstPair = vi
+      .fn(async () => [candidates[0]!])
+      .mockResolvedValueOnce(candidates)
     const mgr = makeManager({
       discovery: { discoverForFirstPair, ensureNonce },
       onPairingRun,
     })
-    mgr.choosePairCandidate(16803)
+    await selectCandidate(mgr, 16803)
     await mgr.clearGateAndStart()
 
     expect(discoverForFirstPair).toHaveBeenCalledWith(
@@ -1298,7 +1307,7 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
       },
     })
 
-    mgr.choosePairCandidate(16803)
+    await selectCandidate(mgr, 16803)
     mgr.stop()
     await mgr.connect({ allowLaunch: true, userInitiated: true })
 
@@ -1320,7 +1329,7 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
       discovery: {
         discoverForFirstPair: async () => {
           discoveryCalls += 1
-          if (discoveryCalls === 1) {
+          if (discoveryCalls === 2) {
             firstDiscoveryEntered()
             await firstBlocked
           }
@@ -1333,7 +1342,7 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
       },
     })
 
-    mgr.choosePairCandidate(16803)
+    await selectCandidate(mgr, 16803)
     const first = mgr.connect({ allowLaunch: true, userInitiated: true })
     await firstEntered
 
@@ -3441,9 +3450,14 @@ describe('ConnectionManager Windows Store target', () => {
       createPairingFlow,
     })
     expect(await manager.listPairCandidates({ allowLaunch: true })).toEqual([
-      { port: 16803, instanceId: 'store-instance', appVersion: null },
+      {
+        selectionId: expect.any(String),
+        port: 16803,
+        instanceId: 'store-instance',
+        appVersion: null,
+      },
     ])
-    manager.choosePairCandidate(16803)
+    await selectCandidate(manager, 16803)
     await manager.connect({ allowLaunch: true, userInitiated: true })
     expect(manager.getState()).toBe('connected')
     expect(store.discoverForFirstPair).toHaveBeenLastCalledWith(
@@ -3508,4 +3522,124 @@ describe('ConnectionManager Windows Store target', () => {
     expect(store.wakeForReconnect).not.toHaveBeenCalled()
     expect((await endpointConfigStore.get()).activeEndpointId).toBe('local')
   })
+})
+
+describe('picker handles bind candidate and lifecycle', () => {
+  it('rejects unknown, mismatched and reused handles', async () => {
+    const manager = makeManager({
+      discovery: {
+        discoverForFirstPair: async () => [
+          makeDiscoveryResult({ wsPort: 16803, instanceId: 'chosen' }),
+        ],
+      },
+    })
+    await expect(manager.choosePairCandidate(16803, 'forged')).rejects.toThrow(
+      'expired'
+    )
+    const [candidate] = await manager.listPairCandidates({ allowLaunch: false })
+    await expect(
+      manager.choosePairCandidate(16802, candidate!.selectionId)
+    ).rejects.toThrow('expired')
+    await expect(
+      manager.choosePairCandidate(16803, candidate!.selectionId)
+    ).rejects.toThrow('expired')
+    const [fresh] = await manager.listPairCandidates({ allowLaunch: false })
+    await manager.choosePairCandidate(16803, fresh!.selectionId)
+    await expect(
+      manager.choosePairCandidate(16803, fresh!.selectionId)
+    ).rejects.toThrow('expired')
+  })
+
+  it('rejects a stopped or expired list and a scan for another active target', async () => {
+    const discovery = makeFakeDiscoveryService({
+      discoverForFirstPair: async () => [
+        makeDiscoveryResult({ wsPort: 16803, instanceId: 'chosen' }),
+      ],
+    })
+    const manager = makeManager({ discoveryService: discovery })
+    await expect(
+      manager.listPairCandidates({
+        allowLaunch: false,
+        expectedEndpointId: WINDOWS_STORE_ENDPOINT_ID,
+      })
+    ).rejects.toThrow()
+    expect(discovery.discoverForFirstPair).not.toHaveBeenCalled()
+    const [stopped] = await manager.listPairCandidates({ allowLaunch: false })
+    manager.stop()
+    await expect(
+      manager.choosePairCandidate(16803, stopped!.selectionId)
+    ).rejects.toThrow('expired')
+    const [expired] = await manager.listPairCandidates({ allowLaunch: false })
+    const now = vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 300_001)
+    await expect(
+      manager.choosePairCandidate(16803, expired!.selectionId)
+    ).rejects.toThrow('expired')
+    now.mockRestore()
+  })
+
+  it('rejects replacement of the selected instance at the same port before fetching a nonce', async () => {
+    let instanceId = 'chosen'
+    const ensureNonce = vi.fn(async (candidate: DiscoveryResult) => ({
+      ...candidate,
+      nonce: 'unused',
+    }))
+    const onPairingRun = vi.fn()
+    const manager = makeManager({
+      discovery: {
+        discoverForFirstPair: async () => [
+          makeDiscoveryResult({ wsPort: 16803, instanceId }),
+        ],
+        ensureNonce,
+      },
+      onPairingRun,
+    })
+    await selectCandidate(manager, 16803)
+    instanceId = 'replacement'
+    await manager.clearGateAndStart()
+    expect(manager.getState()).toBe('disconnected')
+    expect(ensureNonce).not.toHaveBeenCalled()
+    expect(onPairingRun).not.toHaveBeenCalled()
+  })
+
+  it('only launches the currently selected Store scope from its explicit command', async () => {
+    const config = new EndpointConfigStore()
+    const wakeAndPoll = vi.fn(async () => [])
+    const store = {
+      ...makeFakeDiscoveryService({}),
+      wakeAndPoll,
+    } as unknown as DiscoveryService
+    const manager = makeManager({
+      endpointConfigStore: config,
+      windowsStoreDiscoveryService: store,
+    })
+    await expect(
+      manager.launchStoreForPairing(WINDOWS_STORE_ENDPOINT_ID)
+    ).rejects.toThrow()
+    expect(wakeAndPoll).not.toHaveBeenCalled()
+    await config.setForTest({
+      version: 4,
+      activeEndpointId: WINDOWS_STORE_ENDPOINT_ID,
+      servers: [],
+      cleanupTombstones: [],
+    })
+    await manager.launchStoreForPairing(WINDOWS_STORE_ENDPOINT_ID)
+    expect(wakeAndPoll).toHaveBeenCalledExactlyOnceWith(expect.any(AbortSignal))
+  })
+})
+
+it('claims the selected candidate before the selection message is acknowledged', async () => {
+  const manager = makeManager({
+    discovery: {
+      discoverForFirstPair: async () => [
+        makeDiscoveryResult({ wsPort: 16803, instanceId: 'chosen' }),
+      ],
+    },
+  })
+  const [candidate] = await manager.listPairCandidates({ allowLaunch: false })
+  const start = vi.spyOn(manager, 'clearGateAndStart')
+  await manager.choosePairCandidate(16803, candidate!.selectionId, true)
+  expect(start).toHaveBeenCalledTimes(1)
+  manager.stop()
+  await start.mock.results[0]?.value.catch(() => undefined)
+  expect(manager.getState()).toBe('disconnected')
 })

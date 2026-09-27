@@ -7,6 +7,7 @@ import type {
 } from '@/background/ConnectionManager'
 import {
   type EndpointConfig,
+  isLocalEndpointId,
   LOCAL_ENDPOINT_ID,
   type MotrixServerEndpoint,
 } from '@/background/EndpointConfigStore'
@@ -108,7 +109,7 @@ export function useIntegrationSettings() {
     config?.servers.find((server) => server.id === activeEndpointId) ?? null
   const paired =
     pairing?.endpointId === activeEndpointId ? pairing.paired : false
-  const isRemote = activeEndpointId !== LOCAL_ENDPOINT_ID
+  const isRemote = !isLocalEndpointId(activeEndpointId)
 
   useEffect(() => {
     if (

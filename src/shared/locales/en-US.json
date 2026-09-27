@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "Couldn’t copy diagnostics. Try again.",
       "storedPairingUnavailable": "Couldn’t connect to Motrix. Open it and try again; your saved pairing is retained."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store installation; paired separately.",
+    "launch": "Open Store app",
+    "pairingHelp": "Open Motrix from Microsoft Store, select its instance, then enter the code shown in that app. Your browser may ask before opening it.",
+    "unavailable": "This target requires a Windows desktop browser."
   }
 }

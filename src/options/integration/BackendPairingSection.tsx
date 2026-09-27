@@ -13,6 +13,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { SettingSection } from '@/options/components/SettingSection'
 
 interface BackendPairingSectionProps {
+  storeTarget?: boolean
   selectedEndpointName: string
   localBackendUnavailable: boolean
   isRemote: boolean
@@ -27,6 +28,7 @@ interface BackendPairingSectionProps {
 }
 
 export function BackendPairingSection({
+  storeTarget = false,
   selectedEndpointName,
   localBackendUnavailable,
   isRemote,
@@ -50,9 +52,19 @@ export function BackendPairingSection({
       {localBackendUnavailable ? (
         <Alert className="gap-y-1">
           <ServerIcon />
-          <AlertTitle>{t('options.pairing.serverRequiredTitle')}</AlertTitle>
+          <AlertTitle>
+            {t(
+              storeTarget
+                ? 'storeTarget.name'
+                : 'options.pairing.serverRequiredTitle'
+            )}
+          </AlertTitle>
           <AlertDescription>
-            {t('options.pairing.serverRequiredHelp')}
+            {t(
+              storeTarget
+                ? 'storeTarget.unavailable'
+                : 'options.pairing.serverRequiredHelp'
+            )}
           </AlertDescription>
         </Alert>
       ) : pairingLoading ? (
@@ -86,7 +98,11 @@ export function BackendPairingSection({
           <AlertDescription>
             {paired
               ? t('options.pairing.pairedHelp')
-              : t('options.pairing.localHelp')}
+              : t(
+                  storeTarget
+                    ? 'storeTarget.pairingHelp'
+                    : 'options.pairing.localHelp'
+                )}
           </AlertDescription>
         </Alert>
       )}

@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "No s'ha pogut copiar el diagnòstic. Torna-ho a provar.",
       "storedPairingUnavailable": "No s'ha pogut connectar amb Motrix. Obre'l i torna-ho a provar; es conserva la vinculació desada."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Versió de Microsoft Store, vinculada per separat.",
+    "launch": "Obre l’aplicació de Store",
+    "pairingHelp": "Obre el Motrix instal·lat des de Microsoft Store, selecciona’n la instància i introdueix el codi mostrat en aquesta aplicació. El navegador pot demanar confirmació per obrir-la.",
+    "unavailable": "Aquesta destinació requereix un navegador d’escriptori al Windows."
   }
 }

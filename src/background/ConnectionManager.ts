@@ -154,6 +154,8 @@ export interface ServerIdentity {
  * all, and only a `/discovery` sweep response carries `appVersion`.
  */
 export interface PairCandidate {
+  /** Ephemeral picker handle, never a server credential. */
+  selectionId: string
   port: number
   instanceId: string | null
   appVersion: string | null
@@ -401,6 +403,14 @@ interface EndpointIncarnation {
   readonly gate: ConnectionGate
 }
 
+interface PairCandidateChoice {
+  readonly port: number
+  readonly instanceId: string | null
+  readonly scope: EndpointIncarnation
+  readonly generation: number
+  readonly expiresAt: number
+}
+
 interface EndpointAttemptScope extends EndpointIncarnation {
   readonly generation: number
   readonly lease: BackendAttemptLease
@@ -499,7 +509,8 @@ export class ConnectionManager {
    *  consumed (and cleared) by the next first-pair attempt. `null` means
    *  "use whatever `discoverForFirstPair` ranks first", the existing
    *  default. */
-  private preferredCandidatePort: number | null = null
+  private preferredCandidate: PairCandidateChoice | null = null
+  private readonly candidateChoices = new Map<string, PairCandidateChoice>()
   private readonly bootstrap: NativeBootstrap
   private readonly client: WebSocketClient
   private readonly endpointConfigStore: EndpointConfigStore
@@ -861,14 +872,44 @@ export class ConnectionManager {
    *  `clearGateAndStart()` claims and clears it synchronously, before any
    *  await, so a stopped/superseded discovery cannot leak the choice into a
    *  later pairing session. */
-  choosePairCandidate(port: number): void {
-    this.preferredCandidatePort = port
+  async choosePairCandidate(
+    port: number,
+    selectionId: string,
+    start = false
+  ): Promise<void> {
+    const choice = this.candidateChoices.get(selectionId)
+    this.candidateChoices.delete(selectionId)
+    if (
+      !choice ||
+      choice.port !== port ||
+      choice.expiresAt <= Date.now() ||
+      choice.generation !== this.generation
+    ) {
+      throw new Error('pairing candidate expired; scan again')
+    }
+    const scope = await this.captureEndpointAttempt(choice.generation)
+    if (!isSameEndpointIncarnation(scope, choice.scope)) {
+      throw new StaleConnectionAttemptError()
+    }
+    if (
+      start &&
+      (this.explicitConnectFlight !== null || this.readyFlight !== null)
+    ) {
+      throw new Error('a connection attempt is already in progress')
+    }
+    this.preferredCandidate = choice
+    // Claim the choice before resolving the message handler. No later task
+    // may clear it and turn this click into an unselected pairing elsewhere.
+    if (start)
+      void this.clearGateAndStart().catch(() => {
+        log.warn('candidate pairing intent was cancelled before connection')
+      })
   }
 
-  private takePreferredCandidatePort(): number | null {
-    const port = this.preferredCandidatePort
-    this.preferredCandidatePort = null
-    return port
+  private takePreferredCandidate(): PairCandidateChoice | null {
+    const choice = this.preferredCandidate
+    this.preferredCandidate = null
+    return choice
   }
 
   /**
@@ -878,18 +919,54 @@ export class ConnectionManager {
    * `choosePairCandidate` + `connect()`/`clearGateAndStart()` does that.
    */
   async listPairCandidates(opts: {
+    expectedEndpointId?: string
     allowLaunch: boolean
   }): Promise<PairCandidate[]> {
     const generation = this.generation
     const scope = await this.captureEndpointAttempt(generation)
+    if (
+      opts.expectedEndpointId !== undefined &&
+      opts.expectedEndpointId !== scope.activeEndpointId
+    )
+      throw new StaleConnectionAttemptError()
     const { discovery } = this.localTransport(scope.authority)
     const results = await discovery.discoverForFirstPair(opts)
     this.ensureCurrentAttempt(generation)
-    return results.map((r: DiscoveryResult) => ({
-      port: r.wsPort,
-      instanceId: r.instanceId ?? null,
-      appVersion: r.appVersion ?? null,
-    }))
+    return results.map((r: DiscoveryResult) => {
+      const selectionId = crypto.randomUUID()
+      this.candidateChoices.set(selectionId, {
+        port: r.wsPort,
+        instanceId: r.instanceId ?? null,
+        scope,
+        generation,
+        expiresAt: Date.now() + 5 * 60_000,
+      })
+      while (this.candidateChoices.size > 64) {
+        const oldest = this.candidateChoices.keys().next().value
+        if (oldest !== undefined) this.candidateChoices.delete(oldest)
+      }
+      return {
+        selectionId,
+        port: r.wsPort,
+        instanceId: r.instanceId ?? null,
+        appVersion: r.appVersion ?? null,
+      }
+    })
+  }
+
+  /** Called only by the explicit Store launch button, never by a scan. */
+  async launchStoreForPairing(expectedEndpointId: string): Promise<void> {
+    const generation = this.generation
+    const scope = await this.captureEndpointAttempt(generation)
+    if (
+      scope.activeEndpointId !== expectedEndpointId ||
+      scope.authority.kind !== 'local' ||
+      scope.authority.target !== 'windows-store'
+    )
+      throw new StaleConnectionAttemptError()
+    const signal = this.attemptAbort.signal
+    await this.windowsStoreDiscoveryService.wakeAndPoll(signal)
+    this.ensureCurrentAttempt(generation)
   }
 
   /** Capabilities reported by the server during initialize handshake; null
@@ -1398,7 +1475,7 @@ export class ConnectionManager {
     allowFirstPair?: boolean
     intent?: ConnectionIntent
   }): Promise<void> {
-    await this.connectExpected(opts, null, this.takePreferredCandidatePort())
+    await this.connectExpected(opts, null, this.takePreferredCandidate())
   }
 
   private async connectExpected(
@@ -1409,7 +1486,7 @@ export class ConnectionManager {
       intent?: ConnectionIntent
     },
     expected: EndpointIncarnation | null,
-    preferredCandidatePort: number | null = null
+    preferredCandidate: PairCandidateChoice | null = null
   ): Promise<void> {
     if (this.state !== 'disconnected' && this.state !== 'denied') {
       log.warn('connect called in state', this.state)
@@ -1501,7 +1578,7 @@ export class ConnectionManager {
         allowLaunch,
         opts.userInitiated,
         attemptScope,
-        preferredCandidatePort,
+        preferredCandidate,
         opts.allowFirstPair ?? opts.userInitiated
       )
     } catch (e) {
@@ -1600,7 +1677,7 @@ export class ConnectionManager {
     // now belongs only to this lifecycle intent; if the intent is stale or
     // cannot start, the choice is discarded rather than leaking into a later
     // unrelated pairing attempt.
-    const preferredCandidatePort = this.takePreferredCandidatePort()
+    const preferredCandidate = this.takePreferredCandidate()
     // An attempt awaiting the user's code IS the freshest state a restart
     // could produce; every surface polls the same prompt, so keep it. A
     // restart here would dismiss what the user is reading and burn another
@@ -1610,7 +1687,17 @@ export class ConnectionManager {
     const revocationCleanup = this.pendingRevocationCleanup
     if (revocationCleanup !== null) await revocationCleanup
     const intentGeneration = this.generation
+    if (
+      preferredCandidate !== null &&
+      preferredCandidate.generation !== intentGeneration
+    )
+      throw new StaleConnectionAttemptError()
     const intent = await this.captureEndpointAttempt(intentGeneration)
+    if (
+      preferredCandidate !== null &&
+      !isSameEndpointIncarnation(intent, preferredCandidate.scope)
+    )
+      throw new StaleConnectionAttemptError()
     await this.runEndpointMutation(intent, () => intent.gate.clear())
     if (this.state !== 'disconnected' && this.state !== 'denied') {
       this.stopCurrentAttempt()
@@ -1623,7 +1710,7 @@ export class ConnectionManager {
         intent: 'first-pair',
       },
       intent,
-      preferredCandidatePort
+      preferredCandidate
     )
   }
 
@@ -1645,7 +1732,8 @@ export class ConnectionManager {
     this.attemptAbort.abort()
     this.attemptAbort = new AbortController()
     this.generation += 1
-    this.preferredCandidatePort = null
+    this.preferredCandidate = null
+    this.candidateChoices.clear()
     this.pendingPairingCode = null
     this.closePreAuthChannel()
     try {
@@ -1694,7 +1782,7 @@ export class ConnectionManager {
     allowLaunch: boolean,
     userInitiated: boolean,
     scope: EndpointAttemptScope,
-    preferredCandidatePort: number | null,
+    preferredCandidate: PairCandidateChoice | null,
     allowFirstPair: boolean
   ): Promise<void> {
     const { generation, endpointConfig } = scope
@@ -1720,7 +1808,7 @@ export class ConnectionManager {
         allowLaunch,
         userInitiated,
         scope,
-        preferredCandidatePort,
+        preferredCandidate,
         allowFirstPair
       )
       return
@@ -1916,7 +2004,7 @@ export class ConnectionManager {
     allowLaunch: boolean,
     userInitiated: boolean,
     scope: EndpointAttemptScope,
-    preferredCandidatePort: number | null,
+    preferredCandidate: PairCandidateChoice | null,
     allowFirstPair: boolean
   ): Promise<void> {
     const { generation } = scope
@@ -2118,7 +2206,7 @@ export class ConnectionManager {
       allowLaunch,
       scope,
       principal,
-      preferredCandidatePort
+      preferredCandidate
     )
   }
 
@@ -2133,10 +2221,16 @@ export class ConnectionManager {
     allowLaunch: boolean,
     scope: EndpointAttemptScope,
     principal: Principal,
-    preferredCandidatePort: number | null
+    preferredCandidate: PairCandidateChoice | null
   ): Promise<void> {
     const { generation } = scope
     const { pins, discovery } = this.localTransport(scope.authority)
+    if (
+      preferredCandidate !== null &&
+      !isSameEndpointIncarnation(scope, preferredCandidate.scope)
+    ) {
+      throw new StaleConnectionAttemptError()
+    }
     if (this.opts.pairingCodeSource === undefined) {
       throw new Error(
         'first-pair requires a pairing code source; none configured'
@@ -2155,7 +2249,7 @@ export class ConnectionManager {
     if (
       scope.authority.kind === 'local' &&
       scope.authority.target === 'windows-store' &&
-      preferredCandidatePort === null
+      preferredCandidate === null
     ) {
       throw new Error(
         'select a Motrix instance before pairing the Store target'
@@ -2164,18 +2258,28 @@ export class ConnectionManager {
     const candidates = await discovery.discoverForFirstPair({
       allowLaunch,
       bindingPub: bindingKeypair.pub,
-      ...(preferredCandidatePort === null ? {} : { preferredCandidatePort }),
+      ...(preferredCandidate === null
+        ? {}
+        : { preferredCandidatePort: preferredCandidate.port }),
     })
     this.ensureCurrentAttempt(generation)
     const candidate =
-      preferredCandidatePort === null
+      preferredCandidate === null
         ? candidates[0]
-        : candidates.find((c) => c.wsPort === preferredCandidatePort)
+        : candidates.find((c) => c.wsPort === preferredCandidate.port)
     if (candidate === undefined) {
       throw new Error('no Motrix instance found to pair with')
     }
     const preflighted = await discovery.preflightCompatibility(candidate)
     this.ensureCurrentAttempt(generation)
+    if (
+      preferredCandidate !== null &&
+      (!isSameEndpointIncarnation(scope, preferredCandidate.scope) ||
+        (preferredCandidate.instanceId !== null &&
+          preflighted.instanceId !== preferredCandidate.instanceId))
+    ) {
+      throw new Error('pairing candidate changed; scan again')
+    }
     this.assertBackendCompatibility(preflighted)
 
     const withNonce = await discovery.ensureNonce(preflighted)

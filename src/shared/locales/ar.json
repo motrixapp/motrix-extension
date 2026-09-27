@@ -538,5 +538,12 @@
       "diagnosticsCopyFailed": "تعذّر نسخ بيانات التشخيص. حاول مجددًا.",
       "storedPairingUnavailable": "تعذّر الاتصال بـ Motrix. افتحه وحاول مجددًا؛ سيُحتفظ بالاقتران المحفوظ."
     }
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "نسخة Microsoft Store، تُقرن بشكل منفصل.",
+    "launch": "فتح تطبيق Store",
+    "pairingHelp": "افتح Motrix المثبّت من Microsoft Store، واختر نسخته قيد التشغيل، ثم أدخل الرمز المعروض في ذلك التطبيق. قد يطلب المتصفح تأكيدًا قبل فتحه.",
+    "unavailable": "تتطلب هذه الوجهة متصفح سطح مكتب على Windows."
   }
 }
