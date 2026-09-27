@@ -174,7 +174,7 @@ describe('transport e2e — ConnectionManager ↔ in-process ws server', () => {
   it('rejects a remote bridge before opening its real socket', async () => {
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'e2e',
       servers: [
         {
@@ -208,7 +208,7 @@ describe('transport e2e — ConnectionManager ↔ in-process ws server', () => {
     })
     const endpointConfigStore = new EndpointConfigStore()
     await endpointConfigStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'e2e',
       servers: [
         {

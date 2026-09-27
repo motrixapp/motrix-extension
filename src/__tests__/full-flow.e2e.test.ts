@@ -45,7 +45,7 @@ async function makeRemoteEndpoint(port: number): Promise<{
 }> {
   const endpointConfigStore = new EndpointConfigStore()
   await endpointConfigStore.setForTest({
-    version: 3,
+    version: 4,
     activeEndpointId: 'e2e',
     servers: [
       {

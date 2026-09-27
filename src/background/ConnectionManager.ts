@@ -31,10 +31,7 @@ import {
   EndpointCatalogService,
 } from '@/background/EndpointCatalogService'
 import type { ResolvedEndpointConfig } from '@/background/EndpointConfigStore'
-import {
-  EndpointConfigStore,
-  LOCAL_ENDPOINT_ID,
-} from '@/background/EndpointConfigStore'
+import { EndpointConfigStore } from '@/background/EndpointConfigStore'
 import {
   EnvelopeMessageReader,
   EnvelopeMessageWriter,
@@ -42,8 +39,8 @@ import {
 import { log } from '@/background/log'
 import {
   type BackendAuthority,
-  LOCAL_BACKEND_AUTHORITY,
   type RemoteBackendAuthority,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 import {
   deriveRemoteBridgeRoute,
@@ -243,6 +240,8 @@ export interface ConnectionManagerOptions {
   /** §4 discovery chain for the local (MBP1) path. Defaults to a real
    *  `DiscoveryService` adapted onto `bootstrap` — see the constructor. */
   discoveryService?: DiscoveryService
+  windowsStorePinStore?: PinStore
+  windowsStoreDiscoveryService?: DiscoveryService
   /** Direct HTTP(S) discovery/nonce adapter for configured WS/WSS Servers. */
   remoteDiscoveryService?: RemoteDiscoveryService
   /** §7.3 first-pair backoff for the local (MBP1) path. */
@@ -557,6 +556,7 @@ export class ConnectionManager {
   /** Monotonic ownership token for async connection work. stop() and every
    *  accepted connect() invalidate all earlier continuations and callbacks. */
   private generation = 0
+  private attemptAbort = new AbortController()
   /** One user-authorized connection lifecycle at a time. Endpoint activation,
    *  the Options Pair button, popup Connect, and an explicit handoff can all
    *  express the same intent before `connectOnce` has advanced the visible
@@ -572,6 +572,8 @@ export class ConnectionManager {
   private readonly credentialStore: CredentialStore
   private readonly pinStore: PinStore
   private readonly discoveryService: DiscoveryService
+  private readonly windowsStorePinStore: PinStore
+  private readonly windowsStoreDiscoveryService: DiscoveryService
   private readonly remoteDiscoveryService: RemoteDiscoveryService
   private readonly firstPairBackoff: FirstPairBackoff
   private readonly createFrameChannel: () => Mbp1FrameChannel
@@ -670,6 +672,14 @@ export class ConnectionManager {
             }
           },
         },
+      })
+    this.windowsStorePinStore =
+      opts.windowsStorePinStore ?? new PinStore(WINDOWS_STORE_BACKEND_AUTHORITY)
+    this.windowsStoreDiscoveryService =
+      opts.windowsStoreDiscoveryService ??
+      new DiscoveryService({
+        authority: WINDOWS_STORE_BACKEND_AUTHORITY,
+        pins: this.windowsStorePinStore,
       })
     this.remoteDiscoveryService =
       opts.remoteDiscoveryService ?? new RemoteDiscoveryService()
@@ -870,7 +880,11 @@ export class ConnectionManager {
   async listPairCandidates(opts: {
     allowLaunch: boolean
   }): Promise<PairCandidate[]> {
-    const results = await this.discoveryService.discoverForFirstPair(opts)
+    const generation = this.generation
+    const scope = await this.captureEndpointAttempt(generation)
+    const { discovery } = this.localTransport(scope.authority)
+    const results = await discovery.discoverForFirstPair(opts)
+    this.ensureCurrentAttempt(generation)
     return results.map((r: DiscoveryResult) => ({
       port: r.wsPort,
       instanceId: r.instanceId ?? null,
@@ -1188,15 +1202,34 @@ export class ConnectionManager {
     this.presentationEndpointIncarnation = incarnation
   }
 
+  private localTransport(authority: BackendAuthority): {
+    pins: PinStore
+    discovery: DiscoveryService
+  } {
+    if (authority.kind !== 'local') throw new StaleConnectionAttemptError()
+    return authority.target === 'windows-store'
+      ? {
+          pins: this.windowsStorePinStore,
+          discovery: this.windowsStoreDiscoveryService,
+        }
+      : { pins: this.pinStore, discovery: this.discoveryService }
+  }
+
   private endpointIncarnationFromAttempt(
     attempt: CurrentBackendAttempt
   ): EndpointIncarnation {
     if (attempt.authority.kind === 'local') {
       return {
-        activeEndpointId: LOCAL_ENDPOINT_ID,
-        endpointConfig: { mode: 'local' },
-        authority: LOCAL_BACKEND_AUTHORITY,
-        gate: this.gate,
+        activeEndpointId: attempt.endpointId,
+        endpointConfig:
+          attempt.authority.target === 'windows-store'
+            ? { mode: 'local', target: 'windows-store' }
+            : { mode: 'local' },
+        authority: attempt.authority,
+        gate:
+          attempt.authority.target === 'windows-store'
+            ? ConnectionGate.forAuthority(attempt.authority)
+            : this.gate,
       }
     }
     if (attempt.canonicalWsBase === null)
@@ -1386,6 +1419,8 @@ export class ConnectionManager {
     // Claim ownership before the first await. Two callers can both observe
     // `disconnected`; the newer generation wins and the older gate read is
     // discarded when it resumes.
+    this.attemptAbort.abort()
+    this.attemptAbort = new AbortController()
     const generation = ++this.generation
     if (this.state === 'denied') {
       this.lastErrorMessage = null
@@ -1450,8 +1485,20 @@ export class ConnectionManager {
       this.lastErrorReason = null
       this.lastErrorRetryAtMs = null
 
+      const storeTarget =
+        attemptScope.authority.kind === 'local' &&
+        attemptScope.authority.target === 'windows-store'
+      // URI activation can display a browser confirmation. Background
+      // takeover and task-list refresh must not acquire launch permission
+      // merely because download preparation is allowed to recover a session.
+      const allowLaunch =
+        opts.allowLaunch &&
+        (!storeTarget ||
+          (opts.userInitiated &&
+            opts.intent !== 'automatic-download' &&
+            opts.intent !== 'view-tasks'))
       await this.connectOnce(
-        opts.allowLaunch,
+        allowLaunch,
         opts.userInitiated,
         attemptScope,
         preferredCandidatePort,
@@ -1595,6 +1642,8 @@ export class ConnectionManager {
     // Invalidate continuations and callbacks before close(), which may fire a
     // close callback synchronously in test doubles (and asynchronously in the
     // browser).
+    this.attemptAbort.abort()
+    this.attemptAbort = new AbortController()
     this.generation += 1
     this.preferredCandidatePort = null
     this.pendingPairingCode = null
@@ -1871,6 +1920,7 @@ export class ConnectionManager {
     allowFirstPair: boolean
   ): Promise<void> {
     const { generation } = scope
+    const { pins, discovery } = this.localTransport(scope.authority)
     const principal: Principal = {
       browser: this.opts.clientInfo.browser,
       verifiedOrigin: computeVerifiedOrigin(),
@@ -1908,8 +1958,12 @@ export class ConnectionManager {
       for (const credential of order) {
         const discovered =
           awakened === null
-            ? await this.discoveryService.discoverForReconnect(
-                credential.credentialId
+            ? await discovery.discoverForReconnect(
+                credential.credentialId,
+                ...(scope.authority.kind === 'local' &&
+                scope.authority.target === 'windows-store'
+                  ? [credential.authenticatedInstanceId ?? undefined]
+                  : [])
               )
             : (awakened.get(credential.credentialId) ?? null)
         this.ensureCurrentAttempt(generation)
@@ -1925,9 +1979,13 @@ export class ConnectionManager {
         // §12: prefer the pin's instanceId (proven by an earlier verified
         // confirmB/reconnectAccept) over the untrusted §4.1 discovery hint —
         // the hint is only a fallback for when no pin exists yet.
-        const pin = await this.pinStore.get(credential.credentialId)
+        const pin = await pins.get(credential.credentialId)
         this.ensureCurrentAttempt(generation)
-        const instanceId = pin?.instanceId ?? discovered.instanceId
+        const instanceId =
+          scope.authority.kind === 'local' &&
+          scope.authority.target === 'windows-store'
+            ? (credential.authenticatedInstanceId ?? undefined)
+            : (pin?.instanceId ?? discovered.instanceId)
         if (instanceId === undefined) continue
 
         const url = reconnectUrl(discovered.wsPort)
@@ -1944,7 +2002,7 @@ export class ConnectionManager {
           const flow = this.createReconnectFlow({
             channel,
             creds: scope.credentials,
-            pins: this.pinStore,
+            pins: pins,
             isCurrent: () => this.isCurrentAttempt(generation),
           })
           this.connectionPhase = 'authenticating'
@@ -2018,9 +2076,22 @@ export class ConnectionManager {
       )
         break
       this.connectionPhase = 'waking'
-      awakened = await this.discoveryService.wakeForReconnect(
-        order.map((c) => c.credentialId)
-      )
+      const credentialIds = order.map((c) => c.credentialId)
+      awakened =
+        scope.authority.kind === 'local' &&
+        scope.authority.target === 'windows-store'
+          ? await discovery.wakeForReconnect(
+              credentialIds,
+              new Map(
+                order.flatMap((c) =>
+                  c.authenticatedInstanceId
+                    ? [[c.credentialId, c.authenticatedInstanceId] as const]
+                    : []
+                )
+              ),
+              this.attemptAbort.signal
+            )
+          : await discovery.wakeForReconnect(credentialIds)
       this.ensureCurrentAttempt(generation)
       if (awakened.size === 0) break
     }
@@ -2065,6 +2136,7 @@ export class ConnectionManager {
     preferredCandidatePort: number | null
   ): Promise<void> {
     const { generation } = scope
+    const { pins, discovery } = this.localTransport(scope.authority)
     if (this.opts.pairingCodeSource === undefined) {
       throw new Error(
         'first-pair requires a pairing code source; none configured'
@@ -2080,7 +2152,16 @@ export class ConnectionManager {
     // forwarded to PairingFlow only if the host actually returned a ticket.
     const bindingKeypair: BindingKeypair = generateBindingKeypair()
 
-    const candidates = await this.discoveryService.discoverForFirstPair({
+    if (
+      scope.authority.kind === 'local' &&
+      scope.authority.target === 'windows-store' &&
+      preferredCandidatePort === null
+    ) {
+      throw new Error(
+        'select a Motrix instance before pairing the Store target'
+      )
+    }
+    const candidates = await discovery.discoverForFirstPair({
       allowLaunch,
       bindingPub: bindingKeypair.pub,
       ...(preferredCandidatePort === null ? {} : { preferredCandidatePort }),
@@ -2093,12 +2174,11 @@ export class ConnectionManager {
     if (candidate === undefined) {
       throw new Error('no Motrix instance found to pair with')
     }
-    const preflighted =
-      await this.discoveryService.preflightCompatibility(candidate)
+    const preflighted = await discovery.preflightCompatibility(candidate)
     this.ensureCurrentAttempt(generation)
     this.assertBackendCompatibility(preflighted)
 
-    const withNonce = await this.discoveryService.ensureNonce(preflighted)
+    const withNonce = await discovery.ensureNonce(preflighted)
     this.ensureCurrentAttempt(generation)
     if (withNonce === null || withNonce.nonce === undefined) {
       throw new Error('could not obtain a §4.2 pairing nonce')
@@ -2121,7 +2201,7 @@ export class ConnectionManager {
       const flow = this.createPairingFlow({
         channel,
         creds: scope.credentials,
-        pins: this.pinStore,
+        pins: pins,
         backoff: this.firstPairBackoff,
         isCurrent: () => this.isCurrentAttempt(generation),
       })
@@ -2614,7 +2694,9 @@ export class ConnectionManager {
           ? async (revokedIds) => {
               for (const credentialId of revokedIds) {
                 try {
-                  await this.pinStore.clear(credentialId)
+                  await this.localTransport(scope.authority).pins.clear(
+                    credentialId
+                  )
                 } catch {
                   // A local pin is a routing hint, not authority.
                 }

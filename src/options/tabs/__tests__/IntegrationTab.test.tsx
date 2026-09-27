@@ -35,7 +35,7 @@ const serverB = {
 }
 
 let config = {
-  version: 3 as const,
+  version: 4 as const,
   activeEndpointId: LOCAL_ENDPOINT_ID,
   servers: [serverA, serverB],
   cleanupTombstones: [],
@@ -75,7 +75,7 @@ function messagesOfKind(kind: string): MessageEnvelope[] {
 
 beforeEach(() => {
   config = {
-    version: 3,
+    version: 4,
     activeEndpointId: LOCAL_ENDPOINT_ID,
     servers: [serverA, serverB],
     cleanupTombstones: [],

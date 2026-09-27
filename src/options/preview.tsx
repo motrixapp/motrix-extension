@@ -4,7 +4,7 @@ import { resolveLocale } from '@/shared/supportedLocales'
 import { TAKEOVER_DEFAULT, type TakeoverSettings } from '@/shared/takeover'
 
 type PreviewEndpoint = {
-  version: 3
+  version: 4
   activeEndpointId: string
   servers: Array<{
     id: string
@@ -21,7 +21,7 @@ type PreviewEndpoint = {
 }
 
 let previewEndpoint: PreviewEndpoint = {
-  version: 3,
+  version: 4,
   activeEndpointId: 'studio',
   servers: [
     {

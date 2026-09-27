@@ -14,7 +14,7 @@ import type { Browser } from '@/shared/browser'
 import { LOG_LEVEL_KEY } from '@/shared/logLevel'
 
 const local: EndpointConfig = {
-  version: 3,
+  version: 4,
   activeEndpointId: 'local',
   servers: [],
   cleanupTombstones: [],
@@ -301,4 +301,25 @@ describe('native-host findings', () => {
       detail: expect.stringContaining('Native host answered'),
     })
   })
+})
+
+it('skips the default native host for the Store target while keeping read-only loopback diagnostics', async () => {
+  const storeConfig = { ...local, activeEndpointId: 'local-windows-store' }
+  const result = await runConnectionDiagnostics(
+    { ...deps(), getConfig: async () => storeConfig },
+    storeConfig.activeEndpointId
+  )
+  expect(find(result, 'native-host').status).toBe('skip')
+  expect(
+    result.checks.some((check) => check.id === 'extension-allowlist')
+  ).toBe(false)
+  expect(NativeBootstrap.prototype.discover).not.toHaveBeenCalled()
+  expect(
+    result.checks.filter((check) => check.id.startsWith('discovery:'))
+  ).toHaveLength(5)
+  expect(
+    vi
+      .mocked(fetch)
+      .mock.calls.every(([url]) => String(url).endsWith('/discovery'))
+  ).toBe(true)
 })
