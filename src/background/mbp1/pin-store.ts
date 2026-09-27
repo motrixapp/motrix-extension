@@ -49,6 +49,7 @@ interface StoredPins {
 type StoredPinsRead = { kind: 'known'; set: StoredPins } | { kind: 'future' }
 
 const STORAGE_KEY = 'motrix.mbp1.pins'
+const WINDOWS_STORE_STORAGE_KEY = 'motrix.mbp1.pins.windows-store'
 
 /**
  * A bound on the persisted `instanceId`, whose only job is to stop a corrupted
@@ -165,12 +166,13 @@ export class RemotePinStoreUnsupportedError extends Error {
   }
 }
 
-// The storage key is global to the extension realm, so serialization must be
+// The storage keys are global to the extension realm, so serialization must be
 // global too. This also keeps a future-version guard atomic with the mutation
 // that follows it when an accidental second PinStore instance exists.
 const enqueuePinOperation = createOperationQueue()
 
 export class PinStore {
+  private readonly storageKey: string
   /**
    * Pins are a loopback candidate optimization and therefore local-only.
    * A remote branch must model the absence of this dependency explicitly; it
@@ -179,6 +181,10 @@ export class PinStore {
   constructor(authority: BackendAuthority = LOCAL_BACKEND_AUTHORITY) {
     assertBackendAuthority(authority)
     if (authority.kind !== 'local') throw new RemotePinStoreUnsupportedError()
+    this.storageKey =
+      authority.target === 'windows-store'
+        ? WINDOWS_STORE_STORAGE_KEY
+        : STORAGE_KEY
   }
 
   /** The pin for `credentialId`, or `null` if none is stored or it is unreadable. */
@@ -250,8 +256,10 @@ export class PinStore {
   }
 
   private async read(forMutation: boolean): Promise<StoredPins | null> {
-    const obj = await browser.storage.local.get(STORAGE_KEY)
-    const stored = readStoredPins((obj as Record<string, unknown>)[STORAGE_KEY])
+    const obj = await browser.storage.local.get(this.storageKey)
+    const stored = readStoredPins(
+      (obj as Record<string, unknown>)[this.storageKey]
+    )
     if (stored.kind === 'future') {
       if (forMutation) throw new UnsupportedPinStoreVersionError()
       return null
@@ -261,10 +269,10 @@ export class PinStore {
 
   private async write(set: StoredPins): Promise<void> {
     if (Object.keys(set.pins).length === 0) {
-      await browser.storage.local.remove(STORAGE_KEY)
+      await browser.storage.local.remove(this.storageKey)
       return
     }
-    await browser.storage.local.set({ [STORAGE_KEY]: set })
+    await browser.storage.local.set({ [this.storageKey]: set })
   }
 
   /**
@@ -273,6 +281,6 @@ export class PinStore {
    * ones would both read the pre-mutation snapshot and the later write would
    * clobber the earlier — losing a pin for a credential that is still live.
    * The module-level queue intentionally serializes accidental multiple store
-   * instances because every instance addresses this same local-only key.
+   * instances that address the same installation's local-only key.
    */
 }

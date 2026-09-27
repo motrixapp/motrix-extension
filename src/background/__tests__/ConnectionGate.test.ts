@@ -3,6 +3,7 @@ import { ConnectionGate } from '@/background/ConnectionGate'
 import {
   backendAuthorityKey,
   createRemoteBackendAuthority,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 
 declare const browser: {
@@ -39,6 +40,21 @@ function remote(id: string, host: string): ConnectionGate {
 }
 
 describe('ConnectionGate', () => {
+  it('keeps denial and clearing independent for the Windows Store target', async () => {
+    const local = new ConnectionGate()
+    const store = ConnectionGate.forAuthority(WINDOWS_STORE_BACKEND_AUTHORITY)
+    await local.pauseDenied('default denied')
+    expect(await store.shouldAutoConnect()).toBe(true)
+    await store.pauseDenied('store denied')
+    await local.clear()
+    expect(await local.shouldAutoConnect()).toBe(true)
+    expect(await store.shouldAutoConnect()).toBe(false)
+    expect(
+      (await ConnectionGate.forAuthority(WINDOWS_STORE_BACKEND_AUTHORITY).get())
+        .lastError
+    ).toBe('store denied')
+  })
+
   it('defaults to open when nothing is stored', async () => {
     const gate = new ConnectionGate()
     expect(await gate.shouldAutoConnect()).toBe(true)
@@ -156,19 +172,28 @@ describe('ConnectionGate', () => {
     ).toBe(2)
   })
 
-  it('keeps a legacy denial local when a remote gate triggers migration first', async () => {
-    backing['motrix.connectionGate'] = {
-      reason: 'denied',
-      pausedUntil: Number.POSITIVE_INFINITY,
-      lastError: 'legacy local denial',
-    }
-    const local = new ConnectionGate()
-    const server = remote('server', 'server.example')
+  it.each([
+    ['remote', () => remote('server', 'server.example')],
+    [
+      'Store',
+      () => ConnectionGate.forAuthority(WINDOWS_STORE_BACKEND_AUTHORITY),
+    ],
+  ] as const)(
+    'keeps a legacy denial local when a %s gate triggers migration first',
+    async (_name, makeGate) => {
+      backing['motrix.connectionGate'] = {
+        reason: 'denied',
+        pausedUntil: Number.POSITIVE_INFINITY,
+        lastError: 'legacy local denial',
+      }
+      const local = new ConnectionGate()
+      const server = makeGate()
 
-    expect(await server.shouldAutoConnect()).toBe(true)
-    expect(await local.shouldAutoConnect()).toBe(false)
-    expect((await local.get()).lastError).toBe('legacy local denial')
-  })
+      expect(await server.shouldAutoConnect()).toBe(true)
+      expect(await local.shouldAutoConnect()).toBe(false)
+      expect((await local.get()).lastError).toBe('legacy local denial')
+    }
+  )
 
   it('orders concurrent clear and replace operations without lost updates', async () => {
     const server = remote('server', 'server.example')
