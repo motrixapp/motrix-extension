@@ -3,6 +3,7 @@ import { parseRemoteEndpoint } from '@/shared/endpoint'
 import { SUPPORTED_LOCALES } from '@/shared/supportedLocales'
 
 export const takeoverFormSchema = z.object({
+  downloadMode: z.enum(['confirm', 'direct']),
   enabled: z.boolean(),
   unknownSizeAction: z.enum(['chrome', 'motrix']),
   thresholdMB: z.string().refine((s) => s.trim() === '' || Number(s) >= 0, {

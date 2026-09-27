@@ -2,6 +2,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('@/popup/DownloadDirectoryField', () => ({
+  DownloadDirectoryField: () => null,
+}))
+
 vi.mock('@/background/MessageBus', () => ({ send: vi.fn() }))
 
 import * as MessageBus from '@/background/MessageBus'
@@ -36,7 +40,7 @@ describe('QuickAddTaskDialog', () => {
     const dialog = screen.getByRole('dialog', {
       name: i18n.t('popup.quickAdd.title'),
     })
-    expect(dialog.className).toContain('max-w-[360px]')
+    expect(dialog.className).toContain('max-w-[376px]')
 
     const input = screen.getByRole('textbox', {
       name: i18n.t('popup.quickAdd.inputLabel'),

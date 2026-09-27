@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from '@/popup/App'
 import { i18n } from '@/shared/i18n'
+import { defaultTaskOptions } from '@/shared/taskOptions'
 
 declare const browser: {
   runtime: {
@@ -517,6 +518,7 @@ describe('Popup App', () => {
       kind: 'bg.createManualTask',
       payload: {
         input: 'https://example.com/new-file.zip',
+        options: defaultTaskOptions(navigator.userAgent),
         idempotencyKey: expect.any(String),
       },
     })

@@ -213,7 +213,13 @@
       "title": "Aufgabenbereich",
       "openAfterSubmit": "Aufgabenbereich nach dem Hinzufügen eines Downloads öffnen",
       "description": "Öffnet den Aufgabenbereich, sobald ein Download zu Motrix hinzugefügt wurde, auch per Rechtsklick oder automatischer Übernahme. Bei mehreren Downloads kurz hintereinander wird er nur einmal geöffnet.",
-      "unsupported": "Erfordert Chrome / Edge 127+ oder Firefox 149+."
+      "unsupported": "Ihre Browserversion ist zu alt, um das Erweiterungsfenster automatisch zu öffnen. Bitte aktualisieren Sie auf Chrome / Edge 127+ oder Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Vor dem Download fragen",
+      "confirm": "Vor dem Download fragen",
+      "direct": "Direkt an Motrix senden",
+      "description": "Bei Downloads per Rechtsklick und abgefangenen Downloads automatisch ein Formular öffnen. Ausgeschaltet wird direkt an Motrix gesendet."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix antwortet nicht. Bitte erneut verbinden.",
       "stale": "Die zuletzt verfügbaren Daten werden angezeigt.",
       "added": "Hinzugefügte Downloads: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Dateiname",
+      "filenameAuto": "Automatisch",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (überschreiben)",
+      "authorization": "Authorization",
+      "extraHeaders": "Zusätzliche Header",
+      "browserCookies": "Cookies dieser Website verwenden",
+      "advanced": "Anfrageoptionen",
+      "defaultDirectory": "Verwendet den Standard-Downloadordner von Motrix.",
+      "invalidOptions": "Dateiname und Header prüfen. Pro Zeile Name: Wert; keine eigenen Felder wiederholen.",
+      "directory": "Speichern unter",
+      "directoryRefresh": "Aktualisieren",
+      "directoryDefault": "Standardordner",
+      "directoryFavorites": "Bevorzugte Ordner",
+      "directoryRecent": "Zuletzt verwendete Ordner",
+      "directoryLoading": "Ordner werden geladen…",
+      "directoryAutomatic": "Motrix-Standard verwenden",
+      "directoryUnsupported": "Aktualisiere Motrix, um einen Ordner auszuwählen.",
+      "directoryOffline": "Verbinde dich mit Motrix und aktualisiere die Liste zur Ordnerauswahl.",
+      "directoryHint": "Die Ordner befinden sich auf dem ausgewählten Motrix-Host. Favoriten verwaltest du in Motrix.",
+      "directoryUnavailable": "Der Ordner ist nicht verfügbar oder das Backend hat sich geändert. Aktualisiere die Liste und wähle erneut oder verwende den Standard."
+    },
+    "confirmDownload": {
+      "description": "Vor der ersten Downloadanfrage prüfen. Temporäre Links können beim Warten ablaufen.",
+      "expires": "Der Entwurf läuft in {{seconds}} Sekunden ab. Öffnen Sie die Erweiterung erneut, um nach dem Schließen fortzufahren.",
+      "browser": "Im Browser laden",
+      "browserHint": "Browser-Downloads verwenden die Dateinamen- und Anfrageeinstellungen des Browsers.",
+      "unavailable": "Bestätigung konnte nicht geöffnet werden. Schließen Sie das offene Downloadformular ab und versuchen Sie es erneut. Kein Download wurde gestartet.",
+      "close": "Schließen",
+      "interceptedDescription": "Der Browser hat den Download bereits gestartet. Motrix fordert den Link erneut an; bei Einmallinks kann dies scheitern. Der ursprüngliche Download läuft weiter und kann ein Duplikat erzeugen.",
+      "keepBrowser": "Browser-Download beibehalten"
     }
   },
   "errors": {

@@ -93,6 +93,7 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
   const { takeover, notifications } = controller
   const unavailable = takeover === null || notifications === null
   const controlsDisabled = controller.loading || controller.saving
+  const confirmationEnabled = takeover?.downloadMode === 'confirm'
   const inheritedExclusion =
     controller.excludedSite !== null &&
     controller.excludedSite !== controller.currentSite
@@ -136,6 +137,25 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
         ) : (
           <>
             <div className="shrink-0 divide-y divide-border">
+              <QuickSettingRow
+                id="quick-download-mode"
+                title={t('options.downloadMode.confirm')}
+                description={t(
+                  controller.taskPanelSupported
+                    ? 'options.downloadMode.description'
+                    : 'options.taskPanel.unsupported'
+                )}
+                checked={confirmationEnabled}
+                disabled={
+                  controlsDisabled ||
+                  (!controller.taskPanelSupported && !confirmationEnabled)
+                }
+                onCheckedChange={(checked) =>
+                  void controller.setDownloadMode(
+                    checked ? 'confirm' : 'direct'
+                  )
+                }
+              />
               <QuickSettingRow
                 id="quick-takeover-switch"
                 title={t('options.takeover.enableLabel')}

@@ -213,7 +213,13 @@
       "title": "Panel de tareas",
       "openAfterSubmit": "Abrir el panel de tareas al añadir una descarga",
       "description": "Abre automáticamente el panel de tareas al añadir una descarga a Motrix, también mediante clic derecho o gestión automática. Varias descargas añadidas seguidas lo abren una sola vez.",
-      "unsupported": "Requiere Chrome / Edge 127+ o Firefox 149+."
+      "unsupported": "Tu navegador es demasiado antiguo para abrir automáticamente la ventana de la extensión. Actualiza a Chrome / Edge 127+ o Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Preguntar antes de descargar",
+      "confirm": "Preguntar antes de descargar",
+      "direct": "Enviar directamente a Motrix",
+      "description": "Abrir un formulario para descargas del menú contextual e interceptadas. Desactívalo para enviar directamente a Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix no respondió. Vuelve a conectar para reintentar.",
       "stale": "Se muestran los últimos datos disponibles.",
       "added": "Descargas añadidas: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Nombre de archivo",
+      "filenameAuto": "Automático",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (reemplazar)",
+      "authorization": "Authorization",
+      "extraHeaders": "Cabeceras adicionales",
+      "browserCookies": "Usar cookies de este sitio",
+      "advanced": "Opciones de solicitud",
+      "defaultDirectory": "Se usa la carpeta de descarga predeterminada de Motrix.",
+      "invalidOptions": "Comprueba el nombre y las cabeceras. Usa Nombre: valor por línea sin repetir los campos existentes.",
+      "directory": "Guardar en",
+      "directoryRefresh": "Actualizar",
+      "directoryDefault": "Carpeta predeterminada",
+      "directoryFavorites": "Carpetas favoritas",
+      "directoryRecent": "Carpetas recientes",
+      "directoryLoading": "Cargando carpetas…",
+      "directoryAutomatic": "Usar la carpeta predeterminada de Motrix",
+      "directoryUnsupported": "Actualiza Motrix para elegir una carpeta.",
+      "directoryOffline": "Conéctate a Motrix y actualiza la lista para elegir una carpeta.",
+      "directoryHint": "Las carpetas están en el equipo de Motrix seleccionado. Gestiona los favoritos en Motrix.",
+      "directoryUnavailable": "La carpeta no está disponible o el servidor ha cambiado. Actualiza y vuelve a elegir, o usa la carpeta predeterminada."
+    },
+    "confirmDownload": {
+      "description": "Revisa antes de la primera solicitud. Los enlaces temporales pueden caducar durante la espera.",
+      "expires": "El borrador caduca en {{seconds}} segundos. Vuelve a abrir la extensión para continuar si cierras la ventana.",
+      "browser": "Usar navegador",
+      "browserHint": "Las descargas del navegador usan sus propios ajustes de nombre de archivo y solicitud.",
+      "unavailable": "No se pudo abrir la confirmación. Termina el formulario abierto e inténtalo de nuevo. No se inició ninguna descarga.",
+      "close": "Cerrar",
+      "interceptedDescription": "El navegador ya inició esta descarga. Motrix volverá a solicitar el enlace, lo que puede fallar con enlaces de un solo uso. La descarga original continúa y puede crear un duplicado.",
+      "keepBrowser": "Mantener la descarga del navegador"
     }
   },
   "errors": {

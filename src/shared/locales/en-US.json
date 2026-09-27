@@ -213,7 +213,13 @@
       "title": "Task panel",
       "openAfterSubmit": "Open task panel after adding a download",
       "description": "Automatically open the task panel after a download is added to Motrix, including right-click downloads and automatic takeover. Multiple downloads added in quick succession open it only once.",
-      "unsupported": "Requires Chrome / Edge 127+ or Firefox 149+."
+      "unsupported": "Your browser version is too old to open the extension popup automatically. Please upgrade to Chrome / Edge 127+ or Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Ask before downloading",
+      "confirm": "Ask before downloading",
+      "direct": "Send directly to Motrix",
+      "description": "Automatically open a form for right-click and intercepted downloads. Turn off to send directly to Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix did not respond. Reconnect to try again.",
       "stale": "Showing the last available data.",
       "added": "Downloads added: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Filename",
+      "filenameAuto": "Auto",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (override)",
+      "authorization": "Authorization",
+      "extraHeaders": "Additional headers",
+      "browserCookies": "Use cookies from this site",
+      "advanced": "Request options",
+      "defaultDirectory": "Uses the default download directory in Motrix.",
+      "invalidOptions": "Check the filename and request headers. Use one Name: value header per line; do not repeat the dedicated fields.",
+      "directory": "Save to",
+      "directoryRefresh": "Refresh",
+      "directoryDefault": "Default folder",
+      "directoryFavorites": "Favorite folders",
+      "directoryRecent": "Recent folders",
+      "directoryLoading": "Loading directories…",
+      "directoryAutomatic": "Use Motrix default",
+      "directoryUnsupported": "Update Motrix to choose a folder.",
+      "directoryOffline": "Connect to Motrix, then refresh to choose a folder.",
+      "directoryHint": "Folders are on the selected Motrix host. Manage favorites in Motrix.",
+      "directoryUnavailable": "This folder is unavailable or the backend changed. Refresh and select again, or use the default."
+    },
+    "confirmDownload": {
+      "description": "Review before the first download request. Temporary links may expire while you wait.",
+      "expires": "Draft expires in {{seconds}} seconds. Reopen the extension to resume after closing the popup.",
+      "browser": "Use browser",
+      "browserHint": "Browser downloads use the browser’s own filename and request settings.",
+      "unavailable": "Could not open confirmation. Finish any open download form, then try again. No download was started.",
+      "close": "Close",
+      "interceptedDescription": "The browser has already started this download. Motrix will request the link again, which may fail for one-use links. The original download continues and may produce a duplicate.",
+      "keepBrowser": "Keep browser download"
     }
   },
   "errors": {

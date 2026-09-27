@@ -30,6 +30,7 @@ describe('TakeoverConfigStore', () => {
   it('round-trips a saved config', async () => {
     const store = new TakeoverConfigStore()
     const cfg = {
+      downloadMode: 'direct' as const,
       enabled: true,
       openTaskPanelAfterSubmit: true,
       consentAckVersion: 1,
@@ -172,5 +173,24 @@ it('serializes site and task panel patches with a takeover toggle without losing
     openTaskPanelAfterSubmit: true,
     consentAckVersion: 1,
     rules: [{ match: { domains: ['example.com'] }, action: 'chrome' }],
+  })
+})
+
+it('patches the download mode without losing concurrent takeover preferences', async () => {
+  const store = new TakeoverConfigStore()
+  await store.set({
+    ...TAKEOVER_DEFAULT,
+    enabled: true,
+    openTaskPanelAfterSubmit: true,
+  })
+  await Promise.all([
+    store.patchDownloadMode('confirm'),
+    store.patchSiteExclusion('example.com', true),
+  ])
+  expect(await store.get()).toMatchObject({
+    downloadMode: 'confirm',
+    enabled: true,
+    openTaskPanelAfterSubmit: true,
+    rules: [expect.objectContaining({ match: { domains: ['example.com'] } })],
   })
 })

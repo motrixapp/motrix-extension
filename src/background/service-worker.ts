@@ -20,12 +20,18 @@ import { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { ConnectionManager } from '@/background/ConnectionManager'
 import { MediaCredentialStore } from '@/background/capture/MediaCredentialStore'
+import {
+  createConfirmedDownloadActions,
+  requestConfirmedDownload,
+} from '@/background/confirmedDownload'
 import { createContextMenuDownloadRunner } from '@/background/contextMenu/download'
 import {
   registerContextMenu,
   updateContextMenuTitle,
 } from '@/background/contextMenu/register'
 import { DownloadSubmissionService } from '@/background/DownloadSubmissionService'
+import { createDownloadConfirmation } from '@/background/downloadConfirmation'
+import { createDownloadDirectoriesHandler } from '@/background/downloadDirectories'
 import { EndpointCatalogService } from '@/background/EndpointCatalogService'
 import { EndpointConfigStore } from '@/background/EndpointConfigStore'
 import { HandoffEndpointTracker } from '@/background/handoff/guard'
@@ -115,6 +121,19 @@ const handoffEndpoints = new HandoffEndpointTracker(
 )
 const takeoverConfigStore = new TakeoverConfigStore()
 const autoPopup = createAutoPopup(takeoverConfigStore)
+const downloadConfirmation = createDownloadConfirmation(
+  async (target, binding) => {
+    await endpointLifecycleReady
+    const guard = await handoffEndpoints.capture(target.origin)
+    if (
+      !guard ||
+      guard.endpointId !== binding.endpointId ||
+      (guard.endpointRevision ?? 0) !== binding.endpointRevision
+    )
+      return null
+    return createConfirmedDownloadActions(confirmedDownloadDeps, target, guard)
+  }
+)
 const notificationsConfigStore = new NotificationsConfigStore()
 const badgeErrorStore = new BadgeErrorStore()
 const gate = new ConnectionGate()
@@ -140,6 +159,7 @@ const endpointCatalogService = new EndpointCatalogService(
   {
     coordinator: backendOperationCoordinator,
     beforeConnectionChange: () => {
+      downloadConfirmation.cancelAll()
       handoffEndpoints.invalidate()
       manager.stopForEndpointChange()
     },
@@ -263,6 +283,15 @@ bus.on(
       pairingEndpointService.getStatus(endpointId),
   })
 )
+bus.on(
+  'bg.getDownloadDirectories',
+  createDownloadDirectoriesHandler({
+    extensionId,
+    extensionBaseUrl: browser.runtime.getURL(''),
+    captureGuard: () => handoffEndpoints.capture('context-menu'),
+    manager,
+  })
+)
 bus.on('bg.getState', () =>
   pairingEndpointService.readActiveSnapshot(() => {
     const lastError = manager.getLastError()
@@ -309,6 +338,7 @@ bus.on('bg.getState', () =>
       ...(manager.getDegraded() === true ? { degraded: true } : {}),
       capabilities: {
         taskReveal: capabilities?.taskReveal === true,
+        downloadDirectories: capabilities?.downloadDirectories === true,
       },
       ...(recoveryExhaustedUnattended
         ? { recoveryExhaustedUnattended: true }
@@ -361,6 +391,9 @@ bus.on('bg.replaceRemoteBackendPolicy', async (replacement) => ({
 }))
 bus.on('bg.patchTakeoverEnabled', ({ enabled, consentAckVersion }) =>
   takeoverConfigStore.patchEnabled(enabled, consentAckVersion)
+)
+bus.on('bg.patchDownloadMode', ({ downloadMode }) =>
+  takeoverConfigStore.patchDownloadMode(downloadMode)
 )
 bus.on('bg.patchTaskPanelPreference', ({ openTaskPanelAfterSubmit }) =>
   takeoverConfigStore.patchTaskPanelPreference(openTaskPanelAfterSubmit)
@@ -456,7 +489,11 @@ bus.on('bg.submitDownload', async (params, sender) => {
     {
       idempotencyKey: params.idempotencyKey ?? newDownloadOperationId(),
       source: 'direct',
-      resourceKey: JSON.stringify(params.selection),
+      resourceKey: JSON.stringify([
+        params.selection,
+        params.meta,
+        params.saveDir,
+      ]),
     },
     async () => params
   )
@@ -470,9 +507,14 @@ bus.on(
       submissions.run(
         {
           pairIfNeeded: options.pairIfNeeded,
+          directory: options.directory,
           idempotencyKey: params.idempotencyKey ?? newDownloadOperationId(),
           source: 'manual',
-          resourceKey: JSON.stringify(params.selection),
+          resourceKey: JSON.stringify([
+            params.selection,
+            params.meta,
+            params.saveDir,
+          ]),
         },
         async () => params
       ),
@@ -708,12 +750,25 @@ const refreshMenuTitle = async (): Promise<void> => {
   updateContextMenuTitle(await pairingEndpointService.isActivePaired())
 }
 
+const confirmedDownloadDeps = {
+  confirmation: downloadConfirmation,
+  submissions,
+  manager,
+  isPaired: () => pairingEndpointService.isActivePaired(),
+  gate,
+  nudge: pairNudge,
+  notify,
+}
+
 registerContextMenu({
   getConfig: async () => {
     await endpointLifecycleReady
     return takeoverConfigStore.get()
   },
   run: createContextMenuDownloadRunner({
+    confirmation: downloadConfirmation,
+    submissions,
+    getConfig: () => takeoverConfigStore.get(),
     popup: autoPopup,
     ready: () => endpointLifecycleReady,
     captureGuard: () => handoffEndpoints.capture('context-menu'),
@@ -753,6 +808,11 @@ void initI18n().then(() => {
 void initLogLevel()
 
 const interceptionDeps = {
+  confirm: (
+    target: import('@/shared/takeover').TakeoverTarget,
+    windowId: number | undefined,
+    guard: import('@/background/handoff/guard').HandoffGuard
+  ) => requestConfirmedDownload(confirmedDownloadDeps, target, windowId, guard),
   popup: autoPopup,
   captureGuard: () => handoffEndpoints.capture('auto'),
   getConfig: async () => {

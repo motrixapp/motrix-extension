@@ -2,6 +2,7 @@ import { createOperationQueue } from '@/background/mbp1/operation-queue'
 import { extensionBrowser as browser } from '@/shared/browser'
 import { withSiteExcluded } from '@/shared/siteExclusion'
 import {
+  type DownloadMode,
   TAKEOVER_DEFAULT,
   type TakeoverConfig,
   type TakeoverRule,
@@ -38,6 +39,7 @@ export class TakeoverConfigStore {
     if (!Array.isArray(c.rules) || !c.rules.every(isRule))
       return TAKEOVER_DEFAULT
     return {
+      downloadMode: c.downloadMode === 'confirm' ? 'confirm' : 'direct',
       openTaskPanelAfterSubmit:
         typeof c.openTaskPanelAfterSubmit === 'boolean'
           ? c.openTaskPanelAfterSubmit
@@ -85,6 +87,11 @@ export class TakeoverConfigStore {
       await browser.storage.local.set({
         [STORAGE_KEY]: {
           ...current,
+          downloadMode:
+            settings.downloadMode === 'confirm' ||
+            settings.downloadMode === 'direct'
+              ? settings.downloadMode
+              : current.downloadMode,
           enabled: settings.enabled,
           consentAckVersion: settings.consentAckVersion,
           defaultAction: settings.defaultAction,
@@ -104,6 +111,16 @@ export class TakeoverConfigStore {
         throw new Error('invalid task panel setting')
       const current = await this.get()
       const next = { ...current, openTaskPanelAfterSubmit }
+      await browser.storage.local.set({ [STORAGE_KEY]: next })
+      return next
+    })
+  }
+
+  async patchDownloadMode(downloadMode: DownloadMode): Promise<TakeoverConfig> {
+    return enqueue(async () => {
+      if (downloadMode !== 'confirm' && downloadMode !== 'direct')
+        throw new Error('invalid download mode')
+      const next = { ...(await this.get()), downloadMode }
       await browser.storage.local.set({ [STORAGE_KEY]: next })
       return next
     })

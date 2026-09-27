@@ -1,4 +1,5 @@
 export type TakeoverAction = 'motrix' | 'chrome' | 'ask'
+export type DownloadMode = 'confirm' | 'direct'
 
 export interface TakeoverRule {
   id: string
@@ -7,6 +8,7 @@ export interface TakeoverRule {
 }
 
 export interface TakeoverConfig {
+  downloadMode: DownloadMode
   /** Applies to every accepted submission, independently of automatic takeover. */
   openTaskPanelAfterSubmit: boolean
   enabled: boolean
@@ -47,6 +49,7 @@ export interface RawTarget {
 }
 
 export const TAKEOVER_DEFAULT: TakeoverConfig = {
+  downloadMode: 'direct',
   openTaskPanelAfterSubmit: false,
   enabled: false,
   consentAckVersion: 0,

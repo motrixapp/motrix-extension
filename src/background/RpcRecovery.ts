@@ -14,6 +14,7 @@ export interface RpcSession {
 }
 
 const READ_METHODS = new Set<string>([
+  Methods.DownloadDirectories,
   Methods.TaskList,
   Methods.TaskGet,
   Methods.StatsGet,

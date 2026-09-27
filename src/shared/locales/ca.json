@@ -213,7 +213,13 @@
       "title": "Tauler de tasques",
       "openAfterSubmit": "Obre el tauler de tasques després d'afegir una baixada",
       "description": "Obre automàticament el tauler de tasques quan s'afegeix una baixada a Motrix, també des del menú contextual o amb la gestió automàtica. Si s'afegeixen diverses baixades seguides, només s'obre una vegada.",
-      "unsupported": "Requereix Chrome / Edge 127+ o Firefox 149+."
+      "unsupported": "La versió del navegador és massa antiga per obrir la finestra de l’extensió automàticament. Actualitza a Chrome / Edge 127+ o Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Pregunta abans de baixar",
+      "confirm": "Pregunta abans de baixar",
+      "direct": "Envia directament a Motrix",
+      "description": "Obre automàticament un formulari per a baixades del menú contextual i baixades interceptades. Desactiva-ho per enviar directament a Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix no ha respost. Torna a connectar per provar-ho de nou.",
       "stale": "Es mostren les últimes dades disponibles.",
       "added": "Baixades afegides: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Nom del fitxer",
+      "filenameAuto": "Automàtic",
+      "cookie": "Cookie (substitució)",
+      "extraHeaders": "Capçaleres addicionals",
+      "browserCookies": "Utilitza les galetes d’aquest lloc",
+      "advanced": "Opcions de la sol·licitud",
+      "defaultDirectory": "Utilitza la carpeta de baixades predeterminada de Motrix.",
+      "invalidOptions": "Revisa el nom del fitxer i les capçaleres. Escriu una capçalera Name: value per línia i no repeteixis els camps específics.",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "authorization": "Authorization",
+      "directory": "Desar a",
+      "directoryRefresh": "Actualitzar",
+      "directoryDefault": "Carpeta predeterminada",
+      "directoryFavorites": "Carpetes preferides",
+      "directoryRecent": "Carpetes recents",
+      "directoryLoading": "S'estan carregant les carpetes…",
+      "directoryAutomatic": "Utilitza la carpeta predeterminada de Motrix",
+      "directoryUnsupported": "Actualitza Motrix per triar una carpeta.",
+      "directoryOffline": "Connecta’t a Motrix i actualitza la llista per triar una carpeta.",
+      "directoryHint": "Les carpetes són a l’equip Motrix seleccionat. Gestiona els preferits a Motrix.",
+      "directoryUnavailable": "La carpeta no està disponible o el servidor ha canviat. Actualitza i torna a triar, o utilitza la carpeta predeterminada."
+    },
+    "confirmDownload": {
+      "description": "Revisa les dades abans de la primera sol·licitud. Els enllaços temporals poden caducar mentre esperes.",
+      "expires": "L’esborrany caduca d’aquí a {{seconds}} segons. Torna a obrir l’extensió per continuar després de tancar la finestra.",
+      "browser": "Baixa amb el navegador",
+      "browserHint": "Les baixades amb el navegador utilitzen el seu propi nom de fitxer i les seves opcions de sol·licitud.",
+      "unavailable": "No s’ha pogut obrir la confirmació. Acaba qualsevol formulari de baixada obert i torna-ho a provar. No s’ha iniciat cap baixada.",
+      "close": "Tanca",
+      "interceptedDescription": "El navegador ja ha iniciat aquesta baixada. Motrix tornarà a sol·licitar l’enllaç, cosa que pot fallar amb enllaços d’un sol ús. La baixada original continua i pot crear un duplicat.",
+      "keepBrowser": "Mantén la baixada del navegador"
     }
   },
   "errors": {

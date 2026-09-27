@@ -213,7 +213,13 @@
       "title": "Bảng tác vụ",
       "openAfterSubmit": "Mở bảng tác vụ sau khi thêm lượt tải xuống",
       "description": "Tự động mở bảng khi thêm lượt tải xuống vào Motrix, kể cả qua menu chuột phải và tiếp quản tự động. Khi thêm nhiều lượt tải liên tiếp, bảng chỉ mở một lần.",
-      "unsupported": "Yêu cầu Chrome / Edge 127+ hoặc Firefox 149+."
+      "unsupported": "Phiên bản trình duyệt quá cũ để tự động mở cửa sổ tiện ích. Vui lòng nâng cấp lên Chrome / Edge 127+ hoặc Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Hỏi trước khi tải xuống",
+      "confirm": "Hỏi trước khi tải xuống",
+      "direct": "Gửi thẳng đến Motrix",
+      "description": "Tự động mở biểu mẫu cho lượt tải từ menu chuột phải và lượt tải được tiếp quản. Tắt để gửi trực tiếp đến Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix không phản hồi. Hãy kết nối lại để thử lại.",
       "stale": "Đang hiển thị dữ liệu nhận được lần gần nhất.",
       "added": "Đã thêm lượt tải: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Tên tệp",
+      "filenameAuto": "Tự động",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (ghi đè)",
+      "authorization": "Authorization",
+      "extraHeaders": "Tiêu đề bổ sung",
+      "browserCookies": "Dùng cookie của trang này",
+      "advanced": "Tùy chọn yêu cầu",
+      "defaultDirectory": "Dùng thư mục tải xuống mặc định của Motrix.",
+      "invalidOptions": "Kiểm tra tên tệp và tiêu đề. Mỗi dòng ghi Name: value, không lặp lại các trường riêng.",
+      "directory": "Lưu vào",
+      "directoryRefresh": "Làm mới",
+      "directoryDefault": "Thư mục mặc định",
+      "directoryFavorites": "Thư mục yêu thích",
+      "directoryRecent": "Thư mục gần đây",
+      "directoryLoading": "Đang tải thư mục…",
+      "directoryAutomatic": "Dùng thư mục mặc định của Motrix",
+      "directoryUnsupported": "Cập nhật Motrix để chọn thư mục.",
+      "directoryOffline": "Kết nối với Motrix rồi làm mới để chọn thư mục.",
+      "directoryHint": "Thư mục nằm trên máy chủ Motrix đã chọn. Quản lý mục yêu thích trong Motrix.",
+      "directoryUnavailable": "Thư mục không khả dụng hoặc máy chủ đã thay đổi. Làm mới và chọn lại hoặc dùng thư mục mặc định."
+    },
+    "confirmDownload": {
+      "description": "Kiểm tra trước yêu cầu tải đầu tiên. Liên kết tạm thời có thể hết hạn khi chờ.",
+      "expires": "Bản nháp hết hạn sau {{seconds}} giây. Mở lại tiện ích để tiếp tục sau khi đóng cửa sổ bật lên.",
+      "browser": "Dùng trình duyệt",
+      "browserHint": "Tải bằng trình duyệt sẽ dùng cài đặt tên tệp và yêu cầu của chính trình duyệt.",
+      "unavailable": "Không mở được xác nhận. Hoàn tất biểu mẫu đang mở rồi thử lại. Chưa bắt đầu tải xuống.",
+      "close": "Đóng",
+      "interceptedDescription": "Trình duyệt đã bắt đầu tải xuống. Motrix sẽ yêu cầu lại liên kết, điều này có thể thất bại với liên kết dùng một lần. Lượt tải ban đầu vẫn tiếp tục và có thể tạo tệp trùng lặp.",
+      "keepBrowser": "Giữ lượt tải của trình duyệt"
     }
   },
   "errors": {

@@ -213,7 +213,13 @@
       "title": "Panneau des tâches",
       "openAfterSubmit": "Ouvrir le panneau des tâches après l’ajout d’un téléchargement",
       "description": "Ouvre automatiquement le panneau des tâches lorsqu’un téléchargement est ajouté à Motrix, y compris par clic droit ou prise en charge automatique. Plusieurs ajouts rapprochés ne l’ouvrent qu’une fois.",
-      "unsupported": "Nécessite Chrome / Edge 127+ ou Firefox 149+."
+      "unsupported": "Votre navigateur est trop ancien pour ouvrir automatiquement la fenêtre de l’extension. Veuillez passer à Chrome / Edge 127+ ou Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Demander avant de télécharger",
+      "confirm": "Demander avant de télécharger",
+      "direct": "Envoyer directement à Motrix",
+      "description": "Ouvrir automatiquement un formulaire pour les téléchargements par clic droit et interceptés. Désactiver pour envoyer directement à Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix ne répond pas. Reconnectez-vous pour réessayer.",
       "stale": "Affichage des dernières données disponibles.",
       "added": "Téléchargements ajoutés : {{count}}"
+    },
+    "taskForm": {
+      "filename": "Nom du fichier",
+      "filenameAuto": "Auto",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (remplacer)",
+      "authorization": "Authorization",
+      "extraHeaders": "En-têtes supplémentaires",
+      "browserCookies": "Utiliser les cookies de ce site",
+      "advanced": "Options de requête",
+      "defaultDirectory": "Utilise le dossier de téléchargement par défaut de Motrix.",
+      "invalidOptions": "Vérifiez le nom et les en-têtes. Saisissez Nom: valeur par ligne sans répéter les champs dédiés.",
+      "directory": "Enregistrer dans",
+      "directoryRefresh": "Actualiser",
+      "directoryDefault": "Dossier par défaut",
+      "directoryFavorites": "Dossiers favoris",
+      "directoryRecent": "Dossiers récents",
+      "directoryLoading": "Chargement des dossiers…",
+      "directoryAutomatic": "Utiliser le dossier par défaut de Motrix",
+      "directoryUnsupported": "Mettez Motrix à jour pour choisir un dossier.",
+      "directoryOffline": "Connectez-vous à Motrix, puis actualisez pour choisir un dossier.",
+      "directoryHint": "Les dossiers se trouvent sur l’hôte Motrix sélectionné. Gérez les favoris dans Motrix.",
+      "directoryUnavailable": "Ce dossier est indisponible ou le serveur a changé. Actualisez et choisissez à nouveau, ou utilisez le dossier par défaut."
+    },
+    "confirmDownload": {
+      "description": "Vérifiez avant la première requête. Les liens temporaires peuvent expirer pendant l’attente.",
+      "expires": "Le brouillon expire dans {{seconds}} secondes. Rouvrez l’extension pour reprendre après avoir fermé la fenêtre.",
+      "browser": "Utiliser le navigateur",
+      "browserHint": "Les téléchargements du navigateur utilisent ses propres paramètres de nom de fichier et de requête.",
+      "unavailable": "Impossible d’ouvrir la confirmation. Terminez le formulaire ouvert, puis réessayez. Aucun téléchargement n’a été lancé.",
+      "close": "Fermer",
+      "interceptedDescription": "Le navigateur a déjà démarré ce téléchargement. Motrix demandera à nouveau le lien, ce qui peut échouer avec un lien à usage unique. Le téléchargement initial continue et peut créer un doublon.",
+      "keepBrowser": "Conserver le téléchargement du navigateur"
     }
   },
   "errors": {

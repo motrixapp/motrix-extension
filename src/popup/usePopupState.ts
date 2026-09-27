@@ -34,6 +34,7 @@ export interface PopupState {
     name: string
     version: string
     runtime: 'electron' | 'server'
+    instanceId?: string
   } | null
   /** §7.3 first-pair backoff, straight from bg.getState — `retryAtMs` is
    *  always the client's own `FirstPairBackoff` value, never anything the
@@ -51,6 +52,7 @@ export interface PopupState {
   degraded: boolean
   capabilities: {
     taskReveal: boolean
+    downloadDirectories?: boolean
   }
   /** Present exactly while a first-pair `PairingCodeProvider` call is
    *  outstanding, straight from `bg.getState` — see that message's own doc.
@@ -134,6 +136,8 @@ export function usePopupState(): {
           degraded: connection.degraded ?? false,
           capabilities: {
             taskReveal: connection.capabilities?.taskReveal === true,
+            downloadDirectories:
+              connection.capabilities?.downloadDirectories === true,
           },
           pairingCode: connection.pairingCode ?? null,
         }

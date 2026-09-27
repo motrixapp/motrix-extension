@@ -52,6 +52,10 @@ export const MEDIA_SUBMIT_ERROR = {
  * JSON-serializable.
  */
 export interface MessageMap {
+  'bg.getDownloadDirectories': {
+    request: undefined
+    response: import('@/shared/downloadDirectories').DownloadDirectoriesResponse
+  }
   // popup / options → background
   'bg.runConnectionDiagnostics': {
     request: { endpointId: string | null }
@@ -116,6 +120,7 @@ export interface MessageMap {
        *  background normalizes to false. */
       capabilities?: {
         taskReveal: boolean
+        downloadDirectories?: boolean
       }
     }
   }
@@ -184,6 +189,10 @@ export interface MessageMap {
   }
   'bg.patchTakeoverEnabled': {
     request: { enabled: boolean; consentAckVersion?: number }
+    response: import('@/shared/takeover').TakeoverConfig
+  }
+  'bg.patchDownloadMode': {
+    request: { downloadMode: import('@/shared/takeover').DownloadMode }
     response: import('@/shared/takeover').TakeoverConfig
   }
   'bg.getPopupReceipt': {

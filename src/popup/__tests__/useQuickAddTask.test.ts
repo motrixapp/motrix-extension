@@ -1,5 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { defaultTaskOptions } from '@/shared/taskOptions'
 
 vi.mock('@/background/MessageBus', () => ({ send: vi.fn() }))
 
@@ -58,6 +59,7 @@ describe('useQuickAddTask', () => {
     expect(send).toHaveBeenCalledWith('bg.createManualTask', {
       input: 'https://example.com/a%20file.zip',
       idempotencyKey: expect.any(String),
+      options: defaultTaskOptions(navigator.userAgent),
     })
     expect(onCreated).toHaveBeenCalledWith('task-1')
     expect(result.current.input).toBe('')
@@ -174,6 +176,7 @@ describe('useQuickAddTask', () => {
     ).toEqual({
       normalizedInput: firstRequest.input,
       idempotencyKey: firstRequest.idempotencyKey,
+      options: defaultTaskOptions(navigator.userAgent),
     })
 
     // Simulate the popup disappearing after the request was sent but before
@@ -257,5 +260,39 @@ describe('useQuickAddTask', () => {
     expect(onCreated).toHaveBeenCalledWith('task-without-storage')
 
     chrome.storage.session.set = originalSet
+  })
+})
+
+it('keeps edited request options on retry and changes identity when those options change', async () => {
+  send.mockRejectedValue(new Error('failed'))
+  const { result } = renderHook(() => useQuickAddTask({ onCreated: vi.fn() }))
+  act(() => {
+    result.current.setInput('https://example.com/file.zip')
+    result.current.setOptions({
+      ...result.current.options,
+      filename: 'chosen.zip',
+      userAgent: 'Edited UA',
+    })
+  })
+  await act(async () => {
+    await result.current.submit()
+  })
+  const first = send.mock.calls.at(-1)?.[1]
+  await act(async () => {
+    await result.current.submit()
+  })
+  expect(send.mock.calls.at(-1)?.[1]).toEqual(first)
+  act(() =>
+    result.current.setOptions({
+      ...result.current.options,
+      filename: 'different.zip',
+    })
+  )
+  await act(async () => {
+    await result.current.submit()
+  })
+  expect(send.mock.calls.at(-1)?.[1]).not.toEqual(first)
+  expect(send.mock.calls.at(-1)?.[1]).toMatchObject({
+    options: { filename: 'different.zip', userAgent: 'Edited UA' },
   })
 })

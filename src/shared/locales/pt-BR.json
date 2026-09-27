@@ -213,7 +213,13 @@
       "title": "Painel de tarefas",
       "openAfterSubmit": "Abrir o painel de tarefas após adicionar um download",
       "description": "Abre automaticamente o painel quando um download é adicionado ao Motrix, inclusive pelo botão direito ou pela captura automática. Vários downloads adicionados em sequência abrem o painel apenas uma vez.",
-      "unsupported": "Requer Chrome / Edge 127+ ou Firefox 149+."
+      "unsupported": "A versão do navegador é antiga demais para abrir o popup da extensão automaticamente. Atualize para Chrome / Edge 127+ ou Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Perguntar antes de baixar",
+      "confirm": "Perguntar antes de baixar",
+      "direct": "Enviar diretamente ao Motrix",
+      "description": "Abrir um formulário para downloads pelo menu de contexto e downloads interceptados. Desative para enviar diretamente ao Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "O Motrix não respondeu. Reconecte para tentar novamente.",
       "stale": "Exibindo os últimos dados disponíveis.",
       "added": "Downloads adicionados: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Nome do arquivo",
+      "filenameAuto": "Automático",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (substituir)",
+      "authorization": "Authorization",
+      "extraHeaders": "Cabeçalhos adicionais",
+      "browserCookies": "Usar cookies deste site",
+      "advanced": "Opções da solicitação",
+      "defaultDirectory": "Usa a pasta de download padrão do Motrix.",
+      "invalidOptions": "Confira o nome e os cabeçalhos. Use Nome: valor por linha sem repetir os campos dedicados.",
+      "directory": "Salvar em",
+      "directoryRefresh": "Atualizar",
+      "directoryDefault": "Pasta padrão",
+      "directoryFavorites": "Pastas favoritas",
+      "directoryRecent": "Pastas recentes",
+      "directoryLoading": "Carregando pastas…",
+      "directoryAutomatic": "Usar a pasta padrão do Motrix",
+      "directoryUnsupported": "Atualize o Motrix para escolher uma pasta.",
+      "directoryOffline": "Conecte-se ao Motrix e atualize a lista para escolher uma pasta.",
+      "directoryHint": "As pastas estão no host Motrix selecionado. Gerencie os favoritos no Motrix.",
+      "directoryUnavailable": "A pasta está indisponível ou o servidor mudou. Atualize e escolha novamente ou use a pasta padrão."
+    },
+    "confirmDownload": {
+      "description": "Revise antes da primeira solicitação. Links temporários podem expirar durante a espera.",
+      "expires": "O rascunho expira em {{seconds}} segundos. Reabra a extensão para continuar após fechar o popup.",
+      "browser": "Usar navegador",
+      "browserHint": "Os downloads pelo navegador usam as configurações de nome de arquivo e solicitação do próprio navegador.",
+      "unavailable": "Não foi possível abrir a confirmação. Conclua o formulário aberto e tente novamente. Nenhum download foi iniciado.",
+      "close": "Fechar",
+      "interceptedDescription": "O navegador já iniciou este download. O Motrix solicitará o link novamente, o que pode falhar com links de uso único. O download original continua e pode gerar um arquivo duplicado.",
+      "keepBrowser": "Manter download do navegador"
     }
   },
   "errors": {

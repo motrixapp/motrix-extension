@@ -213,7 +213,13 @@
       "title": "작업 패널",
       "openAfterSubmit": "다운로드 추가 후 작업 패널 열기",
       "description": "Motrix에 다운로드가 추가되면 작업 패널을 자동으로 엽니다. 마우스 오른쪽 버튼으로 추가하거나 자동으로 넘긴 다운로드에도 적용됩니다. 여러 다운로드를 연속으로 추가하면 한 번만 열립니다.",
-      "unsupported": "Chrome / Edge 127 이상 또는 Firefox 149 이상이 필요합니다."
+      "unsupported": "브라우저 버전이 낮아 확장 프로그램 팝업을 자동으로 열 수 없습니다. Chrome / Edge 127 이상 또는 Firefox 149 이상으로 업데이트하세요."
+    },
+    "downloadMode": {
+      "label": "다운로드 전 확인",
+      "confirm": "다운로드 전 확인",
+      "direct": "Motrix로 바로 보내기",
+      "description": "우클릭 및 자동 가로채기 다운로드 시 확인 양식을 자동으로 엽니다. 끄면 Motrix로 바로 전송합니다."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix가 응답하지 않습니다. 다시 연결하여 시도하세요.",
       "stale": "마지막으로 받은 데이터를 표시합니다.",
       "added": "추가된 다운로드: {{count}}"
+    },
+    "taskForm": {
+      "filename": "파일 이름",
+      "filenameAuto": "자동",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (덮어쓰기)",
+      "authorization": "Authorization",
+      "extraHeaders": "추가 요청 헤더",
+      "browserCookies": "이 사이트의 쿠키 사용",
+      "advanced": "요청 옵션",
+      "defaultDirectory": "Motrix의 기본 다운로드 폴더를 사용합니다.",
+      "invalidOptions": "파일 이름과 헤더를 확인하세요. 한 줄에 Name: value를 입력하고 전용 필드를 중복하지 마세요.",
+      "directory": "저장 위치",
+      "directoryRefresh": "새로고침",
+      "directoryDefault": "기본 폴더",
+      "directoryFavorites": "즐겨찾는 폴더",
+      "directoryRecent": "최근 폴더",
+      "directoryLoading": "폴더를 불러오는 중…",
+      "directoryAutomatic": "Motrix 기본 폴더 사용",
+      "directoryUnsupported": "폴더를 선택하려면 Motrix를 업데이트하세요.",
+      "directoryOffline": "Motrix에 연결한 뒤 새로 고침하여 폴더를 선택하세요.",
+      "directoryHint": "폴더는 연결된 Motrix에 있습니다. 즐겨찾기는 Motrix에서 관리하세요.",
+      "directoryUnavailable": "폴더를 사용할 수 없거나 연결 대상이 변경되었습니다. 새로 고침 후 다시 선택하거나 기본 폴더를 사용하세요."
+    },
+    "confirmDownload": {
+      "description": "첫 다운로드 요청 전에 확인하세요. 기다리는 동안 임시 링크가 만료될 수 있습니다.",
+      "expires": "초안이 {{seconds}}초 후 만료됩니다. 팝업을 닫았다면 확장 프로그램을 다시 열어 계속할 수 있습니다.",
+      "browser": "브라우저 사용",
+      "browserHint": "브라우저 다운로드에는 브라우저 자체의 파일 이름 및 요청 설정이 사용됩니다.",
+      "unavailable": "확인 화면을 열 수 없습니다. 열려 있는 다운로드 양식을 마친 후 다시 시도하세요. 다운로드는 시작되지 않았습니다.",
+      "close": "닫기",
+      "interceptedDescription": "브라우저에서 이미 다운로드를 시작했습니다. Motrix는 링크를 다시 요청하므로 일회용 링크는 실패할 수 있습니다. 원래 다운로드는 계속되며 중복 파일이 생길 수 있습니다.",
+      "keepBrowser": "브라우저 다운로드 유지"
     }
   },
   "errors": {

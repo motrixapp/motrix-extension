@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
+import { TaskOptionsFields } from '@/popup/TaskOptionsFields'
 import {
   type QuickAddTaskErrorKind,
   useQuickAddTask,
@@ -26,6 +27,8 @@ export const QUICK_ADD_TASK_I18N_KEYS = {
   add: 'popup.quickAdd.add',
   submitting: 'popup.quickAdd.submitting',
   errors: {
+    invalidOptions: 'popup.taskForm.invalidOptions',
+    directoryUnavailable: 'popup.taskForm.directoryUnavailable',
     empty: 'popup.quickAdd.error.empty',
     unsupported: 'popup.quickAdd.error.unsupported',
     invalid: 'popup.quickAdd.error.invalid',
@@ -89,11 +92,11 @@ export function QuickAddTaskDialog({
   return (
     <Dialog open={open} onOpenChange={requestOpenChange}>
       <DialogContent
-        className="max-w-[360px] gap-4 p-5 sm:max-w-[360px]"
+        className="flex max-h-[min(560px,calc(100dvh-24px))] w-[calc(100%-24px)] max-w-[376px] flex-col overflow-hidden gap-4 p-5 sm:max-w-[376px]"
         showCloseButton={false}
       >
         <form
-          className="grid gap-4"
+          className="flex min-h-0 min-w-0 flex-col gap-4"
           aria-busy={controller.submitting}
           onSubmit={(event) => {
             event.preventDefault()
@@ -110,40 +113,51 @@ export function QuickAddTaskDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <Field data-invalid={controller.error !== null} className="gap-1.5">
-            <FieldLabel htmlFor="quick-add-task-input" className="sr-only">
-              {t(QUICK_ADD_TASK_I18N_KEYS.inputLabel)}
-            </FieldLabel>
-            <Textarea
-              id="quick-add-task-input"
-              dir="ltr"
-              className="min-h-[88px] max-h-32 resize-none [overflow-wrap:anywhere]"
-              rows={3}
-              value={controller.input}
-              placeholder={t(QUICK_ADD_TASK_I18N_KEYS.placeholder)}
-              autoFocus
-              autoCapitalize="off"
-              autoComplete="off"
-              spellCheck={false}
-              disabled={controller.submitting}
-              aria-invalid={controller.error !== null}
-              aria-describedby={describedBy}
-              onChange={(event) => controller.setInput(event.target.value)}
-            />
-            {controller.error && (
-              <FieldError id={errorId} aria-live="assertive">
-                {t(QUICK_ADD_TASK_I18N_KEYS.errors[controller.error])}
-              </FieldError>
-            )}
-          </Field>
+          <div className="-mx-3 -my-1 grid min-h-0 min-w-0 grid-cols-1 gap-4 overflow-x-hidden overflow-y-auto px-3 py-1 scroll-py-1">
+            <Field data-invalid={controller.error !== null} className="gap-1.5">
+              <FieldLabel htmlFor="quick-add-task-input" className="sr-only">
+                {t(QUICK_ADD_TASK_I18N_KEYS.inputLabel)}
+              </FieldLabel>
+              <Textarea
+                id="quick-add-task-input"
+                dir="ltr"
+                className="min-h-[88px] max-h-32 resize-none [overflow-wrap:anywhere]"
+                rows={3}
+                value={controller.input}
+                placeholder={t(QUICK_ADD_TASK_I18N_KEYS.placeholder)}
+                autoFocus
+                autoCapitalize="off"
+                autoComplete="off"
+                spellCheck={false}
+                disabled={controller.submitting}
+                aria-invalid={controller.error !== null}
+                aria-describedby={describedBy}
+                onChange={(event) => controller.setInput(event.target.value)}
+              />
+              {controller.error && (
+                <FieldError id={errorId} aria-live="assertive">
+                  {t(QUICK_ADD_TASK_I18N_KEYS.errors[controller.error])}
+                </FieldError>
+              )}
+            </Field>
 
+            <TaskOptionsFields
+              value={controller.options}
+              onChange={controller.setOptions}
+              disabled={controller.submitting}
+              magnet={controller.input
+                .trim()
+                .toLowerCase()
+                .startsWith('magnet:')}
+            />
+          </div>
           <p className="sr-only" role="status" aria-live="polite">
             {controller.submitting
               ? t(QUICK_ADD_TASK_I18N_KEYS.submitting)
               : ''}
           </p>
 
-          <DialogFooter>
+          <DialogFooter className="shrink-0">
             <Button
               type="button"
               variant="outline"

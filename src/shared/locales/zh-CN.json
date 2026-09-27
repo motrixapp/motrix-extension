@@ -213,7 +213,13 @@
       "title": "任务面板",
       "openAfterSubmit": "添加下载后展开任务面板",
       "description": "下载成功添加到 Motrix 后自动展开，右键下载和自动接管都适用。连续添加多个下载时只展开一次。",
-      "unsupported": "需要 Chrome / Edge 127 或 Firefox 149 及以上版本。"
+      "unsupported": "浏览器版本过低，无法自动弹出扩展窗口。建议升级至 Chrome / Edge 127 或 Firefox 149 及以上版本。"
+    },
+    "downloadMode": {
+      "label": "下载前询问",
+      "confirm": "下载前询问",
+      "direct": "直接交给 Motrix 下载",
+      "description": "右键下载和自动接管时弹出表单，确认后发送到 Motrix；关闭后直接发送。"
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix 未响应，请重新连接后重试。",
       "stale": "当前显示上次更新的数据。",
       "added": "已添加下载：{{count}}"
+    },
+    "taskForm": {
+      "filename": "文件名",
+      "filenameAuto": "自动",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie（覆盖自动获取值）",
+      "authorization": "Authorization",
+      "extraHeaders": "自定义请求头",
+      "browserCookies": "使用此网站的 Cookie",
+      "advanced": "请求选项",
+      "defaultDirectory": "使用 Motrix 的默认下载目录。",
+      "invalidOptions": "请检查文件名和请求头。自定义请求头每行填写 Name: value，不要重复已有字段。",
+      "directory": "保存到",
+      "directoryRefresh": "刷新",
+      "directoryDefault": "默认目录",
+      "directoryFavorites": "常用目录",
+      "directoryRecent": "最近使用",
+      "directoryLoading": "正在加载目录…",
+      "directoryAutomatic": "使用 Motrix 默认目录",
+      "directoryUnsupported": "升级 Motrix 后可选择目录。",
+      "directoryOffline": "连接 Motrix 后刷新，即可选择目录。",
+      "directoryHint": "目录位于当前连接的 Motrix，可在 Motrix 中管理收藏目录。",
+      "directoryUnavailable": "目录不可用或后端已变更。请刷新并重新选择，或使用默认目录。"
+    },
+    "confirmDownload": {
+      "description": "确认后才发起下载请求。临时链接可能在等待时过期。",
+      "expires": "草稿将在 {{seconds}} 秒后过期。误关后可点击扩展图标恢复。",
+      "browser": "用浏览器下载",
+      "browserHint": "选择浏览器下载将使用浏览器自身的文件名和请求设置。",
+      "unavailable": "无法打开确认表单。请先处理已打开的下载表单，再重试。尚未发起下载。",
+      "close": "关闭",
+      "interceptedDescription": "浏览器已开始下载。Motrix 会重新请求链接，一次性链接可能失败。原下载将继续，可能产生重复文件。",
+      "keepBrowser": "保留浏览器下载"
     }
   },
   "errors": {

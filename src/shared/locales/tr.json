@@ -213,7 +213,13 @@
       "title": "Görev paneli",
       "openAfterSubmit": "İndirme eklendikten sonra görev panelini aç",
       "description": "Sağ tıkla indirme ve otomatik devralma dahil, Motrix’e bir indirme eklendiğinde paneli otomatik açar. Art arda eklenen indirmelerde yalnızca bir kez açılır.",
-      "unsupported": "Chrome / Edge 127+ veya Firefox 149+ gerektirir."
+      "unsupported": "Tarayıcı sürümünüz, uzantı penceresini otomatik açmak için çok eski. Lütfen Chrome / Edge 127+ veya Firefox 149+ sürümüne yükseltin."
+    },
+    "downloadMode": {
+      "label": "İndirmeden önce sor",
+      "confirm": "İndirmeden önce sor",
+      "direct": "Doğrudan Motrix’e gönder",
+      "description": "Sağ tık ve yakalanan indirmeler için otomatik olarak form aç. Doğrudan Motrix’e göndermek için kapatın."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix yanıt vermedi. Yeniden bağlanıp tekrar deneyin.",
       "stale": "Son alınan veriler gösteriliyor.",
       "added": "Eklenen indirmeler: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Dosya adı",
+      "filenameAuto": "Otomatik",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (geçersiz kıl)",
+      "authorization": "Authorization",
+      "extraHeaders": "Ek başlıklar",
+      "browserCookies": "Bu sitenin çerezlerini kullan",
+      "advanced": "İstek seçenekleri",
+      "defaultDirectory": "Motrix varsayılan indirme klasörünü kullanır.",
+      "invalidOptions": "Dosya adını ve başlıkları kontrol edin. Her satıra Ad: değer yazın; ayrı alanları tekrarlamayın.",
+      "directory": "Kayıt konumu",
+      "directoryRefresh": "Yenile",
+      "directoryDefault": "Varsayılan klasör",
+      "directoryFavorites": "Favori klasörler",
+      "directoryRecent": "Son kullanılan klasörler",
+      "directoryLoading": "Klasörler yükleniyor…",
+      "directoryAutomatic": "Motrix varsayılan klasörünü kullan",
+      "directoryUnsupported": "Klasör seçmek için Motrix’i güncelleyin.",
+      "directoryOffline": "Motrix’e bağlanın ve klasör seçmek için listeyi yenileyin.",
+      "directoryHint": "Klasörler seçili Motrix sunucusundadır. Sık kullanılanları Motrix’te yönetin.",
+      "directoryUnavailable": "Klasör kullanılamıyor veya sunucu değişti. Yenileyip tekrar seçin ya da varsayılan klasörü kullanın."
+    },
+    "confirmDownload": {
+      "description": "İlk indirme isteğinden önce kontrol edin. Geçici bağlantıların süresi beklerken dolabilir.",
+      "expires": "Taslağın süresi {{seconds}} saniye sonra dolacak. Açılır pencereyi kapattıktan sonra devam etmek için uzantıyı yeniden açın.",
+      "browser": "Tarayıcıyı kullan",
+      "browserHint": "Tarayıcı indirmeleri, tarayıcının kendi dosya adı ve istek ayarlarını kullanır.",
+      "unavailable": "Onay açılamadı. Açık indirme formunu tamamlayıp yeniden deneyin. İndirme başlatılmadı.",
+      "close": "Kapat",
+      "interceptedDescription": "Tarayıcı bu indirmeyi zaten başlattı. Motrix bağlantıyı tekrar isteyecek; bu işlem tek kullanımlık bağlantılarda başarısız olabilir. Asıl indirme devam eder ve yinelenen bir dosya oluşturabilir.",
+      "keepBrowser": "Tarayıcı indirmesini koru"
     }
   },
   "errors": {

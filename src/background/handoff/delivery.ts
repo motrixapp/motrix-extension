@@ -15,7 +15,7 @@ import type { Notify } from '@/shared/notifications'
 export const CONNECT_DEADLINE_MS = 8000
 
 export function notifySafely(
-  ops: HandoffOps,
+  ops: Pick<HandoffOps, 'notify'>,
   input: Parameters<Notify>[0]
 ): void {
   try {

@@ -213,7 +213,13 @@
       "title": "Takenpaneel",
       "openAfterSubmit": "Takenpaneel openen na het toevoegen van een download",
       "description": "Open het takenpaneel automatisch wanneer een download aan Motrix wordt toegevoegd, ook via de rechtermuisknop of automatische overname. Bij meerdere downloads kort na elkaar wordt het slechts één keer geopend.",
-      "unsupported": "Vereist Chrome / Edge 127+ of Firefox 149+."
+      "unsupported": "Je browserversie is te oud om het extensievenster automatisch te openen. Werk bij naar Chrome / Edge 127+ of Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Vragen vóór downloaden",
+      "confirm": "Vragen vóór downloaden",
+      "direct": "Direct naar Motrix sturen",
+      "description": "Open automatisch een formulier voor downloads via rechtsklikken en onderschepte downloads. Schakel uit om direct naar Motrix te sturen."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix heeft niet gereageerd. Maak opnieuw verbinding om het opnieuw te proberen.",
       "stale": "De laatst beschikbare gegevens worden weergegeven.",
       "added": "Downloads toegevoegd: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Bestandsnaam",
+      "filenameAuto": "Automatisch",
+      "cookie": "Cookie (overschrijven)",
+      "extraHeaders": "Extra headers",
+      "browserCookies": "Cookies van deze website gebruiken",
+      "advanced": "Verzoekopties",
+      "defaultDirectory": "Gebruikt de standaard downloadmap van Motrix.",
+      "invalidOptions": "Controleer de bestandsnaam en de headers. Gebruik één header Name: value per regel en herhaal de aparte velden niet.",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "authorization": "Authorization",
+      "directory": "Opslaan in",
+      "directoryRefresh": "Vernieuwen",
+      "directoryDefault": "Standaardmap",
+      "directoryFavorites": "Favoriete mappen",
+      "directoryRecent": "Recente mappen",
+      "directoryLoading": "Mappen laden…",
+      "directoryAutomatic": "Standaardmap van Motrix gebruiken",
+      "directoryUnsupported": "Werk Motrix bij om een map te kiezen.",
+      "directoryOffline": "Maak verbinding met Motrix en vernieuw de lijst om een map te kiezen.",
+      "directoryHint": "De mappen staan op de geselecteerde Motrix-host. Beheer favorieten in Motrix.",
+      "directoryUnavailable": "Deze map is niet beschikbaar of de server is gewijzigd. Vernieuw en kies opnieuw, of gebruik de standaardmap."
+    },
+    "confirmDownload": {
+      "description": "Controleer de gegevens vóór het eerste downloadverzoek. Tijdelijke links kunnen tijdens het wachten verlopen.",
+      "expires": "Het concept verloopt over {{seconds}} seconden. Open de extensie opnieuw om na het sluiten verder te gaan.",
+      "browser": "Downloaden met browser",
+      "browserHint": "Browserdownloads gebruiken de eigen bestandsnaam en verzoekinstellingen van de browser.",
+      "unavailable": "Kan de bevestiging niet openen. Rond een eventueel geopend downloadformulier af en probeer opnieuw. Er is geen download gestart.",
+      "close": "Sluiten",
+      "interceptedDescription": "De browser heeft deze download al gestart. Motrix vraagt de link opnieuw op; bij eenmalige links kan dit mislukken. De oorspronkelijke download gaat door en kan een duplicaat opleveren.",
+      "keepBrowser": "Browserdownload behouden"
     }
   },
   "errors": {

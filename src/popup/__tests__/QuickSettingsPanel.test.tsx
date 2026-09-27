@@ -13,6 +13,7 @@ function controller(
     currentSite: 'files.example.com',
     excludedSite: null,
     takeover: {
+      downloadMode: 'direct',
       enabled: false,
       openTaskPanelAfterSubmit: false,
       consentAckVersion: 1,
@@ -33,6 +34,7 @@ function controller(
     requestTakeoverEnabled: vi.fn(async () => undefined),
     confirmTakeoverConsent: vi.fn(async () => undefined),
     cancelTakeoverConsent: vi.fn(),
+    setDownloadMode: vi.fn(async () => undefined),
     setOpenTaskPanelAfterSubmit: vi.fn(async () => undefined),
     setCurrentSiteExcluded: vi.fn(async () => undefined),
     setNotification: vi.fn(async () => undefined),
@@ -45,7 +47,7 @@ describe('QuickSettingsPanel', () => {
     await i18n.changeLanguage('en-US')
   })
 
-  it('renders four real switches and opens the full settings page', () => {
+  it('renders five real switches and opens the full settings page', () => {
     const settings = controller()
     const onOpenFullSettings = vi.fn()
     render(
@@ -55,7 +57,7 @@ describe('QuickSettingsPanel', () => {
       />
     )
 
-    expect(screen.getAllByRole('switch')).toHaveLength(4)
+    expect(screen.getAllByRole('switch')).toHaveLength(5)
     fireEvent.click(
       screen.getByRole('switch', {
         name: i18n.t('options.notifications.masterLabel'),
@@ -65,6 +67,50 @@ describe('QuickSettingsPanel', () => {
 
     fireEvent.click(screen.getByTestId('full-settings-row'))
     expect(onOpenFullSettings).toHaveBeenCalledOnce()
+  })
+
+  it.each(['confirm', 'direct'] as const)(
+    'keeps takeover available alongside mode %s and maps the ask switch correctly',
+    (mode) => {
+      const settings = controller()
+      settings.takeover = {
+        ...settings.takeover!,
+        downloadMode: mode,
+        enabled: true,
+      }
+      render(
+        <QuickSettingsPanel
+          controller={settings}
+          onOpenFullSettings={vi.fn()}
+        />
+      )
+      const takeover = screen.getByRole('switch', {
+        name: i18n.t('options.takeover.enableLabel'),
+      })
+      expect(takeover.hasAttribute('data-disabled')).toBe(false)
+      expect(takeover.getAttribute('aria-checked')).toBe('true')
+      fireEvent.click(
+        screen.getByRole('switch', {
+          name: i18n.t('options.downloadMode.confirm'),
+        })
+      )
+      expect(settings.setDownloadMode).toHaveBeenCalledWith(
+        mode === 'confirm' ? 'direct' : 'confirm'
+      )
+    }
+  )
+  it('allows turning off a saved ask preference on an unsupported browser', () => {
+    const settings = controller({ taskPanelSupported: false })
+    settings.takeover = { ...settings.takeover!, downloadMode: 'confirm' }
+    render(
+      <QuickSettingsPanel controller={settings} onOpenFullSettings={vi.fn()} />
+    )
+    const control = screen.getByRole('switch', {
+      name: i18n.t('options.downloadMode.confirm'),
+    })
+    expect(control.hasAttribute('data-disabled')).toBe(false)
+    fireEvent.click(control)
+    expect(settings.setDownloadMode).toHaveBeenCalledWith('direct')
   })
 
   it('shows remote takeover as unavailable while keeping notification controls usable', () => {
@@ -90,6 +136,32 @@ describe('QuickSettingsPanel', () => {
         })
         .hasAttribute('data-disabled')
     ).toBe(false)
+  })
+
+  it('explains the browser upgrade requirement beside both popup options', () => {
+    render(
+      <QuickSettingsPanel
+        controller={controller({ taskPanelSupported: false })}
+        onOpenFullSettings={vi.fn()}
+      />
+    )
+    const mode = screen.getByRole('switch', {
+      name: i18n.t('options.downloadMode.confirm'),
+    })
+    expect(
+      document.getElementById(mode.getAttribute('aria-describedby')!)
+        ?.textContent
+    ).toBe(i18n.t('options.taskPanel.unsupported'))
+    expect(
+      screen.getAllByText(i18n.t('options.taskPanel.unsupported'))
+    ).toHaveLength(2)
+    expect(
+      screen
+        .getByRole('switch', {
+          name: i18n.t('options.taskPanel.openAfterSubmit'),
+        })
+        .hasAttribute('data-disabled')
+    ).toBe(true)
   })
 
   it('shows the current domain and persists the new quick settings independently of takeover', () => {

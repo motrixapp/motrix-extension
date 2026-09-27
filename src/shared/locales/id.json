@@ -213,7 +213,13 @@
       "title": "Panel tugas",
       "openAfterSubmit": "Buka panel tugas setelah menambahkan unduhan",
       "description": "Otomatis membuka panel setelah unduhan ditambahkan ke Motrix, termasuk melalui klik kanan dan pengambilalihan otomatis. Beberapa unduhan yang ditambahkan berurutan hanya membuka panel sekali.",
-      "unsupported": "Memerlukan Chrome / Edge 127+ atau Firefox 149+."
+      "unsupported": "Versi browser Anda terlalu lama untuk membuka popup ekstensi secara otomatis. Silakan perbarui ke Chrome / Edge 127+ atau Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Tanya sebelum mengunduh",
+      "confirm": "Tanya sebelum mengunduh",
+      "direct": "Kirim langsung ke Motrix",
+      "description": "Buka formulir otomatis untuk unduhan klik kanan dan unduhan yang dicegat. Nonaktifkan untuk mengirim langsung ke Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix tidak merespons. Sambungkan kembali untuk mencoba lagi.",
       "stale": "Menampilkan data terakhir yang tersedia.",
       "added": "Unduhan ditambahkan: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Nama berkas",
+      "filenameAuto": "Otomatis",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (timpa)",
+      "authorization": "Authorization",
+      "extraHeaders": "Header tambahan",
+      "browserCookies": "Gunakan cookie situs ini",
+      "advanced": "Opsi permintaan",
+      "defaultDirectory": "Menggunakan folder unduhan default Motrix.",
+      "invalidOptions": "Periksa nama dan header. Tulis Name: value per baris tanpa mengulang kolom khusus.",
+      "directory": "Simpan ke",
+      "directoryRefresh": "Muat ulang",
+      "directoryDefault": "Folder bawaan",
+      "directoryFavorites": "Folder favorit",
+      "directoryRecent": "Folder terbaru",
+      "directoryLoading": "Memuat direktori…",
+      "directoryAutomatic": "Gunakan folder bawaan Motrix",
+      "directoryUnsupported": "Perbarui Motrix untuk memilih folder.",
+      "directoryOffline": "Hubungkan ke Motrix, lalu segarkan untuk memilih folder.",
+      "directoryHint": "Folder berada di host Motrix yang dipilih. Kelola favorit di Motrix.",
+      "directoryUnavailable": "Folder tidak tersedia atau server berubah. Segarkan dan pilih lagi, atau gunakan folder bawaan."
+    },
+    "confirmDownload": {
+      "description": "Tinjau sebelum permintaan pertama. Tautan sementara dapat kedaluwarsa saat menunggu.",
+      "expires": "Draf kedaluwarsa dalam {{seconds}} detik. Buka kembali ekstensi untuk melanjutkan setelah menutup popup.",
+      "browser": "Gunakan browser",
+      "browserHint": "Unduhan browser menggunakan pengaturan nama file dan permintaan milik browser.",
+      "unavailable": "Tidak dapat membuka konfirmasi. Selesaikan formulir yang terbuka, lalu coba lagi. Unduhan belum dimulai.",
+      "close": "Tutup",
+      "interceptedDescription": "Browser sudah memulai unduhan ini. Motrix akan meminta tautan lagi, yang mungkin gagal untuk tautan sekali pakai. Unduhan asli tetap berjalan dan dapat menghasilkan file duplikat.",
+      "keepBrowser": "Pertahankan unduhan browser"
     }
   },
   "errors": {

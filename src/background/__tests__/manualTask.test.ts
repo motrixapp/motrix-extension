@@ -234,3 +234,45 @@ describe('manual task background adapter', () => {
     ).rejects.toThrow(MANUAL_TASK_ERROR.submitFailed)
   })
 })
+
+it('uses the current browser UA for manual downloads and validates edited headers', async () => {
+  const submitDownload = vi.fn(async () => ({ taskId: 'ua-task' }))
+  const handler = createManualTaskHandler({
+    extensionId,
+    extensionBaseUrl,
+    submitDownload,
+  })
+  const request = {
+    input: 'https://example.com/download',
+    idempotencyKey: 'manual-ua-key',
+  }
+  await handler(request, popupSender)
+  expect(submitDownload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      selection: expect.objectContaining({
+        primary: expect.objectContaining({
+          headers: { 'User-Agent': navigator.userAgent },
+        }),
+      }),
+    }),
+    { pairIfNeeded: false }
+  )
+  await expect(
+    handler(
+      {
+        ...request,
+        options: {
+          filename: '',
+          userAgent: 'UA\r\nX-Test: injected',
+          referer: '',
+          cookie: '',
+          authorization: '',
+          extraHeaders: '',
+          useBrowserCookies: false,
+        },
+      },
+      popupSender
+    )
+  ).rejects.toThrow(MANUAL_TASK_ERROR.invalidRequest)
+  expect(submitDownload).toHaveBeenCalledOnce()
+})

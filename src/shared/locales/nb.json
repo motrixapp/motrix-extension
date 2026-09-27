@@ -213,7 +213,13 @@
       "title": "Oppgavepanel",
       "openAfterSubmit": "Åpne oppgavepanelet når en nedlasting legges til",
       "description": "Åpne oppgavepanelet automatisk når en nedlasting legges til i Motrix, også via høyreklikk eller automatisk overtakelse. Flere nedlastinger lagt til raskt etter hverandre åpner det bare én gang.",
-      "unsupported": "Krever Chrome / Edge 127+ eller Firefox 149+."
+      "unsupported": "Nettleserversjonen er for gammel til å åpne utvidelsen automatisk. Oppgrader til Chrome / Edge 127+ eller Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Spør før nedlasting",
+      "confirm": "Spør før nedlasting",
+      "direct": "Send direkte til Motrix",
+      "description": "Åpne automatisk et skjema for nedlastinger via høyreklikk og fangede nedlastinger. Slå av for å sende direkte til Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix svarte ikke. Koble til på nytt for å prøve igjen.",
       "stale": "Viser de sist tilgjengelige dataene.",
       "added": "Nedlastinger lagt til: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Filnavn",
+      "filenameAuto": "Automatisk",
+      "cookie": "Cookie (overstyring)",
+      "extraHeaders": "Ekstra HTTP-hoder",
+      "browserCookies": "Bruk informasjonskapsler fra dette nettstedet",
+      "advanced": "Forespørselsvalg",
+      "defaultDirectory": "Bruker standard nedlastingsmappe i Motrix.",
+      "invalidOptions": "Kontroller filnavnet og HTTP-hodene. Skriv ett hode som Name: value per linje, uten å gjenta de egne feltene.",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "authorization": "Authorization",
+      "directory": "Lagre i",
+      "directoryRefresh": "Oppdater",
+      "directoryDefault": "Standardmappe",
+      "directoryFavorites": "Favorittmapper",
+      "directoryRecent": "Nylige mapper",
+      "directoryLoading": "Laster inn mapper…",
+      "directoryAutomatic": "Bruk standardmappen i Motrix",
+      "directoryUnsupported": "Oppdater Motrix for å velge en mappe.",
+      "directoryOffline": "Koble til Motrix og oppdater listen for å velge en mappe.",
+      "directoryHint": "Mappene ligger på den valgte Motrix-verten. Administrer favoritter i Motrix.",
+      "directoryUnavailable": "Mappen er utilgjengelig eller serveren er endret. Oppdater og velg på nytt, eller bruk standardmappen."
+    },
+    "confirmDownload": {
+      "description": "Kontroller før den første nedlastingsforespørselen. Midlertidige lenker kan utløpe mens du venter.",
+      "expires": "Utkastet utløper om {{seconds}} sekunder. Åpne utvidelsen igjen for å fortsette etter at vinduet er lukket.",
+      "browser": "Last ned i nettleseren",
+      "browserHint": "Nedlastinger i nettleseren bruker nettleserens egne filnavn og forespørselsinnstillinger.",
+      "unavailable": "Kunne ikke åpne bekreftelsen. Fullfør et eventuelt åpent nedlastingsskjema og prøv igjen. Ingen nedlasting ble startet.",
+      "close": "Lukk",
+      "interceptedDescription": "Nettleseren har allerede startet nedlastingen. Motrix ber om lenken på nytt, noe som kan mislykkes med engangslenker. Den opprinnelige nedlastingen fortsetter og kan lage en kopi.",
+      "keepBrowser": "Behold nettlesernedlasting"
     }
   },
   "errors": {

@@ -1,5 +1,6 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
+import { createPreviewConfirmationPort } from '@/popup/previewConfirmation'
 import type { NotificationsConfig } from '@/shared/notifications'
 import { withSiteExcluded } from '@/shared/siteExclusion'
 import { resolveLocale } from '@/shared/supportedLocales'
@@ -75,6 +76,7 @@ let previewEndpoint: PreviewEndpoint = {
 }
 
 let previewTakeover: TakeoverConfig = {
+  downloadMode: 'direct',
   openTaskPanelAfterSubmit: false,
   enabled: true,
   consentAckVersion: 1,
@@ -93,6 +95,8 @@ const previewRuntime = {
   id: 'motrix-popup-preview',
   onMessage: { addListener: () => undefined, removeListener: () => undefined },
   connectNative: () => undefined,
+  connect: () =>
+    createPreviewConfirmationPort(previewParams.get('confirmation')),
   openOptionsPage: async () => undefined,
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }
@@ -153,6 +157,12 @@ const previewRuntime = {
           ...(request.payload as TakeoverConfig),
         }
         return { ok: true }
+      case 'bg.patchDownloadMode':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as Pick<TakeoverConfig, 'downloadMode'>),
+        }
+        return previewTakeover
       case 'bg.patchTaskPanelPreference':
         previewTakeover = {
           ...previewTakeover,
@@ -214,6 +224,25 @@ const previewRuntime = {
         }
         return { config: previewEndpoint }
       }
+      case 'bg.getDownloadDirectories':
+        if (previewParams.get('directories') === 'unsupported')
+          return { status: 'unsupported' }
+        if (previewConnection !== 'connected') return { status: 'unavailable' }
+        return {
+          status: 'ready',
+          binding: {
+            endpointId: previewEndpoint.activeEndpointId,
+            endpointRevision: 0,
+            instanceId: 'preview-instance',
+          },
+          directories: {
+            defaultSaveDir: '/Users/preview/Downloads',
+            favorites: [
+              '/Volumes/Archive/Very long directory name for testing popup width and horizontal overflow/Movies',
+            ],
+            recent: ['/Users/preview/Documents'],
+          },
+        }
       case 'bg.taskList':
         return { tasks: [], total: 0 }
       case 'bg.statsGet':
@@ -256,6 +285,7 @@ const storageChanged = {
   removeListener: () => undefined,
 }
 const previewBrowser = {
+  windows: { getCurrent: async () => ({ id: 1 }) },
   action: { openPopup: async () => undefined },
   permissions: { contains: async () => true },
   runtime: previewRuntime,

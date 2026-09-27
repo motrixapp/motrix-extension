@@ -213,7 +213,13 @@
       "title": "Panoul de sarcini",
       "openAfterSubmit": "Deschide panoul de sarcini după adăugarea unei descărcări",
       "description": "Deschide automat panoul de sarcini când se adaugă o descărcare în Motrix, inclusiv din meniul contextual sau prin preluare automată. Mai multe descărcări adăugate rapid îl deschid o singură dată.",
-      "unsupported": "Necesită Chrome / Edge 127+ sau Firefox 149+."
+      "unsupported": "Versiunea browserului este prea veche pentru a deschide automat extensia. Actualizează la Chrome / Edge 127+ sau Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Întreabă înainte de descărcare",
+      "confirm": "Întreabă înainte de descărcare",
+      "direct": "Trimite direct către Motrix",
+      "description": "Deschide automat un formular pentru descărcările din meniul contextual și cele interceptate. Dezactivează pentru a trimite direct la Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix nu a răspuns. Reconectează-te pentru a reîncerca.",
       "stale": "Se afișează ultimele date disponibile.",
       "added": "Descărcări adăugate: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Numele fișierului",
+      "filenameAuto": "Automat",
+      "cookie": "Cookie (suprascriere)",
+      "extraHeaders": "Antete suplimentare",
+      "browserCookies": "Folosește cookie-urile acestui site",
+      "advanced": "Opțiuni pentru cerere",
+      "defaultDirectory": "Folosește folderul implicit de descărcare din Motrix.",
+      "invalidOptions": "Verifică numele fișierului și antetele. Introdu un antet Name: value pe fiecare linie, fără a repeta câmpurile dedicate.",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "authorization": "Authorization",
+      "directory": "Salvează în",
+      "directoryRefresh": "Reîmprospătează",
+      "directoryDefault": "Dosar implicit",
+      "directoryFavorites": "Dosare favorite",
+      "directoryRecent": "Dosare recente",
+      "directoryLoading": "Se încarcă dosarele…",
+      "directoryAutomatic": "Folosește folderul implicit Motrix",
+      "directoryUnsupported": "Actualizează Motrix pentru a alege un folder.",
+      "directoryOffline": "Conectează-te la Motrix și reîmprospătează lista pentru a alege un folder.",
+      "directoryHint": "Folderele se află pe gazda Motrix selectată. Gestionează favoritele în Motrix.",
+      "directoryUnavailable": "Folderul nu este disponibil sau serverul s-a schimbat. Reîmprospătează și alege din nou ori folosește folderul implicit."
+    },
+    "confirmDownload": {
+      "description": "Verifică înainte de prima cerere de descărcare. Linkurile temporare pot expira în timpul așteptării.",
+      "expires": "Ciorna expiră în {{seconds}} secunde. Redeschide extensia pentru a continua după închiderea ferestrei.",
+      "browser": "Descarcă în browser",
+      "browserHint": "Descărcările în browser folosesc numele fișierului și setările de cerere ale browserului.",
+      "unavailable": "Confirmarea nu a putut fi deschisă. Finalizează formularul de descărcare deschis și încearcă din nou. Nu a început nicio descărcare.",
+      "close": "Închide",
+      "interceptedDescription": "Browserul a început deja descărcarea. Motrix va solicita din nou linkul, ceea ce poate eșua pentru linkurile de unică folosință. Descărcarea inițială continuă și poate crea un duplicat.",
+      "keepBrowser": "Păstrează descărcarea în browser"
     }
   },
   "errors": {

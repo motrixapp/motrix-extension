@@ -213,7 +213,13 @@
       "title": "任務面板",
       "openAfterSubmit": "新增下載後展開任務面板",
       "description": "下載成功新增至 Motrix 後自動展開，右鍵下載和自動接管都適用。連續新增多個下載時只展開一次。",
-      "unsupported": "需要 Chrome / Edge 127 或 Firefox 149 以上版本。"
+      "unsupported": "瀏覽器版本過低，無法自動開啟擴充功能彈出視窗。建議升級至 Chrome / Edge 127 或 Firefox 149 以上版本。"
+    },
+    "downloadMode": {
+      "label": "下載前詢問",
+      "confirm": "下載前詢問",
+      "direct": "直接交給 Motrix 下載",
+      "description": "右鍵下載和自動接管時彈出表單，確認後傳送至 Motrix；關閉後直接傳送。"
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix 未回應，請重新連線後重試。",
       "stale": "目前顯示上次更新的資料。",
       "added": "已新增下載：{{count}}"
+    },
+    "taskForm": {
+      "filename": "檔案名稱",
+      "filenameAuto": "自動",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie（覆蓋自動取得值）",
+      "authorization": "Authorization",
+      "extraHeaders": "自訂請求標頭",
+      "browserCookies": "使用此網站的 Cookie",
+      "advanced": "請求選項",
+      "defaultDirectory": "使用 Motrix 的預設下載目錄。",
+      "invalidOptions": "請檢查檔案名稱與請求標頭。自訂標頭每行填寫 Name: value，請勿重複既有欄位。",
+      "directory": "儲存至",
+      "directoryRefresh": "重新整理",
+      "directoryDefault": "預設目錄",
+      "directoryFavorites": "常用目錄",
+      "directoryRecent": "最近使用",
+      "directoryLoading": "正在載入目錄…",
+      "directoryAutomatic": "使用 Motrix 預設目錄",
+      "directoryUnsupported": "升級 Motrix 後即可選擇目錄。",
+      "directoryOffline": "連線至 Motrix 後重新整理，即可選擇目錄。",
+      "directoryHint": "目錄位於目前連線的 Motrix，可在 Motrix 中管理收藏目錄。",
+      "directoryUnavailable": "目錄無法使用或後端已變更。請重新整理並再次選擇，或使用預設目錄。"
+    },
+    "confirmDownload": {
+      "description": "確認後才發起下載請求。臨時連結可能在等待時過期。",
+      "expires": "草稿將在 {{seconds}} 秒後到期。誤關後可點擊擴充功能圖示恢復。",
+      "browser": "用瀏覽器下載",
+      "browserHint": "選擇瀏覽器下載將使用瀏覽器自身的檔案名稱和請求設定。",
+      "unavailable": "無法開啟確認表單。請先處理已開啟的下載表單，再重試。尚未發起下載。",
+      "close": "關閉",
+      "interceptedDescription": "瀏覽器已開始下載。Motrix 會重新請求連結，一次性連結可能失敗。原下載將繼續，可能產生重複檔案。",
+      "keepBrowser": "保留瀏覽器下載"
     }
   },
   "errors": {

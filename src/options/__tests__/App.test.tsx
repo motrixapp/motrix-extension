@@ -100,6 +100,9 @@ describe('options App', () => {
       ).toBeTruthy()
     })
     expect(
+      screen.getByRole('switch', { name: /ask before downloading|下载前询问/i })
+    ).toBeTruthy()
+    expect(
       screen.queryByRole('switch', {
         name: /system notifications|启用系统通知/i,
       })

@@ -127,6 +127,27 @@ describe('usePopupState', () => {
     expect(commands.map(({ kind }) => kind)).not.toContain('bg.reconnect')
   })
 
+  it('exposes the authenticated instance and directory capability to directory fields', async () => {
+    browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
+      if ((raw as Envelope).kind !== 'bg.getState') return { ok: true }
+      return {
+        ...SNAPSHOT,
+        state: 'connected',
+        server: {
+          name: 'Motrix',
+          version: '2',
+          runtime: 'electron',
+          instanceId: 'instance-a',
+        },
+        capabilities: { taskReveal: true, downloadDirectories: true },
+      }
+    })
+    const { result } = renderHook(() => usePopupState())
+    await waitFor(() => expect(result.current.state.loading).toBe(false))
+    expect(result.current.state.server?.instanceId).toBe('instance-a')
+    expect(result.current.state.capabilities.downloadDirectories).toBe(true)
+  })
+
   it('reuses an unchanged polling snapshot instead of redrawing the popup', async () => {
     vi.useFakeTimers()
     const { result } = renderHook(() => usePopupState())

@@ -20,6 +20,7 @@ export function DownloadTab(): React.ReactElement {
   const form = useForm<TakeoverFormValues>({
     resolver: zodFormResolver(takeoverFormSchema),
     defaultValues: {
+      downloadMode: 'direct',
       enabled: false,
       thresholdMB: '',
       unknownSizeAction: 'chrome',

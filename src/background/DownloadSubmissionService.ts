@@ -10,6 +10,7 @@ import {
   HandoffEndpointChangedError,
   type HandoffGuard,
 } from '@/background/handoff/guard'
+import type { DirectorySelection } from '@/shared/downloadDirectories'
 import {
   DOWNLOAD_ERROR,
   DOWNLOAD_OPERATION_TTL_MS,
@@ -92,6 +93,7 @@ export class DownloadSubmissionService {
       idempotencyKey: string
       source: DownloadOperation['source']
       resourceKey: string
+      directory?: DirectorySelection | undefined
       pairIfNeeded?: boolean | undefined
     },
     prepare: (context: DownloadPreparation) => Promise<DownloadSubmitParams>
@@ -104,6 +106,13 @@ export class DownloadSubmissionService {
     const guard = await this.deps.captureGuard()
     if (!guard?.endpointId)
       throw new DownloadPreparationError(DOWNLOAD_ERROR.endpointChanged)
+    if (
+      input.directory &&
+      (input.directory.endpointId !== guard.endpointId ||
+        input.directory.endpointRevision !== (guard.endpointRevision ?? 0))
+    ) {
+      throw new DownloadPreparationError(DOWNLOAD_ERROR.contextChanged)
+    }
     await this.loaded
     const digest = await crypto.subtle.digest(
       'SHA-256',
@@ -111,6 +120,7 @@ export class DownloadSubmissionService {
         JSON.stringify([
           input.source,
           input.resourceKey,
+          input.directory,
           guard.endpointId,
           guard.endpointRevision,
         ])
@@ -165,7 +175,8 @@ export class DownloadSubmissionService {
       record,
       { assertCurrent, deadlineAt },
       prepare,
-      input.pairIfNeeded === true
+      input.pairIfNeeded === true,
+      input.directory
     )
     this.flights.set(record.id, operation)
     try {
@@ -184,7 +195,8 @@ export class DownloadSubmissionService {
     record: OperationRecord,
     context: DownloadPreparation,
     prepare: (context: DownloadPreparation) => Promise<DownloadSubmitParams>,
-    pairIfNeeded: boolean
+    pairIfNeeded: boolean,
+    directory?: DirectorySelection
   ): Promise<DownloadSubmitResult> {
     try {
       await this.persist()
@@ -205,10 +217,13 @@ export class DownloadSubmissionService {
       context.assertCurrent()
       const params = await beforeDeadline(prepare(context), context.deadlineAt)
       context.assertCurrent()
+      if (params.saveDir !== directory?.path)
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.directoryUnavailable)
       const result = await this.deps.manager.submitDownload(
         { ...params, idempotencyKey: record.id },
         {
           assertCurrent: context.assertCurrent,
+          directoryInstanceId: directory?.instanceId,
           onSubmitting: async () => {
             record.state = 'submitting'
             record.updatedAt = this.now()

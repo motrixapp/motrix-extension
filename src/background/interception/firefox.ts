@@ -4,6 +4,7 @@ import { isFaithfulReplay } from '@/background/capture/replayFidelity'
 import { makeOps } from '@/background/handoff/makeOps'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
+import { confirmInterceptedDownload } from '@/background/interception/confirmDownload'
 import { isEligibleDownload } from '@/background/interception/eligibility'
 import { log } from '@/background/log'
 import { decideTakeover } from '@/background/policy/decideTakeover'
@@ -60,6 +61,10 @@ async function handle(
   const popupWindow = deps.popup?.captureWindow()
   const cfg = await deps.getConfig()
   if (!cfg.enabled) return
+  if (cfg.downloadMode === 'confirm') {
+    await confirmInterceptedDownload(item, cfg, popupWindow, deps)
+    return
+  }
   const guard = await deps.captureGuard()
   if (guard === null) return
   const finalUrl = (item as unknown as { finalUrl?: string }).finalUrl

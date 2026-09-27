@@ -213,7 +213,13 @@
       "title": "Pannello attività",
       "openAfterSubmit": "Apri il pannello attività dopo aver aggiunto un download",
       "description": "Apre automaticamente il pannello attività quando un download viene aggiunto a Motrix, anche con clic destro o gestione automatica. Più download aggiunti in rapida successione lo aprono una sola volta.",
-      "unsupported": "Richiede Chrome / Edge 127+ o Firefox 149+."
+      "unsupported": "La versione del browser è troppo vecchia per aprire automaticamente il popup dell’estensione. Aggiorna a Chrome / Edge 127+ o Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Chiedi prima di scaricare",
+      "confirm": "Chiedi prima di scaricare",
+      "direct": "Invia direttamente a Motrix",
+      "description": "Apri automaticamente un modulo per i download dal menu contestuale e quelli intercettati. Disattiva per inviare direttamente a Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix non risponde. Riconnettiti per riprovare.",
       "stale": "Sono visualizzati gli ultimi dati disponibili.",
       "added": "Download aggiunti: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Nome file",
+      "filenameAuto": "Automatico",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (sostituisci)",
+      "authorization": "Authorization",
+      "extraHeaders": "Intestazioni aggiuntive",
+      "browserCookies": "Usa i cookie di questo sito",
+      "advanced": "Opzioni richiesta",
+      "defaultDirectory": "Usa la cartella di download predefinita di Motrix.",
+      "invalidOptions": "Controlla nome e intestazioni. Usa Nome: valore per riga senza ripetere i campi dedicati.",
+      "directory": "Salva in",
+      "directoryRefresh": "Aggiorna",
+      "directoryDefault": "Cartella predefinita",
+      "directoryFavorites": "Cartelle preferite",
+      "directoryRecent": "Cartelle recenti",
+      "directoryLoading": "Caricamento delle cartelle…",
+      "directoryAutomatic": "Usa la cartella predefinita di Motrix",
+      "directoryUnsupported": "Aggiorna Motrix per scegliere una cartella.",
+      "directoryOffline": "Connettiti a Motrix e aggiorna l’elenco per scegliere una cartella.",
+      "directoryHint": "Le cartelle si trovano sull’host Motrix selezionato. Gestisci i preferiti in Motrix.",
+      "directoryUnavailable": "La cartella non è disponibile o il server è cambiato. Aggiorna e seleziona di nuovo oppure usa la cartella predefinita."
+    },
+    "confirmDownload": {
+      "description": "Verifica prima della prima richiesta. I link temporanei possono scadere durante l’attesa.",
+      "expires": "La bozza scade tra {{seconds}} secondi. Riapri l’estensione per riprendere dopo aver chiuso il popup.",
+      "browser": "Usa il browser",
+      "browserHint": "I download del browser usano le impostazioni del browser per nome file e richieste.",
+      "unavailable": "Impossibile aprire la conferma. Completa il modulo aperto e riprova. Nessun download è stato avviato.",
+      "close": "Chiudi",
+      "interceptedDescription": "Il browser ha già avviato il download. Motrix richiederà nuovamente il link, che potrebbe non funzionare se monouso. Il download originale continua e potrebbe creare un duplicato.",
+      "keepBrowser": "Mantieni il download del browser"
     }
   },
   "errors": {

@@ -329,3 +329,52 @@ describe('DownloadSubmissionService', () => {
     expect(f.manager.submitDownload).toHaveBeenCalledOnce()
   })
 })
+
+const directory = {
+  path: '/downloads',
+  endpointId: 'local',
+  endpointRevision: 0,
+  instanceId: 'paired-instance',
+}
+describe('directory-bound submissions', () => {
+  it('rejects a destination selected on another endpoint or revision', async () => {
+    const f = fixture()
+    for (const binding of [
+      { ...directory, endpointId: 'nas' },
+      { ...directory, endpointRevision: 1 },
+    ]) {
+      await expect(
+        f.service.run({ ...f.input, directory: binding }, async () => ({
+          ...params,
+          saveDir: binding.path,
+        }))
+      ).rejects.toThrow(DOWNLOAD_ERROR.contextChanged)
+    }
+    expect(f.manager.submitDownload).not.toHaveBeenCalled()
+  })
+  it('rejects an unbound wire override', async () => {
+    const f = fixture()
+    await expect(
+      f.service.run(f.input, async () => ({ ...params, saveDir: '/other' }))
+    ).rejects.toThrow(DOWNLOAD_ERROR.directoryUnavailable)
+    expect(f.manager.submitDownload).not.toHaveBeenCalled()
+  })
+  it('forwards the instance fence and deduplicates only the same destination', async () => {
+    const f = fixture()
+    await f.service.run({ ...f.input, directory }, async () => ({
+      ...params,
+      saveDir: directory.path,
+    }))
+    expect(f.manager.submitDownload).toHaveBeenCalledWith(
+      expect.objectContaining({ saveDir: directory.path }),
+      expect.objectContaining({ directoryInstanceId: directory.instanceId })
+    )
+    await expect(
+      f.service.run(
+        { ...f.input, directory: { ...directory, path: '/other' } },
+        async () => ({ ...params, saveDir: '/other' })
+      )
+    ).rejects.toThrow(DOWNLOAD_ERROR.contextChanged)
+    expect(f.manager.submitDownload).toHaveBeenCalledTimes(1)
+  })
+})

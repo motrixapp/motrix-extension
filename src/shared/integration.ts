@@ -46,6 +46,7 @@ export interface DownloadOperation {
 }
 
 export const DOWNLOAD_ERROR = {
+  directoryUnavailable: 'download.directory-unavailable',
   pairingRequired: 'download.pairing-required',
   connectionFailed: 'download.connection-failed',
   preparationTimeout: 'download.preparation-timeout',

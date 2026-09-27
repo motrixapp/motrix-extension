@@ -28,7 +28,7 @@ export function updateContextMenuTitle(paired: boolean): void {
 
 export interface MenuClickDeps {
   getConfig: () => Promise<TakeoverConfig>
-  run: (target: TakeoverTarget) => Promise<void>
+  run: (target: TakeoverTarget, windowId?: number) => Promise<void>
 }
 
 function isHttp(url: string | undefined): url is string {
@@ -63,7 +63,13 @@ export async function handleMenuClick(
 
   if (isHttp(url)) {
     await deps.run(
-      normalizeTarget({ url, ...referrer, ...tabTitle, origin: 'context-menu' })
+      normalizeTarget({
+        url,
+        ...referrer,
+        ...tabTitle,
+        origin: 'context-menu',
+      }),
+      tab?.windowId
     )
     return
   }
@@ -76,7 +82,8 @@ export async function handleMenuClick(
         ...tabTitle,
         ...(dn ? { suggestedFilename: dn } : {}),
         origin: 'context-menu',
-      })
+      }),
+      tab?.windowId
     )
     return
   }

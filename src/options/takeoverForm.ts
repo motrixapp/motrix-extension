@@ -1,6 +1,11 @@
-import type { TakeoverRule, TakeoverSettings } from '@/shared/takeover'
+import type {
+  DownloadMode,
+  TakeoverRule,
+  TakeoverSettings,
+} from '@/shared/takeover'
 
 export interface TakeoverForm {
+  downloadMode: DownloadMode
   enabled: boolean
   thresholdMB: string // '' = none
   unknownSizeAction: TakeoverSettings['unknownSizeAction']
@@ -19,6 +24,7 @@ export function configToForm(config: TakeoverSettings): TakeoverForm {
     )
     .flatMap((r) => r.match.domains ?? [])
   return {
+    downloadMode: config.downloadMode ?? 'direct',
     enabled: config.enabled,
     thresholdMB: typeof threshold === 'number' ? String(threshold) : '',
     unknownSizeAction: config.unknownSizeAction ?? 'chrome',
@@ -51,6 +57,7 @@ export function formToConfig(
     })
   }
   return {
+    downloadMode: form.downloadMode ?? 'direct',
     enabled: form.enabled,
     consentAckVersion,
     defaultAction: 'motrix',

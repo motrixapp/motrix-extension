@@ -530,6 +530,7 @@ export class ConnectionManager {
     ffmpegAvailable: boolean
     selectionKinds: string[]
     taskReveal: boolean
+    downloadDirectories?: boolean | undefined
   } | null = null
   private serverIdentity: ServerIdentity | null = null
   /**
@@ -883,6 +884,7 @@ export class ConnectionManager {
     ffmpegAvailable: boolean
     selectionKinds: string[]
     taskReveal: boolean
+    downloadDirectories?: boolean | undefined
   } | null {
     return this.serverCapabilities
   }
@@ -996,6 +998,7 @@ export class ConnectionManager {
     params: DownloadSubmitParams,
     options: {
       automaticTakeover?: boolean
+      directoryInstanceId?: string | undefined
       assertCurrent?: () => void
       onSubmitting?: () => Promise<void>
     } = {}
@@ -1034,9 +1037,21 @@ export class ConnectionManager {
     ) {
       throw new DownloadPreparationError(DOWNLOAD_ERROR.connectionFailed)
     }
+    const assertDirectory = () => {
+      if (params.saveDir === undefined) return
+      if (this.serverCapabilities?.downloadDirectories !== true)
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.directoryUnavailable)
+      if (
+        !options.directoryInstanceId ||
+        options.directoryInstanceId !== this.currentAuthenticatedInstanceId
+      )
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.contextChanged)
+    }
+    assertDirectory()
     await options.onSubmitting?.()
     options.assertCurrent?.()
     this.ensureCurrentConnection(generation, conn)
+    assertDirectory()
     try {
       const result = DownloadSubmitResultSchema.safeParse(
         await this.request(Methods.DownloadSubmit, withKey)
@@ -1051,6 +1066,13 @@ export class ConnectionManager {
         throw new DownloadPreparationError(DOWNLOAD_ERROR.connectionFailed)
       }
       const code = (error as { code?: unknown } | null)?.code
+      if (
+        code === ErrorCodes.InvalidParams &&
+        (error as { data?: { appCode?: string } })?.data?.appCode ===
+          'download-directory-unavailable'
+      ) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.directoryUnavailable)
+      }
       if (code === ErrorCodes.CapabilityNotSupported) {
         throw new DownloadPreparationError(DOWNLOAD_ERROR.unsupported)
       }
@@ -2659,6 +2681,7 @@ export class ConnectionManager {
     ffmpegAvailable: boolean
     selectionKinds: string[]
     taskReveal?: boolean
+    downloadDirectories?: boolean | undefined
   }): void {
     this.serverCapabilities = {
       ffmpegAvailable: caps.ffmpegAvailable,
@@ -2666,6 +2689,7 @@ export class ConnectionManager {
       // Optional on the 1.0 wire so an older backend remains compatible,
       // but absent must never accidentally enable a desktop-shell action.
       taskReveal: caps.taskReveal === true,
+      downloadDirectories: caps.downloadDirectories === true,
     }
   }
 }

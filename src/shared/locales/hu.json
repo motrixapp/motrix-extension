@@ -213,7 +213,13 @@
       "title": "Feladatpanel",
       "openAfterSubmit": "Feladatpanel megnyitása letöltés hozzáadása után",
       "description": "Automatikusan megnyitja a feladatpanelt, amikor letöltés kerül a Motrixba, akár jobb kattintással, akár automatikus átvétellel. Több gyorsan egymás után hozzáadott letöltés csak egyszer nyitja meg.",
-      "unsupported": "Chrome / Edge 127+ vagy Firefox 149+ szükséges."
+      "unsupported": "A böngésző verziója túl régi a bővítmény automatikus megnyitásához. Frissítsen Chrome / Edge 127+ vagy Firefox 149+ verzióra."
+    },
+    "downloadMode": {
+      "label": "Kérdezzen letöltés előtt",
+      "confirm": "Kérdezzen letöltés előtt",
+      "direct": "Küldés közvetlenül a Motrixnak",
+      "description": "Automatikusan megnyit egy űrlapot a jobb kattintással indított és az elfogott letöltésekhez. Kikapcsolva közvetlenül a Motrixnak küldi őket."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "A Motrix nem válaszolt. Az újrapróbáláshoz csatlakozz újra.",
       "stale": "A legutóbbi elérhető adatok láthatók.",
       "added": "Hozzáadott letöltések: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Fájlnév",
+      "filenameAuto": "Automatikus",
+      "cookie": "Cookie (felülírás)",
+      "extraHeaders": "További fejlécek",
+      "browserCookies": "A webhely sütijeinek használata",
+      "advanced": "Kérés beállításai",
+      "defaultDirectory": "A Motrix alapértelmezett letöltési mappáját használja.",
+      "invalidOptions": "Ellenőrizze a fájlnevet és a fejléceket. Soronként egy Name: value fejlécet adjon meg, és ne ismételje meg a külön mezőket.",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "authorization": "Authorization",
+      "directory": "Mentés helye",
+      "directoryRefresh": "Frissítés",
+      "directoryDefault": "Alapértelmezett mappa",
+      "directoryFavorites": "Kedvenc mappák",
+      "directoryRecent": "Legutóbbi mappák",
+      "directoryLoading": "Mappák betöltése…",
+      "directoryAutomatic": "A Motrix alapértelmezett mappája",
+      "directoryUnsupported": "Frissítsd a Motrixot a mappaválasztáshoz.",
+      "directoryOffline": "Csatlakozz a Motrixhoz, majd frissítsd a listát a mappaválasztáshoz.",
+      "directoryHint": "A mappák a kiválasztott Motrix-gépen vannak. A kedvenceket a Motrixban kezelheted.",
+      "directoryUnavailable": "A mappa nem érhető el, vagy a kiszolgáló megváltozott. Frissíts és válassz újra, vagy használd az alapértelmezett mappát."
+    },
+    "confirmDownload": {
+      "description": "Ellenőrizze az adatokat az első letöltési kérés előtt. Az ideiglenes hivatkozások várakozás közben lejárhatnak.",
+      "expires": "A piszkozat {{seconds}} másodperc múlva lejár. Az ablak bezárása után a bővítmény újbóli megnyitásával folytathatja.",
+      "browser": "Letöltés böngészővel",
+      "browserHint": "A böngészős letöltések a böngésző saját fájlnév- és kérésbeállításait használják.",
+      "unavailable": "Nem sikerült megnyitni a megerősítést. Fejezze be a nyitott letöltési űrlapot, majd próbálja újra. Nem indult letöltés.",
+      "close": "Bezárás",
+      "interceptedDescription": "A böngésző már megkezdte a letöltést. A Motrix újra lekéri a hivatkozást, ami egyszer használatos hivatkozásoknál sikertelen lehet. Az eredeti letöltés folytatódik, és másolatot hozhat létre.",
+      "keepBrowser": "Böngésző letöltésének megtartása"
     }
   },
   "errors": {

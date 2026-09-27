@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { SettingSection } from '@/options/components/SettingSection'
 import type { TakeoverFormValues } from '@/options/tabs/schemas'
 import { useTakeoverAvailability } from '@/options/useTakeoverAvailability'
+import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
 import { CONSENT_VERSION } from '@/shared/takeover'
 
 export function TakeoverSection({
@@ -42,6 +43,7 @@ export function TakeoverSection({
     motrix: t('options.takeover.unknownSizeMotrix'),
   }
   const availability = useTakeoverAvailability()
+  const confirmationSupported = supportsAutoOpenPopup()
   const [showConsent, setShowConsent] = useState(false)
   useEffect(() => {
     if (availability !== 'local') setShowConsent(false)
@@ -50,6 +52,33 @@ export function TakeoverSection({
     <>
       <SettingSection title={t('options.takeover.title')}>
         <FieldGroup>
+          <FormField
+            control={form.control}
+            name="downloadMode"
+            render={({ field }) => (
+              <Field orientation="horizontal">
+                <FieldContent>
+                  <FieldLabel htmlFor="download-mode">
+                    {t('options.downloadMode.label')}
+                  </FieldLabel>
+                  <FieldDescription id="download-mode-description">
+                    {confirmationSupported
+                      ? t('options.downloadMode.description')
+                      : t('options.taskPanel.unsupported')}
+                  </FieldDescription>
+                </FieldContent>
+                <Switch
+                  id="download-mode"
+                  checked={field.value === 'confirm'}
+                  disabled={!confirmationSupported && field.value !== 'confirm'}
+                  onCheckedChange={(checked) =>
+                    field.onChange(checked ? 'confirm' : 'direct')
+                  }
+                  aria-describedby="download-mode-description"
+                />
+              </Field>
+            )}
+          />
           <FormField
             control={form.control}
             name="enabled"

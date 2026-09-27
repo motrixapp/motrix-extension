@@ -1865,7 +1865,7 @@ describe('ConnectionManager — $/task/* notification handlers', () => {
 
 describe('ConnectionManager — submitDownload + cancelDownload', () => {
   /** Fake conn that returns { taskId: 'task-9' } for 'download/submit' */
-  function makeSubmitFakeConn(): MdxpConnection & {
+  function makeSubmitFakeConn(downloadDirectories = false): MdxpConnection & {
     sendRequest: ReturnType<typeof vi.fn>
   } {
     const conn = {
@@ -1877,6 +1877,7 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
             server: { name: 'motrix', version: '2.0', runtime: 'electron' },
             capabilities: {
               ffmpegAvailable: true,
+              downloadDirectories,
               selectionKinds: ['direct'],
               progress: true,
               cancellation: true,
@@ -1898,6 +1899,66 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
       sendRequest: ReturnType<typeof vi.fn>
     }
   }
+
+  it('refuses explicit directories on older hosts before sending', async () => {
+    const conn = makeSubmitFakeConn()
+    const manager = makeManager({ mbp1Conn: conn })
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    await expect(
+      manager.submitDownload(
+        {
+          source: {
+            pageUrl: 'https://example.test',
+            pageTitle: '',
+            detectedAt: 0,
+          },
+          selection: {
+            kind: 'magnet',
+            uri: 'magnet:?xt=urn:btih:0123456789012345678901234567890123456789',
+          },
+          meta: { suggestedFilename: '', qualityLabel: '' },
+          saveDir: '/downloads',
+        },
+        { directoryInstanceId: 'instance' }
+      )
+    ).rejects.toThrow('download.directory-unavailable')
+    expect(
+      conn.sendRequest.mock.calls.some(
+        ([method]) => method === Methods.DownloadSubmit
+      )
+    ).toBe(false)
+    manager.stop()
+  })
+
+  it('refuses directory selections bound to a different paired instance', async () => {
+    const conn = makeSubmitFakeConn(true)
+    const manager = makeManager({ mbp1Conn: conn })
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    await expect(
+      manager.submitDownload(
+        {
+          source: {
+            pageUrl: 'https://example.test',
+            pageTitle: '',
+            detectedAt: 0,
+          },
+          selection: {
+            kind: 'magnet',
+            uri: 'magnet:?xt=urn:btih:0123456789012345678901234567890123456789',
+          },
+          meta: { suggestedFilename: '', qualityLabel: '' },
+          saveDir: '/downloads',
+        },
+        { directoryInstanceId: 'another-instance' }
+      )
+    ).rejects.toThrow('download.context-changed')
+    expect(
+      conn.sendRequest.mock.calls.some(
+        ([method]) => method === Methods.DownloadSubmit
+      )
+    ).toBe(false)
+    manager.stop()
+  })
 
   it('reports a capability rejection as unsupported instead of an unknown download outcome', async () => {
     const conn = makeSubmitFakeConn()

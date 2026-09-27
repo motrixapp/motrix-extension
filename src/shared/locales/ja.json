@@ -213,7 +213,13 @@
       "title": "タスクパネル",
       "openAfterSubmit": "ダウンロード追加後にタスクパネルを開く",
       "description": "Motrix にダウンロードを追加すると、タスクパネルが自動で開きます。右クリックや自動引き継ぎによる追加にも対応し、短時間に複数追加した場合は一度だけ開きます。",
-      "unsupported": "Chrome / Edge 127 以降、または Firefox 149 以降が必要です。"
+      "unsupported": "ブラウザーのバージョンが古いため、拡張機能のポップアップを自動で開けません。Chrome / Edge 127 以降、または Firefox 149 以降に更新してください。"
+    },
+    "downloadMode": {
+      "label": "ダウンロード前に確認",
+      "confirm": "ダウンロード前に確認",
+      "direct": "Motrix に直接送信",
+      "description": "右クリックまたは自動取得したダウンロードの確認フォームを自動表示します。オフの場合は直接 Motrix に送信します。"
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix が応答しません。再接続してお試しください。",
       "stale": "最後に取得したデータを表示しています。",
       "added": "追加したダウンロード：{{count}}"
+    },
+    "taskForm": {
+      "filename": "ファイル名",
+      "filenameAuto": "自動",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie（上書き）",
+      "authorization": "Authorization",
+      "extraHeaders": "追加のリクエストヘッダー",
+      "browserCookies": "このサイトの Cookie を使用",
+      "advanced": "リクエスト設定",
+      "defaultDirectory": "Motrix の既定のダウンロード先を使用します。",
+      "invalidOptions": "ファイル名とヘッダーを確認してください。追加ヘッダーは1行に Name: value と入力し、専用項目を重複させないでください。",
+      "directory": "保存先",
+      "directoryRefresh": "更新",
+      "directoryDefault": "既定のフォルダー",
+      "directoryFavorites": "お気に入りのフォルダー",
+      "directoryRecent": "最近使ったフォルダー",
+      "directoryLoading": "フォルダーを読み込み中…",
+      "directoryAutomatic": "Motrix の既定フォルダーを使用",
+      "directoryUnsupported": "フォルダーを選択するには Motrix を更新してください。",
+      "directoryOffline": "Motrix に接続し、更新するとフォルダーを選択できます。",
+      "directoryHint": "フォルダーは接続先の Motrix にあります。お気に入りは Motrix で管理できます。",
+      "directoryUnavailable": "フォルダーが利用できないか、接続先が変更されました。更新して選び直すか、既定のフォルダーを使用してください。"
+    },
+    "confirmDownload": {
+      "description": "最初のダウンロード要求の前に確認します。待機中に一時リンクの有効期限が切れることがあります。",
+      "expires": "下書きは {{seconds}} 秒後に期限切れになります。閉じた場合は拡張機能を開き直すと再開できます。",
+      "browser": "ブラウザーで保存",
+      "browserHint": "ブラウザーでのダウンロードには、ブラウザー独自のファイル名とリクエスト設定が使われます。",
+      "unavailable": "確認画面を開けませんでした。開いているダウンロード画面を完了して再試行してください。ダウンロードは開始されていません。",
+      "close": "閉じる",
+      "interceptedDescription": "ブラウザーはすでにダウンロードを開始しています。Motrix はリンクを再度リクエストするため、使い捨てリンクでは失敗する場合があります。元のダウンロードは継続し、重複する可能性があります。",
+      "keepBrowser": "ブラウザーのダウンロードを維持"
     }
   },
   "errors": {

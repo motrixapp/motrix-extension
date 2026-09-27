@@ -4,6 +4,7 @@ import { useCurrentSite } from '@/popup/useCurrentSite'
 import type { NotificationsConfig } from '@/shared/notifications'
 import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
 import { excludedSiteDomain, withSiteExcluded } from '@/shared/siteExclusion'
+import type { DownloadMode } from '@/shared/takeover'
 import { CONSENT_VERSION, type TakeoverConfig } from '@/shared/takeover'
 
 export type NotificationSetting = keyof NotificationsConfig
@@ -14,6 +15,7 @@ export interface QuickSettingsError {
 }
 
 export interface QuickSettingsController {
+  setDownloadMode: (mode: DownloadMode) => Promise<void>
   takeoverSupported: boolean
   taskPanelSupported: boolean
   currentSite: string | null
@@ -216,6 +218,17 @@ export function useQuickSettings(
     if (mountedRef.current) setConsentRequired(false)
   }, [])
 
+  const setDownloadMode = useCallback(
+    async (downloadMode: DownloadMode): Promise<void> => {
+      const current = takeoverRef.current
+      if (!current || current.downloadMode === downloadMode) return
+      await persistTakeover({ ...current, downloadMode }, () =>
+        send('bg.patchDownloadMode', { downloadMode })
+      )
+    },
+    [persistTakeover]
+  )
+
   const setOpenTaskPanelAfterSubmit = useCallback(
     async (enabled: boolean): Promise<void> => {
       const current = takeoverRef.current
@@ -277,6 +290,7 @@ export function useQuickSettings(
       requestTakeoverEnabled,
       confirmTakeoverConsent,
       cancelTakeoverConsent,
+      setDownloadMode,
       setOpenTaskPanelAfterSubmit,
       setCurrentSiteExcluded,
       setNotification,
@@ -293,6 +307,7 @@ export function useQuickSettings(
       requestTakeoverEnabled,
       saving,
       setNotification,
+      setDownloadMode,
       setOpenTaskPanelAfterSubmit,
       setCurrentSiteExcluded,
       takeover,

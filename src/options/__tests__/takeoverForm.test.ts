@@ -5,6 +5,7 @@ import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 describe('takeoverForm', () => {
   it('derives empty form from the default config', () => {
     expect(configToForm(TAKEOVER_DEFAULT)).toEqual({
+      downloadMode: 'direct',
       enabled: false,
       thresholdMB: '',
       unknownSizeAction: 'chrome',
@@ -14,6 +15,7 @@ describe('takeoverForm', () => {
 
   it('round-trips threshold + denylist through rules', () => {
     const form = {
+      downloadMode: 'direct',
       enabled: true,
       thresholdMB: '10',
       unknownSizeAction: 'motrix' as const,
@@ -35,6 +37,7 @@ describe('takeoverForm', () => {
   it('drops the threshold rule when thresholdMB is empty or 0', () => {
     const cfg = formToConfig(
       {
+        downloadMode: 'direct',
         enabled: true,
         thresholdMB: '0',
         unknownSizeAction: 'chrome',

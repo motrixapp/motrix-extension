@@ -13,6 +13,8 @@ import { ConnectionPanel } from '@/popup/ConnectionPanel'
 import { ControlPanel } from '@/popup/ControlPanel'
 import { DashboardTile } from '@/popup/DashboardTile'
 import { DownloadActivity } from '@/popup/DownloadActivity'
+import { DownloadConfirmationDialog } from '@/popup/DownloadConfirmationDialog'
+import { DownloadDirectoryConnectionProvider } from '@/popup/DownloadDirectoryConnection'
 import { MediaPanel } from '@/popup/MediaPanel'
 import { PairingPromptDialog } from '@/popup/PairingPromptDialog'
 import { QuickAddTaskDialog } from '@/popup/QuickAddTaskDialog'
@@ -419,104 +421,107 @@ export function App(): React.ReactElement {
       : null
 
   return (
-    <main
-      data-testid="compact-popup"
-      className="box-border flex h-[600px] w-[400px] flex-col overflow-hidden bg-background p-4 font-sans text-foreground"
-    >
-      <PopupHeaderSection
-        connection={state.loading ? 'connecting' : state.connection}
-        pairing={state.pairing}
-        attention={
-          !!state.rpc?.lastError ||
-          state.rpc?.health === 'unresponsive' ||
-          (state.lastError !== null &&
-            state.attemptIntent !== 'background-probe')
-        }
-        checking={state.rpc?.health === 'checking'}
-        endpoint={state.endpoint}
-        switching={switching}
-        takeoverChecked={
-          quickSettings.takeoverSupported &&
-          (quickSettings.takeover?.enabled ?? false)
-        }
-        takeoverDisabled={
-          quickSettings.loading ||
-          quickSettings.saving ||
-          !quickSettings.takeoverSupported
-        }
-        takeoverSupported={quickSettings.takeoverSupported}
-        onEndpointChange={changeEndpoint}
-        onTakeoverChange={handleTakeoverChange}
-        onOpenSettings={openOptions}
-      />
-
-      <PopupDashboard
-        uploadSpeed={
-          connected || rpcPaused
-            ? (controller.stats?.totalUploadSpeed ?? null)
-            : null
-        }
-        downloadSpeed={
-          connected || rpcPaused
-            ? (controller.stats?.totalDownloadSpeed ?? null)
-            : null
-        }
-        activeTaskCount={activeTaskCount}
-        resourceCount={resourceCount}
-        onShowTasks={showTasks}
-        onShowResources={showResources}
-      />
-
-      {state.endpoint && (
-        <DownloadActivity
-          key={backendKey}
-          endpointId={backendId}
-          endpointRevision={backendRevision}
-          phase={state.phase}
-          onViewTasks={() => {
-            setTab('tasks')
-            if (!connected) reconnectPopup()
-          }}
-        />
-      )}
-
-      {autoReceipt && (
-        <p
-          role="status"
-          className="mt-2 shrink-0 text-xs text-muted-foreground"
-        >
-          {t('popup.rpc.added', { count: autoReceipt.count })}
-        </p>
-      )}
-      <RpcNotice state={state} onReconnect={reconnectPopup} />
-      <PopupContent
-        tab={tab}
-        onTabChange={changeTab}
-        connected={connected}
-        state={state}
-        statusState={statusState}
-        taskController={taskController}
-        notice={connectedNotice}
-        needsServer={needsServer}
-        onReconnect={reconnectPopup}
-        onOpenOptions={openOptions}
-        onShowPairing={showPairing}
-        backendKey={backendKey}
-        onMediaCountChange={setResourceCount}
-        quickSettings={quickSettings}
-      />
-
-      {pairingPrompt && (
-        <PairingPromptDialog
-          prompt={pairingPrompt}
-          error={pairingCodeError}
-          submitting={submittingCode}
-          onSubmit={(code) => void handleSubmitCode(code)}
-          onDismiss={() =>
-            setDismissedPairingDeadlineMs(pairingPrompt.deadlineMs)
+    <DownloadDirectoryConnectionProvider state={state}>
+      <main
+        data-testid="compact-popup"
+        className="box-border flex h-[600px] w-[400px] flex-col overflow-hidden bg-background p-4 font-sans text-foreground"
+      >
+        <PopupHeaderSection
+          connection={state.loading ? 'connecting' : state.connection}
+          pairing={state.pairing}
+          attention={
+            !!state.rpc?.lastError ||
+            state.rpc?.health === 'unresponsive' ||
+            (state.lastError !== null &&
+              state.attemptIntent !== 'background-probe')
           }
+          checking={state.rpc?.health === 'checking'}
+          endpoint={state.endpoint}
+          switching={switching}
+          takeoverChecked={
+            quickSettings.takeoverSupported &&
+            (quickSettings.takeover?.enabled ?? false)
+          }
+          takeoverDisabled={
+            quickSettings.loading ||
+            quickSettings.saving ||
+            !quickSettings.takeoverSupported
+          }
+          takeoverSupported={quickSettings.takeoverSupported}
+          onEndpointChange={changeEndpoint}
+          onTakeoverChange={handleTakeoverChange}
+          onOpenSettings={openOptions}
         />
-      )}
-    </main>
+
+        <PopupDashboard
+          uploadSpeed={
+            connected || rpcPaused
+              ? (controller.stats?.totalUploadSpeed ?? null)
+              : null
+          }
+          downloadSpeed={
+            connected || rpcPaused
+              ? (controller.stats?.totalDownloadSpeed ?? null)
+              : null
+          }
+          activeTaskCount={activeTaskCount}
+          resourceCount={resourceCount}
+          onShowTasks={showTasks}
+          onShowResources={showResources}
+        />
+
+        {state.endpoint && (
+          <DownloadActivity
+            key={backendKey}
+            endpointId={backendId}
+            endpointRevision={backendRevision}
+            phase={state.phase}
+            onViewTasks={() => {
+              setTab('tasks')
+              if (!connected) reconnectPopup()
+            }}
+          />
+        )}
+
+        {autoReceipt && (
+          <p
+            role="status"
+            className="mt-2 shrink-0 text-xs text-muted-foreground"
+          >
+            {t('popup.rpc.added', { count: autoReceipt.count })}
+          </p>
+        )}
+        <RpcNotice state={state} onReconnect={reconnectPopup} />
+        <PopupContent
+          tab={tab}
+          onTabChange={changeTab}
+          connected={connected}
+          state={state}
+          statusState={statusState}
+          taskController={taskController}
+          notice={connectedNotice}
+          needsServer={needsServer}
+          onReconnect={reconnectPopup}
+          onOpenOptions={openOptions}
+          onShowPairing={showPairing}
+          backendKey={backendKey}
+          onMediaCountChange={setResourceCount}
+          quickSettings={quickSettings}
+        />
+
+        <DownloadConfirmationDialog />
+        {pairingPrompt && (
+          <PairingPromptDialog
+            prompt={pairingPrompt}
+            error={pairingCodeError}
+            submitting={submittingCode}
+            onSubmit={(code) => void handleSubmitCode(code)}
+            onDismiss={() =>
+              setDismissedPairingDeadlineMs(pairingPrompt.deadlineMs)
+            }
+          />
+        )}
+      </main>
+    </DownloadDirectoryConnectionProvider>
   )
 }

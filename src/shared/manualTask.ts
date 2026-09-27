@@ -1,6 +1,8 @@
 import { z } from 'zod'
+import type { TaskOptions } from '@/shared/taskOptions'
 
 export interface CreateManualTaskRequest {
+  options?: TaskOptions
   pairIfNeeded?: boolean
 
   input: string

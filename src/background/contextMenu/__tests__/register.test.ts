@@ -171,3 +171,21 @@ describe('updateContextMenuTitle', () => {
     })
   })
 })
+
+it('preserves the source window for HTTP and magnet confirmations', async () => {
+  for (const linkUrl of [
+    'https://example.com/once.zip',
+    'magnet:?xt=urn:btih:abc',
+  ]) {
+    const run = vi.fn(async () => {})
+    await handleMenuClick(
+      { linkUrl } as Browser.contextMenus.OnClickData,
+      { windowId: 17 } as Browser.tabs.Tab,
+      { run, getConfig: async () => TAKEOVER_DEFAULT }
+    )
+    expect(run).toHaveBeenCalledWith(
+      expect.objectContaining({ url: linkUrl }),
+      17
+    )
+  }
+})

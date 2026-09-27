@@ -1,4 +1,4 @@
-# Motrix Official Browser Extension
+# Motrix Extension
 
 English | [简体中文](./README.zh-CN.md)
 
@@ -101,11 +101,29 @@ Pairing credentials and data permissions are isolated per Server. Pairing proves
 
 Right-click a download link on a page and choose **Download with Motrix**. This is the most direct route, and automatic takeover does not need to be enabled.
 
-The remote Server policy currently blocks right-click handoff. When a remote Server is selected, create the task manually in the extension or submit it from the **Sniffer** tab instead.
+Right-click handoff also supports a selected remote Server after pairing and enabling **Remote downloads**. Cookies and request headers remain subject to that Server's separate data permissions.
+
+Enable **Settings → Downloads → Ask before downloading** to automatically open the same confirmation form for right-click submissions and eligible intercepted downloads. The switch is also available in popup quick settings. Turning it off sends directly to Motrix. Automatic takeover remains a separate preference, and its size and site-exclusion rules still apply. No source probe is made before confirmation; unknown sizes use the configured unknown-size policy. This works independently of **Open task panel after adding a download**. The form offers a filename override, the current browser User-Agent, Referer, Cookie, Authorization, and additional headers. Leave Save to unchanged to use Motrix's default directory, or choose an available directory on a supported host.
+
+Closing the popup preserves the draft and edits for the remainder of its two-minute lifetime. Reopen the extension in the same browser window to resume. Session storage allows recovery after background-worker suspension, including incomplete form fields. Explicit cancellation, expiry, closing the originating browser window, or switching the selected backend discards the draft. Browser restart and extension reload/update clear session storage. Temporary download links may expire sooner than the draft. Browsers without automatic popup support disable enabling this preference and recommend upgrading; an already enabled preference can still be turned off.
+
+Connection or submission failures keep the form and its edits without automatically falling back to the browser. An unknown submission result, including recovery of an interrupted submission, blocks resubmission. The confirmation popup stays bound to its original window and selected backend.
+
+For right-click submissions, the source request starts only after confirmation. For intercepted downloads, the browser has already requested the resource. The extension releases its short filename hold before opening the form and keeps the original download running, including if the popup closes or Motrix submission fails. **Keep browser download** dismisses the form without another request. Choosing Motrix starts a separate request and may fail for one-use links or create a duplicate; the form explains this before submission. The extension cannot transfer the browser's existing response stream or guarantee interception before every cloud provider's first request.
 
 ### Create a task manually
 
-Once Motrix is connected, open the **Tasks** tab and select the plus button in the upper-right corner. Paste one HTTP, HTTPS, or `magnet:?` address. The current version accepts one address at a time.
+Once Motrix is connected, open the **Tasks** tab and select the plus button in the upper-right corner. Paste one HTTP, HTTPS, or `magnet:?` address. The current version accepts one address at a time. HTTP(S) tasks use the same filename and request-options fields as the confirmation form, with the current browser User-Agent filled in. Retrying an unchanged submission preserves its identity; editing its address or options starts a new submission.
+
+### Choose a download directory
+
+The confirmation and quick-add forms can select the connected Motrix host's
+available default, favorite, and recent directories (requires MDXP 0.7.0 support
+in Motrix). Manage these directories in Motrix. This picker does not browse the
+filesystem or create folders. Older/disconnected hosts keep default-directory
+submission available; an existing explicit choice is preserved and rejected if
+unsupported or stale until you select a valid directory or explicitly return to
+the default. Directory drafts are bound to the backend and paired instance.
 
 ### Choose resources from the page
 
@@ -115,7 +133,7 @@ One distinction matters here: finding a resource does not guarantee a successful
 
 ## Browser download takeover
 
-When **Takeover** is on, eligible browser downloads are sent automatically to the local Motrix App. A remote Server currently accepts only tasks that you create or submit from the extension; automatic takeover and right-click handoff are blocked. That is conservative, but I think the extra deliberate step is sensible when browser data may cross devices.
+When **Takeover** is on, eligible browser downloads are sent automatically to the local Motrix App. A remote Server accepts manual tasks, selected page resources, and right-click submissions when its remote-download permission is enabled. Automatic takeover remains limited to the local App.
 
 The settings let you define:
 
@@ -157,7 +175,7 @@ After diagnosis, use **Connect** to reproduce the failure and inspect subsequent
 
 ### Why can't the Chrome or Edge development build connect to Motrix?
 
-Check that its extension ID appears under **Settings → Integration → Browser extensions → Trusted extensions** in Motrix. You can copy the ID from the Motrix Official Browser Extension card on `chrome://extensions` or `edge://extensions`. If you loaded the build from a different directory, the browser may have assigned a new ID, so update the Motrix entry as well.
+Check that its extension ID appears under **Settings → Integration → Browser extensions → Trusted extensions** in Motrix. You can copy the ID from the Motrix Extension card on `chrome://extensions` or `edge://extensions`. If you loaded the build from a different directory, the browser may have assigned a new ID, so update the Motrix entry as well.
 
 ### Why can't the extension find Motrix on this computer?
 

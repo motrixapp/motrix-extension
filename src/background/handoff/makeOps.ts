@@ -18,8 +18,10 @@ import { extensionBrowser as browser } from '@/shared/browser'
 import { DOWNLOAD_ERROR } from '@/shared/integration'
 import type { Notify } from '@/shared/notifications'
 import type { TakeoverTarget } from '@/shared/takeover'
+import { applyTaskOptions, type TaskOptions } from '@/shared/taskOptions'
 
 export interface OpsDeps {
+  taskOptions?: TaskOptions
   manager: Pick<
     ConnectionManager,
     | 'getState'
@@ -138,6 +140,11 @@ export function makeOps(deps: OpsDeps): HandoffOps {
       await deps.fallbackToBrowser()
     },
     captureCookies: async (url): Promise<Cookie[]> => {
+      if (
+        deps.taskOptions &&
+        (!deps.taskOptions.useBrowserCookies || deps.taskOptions.cookie)
+      )
+        return []
       assertCurrent()
       const raw = (await browser.cookies.getAll({
         url,
@@ -155,6 +162,7 @@ export function makeOps(deps: OpsDeps): HandoffOps {
       'User-Agent': navigator.userAgent,
     }),
     submit: async (params) => {
+      if (deps.taskOptions) params = applyTaskOptions(params, deps.taskOptions)
       const primaryUrl =
         params.selection.kind === 'direct'
           ? describeUrlForLog(params.selection.primary.url)

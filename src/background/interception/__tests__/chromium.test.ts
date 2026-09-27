@@ -126,6 +126,51 @@ function register(cfg: TakeoverConfig): ChromiumInterceptionDeps {
 }
 
 describe('registerChromiumInterception', () => {
+  it('preserves an already-requested one-use download in confirmation mode without a probe', async () => {
+    register(enabledConfig({ downloadMode: 'confirm' }))
+    const suggest = vi.fn()
+    listener?.(item(), suggest)
+    await vi.waitFor(() => expect(suggest).toHaveBeenCalledOnce())
+    expect(probeTarget).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+    expect(downloads.download).not.toHaveBeenCalled()
+    expect(mockedRunHandoff).not.toHaveBeenCalled()
+  })
+
+  it('releases the native filename hold before opening confirmation and never cancels while waiting', async () => {
+    vi.useFakeTimers()
+    const deps = makeDeps(enabledConfig({ downloadMode: 'confirm' }))
+    const suggest = vi.fn()
+    let finish!: () => void
+    const confirm = vi.fn(() => {
+      expect(suggest).toHaveBeenCalledOnce()
+      return new Promise<void>((resolve) => {
+        finish = resolve
+      })
+    })
+    registerChromiumInterception({
+      ...deps,
+      confirm,
+      popup: { captureWindow: async () => 4 } as never,
+    })
+    listener?.(item(), suggest)
+    await vi.waitFor(() =>
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({ origin: 'auto' }),
+        4,
+        expect.anything()
+      )
+    )
+    await vi.advanceTimersByTimeAsync(HOLD_DEADLINE_MS + 20_000)
+    expect(downloads.cancel).not.toHaveBeenCalled()
+    expect(downloads.erase).not.toHaveBeenCalled()
+    expect(probeTarget).not.toHaveBeenCalled()
+    expect(mockedRunHandoff).not.toHaveBeenCalled()
+    finish()
+    await Promise.resolve()
+    expect(suggest).toHaveBeenCalledOnce()
+  })
+
   it('passes only the leaf of a Windows download path to handoff', async () => {
     register(enabledConfig())
     listener?.(

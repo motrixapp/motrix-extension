@@ -213,7 +213,13 @@
       "title": "Panel zadań",
       "openAfterSubmit": "Otwieraj panel zadań po dodaniu pobierania",
       "description": "Automatycznie otwieraj panel zadań po dodaniu pobierania do Motrix, również przez menu kontekstowe i automatyczne przejmowanie. Kilka pobrań dodanych w krótkim odstępie otwiera go tylko raz.",
-      "unsupported": "Wymaga Chrome / Edge 127+ lub Firefox 149+."
+      "unsupported": "Wersja przeglądarki jest zbyt stara, aby automatycznie otwierać okno rozszerzenia. Zaktualizuj do Chrome / Edge 127+ lub Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Pytaj przed pobraniem",
+      "confirm": "Pytaj przed pobraniem",
+      "direct": "Wyślij bezpośrednio do Motrix",
+      "description": "Automatycznie otwieraj formularz dla pobrań z menu kontekstowego i przechwyconych pobrań. Wyłącz, aby wysyłać bezpośrednio do Motrix."
     }
   },
   "popup": {
@@ -463,6 +469,40 @@
       "failed": "Motrix nie odpowiedział. Połącz się ponownie, aby spróbować jeszcze raz.",
       "stale": "Wyświetlane są ostatnie dostępne dane.",
       "added": "Dodane pobierania: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Nazwa pliku",
+      "filenameAuto": "Automatycznie",
+      "cookie": "Cookie (nadpisanie)",
+      "extraHeaders": "Dodatkowe nagłówki",
+      "browserCookies": "Używaj ciasteczek tej witryny",
+      "advanced": "Opcje żądania",
+      "defaultDirectory": "Używa domyślnego folderu pobierania w Motrix.",
+      "invalidOptions": "Sprawdź nazwę pliku i nagłówki. Wpisz jeden nagłówek Name: value w każdym wierszu, bez powtarzania osobnych pól.",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "authorization": "Authorization",
+      "directory": "Zapisz w",
+      "directoryRefresh": "Odśwież",
+      "directoryDefault": "Folder domyślny",
+      "directoryFavorites": "Ulubione foldery",
+      "directoryRecent": "Ostatnie foldery",
+      "directoryLoading": "Wczytywanie folderów…",
+      "directoryAutomatic": "Użyj domyślnego folderu Motrix",
+      "directoryUnsupported": "Zaktualizuj Motrix, aby wybrać folder.",
+      "directoryOffline": "Połącz się z Motrix i odśwież listę, aby wybrać folder.",
+      "directoryHint": "Foldery znajdują się na wybranym hoście Motrix. Ulubionymi zarządza się w Motrix.",
+      "directoryUnavailable": "Folder jest niedostępny lub serwer się zmienił. Odśwież i wybierz ponownie albo użyj folderu domyślnego."
+    },
+    "confirmDownload": {
+      "description": "Sprawdź dane przed pierwszym żądaniem pobrania. Tymczasowe linki mogą wygasnąć podczas oczekiwania.",
+      "expires": "Szkic wygaśnie za {{seconds}} s. Otwórz rozszerzenie ponownie, aby kontynuować po zamknięciu okna.",
+      "browser": "Pobierz w przeglądarce",
+      "browserHint": "Pobieranie w przeglądarce używa jej własnej nazwy pliku i ustawień żądania.",
+      "unavailable": "Nie można otworzyć potwierdzenia. Dokończ otwarty formularz pobierania i spróbuj ponownie. Nie rozpoczęto pobierania.",
+      "close": "Zamknij",
+      "interceptedDescription": "Przeglądarka rozpoczęła już pobieranie. Motrix ponownie zażąda linku, co może się nie udać w przypadku linków jednorazowych. Pierwotne pobieranie będzie kontynuowane i może utworzyć duplikat.",
+      "keepBrowser": "Zachowaj pobieranie w przeglądarce"
     }
   },
   "errors": {

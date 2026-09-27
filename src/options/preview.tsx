@@ -236,6 +236,12 @@ const previewRuntime = {
         return { state: previewConnectionState }
       case 'bg.getTakeoverConfig':
         return previewTakeover
+      case 'bg.patchDownloadMode':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as Pick<TakeoverSettings, 'downloadMode'>),
+        }
+        return previewTakeover
       case 'bg.patchTaskPanelPreference':
         previewTakeover = {
           ...previewTakeover,

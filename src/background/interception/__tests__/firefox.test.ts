@@ -141,6 +141,52 @@ describe('handleFirefoxDownloadSafely', () => {
     }
   )
 
+  it('preserves the native response without a probe in confirmation mode', async () => {
+    await handleFirefoxDownloadSafely(
+      {
+        id: 7,
+        url: 'https://example.com/one-use',
+      } as Browser.downloads.DownloadItem,
+      {
+        getConfig: async () => ({ enabled: true, downloadMode: 'confirm' }),
+      } as unknown as ChromiumInterceptionDeps
+    )
+    expect(probeTarget).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+    expect(runHandoff).not.toHaveBeenCalled()
+  })
+
+  it('opens confirmation without probing, cancelling, or replaying the browser response', async () => {
+    const confirm = vi.fn(async () => {})
+    await handleFirefoxDownloadSafely(
+      {
+        id: 7,
+        url: 'https://example.com/once.zip',
+        totalBytes: 1024,
+      } as Browser.downloads.DownloadItem,
+      {
+        getConfig: async () => ({
+          enabled: true,
+          downloadMode: 'confirm',
+          defaultAction: 'motrix',
+          rules: [],
+        }),
+        captureGuard: async () => ({ origin: 'auto', assertCurrent: vi.fn() }),
+        popup: { captureWindow: async () => 4 },
+        confirm,
+      } as unknown as ChromiumInterceptionDeps
+    )
+    expect(confirm).toHaveBeenCalledWith(
+      expect.objectContaining({ origin: 'auto' }),
+      4,
+      expect.anything()
+    )
+    expect(probeTarget).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+    expect(downloads.erase).not.toHaveBeenCalled()
+    expect(runHandoff).not.toHaveBeenCalled()
+  })
+
   it('passes only the leaf of a Windows download path to handoff', async () => {
     await handleFirefoxDownloadSafely(
       {
