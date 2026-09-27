@@ -38,6 +38,11 @@
  * Nonces MUST NOT be persisted by any party (§4.2) — they are returned to the
  * caller and never touch `storage.local` here.
  */
+import {
+  assertBackendAuthority,
+  LOCAL_BACKEND_AUTHORITY,
+  type LocalBackendAuthority,
+} from '@/background/mbp1/backend-authority'
 import type { Pin } from '@/background/mbp1/pin-store'
 import { extensionBrowser } from '@/shared/browser'
 
@@ -124,6 +129,8 @@ export interface TabsPort {
 
 export interface DiscoveryServiceOptions extends Partial<DiscoveryConfig> {
   pins: PinReader
+  /** Selects a launch/routing policy, never a server authentication claim. */
+  authority?: LocalBackendAuthority
   nativeBootstrap?: NativeBootstrapPort
   fetchImpl?: typeof fetch
   tabs?: TabsPort
@@ -152,6 +159,7 @@ const DEFAULT_WAKE_DEADLINE_MS = 20_000
 const WAKE_POLL_INTERVAL_MS = 500
 
 const WAKE_URL = 'motrix://open'
+const WINDOWS_STORE_WAKE_URL = 'motrix-store://open'
 
 /** Matches `NativeBootstrap`'s existing bound on a host-supplied nonce. */
 const MAX_NONCE_LENGTH = 512
@@ -176,6 +184,15 @@ function isPrintableAscii(value: string): boolean {
     if (code < 0x21 || code > 0x7e) return false
   }
   return true
+}
+
+function isInstanceId(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= MAX_INSTANCE_ID_LENGTH &&
+    isPrintableAscii(value)
+  )
 }
 
 /**
@@ -340,6 +357,7 @@ function resolveBrowserTabs(): TabsPort | null {
 }
 
 export class DiscoveryService {
+  private readonly authority: LocalBackendAuthority
   private readonly pins: PinReader
   private readonly config: DiscoveryConfig
   private readonly nativeBootstrap: NativeBootstrapPort | null
@@ -347,6 +365,12 @@ export class DiscoveryService {
   private readonly tabs: TabsPort | null
 
   constructor(options: DiscoveryServiceOptions) {
+    const authority = options.authority ?? LOCAL_BACKEND_AUTHORITY
+    assertBackendAuthority(authority)
+    if (authority.kind !== 'local') {
+      throw new TypeError('loopback discovery requires a local authority')
+    }
+    this.authority = authority
     this.pins = options.pins
     this.config = {
       candidatePorts: options.candidatePorts ?? DEFAULT_CANDIDATE_PORTS,
@@ -398,10 +422,29 @@ export class DiscoveryService {
    *
    * Returns `null` rather than throwing when nothing matches: "no endpoint
    * found" is an ordinary outcome the recovery order has to handle anyway.
+   *
+   * The Store scope additionally requires the retained credential's
+   * authenticatedInstanceId. It never substitutes the single-candidate rule
+   * for that binding and rejects duplicate matching hints. The returned hint
+   * still requires an authenticated reconnect before any session is accepted.
    */
   async discoverForReconnect(
-    credentialId: string
+    credentialId: string,
+    authenticatedInstanceId?: string
   ): Promise<DiscoveryResult | null> {
+    if (this.authority.target === 'windows-store') {
+      // Only the retained credential can supply this identity. A lone live
+      // responder or a cached pin cannot substitute for it in the Store scope.
+      if (!isInstanceId(authenticatedInstanceId)) return null
+      const pin = await this.pins.get(credentialId)
+      const candidates = await this.sweepForInstance(
+        authenticatedInstanceId,
+        pin,
+        this.config.discoveryTimeoutMs
+      )
+      const only = candidates.length === 1 ? candidates[0] : undefined
+      return only === undefined ? null : toProbeResult(only)
+    }
     const pin = await this.pins.get(credentialId)
     if (pin !== null) {
       const pinned = await this.probePin(pin)
@@ -418,10 +461,23 @@ export class DiscoveryService {
     return only === undefined ? null : toProbeResult(only)
   }
 
-  /** One existing v1 NM call; its nonce is deliberately unused for /v1. */
+  /** Explicit wake only. Default scope uses one v1 NM call (nonce unused).
+   * Store scope uses the fixed URI and polls only for retained credential
+   * identities. The caller must supply these from authenticated storage, not
+   * discovery. Cancellation prevents late launches/results; an in-flight
+   * request or poll gap may take its bounded interval to finish. */
   async wakeForReconnect(
-    credentialIds: string[]
+    credentialIds: string[],
+    authenticatedInstanceIds?: ReadonlyMap<string, string>,
+    signal?: AbortSignal
   ): Promise<Map<string, DiscoveryResult>> {
+    if (this.authority.target === 'windows-store') {
+      return this.wakeStoreForReconnect(
+        credentialIds,
+        authenticatedInstanceIds,
+        signal
+      )
+    }
     const matches = new Map<string, DiscoveryResult>()
     if (this.nativeBootstrap === null || credentialIds.length === 0)
       return matches
@@ -455,7 +511,7 @@ export class DiscoveryService {
    * Enumerates every endpoint a first pairing could target, for the user to
    * choose from.
    *
-   * Without an explicit picker choice, the injected NM bootstrap is preferred:
+   * In the default scope, without an explicit picker choice, NM is preferred:
    * it is the only path that can produce a §9.2 attestation ticket and a nonce
    * for free. On success it is the *only* result — a host that answered has
    * already told us which instance it speaks for, so offering a choice
@@ -464,6 +520,8 @@ export class DiscoveryService {
    * **No nonce is fetched here.** `/nonce` is one-shot and capped (§4.2), so
    * fetching one per candidate would burn the server's budget on candidates
    * the user never picks. Call `ensureNonce` on the selected result instead.
+   * Store scope skips NM and enumerates hints for an explicit picker; no
+   * result here proves which installation the operating system launched.
    *
    * With no picker choice, `allowLaunch` is forwarded to the host, which wakes
    * a sleeping Motrix only when it is literally `true`. This method does not escalate to
@@ -498,7 +556,7 @@ export class DiscoveryService {
   }
 
   /**
-   * Opens `motrix://open` to wake Motrix, then polls `GET /discovery` against
+   * Opens the selected scope's fixed URI, then polls `GET /discovery` against
    * a **single wall-clock deadline** and returns whatever came up.
    *
    * The deadline is one budget for the whole call, not per port and not per
@@ -511,14 +569,24 @@ export class DiscoveryService {
    *
    * A tab that could not be created is not fatal: Motrix may already be
    * starting for some other reason, so the poll runs regardless.
+   * Store scope always leaves the tab to the browser/user because a live
+   * responder cannot prove completion of the external-protocol confirmation.
    */
-  async wakeAndPoll(): Promise<DiscoveryResult[]> {
+  async wakeAndPoll(signal?: AbortSignal): Promise<DiscoveryResult[]> {
+    if (signal?.aborted) return []
     const deadline = Date.now() + this.config.wakeDeadlineMs
-    const tabId = await this.openWakeTab()
-    while (Date.now() < deadline) {
+    const store = this.authority.target === 'windows-store'
+    // A pending external-protocol prompt must not extend the polling budget.
+    // Store tabs are left to the browser/user: a discovery response cannot
+    // prove that this launch completed (another installation may be live).
+    let tabId: number | null = null
+    if (store) void this.openWakeTab()
+    else tabId = await this.openWakeTab()
+    while (!signal?.aborted && Date.now() < deadline) {
       const live = await this.sweep(
         Math.min(this.config.discoveryTimeoutMs, deadline - Date.now())
       )
+      if (signal?.aborted) return []
       if (live.length > 0) {
         // Motrix answered, so the wake tab has done its job and is litter.
         // This is the *only* place it is closed: on the timeout path the
@@ -527,7 +595,7 @@ export class DiscoveryService {
         // cancel the very wake we asked for. The timeout path therefore has a
         // single exit below, so that stays one testable invariant instead of
         // two branches a test can miss.
-        await this.closeWakeTab(tabId)
+        if (!store) await this.closeWakeTab(tabId)
         return live.map(toProbeResult)
       }
       // Clamped so the gap cannot push past the deadline either — without it
@@ -587,6 +655,78 @@ export class DiscoveryService {
     const live = await this.probe(pin.port, this.config.discoveryTimeoutMs)
     if (live === null || live.instanceId !== pin.instanceId) return null
     return { transport: 'probe', wsPort: pin.port, instanceId: live.instanceId }
+  }
+
+  /** Include a matching pin outside the normal range, without accepting a
+   * stale pin's identity or treating discovery as an authentication result. */
+  private async sweepForInstance(
+    instanceId: string,
+    pin: Pin | null,
+    timeoutMs: number
+  ): Promise<LiveCandidate[]> {
+    const ports = new Set(this.config.candidatePorts)
+    if (pin?.instanceId === instanceId && isValidPort(pin.port)) {
+      ports.add(pin.port)
+    }
+    const candidates = await Promise.all(
+      [...ports].map((port) => this.probe(port, timeoutMs))
+    )
+    return candidates.filter(
+      (candidate): candidate is LiveCandidate =>
+        candidate !== null && candidate.instanceId === instanceId
+    )
+  }
+
+  private async wakeStoreForReconnect(
+    credentialIds: string[],
+    authenticatedInstanceIds: ReadonlyMap<string, string> | undefined,
+    signal: AbortSignal | undefined
+  ): Promise<Map<string, DiscoveryResult>> {
+    const matches = new Map<string, DiscoveryResult>()
+    const retained = credentialIds.flatMap((id) => {
+      const instanceId = authenticatedInstanceIds?.get(id)
+      return isInstanceId(instanceId) ? [{ id, instanceId }] : []
+    })
+    // Missing credentials must never become permission to launch or pair.
+    if (retained.length === 0 || signal?.aborted) return matches
+    const pins = await Promise.all(retained.map(({ id }) => this.pins.get(id)))
+    if (signal?.aborted) return matches
+    const ports = new Set(this.config.candidatePorts)
+    for (const [index, { instanceId }] of retained.entries()) {
+      const pin = pins[index]
+      if (pin?.instanceId === instanceId && isValidPort(pin.port)) {
+        ports.add(pin.port)
+      }
+    }
+    const deadline = Date.now() + this.config.wakeDeadlineMs
+    // Explicit caller intent is required. No native host, nonce, credential
+    // mutation, or protocol data in the fixed launch URI belongs on this path.
+    void this.openWakeTab()
+    while (!signal?.aborted && Date.now() < deadline) {
+      const timeoutMs = Math.min(
+        this.config.discoveryTimeoutMs,
+        deadline - Date.now()
+      )
+      const live = await Promise.all(
+        [...ports].map((port) => this.probe(port, timeoutMs))
+      )
+      if (signal?.aborted) return matches
+      for (const { id, instanceId } of retained) {
+        const candidates = live.filter(
+          (candidate): candidate is LiveCandidate =>
+            candidate !== null && candidate.instanceId === instanceId
+        )
+        const only = candidates.length === 1 ? candidates[0] : undefined
+        if (only !== undefined) {
+          matches.set(id, toProbeResult(only))
+        }
+      }
+      if (matches.size > 0) return matches
+      await sleep(
+        Math.max(0, Math.min(WAKE_POLL_INTERVAL_MS, deadline - Date.now()))
+      )
+    }
+    return matches
   }
 
   /**
@@ -664,6 +804,7 @@ export class DiscoveryService {
     allowLaunch: boolean,
     bindingPub?: Uint8Array
   ): Promise<DiscoveryResult | null> {
+    if (this.authority.target === 'windows-store') return null
     if (this.nativeBootstrap === null) return null
     let reply: NativeBootstrapReply
     try {
@@ -696,7 +837,12 @@ export class DiscoveryService {
     const tabs = this.tabs ?? resolveBrowserTabs()
     if (tabs === null) return null
     try {
-      const tab = await tabs.create({ url: WAKE_URL })
+      const tab = await tabs.create({
+        url:
+          this.authority.target === 'windows-store'
+            ? WINDOWS_STORE_WAKE_URL
+            : WAKE_URL,
+      })
       return typeof tab?.id === 'number' ? tab.id : null
     } catch {
       return null
