@@ -66,6 +66,12 @@ Chrome 或 Edge：打开 `chrome://extensions` 或 `edge://extensions`，启用�
 
 Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入附加组件”，选择 `dist/firefox/manifest.json`。临时扩展会在 Firefox 重启后被移除。
 
+macOS 上的 Safari 18.4+：运行 `pnpm build:safari`，然后在 Safari“设置 → 开发者 → 添加临时扩展”中选择 `dist/safari/`。需要启用网页开发者功能，并按 Safari 提示允许未签名扩展。临时扩展会在退出 Safari 或 24 小时后移除。
+
+**Safari 临时扩展为离线预览版。** 连接 App/Server 需要包含原生消息组件的 `Motrix Extension for Safari.app`。本地开发验收已覆盖 App 冷启动、配对、重连、Server 下载和下载确认弹窗。Safari 不支持自动拦截下载；原生通知投递仍在验证中。
+
+安装完整 Xcode 后，按 [Safari 构建与分发说明](./native/safari/README.md)操作。桌面集成需要兼容的同 Team Motrix bootstrap 服务；扩展已使用正式发布的 MDXP 包。Developer ID 签名与公证由独立 GitHub Actions 工作流完成，公开分发前仍需完成云端构建和安装验收。
+
 </details>
 
 ## 第一次连接

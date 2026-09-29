@@ -1378,6 +1378,21 @@ describe('ConnectionManager MBP1 — instanceId: pin-first-then-hint', () => {
 
     expect(mgr.getState()).toBe('connected')
     expect(seenInstanceId).toBe('pinned-instance')
+    expect(mgr.getServerIdentity()?.instanceId).toBe('pinned-instance')
+    expect(
+      mgr.isNotificationSourceCurrent({
+        endpointId: 'local',
+        endpointRevision: 0,
+        instanceId: 'pinned-instance',
+      })
+    ).toBe(true)
+    expect(
+      mgr.isNotificationSourceCurrent({
+        endpointId: 'local',
+        endpointRevision: 0,
+        instanceId: 'untrusted-hint-instance',
+      })
+    ).toBe(false)
   })
 
   it('falls back to the discovery hint when no pin exists for the credential', async () => {

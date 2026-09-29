@@ -32,7 +32,9 @@
     "submitFailedBody": "Opnieuw downloaden in de browser.",
     "submitFailedTitle": "Verzenden naar Motrix mislukt",
     "submitUnknownTitle": "Verzendresultaat onbekend. Controleer de taken voordat je opnieuw verzendt.",
-    "submitUnknownBody": "Verzendresultaat onbekend. Controleer de taken voordat je opnieuw verzendt."
+    "submitUnknownBody": "Verzendresultaat onbekend. Controleer de taken voordat je opnieuw verzendt.",
+    "taskDetailsBody": "Open de takenlijst om de details te bekijken.",
+    "taskUpdatesTitle": "Meer taakupdates"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Mislukte acties / fouten",
       "errorDesc": "Verzenden mislukt, niet bereikbaar, download mislukt",
       "reminderLabel": "Herinneringen",
-      "reminderDesc": "Koppelverzoeken, ingetrokken koppelingen, overgeslagen websites"
+      "reminderDesc": "Koppelverzoeken, ingetrokken koppelingen, overgeslagen websites",
+      "nativeNotDetermined": "Sta meldingen toe in de meldingsinstellingen.",
+      "nativeDenied": "Meldingen zijn uitgeschakeld in Systeeminstellingen.",
+      "nativeAuthorized": "Meldingen zijn ingeschakeld.",
+      "configure": "Meldingsinstellingen",
+      "openSystemSettings": "Systeeminstellingen openen",
+      "test": "Testmelding versturen",
+      "testBody": "Dit is een testmelding van Motrix Extension.",
+      "testAccepted": "Testmelding ingediend.",
+      "testFailed": "De aflevering van de testmelding kon niet worden bevestigd.",
+      "testSuppressed": "Testmelding niet verstuurd. Controleer de rechten of probeer het zo opnieuw.",
+      "settingsFailed": "De meldingsinstellingen konden niet worden geopend."
     },
     "pairing": {
       "backendTitle": "Koppelen met {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Kan de diagnostiek niet kopiëren. Probeer het opnieuw.",
       "storedPairingUnavailable": "Kan geen verbinding maken met Motrix. Open de app en probeer het opnieuw. Je opgeslagen koppeling blijft behouden."
     }
+  },
+  "safari": {
+    "previewTitle": "Offlinevoorbeeld voor Safari",
+    "previewHelp": "Je kunt bronnen vinden. Verbinden met Motrix en downloads verzenden zijn niet beschikbaar in dit voorbeeld.",
+    "unsupportedFeature": "Deze functie is niet beschikbaar in Safari.",
+    "confirmDownloadDescription": "Open een bevestigingsformulier bij downloads via rechtsklikken. Schakel uit om direct naar Motrix te sturen.",
+    "taskPanelDescription": "Open het takenpaneel nadat een download is toegevoegd."
   }
 }

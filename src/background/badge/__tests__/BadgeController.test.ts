@@ -148,6 +148,27 @@ describe('BadgeController.refresh', () => {
 })
 
 describe('makeBadgeNotify', () => {
+  it('forwards task progress without marking or clearing a badge', () => {
+    const taskProgress = vi.fn()
+    const base = Object.assign(vi.fn(), { taskProgress })
+    const badge = { markError: vi.fn(), clearError: vi.fn() }
+    const notify = makeBadgeNotify(base, badge)
+    const progress = {
+      taskId: 'task-a',
+      bytesDone: 50,
+      phase: 'downloading' as const,
+      source: {
+        endpointId: 'local',
+        endpointRevision: 0,
+        instanceId: 'instance',
+      },
+    }
+    notify.taskProgress?.(progress)
+    expect(taskProgress).toHaveBeenCalledWith(progress)
+    expect(base).not.toHaveBeenCalled()
+    expect(badge.markError).not.toHaveBeenCalled()
+    expect(badge.clearError).not.toHaveBeenCalled()
+  })
   it('error → markError, confirm → clearError, reminder → neither; base always called', () => {
     const base = vi.fn()
     const badge = {

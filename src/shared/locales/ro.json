@@ -32,7 +32,9 @@
     "submitFailedBody": "Se descarcă din nou în browser.",
     "submitFailedTitle": "Trimiterea către Motrix a eșuat",
     "submitUnknownTitle": "Rezultatul trimiterii este necunoscut. Verifică sarcinile înainte de a retrimite.",
-    "submitUnknownBody": "Rezultatul trimiterii este necunoscut. Verifică sarcinile înainte de a retrimite."
+    "submitUnknownBody": "Rezultatul trimiterii este necunoscut. Verifică sarcinile înainte de a retrimite.",
+    "taskDetailsBody": "Deschide lista de sarcini pentru a vedea detaliile.",
+    "taskUpdatesTitle": "Mai multe actualizări ale sarcinilor"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Eșecuri / erori",
       "errorDesc": "Trimitere eșuată, inaccesibil, descărcare eșuată",
       "reminderLabel": "Mementouri",
-      "reminderDesc": "Solicitări de asociere, asociere revocată, site-uri omise"
+      "reminderDesc": "Solicitări de asociere, asociere revocată, site-uri omise",
+      "nativeNotDetermined": "Permite alertele în configurările notificărilor.",
+      "nativeDenied": "Notificările sunt dezactivate în Configurări sistem.",
+      "nativeAuthorized": "Notificările sunt activate.",
+      "configure": "Configurări notificări",
+      "openSystemSettings": "Deschide Configurări sistem",
+      "test": "Trimite o notificare de test",
+      "testBody": "Aceasta este o notificare de test de la Motrix Extension.",
+      "testAccepted": "Notificarea de test a fost transmisă sistemului.",
+      "testFailed": "Livrarea notificării de test nu a putut fi confirmată.",
+      "testSuppressed": "Notificarea de test nu a fost trimisă. Verifică permisiunile sau încearcă din nou în scurt timp.",
+      "settingsFailed": "Configurările notificărilor nu au putut fi deschise."
     },
     "pairing": {
       "backendTitle": "Se asociază {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Diagnosticul nu a putut fi copiat. Reîncearcă.",
       "storedPairingUnavailable": "Conectarea la Motrix a eșuat. Deschide aplicația și reîncearcă; asocierea salvată se păstrează."
     }
+  },
+  "safari": {
+    "previewTitle": "Previzualizare offline Safari",
+    "previewHelp": "Poți detecta resurse. Conectarea la Motrix și trimiterea descărcărilor nu sunt disponibile în această previzualizare.",
+    "unsupportedFeature": "Această funcție nu este disponibilă în Safari.",
+    "confirmDownloadDescription": "Deschide un formular de confirmare pentru descărcările din meniul contextual. Dezactivează pentru a trimite direct la Motrix.",
+    "taskPanelDescription": "Deschide panoul de sarcini după adăugarea unei descărcări."
   }
 }

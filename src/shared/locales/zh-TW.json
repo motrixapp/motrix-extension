@@ -32,7 +32,9 @@
     "submitFailedBody": "正在使用瀏覽器重新下載。",
     "submitFailedTitle": "傳送至 Motrix 失敗",
     "submitUnknownTitle": "傳送結果待確認，請先查看任務，避免重複傳送。",
-    "submitUnknownBody": "傳送結果待確認，請先查看任務，避免重複傳送。"
+    "submitUnknownBody": "傳送結果待確認，請先查看任務，避免重複傳送。",
+    "taskDetailsBody": "請在工作清單中查看詳細資訊。",
+    "taskUpdatesTitle": "更多工作動態"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "失敗／錯誤",
       "errorDesc": "傳送失敗、無法連線、下載失敗",
       "reminderLabel": "提醒",
-      "reminderDesc": "配對提示、配對撤銷、略過網站"
+      "reminderDesc": "配對提示、配對撤銷、略過網站",
+      "nativeNotDetermined": "請在通知設定中允許提醒。",
+      "nativeDenied": "系統設定中已關閉通知。",
+      "nativeAuthorized": "通知已啟用。",
+      "configure": "通知設定",
+      "openSystemSettings": "開啟系統設定",
+      "test": "傳送測試通知",
+      "testBody": "這是一則來自 Motrix Extension 的測試通知。",
+      "testAccepted": "測試通知已提交。",
+      "testFailed": "無法確認測試通知是否已送達。",
+      "testSuppressed": "測試通知未傳送，請檢查權限或稍後再試。",
+      "settingsFailed": "無法開啟通知設定。"
     },
     "pairing": {
       "backendTitle": "正在配對 {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "複製診斷資訊失敗，請重試。",
       "storedPairingUnavailable": "暫時無法連線至 Motrix。請開啟 App 後重試，已儲存的配對會保留。"
     }
+  },
+  "safari": {
+    "previewTitle": "Safari 離線預覽",
+    "previewHelp": "可以探索網頁資源。此預覽版暫不支援連線至 Motrix 或傳送下載工作。",
+    "unsupportedFeature": "Safari 暫不支援此功能。",
+    "confirmDownloadDescription": "右鍵下載時先開啟確認表單；關閉後直接傳送至 Motrix。",
+    "taskPanelDescription": "新增下載成功後自動展開工作面板。"
   }
 }

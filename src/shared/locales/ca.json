@@ -32,7 +32,9 @@
     "submitFailedBody": "Es torna a baixar al navegador.",
     "submitFailedTitle": "L'enviament a Motrix ha fallat",
     "submitUnknownTitle": "Es desconeix el resultat de l'enviament. Comprova les tasques abans de tornar-lo a enviar.",
-    "submitUnknownBody": "Es desconeix el resultat de l'enviament. Comprova les tasques abans de tornar-lo a enviar."
+    "submitUnknownBody": "Es desconeix el resultat de l'enviament. Comprova les tasques abans de tornar-lo a enviar.",
+    "taskDetailsBody": "Obre la llista de tasques per veure els detalls.",
+    "taskUpdatesTitle": "Més actualitzacions de tasques"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Fallades / errors",
       "errorDesc": "Enviament fallit, servei inaccessible, baixada fallida",
       "reminderLabel": "Recordatoris",
-      "reminderDesc": "Avisos de vinculació, vinculació revocada, llocs omesos"
+      "reminderDesc": "Avisos de vinculació, vinculació revocada, llocs omesos",
+      "nativeNotDetermined": "Permet els avisos als ajustos de notificacions.",
+      "nativeDenied": "Les notificacions estan desactivades als Ajustos del Sistema.",
+      "nativeAuthorized": "Les notificacions estan activades.",
+      "configure": "Ajustos de notificacions",
+      "openSystemSettings": "Obre els Ajustos del Sistema",
+      "test": "Envia una notificació de prova",
+      "testBody": "Aquesta és una notificació de prova de Motrix Extension.",
+      "testAccepted": "Notificació de prova enviada al sistema.",
+      "testFailed": "No s’ha pogut confirmar el lliurament de la notificació de prova.",
+      "testSuppressed": "No s’ha enviat la notificació de prova. Revisa els permisos o torna-ho a provar d’aquí a uns instants.",
+      "settingsFailed": "No s’han pogut obrir els ajustos de notificacions."
     },
     "pairing": {
       "backendTitle": "Vinculant {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "No s'ha pogut copiar el diagnòstic. Torna-ho a provar.",
       "storedPairingUnavailable": "No s'ha pogut connectar amb Motrix. Obre'l i torna-ho a provar; es conserva la vinculació desada."
     }
+  },
+  "safari": {
+    "previewTitle": "Vista prèvia sense connexió del Safari",
+    "previewHelp": "Pots detectar recursos. La connexió a Motrix i l’enviament de baixades no estan disponibles en aquesta vista prèvia.",
+    "unsupportedFeature": "Aquesta funció no està disponible al Safari.",
+    "confirmDownloadDescription": "Obre un formulari de confirmació per a les baixades amb el botó dret. Desactiva-ho per enviar directament a Motrix.",
+    "taskPanelDescription": "Obre el tauler de tasques després d’afegir una baixada."
   }
 }

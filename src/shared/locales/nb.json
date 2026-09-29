@@ -32,7 +32,9 @@
     "submitFailedBody": "Laster ned på nytt i nettleseren.",
     "submitFailedTitle": "Kunne ikke sende til Motrix",
     "submitUnknownTitle": "Resultatet av sendingen er ukjent. Sjekk oppgavene før du sender på nytt.",
-    "submitUnknownBody": "Resultatet av sendingen er ukjent. Sjekk oppgavene før du sender på nytt."
+    "submitUnknownBody": "Resultatet av sendingen er ukjent. Sjekk oppgavene før du sender på nytt.",
+    "taskDetailsBody": "Åpne oppgavelisten for å se detaljer.",
+    "taskUpdatesTitle": "Flere oppgaveoppdateringer"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Feil / mislykkede handlinger",
       "errorDesc": "Sending mislyktes, kan ikke nå Motrix, nedlasting mislyktes",
       "reminderLabel": "Påminnelser",
-      "reminderDesc": "Paringsforespørsler, tilbakekalt paring, nettsteder hoppet over"
+      "reminderDesc": "Paringsforespørsler, tilbakekalt paring, nettsteder hoppet over",
+      "nativeNotDetermined": "Tillat varsler i varslingsinnstillingene.",
+      "nativeDenied": "Varsler er slått av i Systeminnstillinger.",
+      "nativeAuthorized": "Varsler er slått på.",
+      "configure": "Varslingsinnstillinger",
+      "openSystemSettings": "Åpne Systeminnstillinger",
+      "test": "Send testvarsel",
+      "testBody": "Dette er et testvarsel fra Motrix Extension.",
+      "testAccepted": "Testvarselet er sendt til systemet.",
+      "testFailed": "Kunne ikke bekrefte levering av testvarselet.",
+      "testSuppressed": "Testvarselet ble ikke sendt. Sjekk tillatelsene eller prøv igjen om litt.",
+      "settingsFailed": "Kunne ikke åpne varslingsinnstillingene."
     },
     "pairing": {
       "backendTitle": "Parer med {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Kunne ikke kopiere diagnostikken. Prøv igjen.",
       "storedPairingUnavailable": "Kunne ikke koble til Motrix. Åpne appen og prøv igjen. Den lagrede paringen beholdes."
     }
+  },
+  "safari": {
+    "previewTitle": "Frakoblet forhåndsvisning for Safari",
+    "previewHelp": "Du kan finne ressurser. Tilkobling til Motrix og sending av nedlastinger er ikke tilgjengelig i denne forhåndsvisningen.",
+    "unsupportedFeature": "Denne funksjonen er ikke tilgjengelig i Safari.",
+    "confirmDownloadDescription": "Åpne et bekreftelsesskjema for nedlastinger via høyreklikk. Slå av for å sende direkte til Motrix.",
+    "taskPanelDescription": "Åpne oppgavepanelet etter at en nedlasting er lagt til."
   }
 }

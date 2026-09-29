@@ -8,6 +8,34 @@ import {
 } from '@/shared/taskOptions'
 
 describe('task form options', () => {
+  it.each([
+    '',
+    'http://127.0.0.1:53719/',
+    'http://localhost:8080/page',
+    'http://192.168.1.10/downloads',
+    'http://[::1]:8080/page',
+    'https://example.com/page',
+  ])('accepts an HTTP page referer including local hosts: %s', (referer) => {
+    expect(
+      taskOptionsSchema.safeParse({ ...defaultTaskOptions('UA'), referer })
+        .success
+    ).toBe(true)
+  })
+
+  it.each([
+    'not a URL',
+    'file:///tmp/download.html',
+    'javascript:alert(1)',
+    'ftp://example.com/page',
+    'https://example.com/\r\nX-Injected: value',
+    'https://example.com/\0',
+  ])('rejects a non-HTTP or unsafe referer: %s', (referer) => {
+    expect(
+      taskOptionsSchema.safeParse({ ...defaultTaskOptions('UA'), referer })
+        .success
+    ).toBe(false)
+  })
+
   it('forwards chosen filename and browser request context without probing a URL', () => {
     const parsed = parseManualTaskInput('https://example.com/file.zip')
     if (!parsed.ok) throw new Error('fixture')

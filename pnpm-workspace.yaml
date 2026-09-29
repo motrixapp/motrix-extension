@@ -14,7 +14,7 @@ minimumReleaseAgeExclude:
   - '@biomejs/cli-win32-x64@2.5.1'
   - '@vitejs/plugin-react@6.0.3'
   - vite@8.1.0
-  - '@motrix/mdxp@0.1.0 || 0.3.0 || 0.6.0 || 0.7.0'
+  - '@motrix/mdxp@0.1.0 || 0.3.0 || 0.6.0 || 0.7.0 || 0.8.0'
   - '@types/node@26.2.0'
   - react-hook-form@7.85.0
   - ws@8.21.3

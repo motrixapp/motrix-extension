@@ -148,7 +148,41 @@ describe('Popup App', () => {
   })
 
   afterEach(async () => {
+    vi.unstubAllGlobals()
     await i18n.changeLanguage('en-US')
+  })
+
+  it('shows Safari offline resources without presenting send or connection actions', async () => {
+    vi.stubGlobal('__BROWSER__', 'safari')
+    const sendMessage = installConnectedBus()
+    render(<App />)
+    expect(
+      await screen.findByRole('heading', {
+        name: i18n.t('popup.sniffer.pageResources'),
+      })
+    ).toBeTruthy()
+    expect(screen.queryByText(i18n.t('safari.previewTitle'))).toBeNull()
+    expect(screen.queryByText(i18n.t('safari.previewHelp'))).toBeNull()
+    expect(screen.queryByTestId('dashboard-tiles')).toBeNull()
+    expect(
+      screen.queryByRole('tab', { name: i18n.t('popup.tabs.tasks') })
+    ).toBeNull()
+    expect(
+      screen.queryByRole('button', {
+        name: i18n.t('popup.sniffer.downloadSelected'),
+      })
+    ).toBeNull()
+    expect(screen.queryByTestId('takeover-switch')).toBeNull()
+    expect(
+      sendMessage.mock.calls.some(([message]) =>
+        [
+          'bg.reconnect',
+          'bg.listPairCandidates',
+          'bg.submitMedia',
+          'bg.taskList',
+        ].includes((message as Envelope).kind)
+      )
+    ).toBe(false)
   })
 
   it('renders the connected App backend, speed tiles, and active tasks', async () => {

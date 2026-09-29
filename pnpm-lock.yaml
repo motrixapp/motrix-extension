@@ -185,8 +185,8 @@ importers:
         specifier: ^5.9.1
         version: 5.9.1(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.88.0(react@19.3.0))(zod@4.6.5)
       '@motrix/mdxp':
-        specifier: ^0.7.0
-        version: 0.7.0
+        specifier: ^0.8.0
+        version: 0.8.0
       '@noble/curves':
         specifier: 2.4.0
         version: 2.4.0
@@ -722,8 +722,8 @@ packages:
       '@cfworker/json-schema':
         optional: true
 
-  '@motrix/mdxp@0.7.0':
-    resolution: {integrity: sha512-usgS94FNEXQyt6wg5hA8UZfCuuf+5inAzhcEc6mNt88RwwOqgbrYDG/VvtD0yn94kNEsxNxZcPowJXqcaGx41w==}
+  '@motrix/mdxp@0.8.0':
+    resolution: {integrity: sha512-eZ1zexvJxpVP/xosaO4Bio3pOIlukO+jsaDSSJX6Ong0eohP7MTXuUfwDfrNBX3cZ/sOEKy8zJurZ551ryQLog==}
 
   '@noble/curves@2.4.0':
     resolution: {integrity: sha512-P4/62zrgfH33CneE3Dn4WhJVA22YUU0eR51wKIan4NVRvwsA0YnPTwWGpNbpuacSujmSFLvyzpyuR30+fbq2Ew==}
@@ -3287,7 +3287,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@motrix/mdxp@0.7.0':
+  '@motrix/mdxp@0.8.0':
     dependencies:
       vscode-jsonrpc: 9.0.3
       zod: 4.6.5

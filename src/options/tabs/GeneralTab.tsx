@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { send } from '@/background/MessageBus'
 import { Separator } from '@/components/ui/separator'
+import { useNotificationCapability } from '@/components/useNotificationCapability'
 import { SettingsTabForm } from '@/options/components/SettingsTabForm'
 import { SettingPanel } from '@/options/SettingPanel'
 import { AppearanceSection } from '@/options/sections/AppearanceSection'
@@ -14,6 +15,7 @@ import {
   generalFormSchema,
 } from '@/options/tabs/schemas'
 import { zodFormResolver } from '@/options/zodFormResolver'
+import { supportsBackendConnections } from '@/shared/browserKind'
 import { i18n, resolveDefaultLocale } from '@/shared/i18n'
 import { getLocaleOverride, setLocaleOverride } from '@/shared/localeStore'
 import { NOTIFICATIONS_DEFAULT } from '@/shared/notifications'
@@ -22,6 +24,7 @@ import { getThemeOverride, setThemeOverride } from '@/shared/themeStore'
 export function GeneralTab(): React.ReactElement {
   const { t } = useTranslation()
   const [loadFailed, setLoadFailed] = useState(false)
+  const notificationCapability = useNotificationCapability()
   const form = useForm<GeneralFormValues>({
     resolver: zodFormResolver(generalFormSchema),
     defaultValues: {
@@ -101,13 +104,22 @@ export function GeneralTab(): React.ReactElement {
         <SettingsTabForm form={form} onSubmit={onSubmit}>
           <AppearanceSection form={form} />
 
-          <Separator className="my-5" />
+          {supportsBackendConnections() && (
+            <>
+              <Separator className="my-5" />
+              <TaskPanelSection form={form} />
+            </>
+          )}
 
-          <TaskPanelSection form={form} />
-
-          <Separator className="my-5" />
-
-          <NotificationsSection form={form} />
+          {notificationCapability.capability.available && (
+            <>
+              <Separator className="my-5" />
+              <NotificationsSection
+                form={form}
+                notificationCapability={notificationCapability}
+              />
+            </>
+          )}
         </SettingsTabForm>
       )}
     </SettingPanel>

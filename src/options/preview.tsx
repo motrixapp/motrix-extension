@@ -1,7 +1,16 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
+import type { NotificationsConfig } from '@/shared/notifications'
 import { resolveLocale } from '@/shared/supportedLocales'
 import { TAKEOVER_DEFAULT, type TakeoverSettings } from '@/shared/takeover'
+
+const previewParams = new URLSearchParams(location.search)
+let previewNotifications: NotificationsConfig = {
+  master: previewParams.get('notificationMaster') === 'on',
+  confirm: false,
+  error: true,
+  reminder: true,
+}
 
 type PreviewEndpoint = {
   version: 3
@@ -50,7 +59,12 @@ let previewConnectionState: 'connected' | 'disconnected' = 'connected'
 const previewRuntime = {
   id: 'motrix-options-preview',
   connectNative: () => undefined,
-  getManifest: () => ({ version: '0.1.0' }),
+  getManifest: () => ({
+    version: '0.1.0',
+    permissions:
+      previewParams.get('native') === 'off' ? [] : ['nativeMessaging'],
+  }),
+  sendNativeMessage: async () => undefined,
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }
     switch (request.kind) {
@@ -255,7 +269,19 @@ const previewRuntime = {
         }
         return { ok: true }
       case 'bg.getNotificationsConfig':
-        return { master: true, confirm: false, error: true, reminder: true }
+        return previewNotifications
+      case 'bg.setNotificationsConfig':
+        previewNotifications = request.payload as NotificationsConfig
+        return { ok: true }
+      case 'bg.getNotificationCapability':
+        return {
+          available: previewParams.get('notifications') !== 'unavailable',
+          authorization: previewParams.get('notifications') ?? 'authorized',
+        }
+      case 'bg.testNotification':
+        return { status: 'accepted' }
+      case 'bg.openNotificationSettings':
+        return { opened: true }
       case 'bg.listAdapters':
         return { adapters: [] }
       default:

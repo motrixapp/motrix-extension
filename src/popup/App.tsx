@@ -33,6 +33,7 @@ import {
   useQuickSettings,
 } from '@/popup/useQuickSettings'
 import { extensionBrowser as browser } from '@/shared/browser'
+import { supportsBackendConnections } from '@/shared/browserKind'
 import { connectionErrorKey } from '@/shared/errorCopy'
 import type { PairingState } from '@/shared/integration'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
@@ -88,16 +89,20 @@ const PopupHeaderSection = memo(function PopupHeaderSection({
   return (
     <CompactPopupHeader
       backend={
-        <BackendSelector
-          connection={connection}
-          pairing={pairing}
-          attention={attention}
-          checking={checking}
-          endpoint={endpoint}
-          busy={switching}
-          onEndpointChange={onEndpointChange}
-          onConfigureServer={onOpenSettings}
-        />
+        supportsBackendConnections() ? (
+          <BackendSelector
+            connection={connection}
+            pairing={pairing}
+            attention={attention}
+            checking={checking}
+            endpoint={endpoint}
+            busy={switching}
+            onEndpointChange={onEndpointChange}
+            onConfigureServer={onOpenSettings}
+          />
+        ) : (
+          <span className="text-sm font-semibold">Motrix Extension</span>
+        )
       }
       takeoverChecked={takeoverChecked}
       takeoverDisabled={takeoverDisabled}
@@ -206,10 +211,10 @@ const PopupContent = memo(function PopupContent({
           value="tasks"
           className={`min-h-0 min-w-0 overflow-x-hidden ${(connected || state.rpc?.health === 'checking' || state.rpc?.health === 'unresponsive') && !state.loading ? 'overflow-y-auto' : 'overflow-y-hidden'}`}
         >
-          {(connected ||
-            state.rpc?.health === 'checking' ||
-            state.rpc?.health === 'unresponsive') &&
-          !state.loading ? (
+          {!supportsBackendConnections() ? null : (connected ||
+              state.rpc?.health === 'checking' ||
+              state.rpc?.health === 'unresponsive') &&
+            !state.loading ? (
             <ControlPanel
               connection="connected"
               readOnly={
@@ -251,7 +256,9 @@ const PopupContent = memo(function PopupContent({
               state.rpc?.health !== 'checking' &&
               state.rpc?.health !== 'unresponsive'
             }
-            pairing={state.pairing}
+            pairing={
+              supportsBackendConnections() ? state.pairing : 'unavailable'
+            }
             submissionKey={backendKey}
             onMediaCountChange={onMediaCountChange}
           />
@@ -266,7 +273,7 @@ const PopupContent = memo(function PopupContent({
             className="mt-0"
           />
         </TabsContent>
-        <PopupBottomNavigation />
+        {supportsBackendConnections() && <PopupBottomNavigation />}
       </Tabs>
       <QuickAddTaskDialog
         open={quickAddOpen}
@@ -288,7 +295,9 @@ export function App(): React.ReactElement {
   const quickSettings = useQuickSettings(
     !switching && supportsAutomaticTakeover(state.endpoint)
   )
-  const [tab, setTab] = useState<PopupTab>('tasks')
+  const [tab, setTab] = useState<PopupTab>(
+    supportsBackendConnections() ? 'tasks' : 'sniffer'
+  )
   const [resourceCount, setResourceCount] = useState(0)
   const [endpointError, setEndpointError] = useState<string | null>(null)
   const [pairingCodeError, setPairingCodeError] = useState<string | null>(null)
@@ -296,7 +305,8 @@ export function App(): React.ReactElement {
   const [dismissedPairingDeadlineMs, setDismissedPairingDeadlineMs] = useState<
     number | null
   >(null)
-  const connected = state.connection === 'connected'
+  const connected =
+    supportsBackendConnections() && state.connection === 'connected'
   const rpcPaused =
     state.rpc?.health === 'checking' || state.rpc?.health === 'unresponsive'
   const needsServer =
@@ -424,7 +434,7 @@ export function App(): React.ReactElement {
     <DownloadDirectoryConnectionProvider state={state}>
       <main
         data-testid="compact-popup"
-        className="box-border flex h-[600px] w-[400px] flex-col overflow-hidden bg-background p-4 font-sans text-foreground"
+        className="box-border flex h-[600px] w-[400px] max-w-[100dvw] flex-col overflow-hidden bg-background p-4 font-sans text-foreground"
       >
         <PopupHeaderSection
           connection={state.loading ? 'connecting' : state.connection}
@@ -437,7 +447,7 @@ export function App(): React.ReactElement {
           }
           checking={state.rpc?.health === 'checking'}
           endpoint={state.endpoint}
-          switching={switching}
+          switching={switching || !supportsBackendConnections()}
           takeoverChecked={
             quickSettings.takeoverSupported &&
             (quickSettings.takeover?.enabled ?? false)
@@ -453,24 +463,26 @@ export function App(): React.ReactElement {
           onOpenSettings={openOptions}
         />
 
-        <PopupDashboard
-          uploadSpeed={
-            connected || rpcPaused
-              ? (controller.stats?.totalUploadSpeed ?? null)
-              : null
-          }
-          downloadSpeed={
-            connected || rpcPaused
-              ? (controller.stats?.totalDownloadSpeed ?? null)
-              : null
-          }
-          activeTaskCount={activeTaskCount}
-          resourceCount={resourceCount}
-          onShowTasks={showTasks}
-          onShowResources={showResources}
-        />
+        {supportsBackendConnections() && (
+          <PopupDashboard
+            uploadSpeed={
+              connected || rpcPaused
+                ? (controller.stats?.totalUploadSpeed ?? null)
+                : null
+            }
+            downloadSpeed={
+              connected || rpcPaused
+                ? (controller.stats?.totalDownloadSpeed ?? null)
+                : null
+            }
+            activeTaskCount={activeTaskCount}
+            resourceCount={resourceCount}
+            onShowTasks={showTasks}
+            onShowResources={showResources}
+          />
+        )}
 
-        {state.endpoint && (
+        {supportsBackendConnections() && state.endpoint && (
           <DownloadActivity
             key={backendKey}
             endpointId={backendId}
@@ -483,7 +495,7 @@ export function App(): React.ReactElement {
           />
         )}
 
-        {autoReceipt && (
+        {supportsBackendConnections() && autoReceipt && (
           <p
             role="status"
             className="mt-2 shrink-0 text-xs text-muted-foreground"
@@ -491,7 +503,9 @@ export function App(): React.ReactElement {
             {t('popup.rpc.added', { count: autoReceipt.count })}
           </p>
         )}
-        <RpcNotice state={state} onReconnect={reconnectPopup} />
+        {supportsBackendConnections() && (
+          <RpcNotice state={state} onReconnect={reconnectPopup} />
+        )}
         <PopupContent
           tab={tab}
           onTabChange={changeTab}
@@ -509,8 +523,8 @@ export function App(): React.ReactElement {
           quickSettings={quickSettings}
         />
 
-        <DownloadConfirmationDialog />
-        {pairingPrompt && (
+        {supportsBackendConnections() && <DownloadConfirmationDialog />}
+        {supportsBackendConnections() && pairingPrompt && (
           <PairingPromptDialog
             prompt={pairingPrompt}
             error={pairingCodeError}

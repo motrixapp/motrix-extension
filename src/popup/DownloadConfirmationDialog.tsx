@@ -17,6 +17,7 @@ import {
   type DownloadConfirmation,
 } from '@/shared/downloadConfirmation'
 import { DOWNLOAD_ERROR, type DownloadErrorReason } from '@/shared/integration'
+import { supportsBrowserDownload } from '@/shared/platformCapabilities'
 import { isMagnetUrl } from '@/shared/takeover'
 import { taskOptionsSchema } from '@/shared/taskOptions'
 
@@ -102,6 +103,9 @@ function ConfirmationForm({
   }, [draft.expiresAt])
   const sending = submittedDraft === draft || draft.phase === 'submitting'
   const disabled = sending || draft.phase === 'unknown' || remaining <= 0
+  const browserAllowed =
+    !isMagnetUrl(draft.target.url) &&
+    (draft.target.origin === 'auto' || supportsBrowserDownload())
   return (
     <Dialog
       open
@@ -170,7 +174,7 @@ function ConfirmationForm({
               {t(confirmationErrorKey(draft.error))}
             </p>
           )}
-          {!isMagnetUrl(draft.target.url) && draft.target.origin !== 'auto' && (
+          {browserAllowed && draft.target.origin !== 'auto' && (
             <p
               id="confirmation-browser-hint"
               className="shrink-0 text-xs text-muted-foreground"
@@ -196,7 +200,7 @@ function ConfirmationForm({
                   : 'popup.quickAdd.cancel'
               )}
             </Button>
-            {!isMagnetUrl(draft.target.url) && (
+            {browserAllowed && (
               <Button
                 type="button"
                 variant="outline"

@@ -32,7 +32,9 @@
     "submitFailedBody": "Reiniciando la descarga en el navegador.",
     "submitFailedTitle": "Error al enviar a Motrix",
     "submitUnknownTitle": "Resultado del envío desconocido. Revisa las tareas antes de volver a enviar.",
-    "submitUnknownBody": "Resultado del envío desconocido. Revisa las tareas antes de volver a enviar."
+    "submitUnknownBody": "Resultado del envío desconocido. Revisa las tareas antes de volver a enviar.",
+    "taskDetailsBody": "Abre la lista de tareas para ver los detalles.",
+    "taskUpdatesTitle": "Más actualizaciones de tareas"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Fallos / errores",
       "errorDesc": "Error de envío, sin acceso, error de descarga",
       "reminderLabel": "Recordatorios",
-      "reminderDesc": "Solicitudes de vinculación, vinculación revocada, sitios omitidos"
+      "reminderDesc": "Solicitudes de vinculación, vinculación revocada, sitios omitidos",
+      "nativeNotDetermined": "Permite las alertas en los ajustes de notificaciones.",
+      "nativeDenied": "Las notificaciones están desactivadas en los Ajustes del Sistema.",
+      "nativeAuthorized": "Las notificaciones están activadas.",
+      "configure": "Ajustes de notificaciones",
+      "openSystemSettings": "Abrir Ajustes del Sistema",
+      "test": "Enviar notificación de prueba",
+      "testBody": "Esta es una notificación de prueba de Motrix Extension.",
+      "testAccepted": "Notificación de prueba enviada al sistema.",
+      "testFailed": "No se pudo confirmar la entrega de la notificación de prueba.",
+      "testSuppressed": "La notificación de prueba no se envió. Revisa los permisos o inténtalo de nuevo en unos instantes.",
+      "settingsFailed": "No se pudieron abrir los ajustes de notificaciones."
     },
     "pairing": {
       "backendTitle": "Vinculando {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "No se pudo copiar la información de diagnóstico. Inténtalo de nuevo.",
       "storedPairingUnavailable": "No se pudo conectar con Motrix. Abre la aplicación e inténtalo de nuevo. Se conserva la vinculación guardada."
     }
+  },
+  "safari": {
+    "previewTitle": "Vista previa sin conexión de Safari",
+    "previewHelp": "Puedes detectar recursos. La conexión a Motrix y el envío de descargas no están disponibles en esta vista previa.",
+    "unsupportedFeature": "Esta función no está disponible en Safari.",
+    "confirmDownloadDescription": "Abrir un formulario de confirmación al descargar con el botón derecho. Desactivar para enviar directamente a Motrix.",
+    "taskPanelDescription": "Abre el panel de tareas después de añadir una descarga."
   }
 }

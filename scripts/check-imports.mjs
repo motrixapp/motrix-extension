@@ -4,7 +4,7 @@ import { extname, join, relative, resolve } from 'node:path'
 const packageRoot = resolve(import.meta.dirname, '..')
 const sourceRoot = join(packageRoot, 'src')
 const supportedExtensions = new Set(['.mjs', '.ts', '.tsx'])
-const ignoredDirectories = new Set(['dist', 'node_modules'])
+const ignoredDirectories = new Set(['.cache', 'dist', 'node_modules'])
 const moduleSpecifierPattern =
   /(?:\bfrom\s*|\b(?:import|require)\s*\(\s*|\b(?:vi|jest)\.(?:mock|doMock|unmock)\s*\(\s*|\bimport\s+)(['"])([^'"\r\n]+)\1/g
 const codeExtensionPattern = /\.(?:[cm]?[jt]sx?)(?:\?|$)/
@@ -123,9 +123,11 @@ for (const file of files) {
       isSourceFile &&
       !isTestFile &&
       ['@wxt-dev/browser', 'webextension-polyfill'].includes(specifier) &&
-      !['shared/browser.ts', 'shared/browser-types.d.ts'].includes(
-        sourceRelative
-      )
+      ![
+        'shared/browser.ts',
+        'shared/browser.safari.ts',
+        'shared/browser-types.d.ts',
+      ].includes(sourceRelative)
     ) {
       violations.push(
         `${location} browser APIs and types must come from @/shared/browser`

@@ -29,7 +29,9 @@ import { extensionBrowser as browser } from '@/shared/browser'
  * doing the parsing (still rejects a malformed `getURL()` result) without
  * that dependency. Do not derive this by string-concatenating a scheme onto
  * `browser.runtime.id`, and do not normalize (lowercase, trim) what this
- * returns — the server does not.
+ * returns for Chromium/Firefox — the server does not. Safari is different:
+ * Safari 27 was observed returning an uppercase UUID in getURL() and a
+ * lowercase UUID in its WebSocket Origin. Only that UUID is case-folded.
  *
  * **Unverified assumption, flagged rather than asserted:** this value is only
  * correct if the browser actually sends an `Origin` header on a WebSocket
@@ -55,6 +57,22 @@ const VERIFIED_ORIGIN_SHAPE = /^(chrome|moz)-extension:\/\/[^/]+$/
 
 export function computeVerifiedOrigin(): string {
   const root = new URL(browser.runtime.getURL('/'))
+  if (root.protocol === 'safari-web-extension:') {
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        root.hostname
+      ) ||
+      root.username !== '' ||
+      root.password !== '' ||
+      root.port !== '' ||
+      root.pathname !== '/' ||
+      root.search !== '' ||
+      root.hash !== ''
+    ) {
+      throw new Error('computeVerifiedOrigin: unexpected Safari root')
+    }
+    return `${root.protocol}//${root.hostname.toLowerCase()}`
+  }
   const origin = `${root.protocol}//${root.host}`
   if (!VERIFIED_ORIGIN_SHAPE.test(origin)) {
     throw new Error(`computeVerifiedOrigin: unexpected shape "${origin}"`)

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { QuickSettingsPanel } from '@/popup/QuickSettingsPanel'
 import type { QuickSettingsController } from '@/popup/useQuickSettings'
 import { i18n } from '@/shared/i18n'
@@ -43,6 +43,37 @@ function controller(
 }
 
 describe('QuickSettingsPanel', () => {
+  afterEach(() => vi.unstubAllGlobals())
+  it('hides Safari takeover, site exclusion and unavailable notifications', async () => {
+    vi.stubGlobal('__BROWSER__', 'safari')
+    render(
+      <QuickSettingsPanel
+        controller={controller({ takeoverSupported: false })}
+        onOpenFullSettings={vi.fn()}
+      />
+    )
+    expect(
+      screen.queryByRole('switch', {
+        name: i18n.t('options.takeover.enableLabel'),
+      })
+    ).toBeNull()
+    expect(
+      screen.queryByRole('switch', {
+        name: i18n.t('popup.quickSettings.excludeCurrentSite'),
+      })
+    ).toBeNull()
+    expect(
+      screen.queryByRole('switch', {
+        name: i18n.t('options.notifications.masterLabel'),
+      })
+    ).toBeNull()
+    expect(screen.queryByText(i18n.t('safari.unsupportedFeature'))).toBeNull()
+    expect(
+      screen.getByRole('switch', {
+        name: i18n.t('options.downloadMode.confirm'),
+      })
+    ).toBeTruthy()
+  })
   beforeEach(async () => {
     await i18n.changeLanguage('en-US')
   })

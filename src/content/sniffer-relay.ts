@@ -14,8 +14,6 @@ import {
 import { isWebStoreBuild } from '@/shared/buildFlags'
 import { shouldExcludeHost } from '@/shared/media'
 
-declare const __BROWSER__: 'chromium' | 'firefox'
-
 const ENTRY_SOURCE = 'motrix-sniffer'
 const RELAY_SOURCE = 'motrix-sniffer-relay'
 const MAX_ITEMS_PER_PACKET = 100

@@ -104,9 +104,13 @@ const base64UrlBytes = (byteLength: number): z.ZodType<string> =>
 
 const protocolVersionField = z.number().int().min(0).max(0xffff_ffff)
 
-const browserField = z.enum(['chromium', 'firefox'])
+const browserField = z.enum(['chromium', 'firefox', 'safari'])
 
 export type Mbp1Browser = z.infer<typeof browserField>
+
+export function isMbp1Browser(value: unknown): value is Mbp1Browser {
+  return browserField.safeParse(value).success
+}
 
 // -- client -> server ------------------------------------------------------
 

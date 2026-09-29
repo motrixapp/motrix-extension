@@ -26,6 +26,7 @@
 /.nyc_output/
 /.vitest/
 *.lcov
+__pycache__/
 
 # Vite, tools, and temporary files
 /.cache/

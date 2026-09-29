@@ -9,6 +9,7 @@ import { notifySafely } from '@/background/handoff/delivery'
 import type { HandoffGuard } from '@/background/handoff/guard'
 import { makeOps, type OpsDeps } from '@/background/handoff/makeOps'
 import { i18n } from '@/shared/i18n'
+import { supportsBrowserDownload } from '@/shared/platformCapabilities'
 import { hostOf, isMagnetUrl, type TakeoverTarget } from '@/shared/takeover'
 import { applyTaskOptions } from '@/shared/taskOptions'
 
@@ -60,12 +61,15 @@ export function createConfirmedDownloadActions(
         }
       )
     },
-    browser: async () => {
-      // An intercepted download already owns its browser response.
-      if (target.origin === 'auto') return
-      guard.assertCurrent()
-      await downloadHttpInBrowser(target.url)
-    },
+    browser:
+      target.origin === 'auto' || supportsBrowserDownload()
+        ? async () => {
+            // An intercepted download already owns its browser response.
+            if (target.origin === 'auto') return
+            guard.assertCurrent()
+            await downloadHttpInBrowser(target.url)
+          }
+        : undefined,
   }
 }
 
@@ -98,7 +102,8 @@ export async function requestConfirmedDownload(
           ? 'options.taskPanel.unsupported'
           : 'popup.confirmDownload.unavailable'
       ),
-      severity: 'reminder',
+      // Keep a visible toolbar error even when system notifications are muted.
+      severity: 'error',
     })
   }
 }

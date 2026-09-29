@@ -42,6 +42,27 @@ describe('computeVerifiedOrigin', () => {
     expect(computeVerifiedOrigin()).toBe(`chrome-extension://${id}`)
   })
 
+  it('matches the measured Safari wire Origin rather than the uppercase runtime UUID', () => {
+    browser.runtime.getURL = () =>
+      'safari-web-extension://12345678-90AB-CDEF-1234-567890ABCDEF/'
+    expect(computeVerifiedOrigin()).toBe(
+      'safari-web-extension://12345678-90ab-cdef-1234-567890abcdef'
+    )
+  })
+
+  it.each([
+    'safari-web-extension://app.motrix.safari.extension/',
+    'safari-web-extension://null/',
+    'safari-web-extension://user@12345678-90AB-CDEF-1234-567890ABCDEF/',
+    'safari-web-extension://12345678-90AB-CDEF-1234-567890ABCDEF:80/',
+    'safari-web-extension://12345678-90AB-CDEF-1234-567890ABCDEF/path',
+    'safari-web-extension://12345678-90AB-CDEF-1234-567890ABCDEF/?query',
+    'safari-web-extension://12345678-90AB-CDEF-1234-567890ABCDEF/#hash',
+  ])('rejects an invalid Safari runtime root: %s', (root) => {
+    browser.runtime.getURL = () => root
+    expect(() => computeVerifiedOrigin()).toThrow()
+  })
+
   it('calls getURL with a path that itself carries a trailing slash', () => {
     // Pins the exact trap this function exists to avoid: getURL('') returns
     // the extension root WITH a trailing slash, same as getURL('/') — the

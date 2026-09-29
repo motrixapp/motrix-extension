@@ -32,7 +32,9 @@
     "submitFailedBody": "Mengunduh ulang di browser.",
     "submitFailedTitle": "Pengiriman ke Motrix gagal",
     "submitUnknownTitle": "Hasil pengiriman belum diketahui. Periksa tugas sebelum mengirim ulang.",
-    "submitUnknownBody": "Hasil pengiriman belum diketahui. Periksa tugas sebelum mengirim ulang."
+    "submitUnknownBody": "Hasil pengiriman belum diketahui. Periksa tugas sebelum mengirim ulang.",
+    "taskDetailsBody": "Buka daftar tugas untuk melihat detail.",
+    "taskUpdatesTitle": "Pembaruan tugas lainnya"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Kegagalan / kesalahan",
       "errorDesc": "Pengiriman gagal, tidak dapat dijangkau, unduhan gagal",
       "reminderLabel": "Pengingat",
-      "reminderDesc": "Permintaan penyandingan, penyandingan dicabut, situs dilewati"
+      "reminderDesc": "Permintaan penyandingan, penyandingan dicabut, situs dilewati",
+      "nativeNotDetermined": "Izinkan peringatan di pengaturan notifikasi.",
+      "nativeDenied": "Notifikasi dinonaktifkan di Pengaturan Sistem.",
+      "nativeAuthorized": "Notifikasi diaktifkan.",
+      "configure": "Pengaturan notifikasi",
+      "openSystemSettings": "Buka Pengaturan Sistem",
+      "test": "Kirim notifikasi uji",
+      "testBody": "Ini adalah notifikasi uji dari Motrix Extension.",
+      "testAccepted": "Notifikasi uji telah dikirim ke sistem.",
+      "testFailed": "Pengiriman notifikasi uji tidak dapat dikonfirmasi.",
+      "testSuppressed": "Notifikasi uji tidak terkirim. Periksa izin atau coba lagi sebentar.",
+      "settingsFailed": "Pengaturan notifikasi tidak dapat dibuka."
     },
     "pairing": {
       "backendTitle": "Menyandingkan {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Informasi diagnostik tidak dapat disalin. Coba lagi.",
       "storedPairingUnavailable": "Tidak dapat terhubung ke Motrix. Buka Motrix dan coba lagi; penyandingan yang tersimpan tetap dipertahankan."
     }
+  },
+  "safari": {
+    "previewTitle": "Pratinjau offline Safari",
+    "previewHelp": "Anda dapat menemukan sumber daya. Koneksi ke Motrix dan pengiriman unduhan tidak tersedia dalam pratinjau ini.",
+    "unsupportedFeature": "Fitur ini tidak tersedia di Safari.",
+    "confirmDownloadDescription": "Buka formulir konfirmasi untuk unduhan melalui klik kanan. Nonaktifkan untuk langsung mengirim ke Motrix.",
+    "taskPanelDescription": "Buka panel tugas setelah unduhan ditambahkan."
   }
 }

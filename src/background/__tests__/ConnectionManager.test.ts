@@ -387,6 +387,7 @@ describe('ConnectionManager — happy path', () => {
       name: 'motrix',
       version: '2.0',
       runtime: 'electron',
+      instanceId: 'fake-instance',
     })
   })
 
@@ -1074,7 +1075,7 @@ describe('ConnectionManager — pair revoked notification', () => {
     fireRevoked('user-revoked')
     await new Promise((r) => setTimeout(r, 10))
     expect(notify).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'reminder' })
+      expect.objectContaining({ severity: 'reminder', kind: 'pairing.revoked' })
     )
   })
 
@@ -1677,6 +1678,7 @@ describe('ConnectionManager — local MBP1 async ownership', () => {
       name: 'server-b',
       version: '2.0',
       runtime: 'electron',
+      instanceId: 'fake-instance',
     })
     expect(mgr.getLastError()).toBeNull()
     expect(deps.revokeAll).not.toHaveBeenCalled()
@@ -1788,6 +1790,71 @@ function makeFakeConnWithNotifications(): MdxpConnection & {
 }
 
 describe('ConnectionManager — $/task/* notification handlers', () => {
+  it('binds retry progress to its source and includes the last observed progress in a failure', async () => {
+    const taskProgress = vi.fn()
+    const notify = Object.assign(vi.fn(), { taskProgress })
+    const conn = makeFakeConnWithNotifications()
+    const mgr = makeManager({ mbp1Conn: conn, notify })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    const progress = {
+      taskId: 'retry-task',
+      bytesDone: 40,
+      bytesTotal: 100,
+      speedBps: 10,
+      etaSec: 6,
+      phase: 'downloading',
+    }
+    conn.emitNotification('$/task/progress', progress)
+    conn.emitNotification('$/task/error', {
+      taskId: 'retry-task',
+      code: 'NETWORK_ERROR',
+      message: 'private details',
+    })
+    const failure = notify.mock.calls[0]![0]
+    const observation = taskProgress.mock.calls[0]![0]
+    expect(failure.failure).toEqual({
+      taskId: 'retry-task',
+      progress: { bytesDone: 40, phase: 'downloading' },
+    })
+    expect(observation.source).toEqual(failure.source)
+    expect(observation.isCurrent()).toBe(true)
+    mgr.stop()
+    expect(observation.isCurrent()).toBe(false)
+    conn.emitNotification('$/task/progress', { ...progress, bytesDone: 50 })
+    expect(taskProgress).toHaveBeenCalledOnce()
+  })
+
+  it('keeps only a safe filename and invalidates delayed notifications after disconnect', async () => {
+    const notify = vi.fn()
+    const conn = makeFakeConnWithNotifications()
+    const mgr = makeManager({ mbp1Conn: conn, notify })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    conn.emitNotification('$/task/completed', {
+      taskId: 't-path',
+      filePath: 'C:\\private\\folder\\report\u202e.txt',
+      durationMs: 1000,
+    })
+    const input = notify.mock.calls[0]![0]
+    expect(input.message).toBe('report .txt')
+    expect(input.kind).toBe('task.completed')
+    expect(input.source).toMatchObject({ endpointRevision: 0 })
+    expect(input.isCurrent()).toBe(true)
+    expect(mgr.isNotificationSourceCurrent(input.source)).toBe(true)
+    for (const changed of [
+      { endpointId: 'another-server' },
+      { endpointRevision: 1 },
+      { instanceId: 'another-instance' },
+      { instanceId: null },
+    ]) {
+      expect(
+        mgr.isNotificationSourceCurrent({ ...input.source, ...changed })
+      ).toBe(false)
+    }
+    mgr.stop()
+    expect(input.isCurrent()).toBe(false)
+    expect(mgr.isNotificationSourceCurrent(input.source)).toBe(false)
+  })
+
   it('fires a notification on $/task/completed and records progress', async () => {
     const notify = vi.fn()
     const taskEvents = new TaskEventStore()
@@ -1847,13 +1914,14 @@ describe('ConnectionManager — $/task/* notification handlers', () => {
     conn.emitNotification('$/task/error', {
       taskId: 't3',
       code: 'NETWORK_ERROR',
-      message: 'Connection timed out',
+      message: 'Request https://private.example/?token=secret timed out',
     })
 
     expect(notify).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Download failed',
-        message: 'Connection timed out',
+        message: 'Open the task list to view details.',
+        kind: 'task.failed',
       })
     )
   })

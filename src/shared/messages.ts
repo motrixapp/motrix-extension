@@ -219,6 +219,20 @@ export interface MessageMap {
     request: undefined
     response: import('@/shared/notifications').NotificationsConfig
   }
+  'bg.getNotificationCapability': {
+    request: undefined
+    response: import('@/shared/notifications').NotificationCapability
+  }
+  'bg.testNotification': {
+    request: undefined
+    response: {
+      status: import('@/shared/notifications').NotificationTestResult
+    }
+  }
+  'bg.openNotificationSettings': {
+    request: undefined
+    response: { opened: boolean }
+  }
   'bg.setNotificationsConfig': {
     request: import('@/shared/notifications').NotificationsConfig
     response: { ok: true }

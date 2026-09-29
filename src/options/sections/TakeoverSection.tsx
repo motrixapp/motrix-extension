@@ -25,7 +25,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { SettingSection } from '@/options/components/SettingSection'
 import type { TakeoverFormValues } from '@/options/tabs/schemas'
 import { useTakeoverAvailability } from '@/options/useTakeoverAvailability'
-import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
+import {
+  supportsAutoOpenPopup,
+  supportsDownloadTakeover,
+} from '@/shared/platformCapabilities'
 import { CONSENT_VERSION } from '@/shared/takeover'
 
 export function TakeoverSection({
@@ -50,7 +53,13 @@ export function TakeoverSection({
   }, [availability])
   return (
     <>
-      <SettingSection title={t('options.takeover.title')}>
+      <SettingSection
+        title={t(
+          supportsDownloadTakeover()
+            ? 'options.takeover.title'
+            : 'options.tabs.download'
+        )}
+      >
         <FieldGroup>
           <FormField
             control={form.control}
@@ -63,8 +72,16 @@ export function TakeoverSection({
                   </FieldLabel>
                   <FieldDescription id="download-mode-description">
                     {confirmationSupported
-                      ? t('options.downloadMode.description')
-                      : t('options.taskPanel.unsupported')}
+                      ? t(
+                          supportsDownloadTakeover()
+                            ? 'options.downloadMode.description'
+                            : 'safari.confirmDownloadDescription'
+                        )
+                      : t(
+                          availability === 'unsupported'
+                            ? 'safari.unsupportedFeature'
+                            : 'options.taskPanel.unsupported'
+                        )}
                   </FieldDescription>
                 </FieldContent>
                 <Switch
@@ -79,124 +96,132 @@ export function TakeoverSection({
               </Field>
             )}
           />
-          <FormField
-            control={form.control}
-            name="enabled"
-            render={({ field }) => (
-              <Field orientation="horizontal">
-                <FieldContent>
-                  <FieldLabel htmlFor="download-enabled">
-                    {t('options.takeover.enableLabel')}
-                  </FieldLabel>
-                  {availability !== 'local' && (
-                    <FieldDescription id="download-takeover-unavailable">
-                      {t(
-                        availability === 'remote'
-                          ? 'options.takeover.remoteUnavailable'
-                          : 'options.takeover.availabilityUnknown'
+          {supportsDownloadTakeover() && (
+            <>
+              <FormField
+                control={form.control}
+                name="enabled"
+                render={({ field }) => (
+                  <Field orientation="horizontal">
+                    <FieldContent>
+                      <FieldLabel htmlFor="download-enabled">
+                        {t('options.takeover.enableLabel')}
+                      </FieldLabel>
+                      {availability !== 'local' && (
+                        <FieldDescription id="download-takeover-unavailable">
+                          {t(
+                            availability === 'unsupported'
+                              ? 'safari.unsupportedFeature'
+                              : availability === 'remote'
+                                ? 'options.takeover.remoteUnavailable'
+                                : 'options.takeover.availabilityUnknown'
+                          )}
+                        </FieldDescription>
                       )}
-                    </FieldDescription>
-                  )}
-                </FieldContent>
-                <Switch
-                  id="download-enabled"
-                  checked={availability === 'local' && field.value}
-                  disabled={availability !== 'local'}
-                  aria-describedby={
-                    availability !== 'local'
-                      ? 'download-takeover-unavailable'
-                      : undefined
-                  }
-                  aria-label={t('options.takeover.enableAria')}
-                  onCheckedChange={(checked) => {
-                    if (availability !== 'local') return
-                    if (checked && consentAck < CONSENT_VERSION) {
-                      setShowConsent(true)
-                      return
-                    }
-                    field.onChange(checked)
-                  }}
-                />
-              </Field>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="thresholdMB"
-            render={({ field, fieldState }) => (
-              <Field orientation="responsive">
-                <FieldContent>
-                  <FieldLabel htmlFor="download-threshold">
-                    {t('options.takeover.minSizeLabel')}
-                  </FieldLabel>
-                </FieldContent>
-                <Input
-                  id="download-threshold"
-                  type="number"
-                  className="bg-background @md/field-group:w-40"
-                  placeholder={t('options.takeover.minSizePlaceholder')}
-                  aria-invalid={fieldState.invalid}
-                  {...field}
-                />
-                {fieldState.invalid && (
-                  <FieldError
-                    errors={[{ message: t(fieldState.error?.message ?? '') }]}
-                  />
+                    </FieldContent>
+                    <Switch
+                      id="download-enabled"
+                      checked={availability === 'local' && field.value}
+                      disabled={availability !== 'local'}
+                      aria-describedby={
+                        availability !== 'local'
+                          ? 'download-takeover-unavailable'
+                          : undefined
+                      }
+                      aria-label={t('options.takeover.enableAria')}
+                      onCheckedChange={(checked) => {
+                        if (availability !== 'local') return
+                        if (checked && consentAck < CONSENT_VERSION) {
+                          setShowConsent(true)
+                          return
+                        }
+                        field.onChange(checked)
+                      }}
+                    />
+                  </Field>
                 )}
-              </Field>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="unknownSizeAction"
-            render={({ field }) => (
-              <Field orientation="responsive">
-                <FieldContent>
-                  <FieldLabel htmlFor="download-unknown-size">
-                    {t('options.takeover.unknownSizeLabel')}
-                  </FieldLabel>
-                </FieldContent>
-                <Select
-                  items={unknownSizeItems}
-                  value={field.value}
-                  onValueChange={(value) => {
-                    if (value !== null) field.onChange(value)
-                  }}
-                >
-                  <SelectTrigger
-                    id="download-unknown-size"
-                    className="min-w-48"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="chrome">
-                      {unknownSizeItems.chrome}
-                    </SelectItem>
-                    <SelectItem value="motrix">
-                      {unknownSizeItems.motrix}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="denylist"
-            render={({ field }) => (
-              <Field orientation="vertical">
-                <FieldLabel htmlFor="download-denylist">
-                  {t('options.takeover.denylistLabel')}
-                </FieldLabel>
-                <Textarea
-                  id="download-denylist"
-                  className="min-h-20"
-                  {...field}
-                />
-              </Field>
-            )}
-          />
+              />
+              <FormField
+                control={form.control}
+                name="thresholdMB"
+                render={({ field, fieldState }) => (
+                  <Field orientation="responsive">
+                    <FieldContent>
+                      <FieldLabel htmlFor="download-threshold">
+                        {t('options.takeover.minSizeLabel')}
+                      </FieldLabel>
+                    </FieldContent>
+                    <Input
+                      id="download-threshold"
+                      type="number"
+                      className="bg-background @md/field-group:w-40"
+                      placeholder={t('options.takeover.minSizePlaceholder')}
+                      aria-invalid={fieldState.invalid}
+                      {...field}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError
+                        errors={[
+                          { message: t(fieldState.error?.message ?? '') },
+                        ]}
+                      />
+                    )}
+                  </Field>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="unknownSizeAction"
+                render={({ field }) => (
+                  <Field orientation="responsive">
+                    <FieldContent>
+                      <FieldLabel htmlFor="download-unknown-size">
+                        {t('options.takeover.unknownSizeLabel')}
+                      </FieldLabel>
+                    </FieldContent>
+                    <Select
+                      items={unknownSizeItems}
+                      value={field.value}
+                      onValueChange={(value) => {
+                        if (value !== null) field.onChange(value)
+                      }}
+                    >
+                      <SelectTrigger
+                        id="download-unknown-size"
+                        className="min-w-48"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="chrome">
+                          {unknownSizeItems.chrome}
+                        </SelectItem>
+                        <SelectItem value="motrix">
+                          {unknownSizeItems.motrix}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="denylist"
+                render={({ field }) => (
+                  <Field orientation="vertical">
+                    <FieldLabel htmlFor="download-denylist">
+                      {t('options.takeover.denylistLabel')}
+                    </FieldLabel>
+                    <Textarea
+                      id="download-denylist"
+                      className="min-h-20"
+                      {...field}
+                    />
+                  </Field>
+                )}
+              />
+            </>
+          )}
         </FieldGroup>
       </SettingSection>
 

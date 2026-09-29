@@ -36,6 +36,27 @@ function keys(frame: object): string[] {
  * "harmless" field fails here instead of silently in the field.
  */
 describe('client -> server frame shapes (interop contract)', () => {
+  it('accepts a Safari bundle claim and ticket browser without changing protocol v1', () => {
+    const frame = buildPairHello({
+      browser: 'safari',
+      claimedExtensionId: 'app.motrix.safari.extension',
+      clientInstallationId: 'safari-installation',
+      ticketBindingKey: b32,
+      nmTicket: {
+        v: 1,
+        purpose: 'mbp1-attestation',
+        protocolVersion: 1,
+        serverGeneration: 'generation',
+        browser: 'safari',
+        callerId: 'app.motrix.safari.extension',
+        exp: 1_800_000_000,
+        bindingPub: b32,
+        mac: b32,
+      },
+    })
+    expect(frame.protocolVersion).toBe(1)
+    expect(parseNmTicket(frame.nmTicket).browser).toBe('safari')
+  })
   it('pairHello carries exactly six fields when ticketless', () => {
     const frame = buildPairHello({
       browser: 'firefox',

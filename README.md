@@ -70,6 +70,12 @@ Only add the ID you copied from your browser's extension-management page. Chrome
 
 Firefox: open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `dist/firefox/manifest.json`. Firefox removes temporary extensions when it restarts.
 
+Safari 18.4+ on macOS: run `pnpm build:safari`, then choose **Settings → Developer → Add Temporary Extension** and select `dist/safari/`. Enable web developer features and allow unsigned extensions when Safari prompts. Safari removes temporary extensions when it quits or after 24 hours.
+
+**The temporary Safari extension is an offline preview.** For App/Server connections, use the packaged `Motrix Extension for Safari.app`, which includes the native messaging component. Local development acceptance covers App cold start, pairing, reconnect, Server downloads, and the download confirmation popup. Automatic download interception is unavailable; native notification delivery remains under validation.
+
+Install full Xcode and follow the [Safari build and distribution instructions](./native/safari/README.md). Desktop integration requires a compatible same-Team Motrix bootstrap service; the extension uses the published MDXP package. Developer ID signing and notarization are provided by a separate GitHub Actions workflow and still require hosted acceptance before public distribution.
+
 </details>
 
 ## Connect for the first time

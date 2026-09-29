@@ -179,6 +179,11 @@ const previewRuntime = {
       }
       case 'bg.getNotificationsConfig':
         return previewNotifications
+      case 'bg.getNotificationCapability':
+        return {
+          available: previewParams.get('notifications') !== 'unavailable',
+          authorization: previewParams.get('notifications') ?? 'authorized',
+        }
       case 'bg.setNotificationsConfig':
         previewNotifications = request.payload as NotificationsConfig
         return { ok: true }
@@ -277,7 +282,12 @@ const previewRuntime = {
         return { ok: true }
     }
   },
-  getManifest: () => ({ version: '0.1.0' }),
+  getManifest: () => ({
+    version: '0.1.0',
+    permissions:
+      previewParams.get('native') === 'off' ? [] : ['nativeMessaging'],
+  }),
+  sendNativeMessage: async () => undefined,
 }
 
 const storageChanged = {

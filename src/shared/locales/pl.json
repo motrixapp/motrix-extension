@@ -32,7 +32,9 @@
     "submitFailedBody": "Ponowne pobieranie w przeglądarce.",
     "submitFailedTitle": "Wysyłanie do Motrix nie powiodło się",
     "submitUnknownTitle": "Wynik wysyłania jest nieznany. Sprawdź zadania przed ponownym wysłaniem.",
-    "submitUnknownBody": "Wynik wysyłania jest nieznany. Sprawdź zadania przed ponownym wysłaniem."
+    "submitUnknownBody": "Wynik wysyłania jest nieznany. Sprawdź zadania przed ponownym wysłaniem.",
+    "taskDetailsBody": "Otwórz listę zadań, aby zobaczyć szczegóły.",
+    "taskUpdatesTitle": "Więcej aktualizacji zadań"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Niepowodzenia / błędy",
       "errorDesc": "Błąd wysyłania, brak dostępu, błąd pobierania",
       "reminderLabel": "Przypomnienia",
-      "reminderDesc": "Prośby o parowanie, unieważnione parowanie, pominięte witryny"
+      "reminderDesc": "Prośby o parowanie, unieważnione parowanie, pominięte witryny",
+      "nativeNotDetermined": "Zezwól na alerty w ustawieniach powiadomień.",
+      "nativeDenied": "Powiadomienia są wyłączone w Ustawieniach systemowych.",
+      "nativeAuthorized": "Powiadomienia są włączone.",
+      "configure": "Ustawienia powiadomień",
+      "openSystemSettings": "Otwórz Ustawienia systemowe",
+      "test": "Wyślij powiadomienie testowe",
+      "testBody": "To jest powiadomienie testowe z Motrix Extension.",
+      "testAccepted": "Powiadomienie testowe przekazano do systemu.",
+      "testFailed": "Nie udało się potwierdzić dostarczenia powiadomienia testowego.",
+      "testSuppressed": "Nie wysłano powiadomienia testowego. Sprawdź uprawnienia lub spróbuj ponownie za chwilę.",
+      "settingsFailed": "Nie udało się otworzyć ustawień powiadomień."
     },
     "pairing": {
       "backendTitle": "Parowanie z {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Nie udało się skopiować diagnostyki. Spróbuj ponownie.",
       "storedPairingUnavailable": "Nie udało się połączyć z Motrix. Otwórz aplikację i spróbuj ponownie. Zapisane parowanie zostanie zachowane."
     }
+  },
+  "safari": {
+    "previewTitle": "Podgląd offline w Safari",
+    "previewHelp": "Możesz wykrywać zasoby. Łączenie z Motrix i wysyłanie pobrań nie są dostępne w tej wersji podglądowej.",
+    "unsupportedFeature": "Ta funkcja nie jest dostępna w Safari.",
+    "confirmDownloadDescription": "Otwórz formularz potwierdzenia przy pobieraniu z menu kontekstowego. Wyłącz, aby wysyłać bezpośrednio do Motrix.",
+    "taskPanelDescription": "Otwórz panel zadań po dodaniu pobierania."
   }
 }

@@ -1,9 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/shared/i18n'
 import { App } from '@/options/App'
 import { LINKS } from '@/shared/links'
+
+afterEach(() => vi.unstubAllGlobals())
 
 // jsdom doesn't include ResizeObserver; the headless Switch thumb needs it.
 if (typeof globalThis.ResizeObserver === 'undefined') {
@@ -51,6 +53,24 @@ beforeEach(() => {
 })
 
 describe('options App', () => {
+  it('hides unavailable backend modules in a temporary Safari extension', async () => {
+    vi.stubGlobal('__BROWSER__', 'safari')
+    render(<App />)
+    expect(
+      await screen.findByRole('combobox', { name: /theme|主题/i })
+    ).toBeTruthy()
+    expect(screen.queryByRole('tab', { name: /downloads|下载/i })).toBeNull()
+    expect(screen.queryByRole('tab', { name: /integration|集成/i })).toBeNull()
+    expect(
+      screen.queryByRole('switch', { name: /open task panel|展开任务面板/i })
+    ).toBeNull()
+    expect(
+      screen.queryByRole('switch', { name: /system notifications|系统通知/i })
+    ).toBeNull()
+    expect(
+      screen.queryByText(/Safari offline preview|Safari 离线预览/i)
+    ).toBeNull()
+  })
   it('groups appearance, task panel and notifications in General and takeover in Downloads', async () => {
     const user = userEvent.setup()
     render(<App />)

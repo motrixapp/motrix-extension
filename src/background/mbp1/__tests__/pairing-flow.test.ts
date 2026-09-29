@@ -1044,7 +1044,9 @@ describe('local validation before any network traffic', () => {
   it('refuses a browser value the wire does not define', async () => {
     const h = makeHarness()
     await expectFlowError(
-      h.flow.run(runArgs({ principal: { ...PRINCIPAL, browser: 'safari' } })),
+      h.flow.run(
+        runArgs({ principal: { ...PRINCIPAL, browser: 'unknown-browser' } })
+      ),
       'unsupportedBrowser'
     )
     expect(h.channel.openedUrls).toEqual([])

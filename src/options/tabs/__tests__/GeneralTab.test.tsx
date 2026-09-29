@@ -7,6 +7,8 @@ import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 
 vi.mock('@/shared/platformCapabilities', () => ({
   supportsAutoOpenPopup: () => true,
+  supportsSystemNotifications: () => true,
+  supportsDownloadTakeover: () => true,
 }))
 
 declare const browser: {

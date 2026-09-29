@@ -2,10 +2,15 @@ import { useEffect, useState } from 'react'
 import { ENDPOINT_CONFIG_STORAGE_KEY } from '@/background/EndpointConfigStore'
 import { send } from '@/background/MessageBus'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
+import { supportsDownloadTakeover } from '@/shared/platformCapabilities'
 import { supportsAutomaticTakeover } from '@/shared/takeoverAvailability'
 
 /** Refresh selection without resetting unsaved settings in the form. */
-export function useTakeoverAvailability(): 'local' | 'remote' | 'unknown' {
+export function useTakeoverAvailability():
+  | 'local'
+  | 'remote'
+  | 'unknown'
+  | 'unsupported' {
   const [availability, setAvailability] = useState<
     'local' | 'remote' | 'unknown'
   >('unknown')
@@ -40,5 +45,5 @@ export function useTakeoverAvailability(): 'local' | 'remote' | 'unknown' {
       browser.storage.onChanged.removeListener(onChanged)
     }
   }, [])
-  return availability
+  return supportsDownloadTakeover() ? availability : 'unsupported'
 }

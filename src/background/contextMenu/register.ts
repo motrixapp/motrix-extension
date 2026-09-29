@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next'
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import { describeUrlForLog, log } from '@/background/log'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
+import { supportsBackendConnections } from '@/shared/browserKind'
 import { i18n } from '@/shared/i18n'
 import {
   isMagnetUrl,
@@ -19,6 +20,7 @@ export function contextMenuTitle(paired: boolean, t: TFunction): string {
 }
 
 export function updateContextMenuTitle(paired: boolean): void {
+  if (!supportsBackendConnections()) return
   browser.contextMenus
     .update(MENU_ID, {
       title: contextMenuTitle(paired, i18n.t),
@@ -43,7 +45,12 @@ type BrowserDownload = (options: { url: string }) => Promise<unknown>
 /** Start the equivalent native browser download for a right-click HTTP(S) URL. */
 export async function downloadHttpInBrowser(
   url: string,
-  download: BrowserDownload = (options) => browser.downloads.download(options)
+  download: BrowserDownload = (options) => {
+    if (typeof browser.downloads?.download !== 'function') {
+      throw new Error('Browser download fallback is unavailable')
+    }
+    return browser.downloads.download(options)
+  }
 ): Promise<void> {
   if (!isHttp(url)) {
     throw new Error('Browser download fallback only supports HTTP(S) URLs')
@@ -56,6 +63,7 @@ export async function handleMenuClick(
   tab: Browser.tabs.Tab | undefined,
   deps: MenuClickDeps
 ): Promise<void> {
+  if (!supportsBackendConnections()) return
   const url = info.linkUrl ?? info.srcUrl
   const referrer =
     typeof info.pageUrl === 'string' ? { referrer: info.pageUrl } : {}
@@ -109,15 +117,25 @@ export async function handleMenuClickSafely(
 }
 
 export function registerContextMenu(deps: MenuClickDeps): void {
-  browser.contextMenus.removeAll().then(() => {
-    browser.contextMenus.create({
-      id: MENU_ID,
-      title: contextMenuTitle(false, i18n.t),
-      contexts: ['link', 'image', 'video', 'audio'],
-    })
-  })
+  if (!supportsBackendConnections()) {
+    void browser.contextMenus.remove(MENU_ID).catch(() => {})
+    return
+  }
   browser.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId !== MENU_ID) return
     void handleMenuClickSafely(info, tab, deps)
+  })
+  // Menus survive a nonpersistent background. Keep the clicked item alive
+  // while Safari wakes this page to deliver its pending onClicked event.
+  const properties = {
+    title: contextMenuTitle(false, i18n.t),
+    enabled: supportsBackendConnections(),
+  }
+  void browser.contextMenus.update(MENU_ID, properties).catch(() => {
+    browser.contextMenus.create({
+      id: MENU_ID,
+      ...properties,
+      contexts: ['link', 'image', 'video', 'audio'],
+    })
   })
 }

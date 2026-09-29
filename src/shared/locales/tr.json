@@ -32,7 +32,9 @@
     "submitFailedBody": "Tarayıcıda yeniden indiriliyor.",
     "submitFailedTitle": "Motrix’e gönderilemedi",
     "submitUnknownTitle": "Gönderim sonucu bilinmiyor. Tekrar göndermeden önce görevleri kontrol edin.",
-    "submitUnknownBody": "Gönderim sonucu bilinmiyor. Tekrar göndermeden önce görevleri kontrol edin."
+    "submitUnknownBody": "Gönderim sonucu bilinmiyor. Tekrar göndermeden önce görevleri kontrol edin.",
+    "taskDetailsBody": "Ayrıntıları görmek için görev listesini açın.",
+    "taskUpdatesTitle": "Diğer görev güncellemeleri"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Başarısızlık / hatalar",
       "errorDesc": "Gönderim başarısız, ulaşılamıyor, indirme başarısız",
       "reminderLabel": "Hatırlatmalar",
-      "reminderDesc": "Eşleştirme istekleri, iptal edilen eşleştirmeler, atlanan siteler"
+      "reminderDesc": "Eşleştirme istekleri, iptal edilen eşleştirmeler, atlanan siteler",
+      "nativeNotDetermined": "Bildirim ayarlarında uyarılara izin verin.",
+      "nativeDenied": "Sistem Ayarları’nda bildirimler kapalı.",
+      "nativeAuthorized": "Bildirimler açık.",
+      "configure": "Bildirim ayarları",
+      "openSystemSettings": "Sistem Ayarları’nı aç",
+      "test": "Test bildirimi gönder",
+      "testBody": "Bu, Motrix Extension tarafından gönderilen bir test bildirimidir.",
+      "testAccepted": "Test bildirimi sisteme iletildi.",
+      "testFailed": "Test bildiriminin teslim edildiği doğrulanamadı.",
+      "testSuppressed": "Test bildirimi gönderilmedi. İzinleri kontrol edin veya kısa bir süre sonra tekrar deneyin.",
+      "settingsFailed": "Bildirim ayarları açılamadı."
     },
     "pairing": {
       "backendTitle": "{{name}} eşleştiriliyor",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Tanılama bilgileri kopyalanamadı. Tekrar deneyin.",
       "storedPairingUnavailable": "Motrix bağlantısı kurulamadı. Uygulamayı açıp tekrar deneyin. Kayıtlı eşleştirme korunur."
     }
+  },
+  "safari": {
+    "previewTitle": "Safari çevrimdışı önizlemesi",
+    "previewHelp": "Kaynakları keşfedebilirsiniz. Bu önizlemede Motrix bağlantısı ve indirme gönderme kullanılamaz.",
+    "unsupportedFeature": "Bu özellik Safari’de kullanılamaz.",
+    "confirmDownloadDescription": "Sağ tıklamayla başlatılan indirmeler için onay formu aç. Doğrudan Motrix’e göndermek için kapat.",
+    "taskPanelDescription": "İndirme eklendikten sonra görev panelini aç."
   }
 }

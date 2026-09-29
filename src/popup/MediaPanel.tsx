@@ -49,6 +49,7 @@ import {
   matchesImageQuickFilters,
 } from '@/popup/imageQuickFilters'
 import { usePageMedia } from '@/popup/usePageMedia'
+import { supportsBackendConnections } from '@/shared/browserKind'
 import { downloadErrorKey } from '@/shared/downloadErrorCopy'
 import type { PairingState } from '@/shared/integration'
 import {
@@ -411,6 +412,7 @@ function ResourceRow({
   const { t } = useTranslation()
   const disabledDescriptionId = useId()
   const hostDescriptionId = useId()
+  const backendSupported = supportsBackendConnections()
   const name = mediaName(media)
   const host = mediaHost(media)
   const metadata = readableMediaMetadata(media)
@@ -476,13 +478,15 @@ function ResourceRow({
       className="relative flex min-h-[68px] shrink-0 items-center py-2 transition-colors after:absolute after:inset-x-4 after:bottom-0 after:h-px after:bg-border last:after:hidden hover:bg-muted/40 focus-within:bg-muted/40"
     >
       <div className="flex min-w-0 flex-1 items-center gap-2 pe-1.5 ps-3">
-        <SelectionCheckbox
-          checked={selected}
-          disabled={state === 'sending'}
-          label={t('popup.sniffer.selectResource', { name })}
-          describedBy={hostDescriptionId}
-          onChange={onSelect}
-        />
+        {backendSupported && (
+          <SelectionCheckbox
+            checked={selected}
+            disabled={state === 'sending'}
+            label={t('popup.sniffer.selectResource', { name })}
+            describedBy={hostDescriptionId}
+            onChange={onSelect}
+          />
+        )}
         <ResourceMedia
           media={media}
           enabled={previewEnabled}
@@ -513,22 +517,25 @@ function ResourceRow({
           </span>
         </span>
       </div>
-      {disabledReason ? (
-        <Tooltip>
-          <TooltipTrigger render={downloadButton} delay={300} />
-          <TooltipContent
-            role="tooltip"
-            side="left"
-            className="block max-w-[260px] leading-relaxed [overflow-wrap:anywhere]"
-          >
-            <p>{disabledReason}</p>
-            {disabledHint && <p className="mt-1 opacity-75">{disabledHint}</p>}
-          </TooltipContent>
-        </Tooltip>
-      ) : (
-        downloadButton
-      )}
-      {disabledReason && (
+      {backendSupported &&
+        (disabledReason ? (
+          <Tooltip>
+            <TooltipTrigger render={downloadButton} delay={300} />
+            <TooltipContent
+              role="tooltip"
+              side="left"
+              className="block max-w-[260px] leading-relaxed [overflow-wrap:anywhere]"
+            >
+              <p>{disabledReason}</p>
+              {disabledHint && (
+                <p className="mt-1 opacity-75">{disabledHint}</p>
+              )}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          downloadButton
+        ))}
+      {backendSupported && disabledReason && (
         <span id={disabledDescriptionId} className="sr-only">
           {disabledReason}
           {disabledHint && ` ${disabledHint}`}
@@ -634,7 +641,9 @@ export const MediaPanel = memo(function MediaPanel({
   onMediaCountChange,
 }: MediaPanelProps): React.ReactElement {
   const { t } = useTranslation()
-  const canAttemptSend = pairing === 'stored' || pairing === 'none'
+  const backendSupported = supportsBackendConnections()
+  const canAttemptSend =
+    backendSupported && (pairing === 'stored' || pairing === 'none')
   const autoScanned = useRef(false)
   const submissionKeyRef = useRef(submissionKey)
   const capabilityRefreshPending = useRef(false)
@@ -903,7 +912,7 @@ export const MediaPanel = memo(function MediaPanel({
         data-testid="media-panel-card"
         className="flex flex-col"
       >
-        {resolvableSite && (
+        {backendSupported && resolvableSite && (
           <ResolvablePageAction
             key={submissionKey}
             site={resolvableSite}
@@ -995,17 +1004,19 @@ export const MediaPanel = memo(function MediaPanel({
                 aria-hidden="true"
                 className="pointer-events-none absolute -top-px bottom-0 inset-x-[7px]"
               />
-              <div className="flex min-h-7 min-w-0 max-w-full items-center gap-1 text-[11px] [overflow-wrap:anywhere] text-muted-foreground">
-                <SelectionCheckbox
-                  checked={allVisibleSelected}
-                  indeterminate={someVisibleSelected && !allVisibleSelected}
-                  disabled={selectableVisible.length === 0}
-                  label={t('popup.sniffer.selectAll')}
-                  onChange={toggleAllVisible}
-                  compact
-                />
-                {t('popup.sniffer.selectAll')}
-              </div>
+              {backendSupported && (
+                <div className="flex min-h-7 min-w-0 max-w-full items-center gap-1 text-[11px] [overflow-wrap:anywhere] text-muted-foreground">
+                  <SelectionCheckbox
+                    checked={allVisibleSelected}
+                    indeterminate={someVisibleSelected && !allVisibleSelected}
+                    disabled={selectableVisible.length === 0}
+                    label={t('popup.sniffer.selectAll')}
+                    onChange={toggleAllVisible}
+                    compact
+                  />
+                  {t('popup.sniffer.selectAll')}
+                </div>
+              )}
               {filter === 'image' && (
                 <ImageQuickFilterPopover
                   filters={imageQuickFilters}
@@ -1024,32 +1035,36 @@ export const MediaPanel = memo(function MediaPanel({
               >
                 {footerCount}
               </span>
-              <Button
-                type="button"
-                size="xs"
-                className="h-auto min-h-6 max-w-full whitespace-normal [overflow-wrap:anywhere]"
-                aria-label={t(
-                  pairing === 'none'
-                    ? 'contextMenu.pairThenDownload'
-                    : 'popup.sniffer.downloadSelected'
-                )}
-                disabled={
-                  batchSubmitting ||
-                  selectedMedia.length === 0 ||
-                  batchDisabledReason !== null
-                }
-                title={batchDisabledReason ?? undefined}
-                aria-describedby={
-                  batchDisabledReason ? batchDescriptionId : undefined
-                }
-                onClick={() => void submitSelected()}
-              >
-                <Download data-icon="inline-start" aria-hidden="true" />
-                {pairing === 'none'
-                  ? t('contextMenu.pairThenDownload')
-                  : t('popup.sniffer.downloadCount', { count: selected.size })}
-              </Button>
-              {batchDisabledReason && (
+              {backendSupported && (
+                <Button
+                  type="button"
+                  size="xs"
+                  className="h-auto min-h-6 max-w-full whitespace-normal [overflow-wrap:anywhere]"
+                  aria-label={t(
+                    pairing === 'none'
+                      ? 'contextMenu.pairThenDownload'
+                      : 'popup.sniffer.downloadSelected'
+                  )}
+                  disabled={
+                    batchSubmitting ||
+                    selectedMedia.length === 0 ||
+                    batchDisabledReason !== null
+                  }
+                  title={batchDisabledReason ?? undefined}
+                  aria-describedby={
+                    batchDisabledReason ? batchDescriptionId : undefined
+                  }
+                  onClick={() => void submitSelected()}
+                >
+                  <Download data-icon="inline-start" aria-hidden="true" />
+                  {pairing === 'none'
+                    ? t('contextMenu.pairThenDownload')
+                    : t('popup.sniffer.downloadCount', {
+                        count: selected.size,
+                      })}
+                </Button>
+              )}
+              {backendSupported && batchDisabledReason && (
                 <span id={batchDescriptionId} className="sr-only">
                   {batchDisabledReason}
                 </span>

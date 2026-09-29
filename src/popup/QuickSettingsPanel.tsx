@@ -5,12 +5,14 @@ import { TakeoverConsentDialog } from '@/components/takeover-consent-dialog'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
+import { useNotificationCapability } from '@/components/useNotificationCapability'
 import { cn } from '@/lib/utils'
 import {
   CompactContentCard,
   CompactSectionToolbar,
 } from '@/popup/CompactPopupLayout'
 import type { QuickSettingsController } from '@/popup/useQuickSettings'
+import { supportsDownloadTakeover } from '@/shared/platformCapabilities'
 
 export const QUICK_SETTINGS_I18N_KEYS = {
   title: 'popup.tabs.settings',
@@ -91,6 +93,8 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
 }: QuickSettingsPanelProps): React.ReactElement {
   const { t } = useTranslation()
   const { takeover, notifications } = controller
+  const { capability } = useNotificationCapability()
+  const notificationsSupported = capability.available
   const unavailable = takeover === null || notifications === null
   const controlsDisabled = controller.loading || controller.saving
   const confirmationEnabled = takeover?.downloadMode === 'confirm'
@@ -142,8 +146,12 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
                 title={t('options.downloadMode.confirm')}
                 description={t(
                   controller.taskPanelSupported
-                    ? 'options.downloadMode.description'
-                    : 'options.taskPanel.unsupported'
+                    ? supportsDownloadTakeover()
+                      ? 'options.downloadMode.description'
+                      : 'safari.confirmDownloadDescription'
+                    : supportsDownloadTakeover()
+                      ? 'options.taskPanel.unsupported'
+                      : 'safari.unsupportedFeature'
                 )}
                 checked={confirmationEnabled}
                 disabled={
@@ -156,53 +164,63 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
                   )
                 }
               />
-              <QuickSettingRow
-                id="quick-takeover-switch"
-                title={t('options.takeover.enableLabel')}
-                description={t(
-                  controller.takeoverSupported
-                    ? QUICK_SETTINGS_I18N_KEYS.takeoverDescription
-                    : 'options.takeover.remoteUnavailableShort'
-                )}
-                checked={controller.takeoverSupported && takeover.enabled}
-                disabled={controlsDisabled || !controller.takeoverSupported}
-                onCheckedChange={(checked) =>
-                  void controller.requestTakeoverEnabled(checked)
-                }
-              />
-              <QuickSettingRow
-                id="quick-site-exclusion-switch"
-                title={t('popup.quickSettings.excludeCurrentSite')}
-                description={
-                  controller.currentSite === null
-                    ? t('popup.quickSettings.noCurrentSite')
-                    : t(
-                        inheritedExclusion
-                          ? 'popup.quickSettings.inheritedExclusion'
-                          : 'popup.quickSettings.excludeCurrentSiteDescription',
-                        {
-                          site: controller.currentSite,
-                          domain: controller.excludedSite,
-                        }
-                      )
-                }
-                checked={controller.excludedSite !== null}
-                disabled={
-                  controlsDisabled ||
-                  controller.currentSite === null ||
-                  inheritedExclusion
-                }
-                onCheckedChange={(checked) =>
-                  void controller.setCurrentSiteExcluded(checked)
-                }
-              />
+              {supportsDownloadTakeover() && (
+                <>
+                  <QuickSettingRow
+                    id="quick-takeover-switch"
+                    title={t('options.takeover.enableLabel')}
+                    description={t(
+                      controller.takeoverSupported
+                        ? QUICK_SETTINGS_I18N_KEYS.takeoverDescription
+                        : supportsDownloadTakeover()
+                          ? 'options.takeover.remoteUnavailableShort'
+                          : 'safari.unsupportedFeature'
+                    )}
+                    checked={controller.takeoverSupported && takeover.enabled}
+                    disabled={controlsDisabled || !controller.takeoverSupported}
+                    onCheckedChange={(checked) =>
+                      void controller.requestTakeoverEnabled(checked)
+                    }
+                  />
+                  <QuickSettingRow
+                    id="quick-site-exclusion-switch"
+                    title={t('popup.quickSettings.excludeCurrentSite')}
+                    description={
+                      controller.currentSite === null
+                        ? t('popup.quickSettings.noCurrentSite')
+                        : t(
+                            inheritedExclusion
+                              ? 'popup.quickSettings.inheritedExclusion'
+                              : 'popup.quickSettings.excludeCurrentSiteDescription',
+                            {
+                              site: controller.currentSite,
+                              domain: controller.excludedSite,
+                            }
+                          )
+                    }
+                    checked={controller.excludedSite !== null}
+                    disabled={
+                      controlsDisabled ||
+                      controller.currentSite === null ||
+                      inheritedExclusion
+                    }
+                    onCheckedChange={(checked) =>
+                      void controller.setCurrentSiteExcluded(checked)
+                    }
+                  />
+                </>
+              )}
               <QuickSettingRow
                 id="quick-task-panel-switch"
                 title={t('options.taskPanel.openAfterSubmit')}
                 description={t(
                   controller.taskPanelSupported
-                    ? 'popup.quickSettings.taskPanelDescription'
-                    : 'options.taskPanel.unsupported'
+                    ? supportsDownloadTakeover()
+                      ? 'popup.quickSettings.taskPanelDescription'
+                      : 'safari.taskPanelDescription'
+                    : supportsDownloadTakeover()
+                      ? 'options.taskPanel.unsupported'
+                      : 'safari.unsupportedFeature'
                 )}
                 checked={takeover.openTaskPanelAfterSubmit}
                 disabled={controlsDisabled || !controller.taskPanelSupported}
@@ -210,18 +228,26 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
                   void controller.setOpenTaskPanelAfterSubmit(checked)
                 }
               />
-              <QuickSettingRow
-                id="quick-notifications-master-switch"
-                title={t('options.notifications.masterLabel')}
-                description={t(
-                  QUICK_SETTINGS_I18N_KEYS.notificationsDescription
-                )}
-                checked={notifications.master}
-                disabled={controlsDisabled}
-                onCheckedChange={(checked) =>
-                  void controller.setNotification('master', checked)
-                }
-              />
+              {notificationsSupported && (
+                <QuickSettingRow
+                  id="quick-notifications-master-switch"
+                  title={t('options.notifications.masterLabel')}
+                  description={t(
+                    capability.authorization === 'authorized'
+                      ? QUICK_SETTINGS_I18N_KEYS.notificationsDescription
+                      : `options.notifications.${capability.authorization === 'denied' ? 'nativeDenied' : 'nativeNotDetermined'}`
+                  )}
+                  checked={notificationsSupported && notifications.master}
+                  disabled={
+                    controlsDisabled ||
+                    (capability.authorization !== 'authorized' &&
+                      !notifications.master)
+                  }
+                  onCheckedChange={(checked) =>
+                    void controller.setNotification('master', checked)
+                  }
+                />
+              )}
             </div>
             <Button
               data-testid="full-settings-row"

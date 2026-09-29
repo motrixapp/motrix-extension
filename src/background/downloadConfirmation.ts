@@ -58,7 +58,7 @@ export function createDownloadConfirmation(
     userAgent: () => navigator.userAgent,
     ...(recover ? { recover, storage: browser.storage.session } : {}),
   })
-  // Unsupported builds (including Safari preview) never open confirmation views.
+  // Browsers without programmatic popup support cannot host this workflow.
   if (!supportsAutoOpenPopup()) return service
   browser.runtime.onConnect.addListener((port) => {
     if (

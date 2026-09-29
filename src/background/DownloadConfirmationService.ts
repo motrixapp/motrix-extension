@@ -43,7 +43,7 @@ interface ConfirmationIO {
 
 export interface ConfirmationActions {
   submit(options: TaskOptions, operationId: string): Promise<{ taskId: string }>
-  browser(): Promise<void>
+  browser?: (() => Promise<void>) | undefined
 }
 
 export type ConfirmationResult =
@@ -218,10 +218,12 @@ export class DownloadConfirmationService {
       )
     } else if (
       input.action === 'browser' &&
-      !isMagnetUrl(pending.draft.target.url)
+      !isMagnetUrl(pending.draft.target.url) &&
+      pending.actions.browser
     ) {
+      const downloadInBrowser = pending.actions.browser
       this.perform(pending, () =>
-        pending.actions.browser().then(() => ({ action: 'browser' }))
+        downloadInBrowser().then(() => ({ action: 'browser' }))
       )
     } else return false
     return true

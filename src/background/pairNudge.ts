@@ -30,6 +30,7 @@ export class PairNudge {
       title: i18n.t('notify.pairNudgeTitle'),
       message: i18n.t('notify.pairNudgeBody'),
       severity: 'reminder',
+      kind: 'connection.reminder',
     })
   }
 }

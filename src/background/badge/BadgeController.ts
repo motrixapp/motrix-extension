@@ -60,9 +60,13 @@ export function makeBadgeNotify(
   base: Notify,
   badge: Pick<BadgeController, 'markError' | 'clearError'>
 ): Notify {
-  return (n) => {
+  const notify: Notify = (n) => {
     base(n)
     if (n.severity === 'error') void badge.markError()
     else if (n.severity === 'confirm') void badge.clearError()
   }
+  return Object.assign(
+    notify,
+    base.taskProgress ? { taskProgress: base.taskProgress } : {}
+  )
 }

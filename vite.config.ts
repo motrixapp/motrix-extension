@@ -7,19 +7,22 @@ import {
   buildOutputHygienePlugin,
   buildVariantPlugin,
   cspSafeZodPlugin,
+  safariManifestPlugin,
 } from '#build-variant-plugin'
 import manifest from '#manifest-config'
 
 export default defineConfig(({ command, mode }) => {
   const firefox = mode === 'firefox'
+  const safari = mode === 'safari'
   const webStore =
-    mode === 'webstore' || process.env.MOTRIX_BUILD === 'webstore'
-  const excludeYouTube = webStore || firefox
-  const releaseBuild = command === 'build' && webStore
-  const debugBuild = command === 'build' && !webStore
+    !safari && (mode === 'webstore' || process.env.MOTRIX_BUILD === 'webstore')
+  const excludeYouTube = webStore || firefox || safari
+  const safariRelease = safari && process.env.MOTRIX_SAFARI_RELEASE === '1'
+  const releaseBuild = command === 'build' && (webStore || safariRelease)
+  const debugBuild = command === 'build' && !releaseBuild
   const outputDir = resolve(
     import.meta.dirname,
-    `dist/${webStore ? 'webstore' : firefox ? 'firefox' : 'chromium'}`
+    `dist/${safari ? 'safari' : webStore ? 'webstore' : firefox ? 'firefox' : 'chromium'}`
   )
   return {
     plugins: [
@@ -28,6 +31,7 @@ export default defineConfig(({ command, mode }) => {
       react(),
       tailwindcss(),
       crx({ manifest, browser: firefox ? 'firefox' : 'chrome' }),
+      ...(safari ? [safariManifestPlugin()] : []),
       buildOutputHygienePlugin(outputDir),
     ],
     build: {
@@ -40,10 +44,22 @@ export default defineConfig(({ command, mode }) => {
       minify: releaseBuild ? 'oxc' : false,
     },
     resolve: {
-      alias: { '@': resolve(import.meta.dirname, 'src') },
+      alias: {
+        ...(safari
+          ? {
+              '@/shared/browser': resolve(
+                import.meta.dirname,
+                'src/shared/browser.safari.ts'
+              ),
+            }
+          : {}),
+        '@': resolve(import.meta.dirname, 'src'),
+      },
     },
     define: {
-      __BROWSER__: JSON.stringify(firefox ? 'firefox' : 'chromium'),
+      __BROWSER__: JSON.stringify(
+        safari ? 'safari' : firefox ? 'firefox' : 'chromium'
+      ),
       __MOTRIX_BUILD__: JSON.stringify(excludeYouTube ? 'webstore' : 'full'),
       // Dev-only §7.3 backoff override (see shared/buildFlags.ts). Never
       // honored in a Web Store build: the define is forced to undefined

@@ -3,9 +3,10 @@ import pkg from './package.json' with { type: 'json' }
 
 export default defineManifest((env) => {
   const firefox = env.mode === 'firefox'
+  const safari = env.mode === 'safari'
   const webStore =
     env.mode === 'webstore' || process.env.MOTRIX_BUILD === 'webstore'
-  const includeYouTube = !webStore && !firefox
+  const includeYouTube = !webStore && !firefox && !safari
   const genericSnifferScripts = [
     {
       matches: ['http://*/*', 'https://*/*'],
@@ -39,14 +40,15 @@ export default defineManifest((env) => {
       128: 'icons/icon-128.png',
     },
     permissions: [
-      'nativeMessaging',
+      // Temporary Safari extensions have no containing native app.
+      ...(!safari ? ['nativeMessaging'] : []),
       'storage',
       'activeTab',
       'scripting',
       'alarms',
-      'notifications',
+      ...(!safari ? ['notifications'] : []),
       'contextMenus',
-      'downloads',
+      ...(!safari ? ['downloads'] : []),
       'cookies',
       'webRequest',
       'webNavigation',
@@ -83,9 +85,19 @@ export default defineManifest((env) => {
     // (the content bundle), so the SW never registers its onMessage listener and every
     // popup request fails with "Could not establish connection. Receiving end does not exist."
     // Keep this basename unique. (See debugging notes 2026-06-29.)
-    background: firefox
-      ? { scripts: ['src/background/service-worker.ts'], type: 'module' }
-      : { service_worker: 'src/background/service-worker.ts', type: 'module' },
+    // Safari 27's service-worker WebSocket constructor can deadlock its
+    // WebContent main thread. Reuse the same entry in a nonpersistent page.
+    background:
+      firefox || safari
+        ? {
+            scripts: ['src/background/service-worker.ts'],
+            type: 'module',
+            ...(safari ? { persistent: false } : {}),
+          }
+        : {
+            service_worker: 'src/background/service-worker.ts',
+            type: 'module',
+          },
     ...(firefox
       ? {
           // Firefox's default Manifest V3 CSP includes
@@ -123,6 +135,8 @@ export default defineManifest((env) => {
             gecko_android: { strict_min_version: '142.0' },
           },
         }
-      : { minimum_chrome_version: '120' }),
+      : safari
+        ? {}
+        : { minimum_chrome_version: '120' }),
   }
 })

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
+import { supportsDownloadTakeover } from '@/shared/platformCapabilities'
 
 export type PopupTab = 'tasks' | 'sniffer' | 'settings'
 
@@ -24,39 +25,40 @@ export function CompactPopupHeader({
   onOpenSettings: () => void
 }): React.ReactElement {
   const { t } = useTranslation()
+  const unavailableKey = supportsDownloadTakeover()
+    ? 'options.takeover.remoteUnavailable'
+    : 'safari.unsupportedFeature'
 
   return (
     <header className="flex min-h-8 shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
       <div className="w-[176px] min-w-0 flex-none">{backend}</div>
       <div className="flex min-w-0 max-w-full flex-[1_1_auto] items-center justify-end gap-4">
-        <div
-          className="flex min-h-8 min-w-0 flex-1 items-center justify-end gap-2 text-sm font-normal"
-          title={
-            takeoverSupported
-              ? undefined
-              : t('options.takeover.remoteUnavailable')
-          }
-        >
-          {!takeoverSupported && (
-            <span id="popup-takeover-unavailable" className="sr-only">
-              {t('options.takeover.remoteUnavailable')}
+        {supportsDownloadTakeover() && (
+          <div
+            className="flex min-h-8 min-w-0 flex-1 items-center justify-end gap-2 text-sm font-normal"
+            title={takeoverSupported ? undefined : t(unavailableKey)}
+          >
+            {!takeoverSupported && (
+              <span id="popup-takeover-unavailable" className="sr-only">
+                {t(unavailableKey)}
+              </span>
+            )}
+            <span className="min-w-0 [overflow-wrap:anywhere]">
+              {t('popup.takeover.label')}
             </span>
-          )}
-          <span className="min-w-0 [overflow-wrap:anywhere]">
-            {t('popup.takeover.label')}
-          </span>
-          <Switch
-            id="popup-takeover-switch"
-            data-testid="takeover-switch"
-            checked={takeoverChecked}
-            disabled={takeoverDisabled}
-            onCheckedChange={onTakeoverChange}
-            aria-label={t('popup.takeover.aria')}
-            aria-describedby={
-              takeoverSupported ? undefined : 'popup-takeover-unavailable'
-            }
-          />
-        </div>
+            <Switch
+              id="popup-takeover-switch"
+              data-testid="takeover-switch"
+              checked={takeoverChecked}
+              disabled={takeoverDisabled}
+              onCheckedChange={onTakeoverChange}
+              aria-label={t('popup.takeover.aria')}
+              aria-describedby={
+                takeoverSupported ? undefined : 'popup-takeover-unavailable'
+              }
+            />
+          </div>
+        )}
         <Button
           type="button"
           variant="outline"

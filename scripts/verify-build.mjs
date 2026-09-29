@@ -6,7 +6,12 @@ import { init, parse } from 'es-module-lexer'
 
 await init()
 
-const SUPPORTED_VARIANTS = new Set(['chromium', 'firefox', 'webstore'])
+const SUPPORTED_VARIANTS = new Set([
+  'chromium',
+  'firefox',
+  'webstore',
+  'safari',
+])
 const GENERIC_IIFE_SCRIPTS = [
   'src/content/sniffer-relay.js',
   'src/content/sniffer-entry.js',
@@ -255,7 +260,40 @@ function verifyDynamicCodeAbsence(files, outputPath) {
   }
 }
 
+export function verifySafariManifest(manifest) {
+  for (const permission of ['downloads', 'notifications', 'nativeMessaging']) {
+    if (manifest.permissions?.includes(permission)) {
+      throw new Error(
+        `Safari preview requests unavailable permission: ${permission}`
+      )
+    }
+  }
+  if (manifest.minimum_chrome_version || manifest.browser_specific_settings) {
+    throw new Error("Safari manifest contains another browser's settings")
+  }
+  if (
+    manifest.web_accessible_resources?.some(
+      (resource) => 'use_dynamic_url' in resource
+    )
+  ) {
+    throw new Error('Safari manifest contains Chromium dynamic resource URLs')
+  }
+  if (
+    manifest.background?.service_worker ||
+    manifest.background?.scripts?.length !== 1 ||
+    manifest.background.type !== 'module' ||
+    manifest.background.persistent !== false
+  ) {
+    throw new Error(
+      'Safari build requires a nonpersistent module background page'
+    )
+  }
+}
+
 export function verifyBuild(variant) {
+  const release =
+    variant === 'webstore' ||
+    (variant === 'safari' && process.env.MOTRIX_SAFARI_RELEASE === '1')
   if (!SUPPORTED_VARIANTS.has(variant)) {
     throw new Error(
       `Expected a build variant (${[...SUPPORTED_VARIANTS].join(', ')}), received: ${variant ?? '<none>'}`
@@ -274,6 +312,7 @@ export function verifyBuild(variant) {
     throw new Error(`Build manifest is missing: ${manifestPath}`)
   }
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+  if (variant === 'safari') verifySafariManifest(manifest)
   const files = collectFiles(outputPath)
   const relativeFiles = files.map((path) =>
     relative(outputPath, path).split(sep).join('/')
@@ -300,14 +339,14 @@ export function verifyBuild(variant) {
         `IIFE content script is not referenced by the manifest: ${scriptPath}`
       )
     }
-    verifyIifeScript(outputPath, scriptPath, variant !== 'webstore')
+    verifyIifeScript(outputPath, scriptPath, !release)
   }
 
   const sourceMapFiles = relativeFiles.filter((path) => path.endsWith('.map'))
-  if (variant === 'webstore') {
+  if (release) {
     if (sourceMapFiles.length > 0) {
       throw new Error(
-        `Web Store output contains source maps: ${sourceMapFiles.join(', ')}`
+        `${variant} release output contains source maps: ${sourceMapFiles.join(', ')}`
       )
     }
     const sourceMapReference = files.find(
@@ -317,7 +356,7 @@ export function verifyBuild(variant) {
     )
     if (sourceMapReference) {
       throw new Error(
-        `Web Store output refers to a source map: ${relative(outputPath, sourceMapReference)}`
+        `${variant} release output refers to a source map: ${relative(outputPath, sourceMapReference)}`
       )
     }
     verifyYouTubeExclusions(variant, manifest, files, outputPath)
@@ -325,7 +364,7 @@ export function verifyBuild(variant) {
     if (sourceMapFiles.length === 0) {
       throw new Error(`${variant} debug build contains no source maps`)
     }
-    if (variant === 'firefox') {
+    if (variant === 'firefox' || variant === 'safari') {
       verifyYouTubeExclusions(variant, manifest, files, outputPath)
     } else if (!JSON.stringify(manifest).includes('youtube.com')) {
       throw new Error(`${variant} full build is missing the YouTube capability`)

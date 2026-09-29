@@ -32,7 +32,9 @@
     "submitFailedBody": "Riavvio del download nel browser.",
     "submitFailedTitle": "Invio a Motrix non riuscito",
     "submitUnknownTitle": "Esito dell’invio sconosciuto. Controlla le attività prima di inviare di nuovo.",
-    "submitUnknownBody": "Esito dell’invio sconosciuto. Controlla le attività prima di inviare di nuovo."
+    "submitUnknownBody": "Esito dell’invio sconosciuto. Controlla le attività prima di inviare di nuovo.",
+    "taskDetailsBody": "Apri l’elenco delle attività per vedere i dettagli.",
+    "taskUpdatesTitle": "Altri aggiornamenti delle attività"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Problemi / errori",
       "errorDesc": "Invio non riuscito, non raggiungibile, download non riuscito",
       "reminderLabel": "Promemoria",
-      "reminderDesc": "Richieste di associazione, associazione revocata, siti ignorati"
+      "reminderDesc": "Richieste di associazione, associazione revocata, siti ignorati",
+      "nativeNotDetermined": "Consenti gli avvisi nelle impostazioni delle notifiche.",
+      "nativeDenied": "Le notifiche sono disattivate nelle Impostazioni di Sistema.",
+      "nativeAuthorized": "Le notifiche sono attivate.",
+      "configure": "Impostazioni delle notifiche",
+      "openSystemSettings": "Apri Impostazioni di Sistema",
+      "test": "Invia notifica di prova",
+      "testBody": "Questa è una notifica di prova di Motrix Extension.",
+      "testAccepted": "Notifica di prova inoltrata.",
+      "testFailed": "Impossibile confermare la consegna della notifica di prova.",
+      "testSuppressed": "Notifica di prova non inviata. Controlla i permessi o riprova tra poco.",
+      "settingsFailed": "Impossibile aprire le impostazioni delle notifiche."
     },
     "pairing": {
       "backendTitle": "Associazione di {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Impossibile copiare le informazioni diagnostiche. Riprova.",
       "storedPairingUnavailable": "Impossibile connettersi a Motrix. Apri l’app e riprova. L’associazione salvata viene mantenuta."
     }
+  },
+  "safari": {
+    "previewTitle": "Anteprima offline di Safari",
+    "previewHelp": "Puoi rilevare risorse. La connessione a Motrix e l’invio di download non sono disponibili in questa anteprima.",
+    "unsupportedFeature": "Questa funzione non è disponibile in Safari.",
+    "confirmDownloadDescription": "Apri un modulo di conferma per i download dal menu contestuale. Disattiva per inviare direttamente a Motrix.",
+    "taskPanelDescription": "Apri il pannello delle attività dopo aver aggiunto un download."
   }
 }

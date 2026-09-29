@@ -32,7 +32,9 @@
     "submitFailedBody": "브라우저에서 다시 다운로드합니다.",
     "submitFailedTitle": "Motrix 전송 실패",
     "submitUnknownTitle": "전송 결과를 확인할 수 없습니다. 다시 보내기 전에 작업을 확인하세요.",
-    "submitUnknownBody": "전송 결과를 확인할 수 없습니다. 다시 보내기 전에 작업을 확인하세요."
+    "submitUnknownBody": "전송 결과를 확인할 수 없습니다. 다시 보내기 전에 작업을 확인하세요.",
+    "taskDetailsBody": "자세한 내용은 작업 목록에서 확인하세요.",
+    "taskUpdatesTitle": "추가 작업 업데이트"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "실패 / 오류",
       "errorDesc": "전송 실패, 연결 불가, 다운로드 실패",
       "reminderLabel": "알림 및 안내",
-      "reminderDesc": "페어링 안내, 페어링 해제, 건너뛴 사이트"
+      "reminderDesc": "페어링 안내, 페어링 해제, 건너뛴 사이트",
+      "nativeNotDetermined": "알림 설정에서 알림을 허용하세요.",
+      "nativeDenied": "시스템 설정에서 알림이 꺼져 있습니다.",
+      "nativeAuthorized": "알림이 활성화되어 있습니다.",
+      "configure": "알림 설정",
+      "openSystemSettings": "시스템 설정 열기",
+      "test": "테스트 알림 보내기",
+      "testBody": "Motrix Extension의 테스트 알림입니다.",
+      "testAccepted": "테스트 알림을 제출했습니다.",
+      "testFailed": "테스트 알림 전달 여부를 확인할 수 없습니다.",
+      "testSuppressed": "테스트 알림을 보내지 않았습니다. 권한을 확인하거나 잠시 후 다시 시도하세요.",
+      "settingsFailed": "알림 설정을 열 수 없습니다."
     },
     "pairing": {
       "backendTitle": "{{name}} 페어링",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "진단 정보를 복사하지 못했습니다. 다시 시도하세요.",
       "storedPairingUnavailable": "Motrix에 연결할 수 없습니다. 앱을 열고 다시 시도하세요. 저장된 페어링은 유지됩니다."
     }
+  },
+  "safari": {
+    "previewTitle": "Safari 오프라인 미리보기",
+    "previewHelp": "페이지의 리소스를 찾을 수 있습니다. 이 미리보기에서는 Motrix 연결과 다운로드 전송을 사용할 수 없습니다.",
+    "unsupportedFeature": "Safari에서는 이 기능을 사용할 수 없습니다.",
+    "confirmDownloadDescription": "마우스 오른쪽 버튼으로 다운로드할 때 확인 양식을 엽니다. 끄면 Motrix로 바로 전송합니다.",
+    "taskPanelDescription": "다운로드를 추가한 후 작업 패널을 엽니다."
   }
 }

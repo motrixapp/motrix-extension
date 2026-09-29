@@ -3,6 +3,7 @@ import {
   type BrowserCookieLike,
   mapCookies,
 } from '@/background/capture/cookies'
+import type { BrowserKind } from '@/shared/browserKind'
 
 interface PageCookieQuery {
   url: string
@@ -39,7 +40,7 @@ function cookieIdentity(cookie: BrowserCookieLike): string {
 export async function capturePageCookies(options: {
   url: string
   storeId?: string
-  browser: 'chromium' | 'firefox'
+  browser: BrowserKind
   api: PageCookieApi
 }): Promise<Cookie[]> {
   let pageUrl: URL

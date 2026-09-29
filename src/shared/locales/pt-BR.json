@@ -32,7 +32,9 @@
     "submitFailedBody": "Reiniciando o download no navegador.",
     "submitFailedTitle": "Falha ao enviar ao Motrix",
     "submitUnknownTitle": "Resultado do envio desconhecido. Confira as tarefas antes de enviar novamente.",
-    "submitUnknownBody": "Resultado do envio desconhecido. Confira as tarefas antes de enviar novamente."
+    "submitUnknownBody": "Resultado do envio desconhecido. Confira as tarefas antes de enviar novamente.",
+    "taskDetailsBody": "Abra a lista de tarefas para ver os detalhes.",
+    "taskUpdatesTitle": "Mais atualizações de tarefas"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Falhas / erros",
       "errorDesc": "Falha no envio, inacessível, falha no download",
       "reminderLabel": "Lembretes",
-      "reminderDesc": "Solicitações de pareamento, pareamento revogado, sites ignorados"
+      "reminderDesc": "Solicitações de pareamento, pareamento revogado, sites ignorados",
+      "nativeNotDetermined": "Permita alertas nos ajustes de notificações.",
+      "nativeDenied": "As notificações estão desativadas nos Ajustes do Sistema.",
+      "nativeAuthorized": "As notificações estão ativadas.",
+      "configure": "Ajustes de notificações",
+      "openSystemSettings": "Abrir Ajustes do Sistema",
+      "test": "Enviar notificação de teste",
+      "testBody": "Esta é uma notificação de teste do Motrix Extension.",
+      "testAccepted": "Notificação de teste enviada ao sistema.",
+      "testFailed": "Não foi possível confirmar a entrega da notificação de teste.",
+      "testSuppressed": "Notificação de teste não enviada. Verifique as permissões ou tente novamente em instantes.",
+      "settingsFailed": "Não foi possível abrir os ajustes de notificações."
     },
     "pairing": {
       "backendTitle": "Pareando {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Não foi possível copiar as informações de diagnóstico. Tente novamente.",
       "storedPairingUnavailable": "Não foi possível conectar ao Motrix. Abra o aplicativo e tente novamente. O pareamento salvo é mantido."
     }
+  },
+  "safari": {
+    "previewTitle": "Prévia offline do Safari",
+    "previewHelp": "Você pode detectar recursos. A conexão ao Motrix e o envio de downloads não estão disponíveis nesta prévia.",
+    "unsupportedFeature": "Este recurso não está disponível no Safari.",
+    "confirmDownloadDescription": "Abrir um formulário de confirmação ao baixar pelo botão direito. Desative para enviar diretamente ao Motrix.",
+    "taskPanelDescription": "Abrir o painel de tarefas após adicionar um download."
   }
 }

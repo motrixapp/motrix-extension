@@ -32,7 +32,9 @@
     "submitFailedBody": "Đang tải lại bằng trình duyệt.",
     "submitFailedTitle": "Gửi tới Motrix thất bại",
     "submitUnknownTitle": "Chưa xác định được kết quả gửi. Hãy kiểm tra tác vụ trước khi gửi lại.",
-    "submitUnknownBody": "Chưa xác định được kết quả gửi. Hãy kiểm tra tác vụ trước khi gửi lại."
+    "submitUnknownBody": "Chưa xác định được kết quả gửi. Hãy kiểm tra tác vụ trước khi gửi lại.",
+    "taskDetailsBody": "Mở danh sách tác vụ để xem chi tiết.",
+    "taskUpdatesTitle": "Các cập nhật tác vụ khác"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Thất bại / lỗi",
       "errorDesc": "Gửi thất bại, không thể truy cập, tải xuống thất bại",
       "reminderLabel": "Lời nhắc",
-      "reminderDesc": "Yêu cầu ghép đôi, ghép đôi bị thu hồi, trang bị bỏ qua"
+      "reminderDesc": "Yêu cầu ghép đôi, ghép đôi bị thu hồi, trang bị bỏ qua",
+      "nativeNotDetermined": "Cho phép cảnh báo trong cài đặt thông báo.",
+      "nativeDenied": "Thông báo đã bị tắt trong Cài đặt hệ thống.",
+      "nativeAuthorized": "Thông báo đã được bật.",
+      "configure": "Cài đặt thông báo",
+      "openSystemSettings": "Mở Cài đặt hệ thống",
+      "test": "Gửi thông báo thử",
+      "testBody": "Đây là thông báo thử từ Motrix Extension.",
+      "testAccepted": "Đã gửi thông báo thử đến hệ thống.",
+      "testFailed": "Không thể xác nhận việc gửi thông báo thử.",
+      "testSuppressed": "Thông báo thử chưa được gửi. Hãy kiểm tra quyền hoặc thử lại sau giây lát.",
+      "settingsFailed": "Không thể mở cài đặt thông báo."
     },
     "pairing": {
       "backendTitle": "Đang ghép đôi {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Không thể sao chép thông tin chẩn đoán. Hãy thử lại.",
       "storedPairingUnavailable": "Không thể kết nối với Motrix. Hãy mở Motrix rồi thử lại; thông tin ghép đôi đã lưu vẫn được giữ nguyên."
     }
+  },
+  "safari": {
+    "previewTitle": "Bản xem trước ngoại tuyến Safari",
+    "previewHelp": "Bạn có thể tìm tài nguyên. Bản xem trước này chưa hỗ trợ kết nối với Motrix hoặc gửi lượt tải xuống.",
+    "unsupportedFeature": "Tính năng này không có trên Safari.",
+    "confirmDownloadDescription": "Mở biểu mẫu xác nhận khi tải xuống bằng chuột phải. Tắt để gửi trực tiếp đến Motrix.",
+    "taskPanelDescription": "Mở bảng tác vụ sau khi thêm lượt tải xuống."
   }
 }

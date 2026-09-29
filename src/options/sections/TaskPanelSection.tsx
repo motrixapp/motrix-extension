@@ -11,7 +11,10 @@ import { FormField } from '@/components/ui/form'
 import { Switch } from '@/components/ui/switch'
 import { SettingSection } from '@/options/components/SettingSection'
 import type { GeneralFormValues } from '@/options/tabs/schemas'
-import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
+import {
+  supportsAutoOpenPopup,
+  supportsDownloadTakeover,
+} from '@/shared/platformCapabilities'
 
 export function TaskPanelSection({
   form,
@@ -33,11 +36,19 @@ export function TaskPanelSection({
                   {t('options.taskPanel.openAfterSubmit')}
                 </FieldLabel>
                 <FieldDescription id="general-task-panel-description">
-                  {t('options.taskPanel.description')}
+                  {t(
+                    supportsDownloadTakeover()
+                      ? 'options.taskPanel.description'
+                      : 'safari.taskPanelDescription'
+                  )}
                 </FieldDescription>
                 {!supported && (
                   <FieldDescription id="general-task-panel-unsupported">
-                    {t('options.taskPanel.unsupported')}
+                    {t(
+                      supportsDownloadTakeover()
+                        ? 'options.taskPanel.unsupported'
+                        : 'safari.unsupportedFeature'
+                    )}
                   </FieldDescription>
                 )}
               </FieldContent>

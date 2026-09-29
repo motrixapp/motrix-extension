@@ -1,3 +1,4 @@
+import { createBootstrapProvider } from '@/background/createBootstrapProvider'
 import {
   type EndpointConfig,
   resolveActiveEndpoint,
@@ -11,12 +12,10 @@ import { deriveRemoteBridgeRoute } from '@/background/mbp1/bridge-route'
 import { readDiscoveryDoc } from '@/background/mbp1/discovery-service'
 import { hasLoopbackPermission } from '@/background/mbp1/permission-gate'
 import { RemoteDiscoveryService } from '@/background/mbp1/remote-discovery-service'
-import {
-  NativeBootstrap,
-  NativeBootstrapError,
-} from '@/background/NativeBootstrap'
+import { NativeBootstrapError } from '@/background/NativeBootstrap'
 import { pairingAuthorityForEndpoint } from '@/background/PairingEndpointService'
 import { extensionBrowser as browser } from '@/shared/browser'
+import { getBuildBrowser, requireProtocolBrowser } from '@/shared/browserKind'
 import {
   type ConnectionDiagnosticResult,
   type DiagnosticCheck,
@@ -25,6 +24,7 @@ import {
 } from '@/shared/connectionDiagnostics'
 import { setLogLevel } from '@/shared/logLevel'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
+import { SAFARI_EXTENSION_ID } from '@/shared/safariNative'
 
 interface Dependencies {
   getConfig: () => Promise<EndpointConfig>
@@ -155,6 +155,7 @@ export async function runConnectionDiagnostics(
   deps: Dependencies,
   expectedEndpointId: string | null
 ): Promise<ConnectionDiagnosticResult> {
+  requireProtocolBrowser(getBuildBrowser())
   const started = Date.now()
   const config = await diagnosticDeadline(deps.getConfig(), 1000)
   if (
@@ -224,7 +225,10 @@ export async function runConnectionDiagnostics(
   if (endpoint.mode === 'local') {
     await check('extension-allowlist', async () => ({
       status: 'warn',
-      detail: `Check Motrix Settings > Integration > trusted extensions for this ID: ${browser.runtime.id}\nNative host: ${NATIVE_HOST}\n${browser.runtime.getURL('').startsWith('moz-extension:') ? `allowed_extensions must include ${JSON.stringify(browser.runtime.id)}` : `allowed_origins must include ${JSON.stringify(`chrome-extension://${browser.runtime.id}/`)}`}\nThe App trust registry and browser native-host manifest are separate checks. Their contents cannot be read by this extension.`,
+      detail:
+        getBuildBrowser() === 'safari'
+          ? `Safari native client: ${SAFARI_EXTENSION_ID}. The signed containing extension and Motrix bootstrap service must share their configured Team and App Group. The native service verifies both peers; a browser-reported UUID or bundle ID alone does not prove identity.`
+          : `Check Motrix Settings > Integration > trusted extensions for this ID: ${browser.runtime.id}\nNative host: ${NATIVE_HOST}\n${browser.runtime.getURL('').startsWith('moz-extension:') ? `allowed_extensions must include ${JSON.stringify(browser.runtime.id)}` : `allowed_origins must include ${JSON.stringify(`chrome-extension://${browser.runtime.id}/`)}`}\nThe App trust registry and browser native-host manifest are separate checks. Their contents cannot be read by this extension.`,
     }))
     await check('loopback-permission', async () => {
       const granted = await diagnosticDeadline(hasLoopbackPermission(), 1000)
@@ -241,12 +245,14 @@ export async function runConnectionDiagnostics(
         return {
           status: 'fail',
           detail:
-            'runtime.connectNative is unavailable in this browser/context.',
+            'The required Native Messaging API or packaged permission is unavailable in this browser/context.',
         }
       try {
         // The existing host protocol has no ping. A launch-disabled legacy
         // bootstrap may mint one unused nonce; discard it without pairing.
-        const reply = await new NativeBootstrap({ timeoutMs: 4000 }).discover({
+        const reply = await createBootstrapProvider(getBuildBrowser(), {
+          timeoutMs: 4000,
+        }).discover({
           allowLaunch: false,
         })
         nativePort = reply.wsPort

@@ -54,12 +54,14 @@ import { PinStore } from '@/background/mbp1/pin-store'
 import { normalizeMediaReport } from '@/background/mediaTrust'
 import { NotificationsConfigStore } from '@/background/NotificationsConfigStore'
 import { registerNetworkMediaCapture } from '@/background/networkMediaCapture'
+import { createNotificationSettingsHandlers } from '@/background/notificationSettings'
 import { createNotify } from '@/background/notify'
 import { PairingEndpointService } from '@/background/PairingEndpointService'
 import { createPairingCodeSource } from '@/background/pairing-code-source'
 import { PairNudge } from '@/background/pairNudge'
 import { createPopupDownloadHandlers } from '@/background/popupDownloads'
 import { clearRemoteBackendPoliciesForAuthority } from '@/background/RemoteBackendPolicyStore'
+import { SafariNotificationTransport } from '@/background/SafariNotificationTransport'
 import { recoverStorageBeforeEndpointAutostart } from '@/background/storage-migrations'
 import { TakeoverConfigStore } from '@/background/TakeoverConfigStore'
 import { requestTaskReveal } from '@/background/taskReveal'
@@ -82,9 +84,9 @@ import {
 import { initI18n } from '@/shared/i18n'
 import { newDownloadOperationId } from '@/shared/integration'
 import { shouldExcludeHost } from '@/shared/media'
+import { SAFARI_EXTENSION_ID } from '@/shared/safariNative'
 
 // Build-time constant injected by vite (see vite.config.ts `define`).
-declare const __BROWSER__: 'chromium' | 'firefox'
 
 const manifest = browser.runtime.getManifest()
 const extensionId = browser.runtime.id
@@ -180,7 +182,10 @@ const badge = new BadgeController({
   hasActiveTasks: () => manager.hasActiveTasks(),
   errorStore: badgeErrorStore,
 })
-const notify = makeBadgeNotify(createNotify(notificationsConfigStore), badge)
+const platformNotify = createNotify(notificationsConfigStore, (source) =>
+  manager.isNotificationSourceCurrent(source)
+)
+const notify = makeBadgeNotify(platformNotify, badge)
 
 // See pairing-code-source.ts for why this deadline has to live here rather
 // than only in the popup: `PairingFlow` cannot cancel a pending provider
@@ -202,7 +207,9 @@ manager = new ConnectionManager({
     kind: 'extension',
     name: 'motrix-extension',
     version: manifest.version,
-    extensionId,
+    // Keep runtime.id for local message-sender checks; the wire claim must
+    // match the bundle ID independently attested by the native service.
+    extensionId: __BROWSER__ === 'safari' ? SAFARI_EXTENSION_ID : extensionId,
     browser: __BROWSER__,
     // userAgent is the closest "browser version" string available in a
     // service-worker context; Plan 03b refines this into a parsed
@@ -259,6 +266,7 @@ void endpointLifecycleReady
 
 manager.onStateChange((s) => {
   log.info('connection state →', s)
+  if (s === 'connected') void platformNotify.flush()
 })
 manager.onStateChange(() => void badge.refresh())
 manager.onActivityChange(() => {
@@ -358,6 +366,8 @@ bus.on('bg.viewTasks', async () => {
   return { ok: true } as const
 })
 bus.on('bg.clearBadgeError', async () => {
+  // The popup sends this once when opened: resume due summaries without a timer.
+  void platformNotify.flush()
   await badge.clearError()
   return { ok: true } as const
 })
@@ -414,11 +424,22 @@ bus.on('bg.setTakeoverConfig', async (payload) => {
   await takeoverConfigStore.patchTakeoverSettings(payload)
   return { ok: true } as const
 })
-bus.on('bg.getNotificationsConfig', async () => notificationsConfigStore.get())
-bus.on('bg.setNotificationsConfig', async (payload) => {
-  await notificationsConfigStore.set(payload)
-  return { ok: true } as const
+const notificationSettings = createNotificationSettingsHandlers({
+  extensionId: browser.runtime.id,
+  pageURLs: ['options.html', 'popup.html'].map((path) =>
+    browser.runtime.getURL(path)
+  ),
+  native: new SafariNotificationTransport(),
+  isSafari: () => __BROWSER__ === 'safari',
+  browserNotificationsSupported: () =>
+    typeof browser.notifications?.create === 'function',
+  store: notificationsConfigStore,
 })
+bus.on('bg.getNotificationsConfig', notificationSettings.get)
+bus.on('bg.setNotificationsConfig', notificationSettings.set)
+bus.on('bg.getNotificationCapability', notificationSettings.capability)
+bus.on('bg.testNotification', notificationSettings.test)
+bus.on('bg.openNotificationSettings', notificationSettings.openSettings)
 bus.on('bg.unpair', async ({ endpointId }) => {
   const { active } = await pairingEndpointService.unpair(endpointId)
   if (active) void refreshMenuTitle()
@@ -828,7 +849,7 @@ const interceptionDeps = {
 }
 if (__BROWSER__ === 'firefox') {
   registerFirefoxInterception(interceptionDeps)
-} else {
+} else if (__BROWSER__ === 'chromium') {
   registerChromiumInterception(interceptionDeps)
 }
 

@@ -5,6 +5,7 @@ import {
   handleMenuClick,
   handleMenuClickSafely,
   MENU_ID,
+  registerContextMenu,
   updateContextMenuTitle,
 } from '@/background/contextMenu/register'
 import { type Browser, extensionBrowser } from '@/shared/browser'
@@ -158,6 +159,56 @@ describe('updateContextMenuTitle', () => {
         onClicked: { addListener: vi.fn() },
       },
     })
+  })
+  it('keeps the menu alive during background wake and attaches its click listener immediately', async () => {
+    let finishUpdate!: () => void
+    const update = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finishUpdate = resolve
+        })
+    )
+    Object.assign(extensionBrowser.contextMenus, { update })
+    const run = vi.fn(async () => {})
+    registerContextMenu({ run, getConfig: async () => TAKEOVER_DEFAULT })
+    const listener = vi.mocked(
+      extensionBrowser.contextMenus.onClicked.addListener
+    ).mock.calls[0]![0]
+    listener(
+      {
+        menuItemId: MENU_ID,
+        linkUrl: 'https://example.com/download',
+      } as Browser.contextMenus.OnClickData,
+      { windowId: 7 } as Browser.tabs.Tab
+    )
+    await vi.waitFor(() =>
+      expect(run).toHaveBeenCalledWith(
+        expect.objectContaining({ origin: 'context-menu' }),
+        7
+      )
+    )
+    expect(extensionBrowser.contextMenus.removeAll).not.toHaveBeenCalled()
+    expect(extensionBrowser.contextMenus.create).not.toHaveBeenCalled()
+    finishUpdate()
+  })
+  it('creates the item when no persisted menu exists', async () => {
+    Object.assign(extensionBrowser.contextMenus, {
+      update: vi.fn(async () => {
+        throw new Error('missing item')
+      }),
+    })
+    registerContextMenu({
+      run: vi.fn(),
+      getConfig: async () => TAKEOVER_DEFAULT,
+    })
+    await vi.waitFor(() =>
+      expect(extensionBrowser.contextMenus.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: MENU_ID,
+          contexts: ['link', 'image', 'video', 'audio'],
+        })
+      )
+    )
   })
   it('updates the menu item with the paired title', async () => {
     await i18n.changeLanguage('en-US')

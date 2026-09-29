@@ -22,7 +22,7 @@ export function TaskOptionsFields({
   const { t } = useTranslation()
   const id = useId()
   const field = (
-    key: 'filename' | 'userAgent' | 'referer' | 'cookie' | 'authorization',
+    key: 'filename' | 'referer' | 'cookie' | 'authorization',
     secret = false
   ) => (
     <div className="grid min-w-0 gap-1.5" key={key}>
@@ -36,6 +36,7 @@ export function TaskOptionsFields({
         placeholder={
           key === 'filename' ? t('popup.taskForm.filenameAuto') : undefined
         }
+        className={key === 'filename' ? 'placeholder:text-xs' : undefined}
         disabled={disabled}
         type={secret ? 'password' : 'text'}
         autoComplete="off"
@@ -59,7 +60,28 @@ export function TaskOptionsFields({
             {t('popup.taskForm.advanced')}
           </summary>
           <div className="mt-3 grid min-w-0 grid-cols-1 gap-3 border-s ps-3">
-            {field('userAgent')}
+            <div className="grid min-w-0 gap-1.5">
+              <label
+                className="text-xs font-medium"
+                htmlFor={`${id}-userAgent`}
+              >
+                {t('popup.taskForm.userAgent')}
+              </label>
+              <Textarea
+                id={`${id}-userAgent`}
+                dir="ltr"
+                value={value.userAgent}
+                disabled={disabled}
+                rows={3}
+                maxLength={8192}
+                autoComplete="off"
+                spellCheck={false}
+                className="min-w-0 max-h-32 resize-none text-xs md:text-xs [overflow-wrap:anywhere]"
+                onChange={(event) =>
+                  onChange({ ...value, userAgent: event.target.value })
+                }
+              />
+            </div>
             {field('referer')}
             {browserCookies && (
               <div className="flex items-center justify-between gap-3">

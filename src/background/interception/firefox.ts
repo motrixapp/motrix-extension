@@ -25,7 +25,7 @@ export async function cancelFirefoxDownload(id: number): Promise<void> {
 export function registerFirefoxInterception(
   deps: ChromiumInterceptionDeps
 ): void {
-  browser.downloads.onCreated.addListener((item) => {
+  browser.downloads?.onCreated?.addListener((item) => {
     if (
       !isEligibleDownload(
         item as unknown as {

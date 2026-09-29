@@ -32,7 +32,9 @@
     "submitFailedBody": "ブラウザーで再ダウンロードしています。",
     "submitFailedTitle": "Motrix への送信に失敗しました",
     "submitUnknownTitle": "送信結果を確認できません。再送信する前にタスクを確認してください。",
-    "submitUnknownBody": "送信結果を確認できません。再送信する前にタスクを確認してください。"
+    "submitUnknownBody": "送信結果を確認できません。再送信する前にタスクを確認してください。",
+    "taskDetailsBody": "詳細はタスク一覧で確認してください。",
+    "taskUpdatesTitle": "その他のタスク更新"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "失敗・エラー",
       "errorDesc": "送信失敗、接続不可、ダウンロード失敗",
       "reminderLabel": "リマインダー",
-      "reminderDesc": "ペアリングの案内、ペアリング解除、サイトのスキップ"
+      "reminderDesc": "ペアリングの案内、ペアリング解除、サイトのスキップ",
+      "nativeNotDetermined": "通知設定で通知を許可してください。",
+      "nativeDenied": "システム設定で通知がオフになっています。",
+      "nativeAuthorized": "通知が有効です。",
+      "configure": "通知設定",
+      "openSystemSettings": "システム設定を開く",
+      "test": "テスト通知を送信",
+      "testBody": "Motrix Extension からのテスト通知です。",
+      "testAccepted": "テスト通知を送信しました。",
+      "testFailed": "テスト通知の配信を確認できませんでした。",
+      "testSuppressed": "テスト通知は送信されませんでした。権限を確認するか、少し待って再試行してください。",
+      "settingsFailed": "通知設定を開けませんでした。"
     },
     "pairing": {
       "backendTitle": "{{name}} とペアリング",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "診断情報をコピーできませんでした。もう一度お試しください。",
       "storedPairingUnavailable": "Motrix に接続できません。アプリを開いて再試行してください。保存済みのペアリングは保持されます。"
     }
+  },
+  "safari": {
+    "previewTitle": "Safari オフラインプレビュー",
+    "previewHelp": "ページ内のリソースを検出できます。このプレビューでは Motrix への接続とダウンロードの送信は利用できません。",
+    "unsupportedFeature": "Safari ではこの機能を利用できません。",
+    "confirmDownloadDescription": "右クリックからのダウンロード時に確認フォームを開きます。オフにすると Motrix に直接送信します。",
+    "taskPanelDescription": "ダウンロードを追加した後、タスクパネルを開きます。"
   }
 }

@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare const __BROWSER__: 'chromium' | 'firefox' | 'safari'
+
 declare const __MOTRIX_BUILD__: 'webstore' | 'full' | undefined
 
 declare module 'virtual:motrix-adapter-registry' {

@@ -32,6 +32,16 @@ function fixture() {
 afterEach(() => vi.useRealTimers())
 
 describe('download confirmation ownership', () => {
+  it('rejects an unavailable browser action without submitting or dismissing the draft', async () => {
+    const { service, actions, target } = fixture()
+    const pending = service.request(target, 4, { submit: actions.submit })
+    const draft = service.get(4)!
+    expect(service.decide(4, draft.id, { action: 'browser' })).toBe(false)
+    expect(service.get(4)?.phase).toBe('editing')
+    expect(actions.submit).not.toHaveBeenCalled()
+    service.close(4)
+    await expect(pending).resolves.toEqual({ action: 'cancel' })
+  })
   it('accepts one submission only from the matching window and draft', async () => {
     const { service, actions, request } = fixture()
     const pending = request()

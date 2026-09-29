@@ -32,7 +32,9 @@
     "submitFailedBody": "Relance du téléchargement dans le navigateur.",
     "submitFailedTitle": "Échec de l’envoi à Motrix",
     "submitUnknownTitle": "Résultat de l’envoi inconnu. Vérifiez les tâches avant de renvoyer.",
-    "submitUnknownBody": "Résultat de l’envoi inconnu. Vérifiez les tâches avant de renvoyer."
+    "submitUnknownBody": "Résultat de l’envoi inconnu. Vérifiez les tâches avant de renvoyer.",
+    "taskDetailsBody": "Ouvrez la liste des tâches pour voir les détails.",
+    "taskUpdatesTitle": "Autres mises à jour des tâches"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Échecs / erreurs",
       "errorDesc": "Échec d’envoi, service inaccessible, échec de téléchargement",
       "reminderLabel": "Rappels",
-      "reminderDesc": "Demandes d’association, association révoquée, sites ignorés"
+      "reminderDesc": "Demandes d’association, association révoquée, sites ignorés",
+      "nativeNotDetermined": "Autorisez les alertes dans les réglages des notifications.",
+      "nativeDenied": "Les notifications sont désactivées dans les Réglages Système.",
+      "nativeAuthorized": "Les notifications sont activées.",
+      "configure": "Réglages des notifications",
+      "openSystemSettings": "Ouvrir les Réglages Système",
+      "test": "Envoyer une notification test",
+      "testBody": "Ceci est une notification test de Motrix Extension.",
+      "testAccepted": "Notification test soumise.",
+      "testFailed": "Impossible de confirmer la réception de la notification test.",
+      "testSuppressed": "Notification test non envoyée. Vérifiez les autorisations ou réessayez dans un instant.",
+      "settingsFailed": "Impossible d’ouvrir les réglages des notifications."
     },
     "pairing": {
       "backendTitle": "Association de {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Impossible de copier les informations de diagnostic. Réessayez.",
       "storedPairingUnavailable": "Connexion à Motrix impossible. Ouvrez l’application et réessayez. L’association enregistrée est conservée."
     }
+  },
+  "safari": {
+    "previewTitle": "Aperçu hors ligne Safari",
+    "previewHelp": "Vous pouvez détecter des ressources. La connexion à Motrix et l’envoi de téléchargements ne sont pas disponibles dans cet aperçu.",
+    "unsupportedFeature": "Cette fonctionnalité n’est pas disponible dans Safari.",
+    "confirmDownloadDescription": "Afficher un formulaire de confirmation pour les téléchargements par clic droit. Désactiver pour envoyer directement à Motrix.",
+    "taskPanelDescription": "Ouvrir le panneau des tâches après l’ajout d’un téléchargement."
   }
 }

@@ -18,7 +18,9 @@ import {
 } from '@motrix/mdxp'
 import type { BgAdapterRegistry } from '@/background/AdapterRegistry'
 import { BackendOperationCoordinator } from '@/background/BackendOperationCoordinator'
+import type { BootstrapProvider } from '@/background/BootstrapProvider'
 import { ConnectionGate } from '@/background/ConnectionGate'
+import { createBootstrapProvider } from '@/background/createBootstrapProvider'
 import {
   beforeDeadline,
   DownloadOutcomeUnknownError,
@@ -88,10 +90,7 @@ import {
   generateBindingKeypair,
 } from '@/background/mbp1/ticket-bootstrap'
 import { computeVerifiedOrigin } from '@/background/mbp1/verified-origin'
-import {
-  NativeBootstrap,
-  NativeBootstrapError,
-} from '@/background/NativeBootstrap'
+import { NativeBootstrapError } from '@/background/NativeBootstrap'
 import {
   createLeaseBoundRemoteBackendPolicyStore,
   type RemoteBackendPolicyReplacement,
@@ -107,18 +106,28 @@ import {
   applyRemoteSubmitPolicy,
   RemoteAutomaticTakeoverConsentRequiredError,
 } from '@/background/remote-submit-policy'
+import { notificationText } from '@/background/SafariNotificationTransport'
 import { TaskEventStore } from '@/background/TaskEventStore'
 import type { UrlResolutionDispatcher } from '@/background/UrlResolutionDispatcher'
 import { WebSocketClient } from '@/background/WebSocketClient'
 import { WebSocketFrameChannel } from '@/background/WebSocketFrameChannel'
 import { extensionBrowser as browser } from '@/shared/browser'
+import {
+  type BrowserKind,
+  requireProtocolBrowser,
+  supportsBackendConnections,
+} from '@/shared/browserKind'
 import { i18n } from '@/shared/i18n'
 import {
   type ConnectionIntent,
   type ConnectionPhase,
   DOWNLOAD_ERROR,
 } from '@/shared/integration'
-import type { Notify, NotifyInput } from '@/shared/notifications'
+import type {
+  NotificationSource,
+  Notify,
+  NotifyInput,
+} from '@/shared/notifications'
 
 export type ConnectionState =
   | 'disconnected'
@@ -170,7 +179,7 @@ export interface ConnectionManagerClientInfo {
   name: string
   version: string
   extensionId: string
-  browser: 'chromium' | 'firefox'
+  browser: BrowserKind
   browserVersion: string
   locale: string
 }
@@ -191,7 +200,7 @@ export interface Mbp1FrameChannel extends FrameChannel {
 
 export interface ConnectionManagerOptions {
   /** dependency-injection slots, mainly for tests */
-  bootstrap?: NativeBootstrap
+  bootstrap?: BootstrapProvider
   client?: WebSocketClient
   endpointConfigStore?: EndpointConfigStore
   /** Serializes endpoint catalogue changes with the short-lived durable
@@ -501,7 +510,7 @@ export class ConnectionManager {
    *  "use whatever `discoverForFirstPair` ranks first", the existing
    *  default. */
   private preferredCandidatePort: number | null = null
-  private readonly bootstrap: NativeBootstrap
+  private readonly bootstrap: BootstrapProvider
   private readonly client: WebSocketClient
   private readonly endpointConfigStore: EndpointConfigStore
   private readonly backendOperationCoordinator: BackendOperationCoordinator
@@ -589,7 +598,8 @@ export class ConnectionManager {
 
   constructor(opts: ConnectionManagerOptions) {
     this.opts = opts
-    this.bootstrap = opts.bootstrap ?? new NativeBootstrap()
+    this.bootstrap =
+      opts.bootstrap ?? createBootstrapProvider(opts.clientInfo.browser)
     this.client = opts.client ?? new WebSocketClient()
     this.endpointConfigStore =
       opts.endpointConfigStore ?? new EndpointConfigStore()
@@ -703,6 +713,7 @@ export class ConnectionManager {
     deadlineAt?: number
     assertCurrent?: () => void
   }): Promise<void> {
+    requireProtocolBrowser(this.opts.clientInfo.browser)
     const deadlineAt = options.deadlineAt ?? Date.now() + 30_000
     const check = (): void => {
       options.assertCurrent?.()
@@ -870,6 +881,7 @@ export class ConnectionManager {
   async listPairCandidates(opts: {
     allowLaunch: boolean
   }): Promise<PairCandidate[]> {
+    requireProtocolBrowser(this.opts.clientInfo.browser)
     const results = await this.discoveryService.discoverForFirstPair(opts)
     return results.map((r: DiscoveryResult) => ({
       port: r.wsPort,
@@ -1150,6 +1162,22 @@ export class ConnectionManager {
     this.stateListeners.push(cb)
   }
 
+  /** Restored notifications may only reach the same authenticated endpoint. */
+  isNotificationSourceCurrent(source: NotificationSource): boolean {
+    const scope = this.currentEndpointScope
+    return (
+      this.state === 'connected' &&
+      scope !== null &&
+      source.instanceId !== null &&
+      source.instanceId === this.currentAuthenticatedInstanceId &&
+      source.endpointId === scope.activeEndpointId &&
+      source.endpointRevision ===
+        (scope.endpointConfig.mode === 'remote'
+          ? scope.endpointConfig.revision
+          : 0)
+    )
+  }
+
   onActivityChange(cb: () => void): void {
     this.taskEvents.onChange(cb)
   }
@@ -1378,6 +1406,7 @@ export class ConnectionManager {
     expected: EndpointIncarnation | null,
     preferredCandidatePort: number | null = null
   ): Promise<void> {
+    requireProtocolBrowser(this.opts.clientInfo.browser)
     if (this.state !== 'disconnected' && this.state !== 'denied') {
       log.warn('connect called in state', this.state)
       return
@@ -1503,12 +1532,13 @@ export class ConnectionManager {
    * never a proof of pairing and is never consulted.
    */
   async autostart(): Promise<void> {
+    if (!supportsBackendConnections(this.opts.clientInfo.browser)) return
     const generation = this.generation
     const scope = await this.captureEndpointAttempt(generation)
     if (!this.isCurrentAttempt(generation)) return
 
     const principal: Principal = {
-      browser: this.opts.clientInfo.browser,
+      browser: requireProtocolBrowser(this.opts.clientInfo.browser),
       verifiedOrigin: computeVerifiedOrigin(),
       clientInstallationId: await getClientInstallationId(),
     }
@@ -1549,6 +1579,7 @@ export class ConnectionManager {
   }
 
   private async runExplicitConnect(): Promise<void> {
+    requireProtocolBrowser(this.opts.clientInfo.browser)
     // Claim an explicit picker result before any await or internal stop. It
     // now belongs only to this lifecycle intent; if the intent is stale or
     // cannot start, the choice is discarded rather than leaking into a later
@@ -1689,7 +1720,7 @@ export class ConnectionManager {
     const { generation, authority } = scope
     if (authority.kind !== 'remote') throw new StaleConnectionAttemptError()
     const principal: Principal = {
-      browser: this.opts.clientInfo.browser,
+      browser: requireProtocolBrowser(this.opts.clientInfo.browser),
       verifiedOrigin: computeVerifiedOrigin(),
       clientInstallationId: await getClientInstallationId(),
     }
@@ -1872,7 +1903,7 @@ export class ConnectionManager {
   ): Promise<void> {
     const { generation } = scope
     const principal: Principal = {
-      browser: this.opts.clientInfo.browser,
+      browser: requireProtocolBrowser(this.opts.clientInfo.browser),
       verifiedOrigin: computeVerifiedOrigin(),
       clientInstallationId: await getClientInstallationId(),
     }
@@ -1998,7 +2029,8 @@ export class ConnectionManager {
             result.envelope,
             scope,
             seq,
-            false
+            false,
+            instanceId
           )
         } catch (error) {
           this.closePreAuthChannel(channel)
@@ -2142,7 +2174,8 @@ export class ConnectionManager {
         result.envelope,
         scope,
         seq,
-        true
+        true,
+        result.instanceId
       )
     } catch (error) {
       this.closePreAuthChannel(channel)
@@ -2164,7 +2197,7 @@ export class ConnectionManager {
     scope: EndpointAttemptScope,
     seq: number,
     isFirstPair: boolean,
-    authenticatedInstanceId: string | null = null
+    authenticatedInstanceId: string | null
   ): Promise<void> {
     const { generation } = scope
     const { socket, queuedFrames } = this.releasePreAuthChannel(
@@ -2289,31 +2322,87 @@ export class ConnectionManager {
       })
     }
 
+    const notificationSource: NotificationSource = {
+      endpointId: scope.activeEndpointId,
+      endpointRevision:
+        scope.endpointConfig.mode === 'remote'
+          ? scope.endpointConfig.revision
+          : 0,
+      instanceId: authenticatedInstanceId,
+    }
+    // Legacy unauthenticated instance identities cannot deduplicate across sessions.
+    const notificationSession = authenticatedInstanceId ?? crypto.randomUUID()
+    const notificationMetadata = (
+      kind: string,
+      taskId: string,
+      code?: string
+    ) => ({
+      source: notificationSource,
+      deduplicationKey: JSON.stringify([
+        notificationSession,
+        kind,
+        taskId,
+        code ?? null,
+      ]),
+      isCurrent: () => this.isCurrentConnection(generation, conn),
+    })
+
     // Task lifecycle push notifications
     conn.onNotification(Notifications.TaskProgress, (p: TaskProgressParams) => {
       if (!this.isCurrentConnection(generation, conn)) return
       this.taskEvents.recordProgress(p)
+      try {
+        this.notify.taskProgress?.({
+          taskId: p.taskId,
+          bytesDone: p.bytesDone,
+          phase: p.phase,
+          source: notificationSource,
+          isCurrent: () => this.isCurrentConnection(generation, conn),
+        })
+      } catch {
+        // Advisory notification bookkeeping cannot interrupt task updates.
+      }
     })
     conn.onNotification(
       Notifications.TaskCompleted,
       (p: TaskCompletedParams) => {
         if (!this.isCurrentConnection(generation, conn)) return
         this.taskEvents.take(p.taskId)
-        const name = p.filePath.split('/').pop() ?? p.filePath
+        const name = notificationText(
+          p.filePath.split(/[\\/]/).pop() ?? '',
+          300
+        )
         this.notify({
           title: i18n.t('notify.downloadComplete'),
-          message: name,
+          message: name || i18n.t('notify.taskDetailsBody'),
           severity: 'confirm',
+          kind: 'task.completed',
+          ...notificationMetadata('completed', p.taskId),
+          deduplicationMs: 7 * 24 * 60 * 60 * 1000,
         })
       }
     )
     conn.onNotification(Notifications.TaskError, (p: TaskErrorParams) => {
       if (!this.isCurrentConnection(generation, conn)) return
-      this.taskEvents.take(p.taskId)
+      const progress = this.taskEvents.take(p.taskId)
       this.notify({
         title: i18n.t('notify.downloadFailed'),
-        message: p.message,
+        message: i18n.t('notify.taskDetailsBody'),
         severity: 'error',
+        kind: 'task.failed',
+        failure: {
+          taskId: p.taskId,
+          ...(progress
+            ? {
+                progress: {
+                  bytesDone: progress.bytesDone,
+                  phase: progress.phase,
+                },
+              }
+            : {}),
+        },
+        ...notificationMetadata('error', p.taskId, p.code),
+        deduplicationMs: 10 * 60 * 1000,
       })
     })
 
@@ -2330,7 +2419,10 @@ export class ConnectionManager {
     conn.listen()
     const initializeParams: InitializeParams = {
       protocolVersion: '1.0',
-      client: this.opts.clientInfo,
+      client: {
+        ...this.opts.clientInfo,
+        browser: requireProtocolBrowser(this.opts.clientInfo.browser),
+      },
       capabilities: {
         submitDownload: allowBrowserData || allowRemoteSubmit,
         resolveUrl: canResolve,
@@ -2457,6 +2549,7 @@ export class ConnectionManager {
       title: i18n.t('notify.pairRevokedTitle'),
       message: i18n.t('notify.pairRevokedBody'),
       severity: 'reminder',
+      kind: 'pairing.revoked',
     })
     await this.enterDenied(
       {
@@ -2604,7 +2697,7 @@ export class ConnectionManager {
     if (scope === null) return
     try {
       const principal: Principal = {
-        browser: this.opts.clientInfo.browser,
+        browser: requireProtocolBrowser(this.opts.clientInfo.browser),
         verifiedOrigin: computeVerifiedOrigin(),
         clientInstallationId: await getClientInstallationId(),
       }

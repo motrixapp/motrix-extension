@@ -9,6 +9,7 @@ import { DownloadTab } from '@/options/tabs/DownloadTab'
 import { GeneralTab } from '@/options/tabs/GeneralTab'
 import { HelpTab } from '@/options/tabs/HelpTab'
 import { IntegrationTab } from '@/options/tabs/IntegrationTab'
+import { supportsBackendConnections } from '@/shared/browserKind'
 import { LINKS } from '@/shared/links'
 
 export function App(): React.ReactElement {
@@ -68,24 +69,32 @@ export function App(): React.ReactElement {
                 <TabsTrigger value="general">
                   {t('options.tabs.general')}
                 </TabsTrigger>
-                <TabsTrigger value="download">
-                  {t('options.tabs.download')}
-                </TabsTrigger>
-                <TabsTrigger value="integration">
-                  {t('options.tabs.integration')}
-                </TabsTrigger>
+                {supportsBackendConnections() && (
+                  <TabsTrigger value="download">
+                    {t('options.tabs.download')}
+                  </TabsTrigger>
+                )}
+                {supportsBackendConnections() && (
+                  <TabsTrigger value="integration">
+                    {t('options.tabs.integration')}
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="help">{t('options.tabs.help')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="general" className="">
                 <GeneralTab />
               </TabsContent>
-              <TabsContent value="download" className="">
-                <DownloadTab />
-              </TabsContent>
-              <TabsContent value="integration" className="">
-                <IntegrationTab />
-              </TabsContent>
+              {supportsBackendConnections() && (
+                <TabsContent value="download" className="">
+                  <DownloadTab />
+                </TabsContent>
+              )}
+              {supportsBackendConnections() && (
+                <TabsContent value="integration" className="">
+                  <IntegrationTab />
+                </TabsContent>
+              )}
               <TabsContent value="help" className="">
                 <HelpTab />
               </TabsContent>

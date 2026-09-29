@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { DownloadDirectoryConnectionContext } from '@/popup/DownloadDirectoryConnection'
+import { supportsBackendConnections } from '@/shared/browserKind'
 import type { DownloadDirectoriesResponse } from '@/shared/downloadDirectories'
 import { DOWNLOAD_ERROR } from '@/shared/integration'
 import type { TaskOptions } from '@/shared/taskOptions'
@@ -139,7 +140,10 @@ export function DownloadDirectoryField({
             size="sm"
             className="h-auto min-h-6 max-w-full whitespace-normal px-2 py-0.5 text-xs"
             disabled={
-              disabled || !response || response.status !== 'unavailable'
+              disabled ||
+              !response ||
+              response.status !== 'unavailable' ||
+              !supportsBackendConnections()
             }
             aria-busy={connecting}
             onClick={() => void refresh(true)}

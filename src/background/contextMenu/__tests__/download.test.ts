@@ -105,7 +105,7 @@ describe('context menu download presentation', () => {
 })
 
 describe('confirmation before the first request', () => {
-  function confirmedFixture() {
+  function confirmedFixture(open = async () => {}) {
     const f = fixture()
     f.deps.getConfig.mockResolvedValue({
       ...TAKEOVER_DEFAULT,
@@ -113,7 +113,7 @@ describe('confirmation before the first request', () => {
     })
     const confirmation = new DownloadConfirmationService({
       supported: () => true,
-      open: async () => {},
+      open,
       publish: () => {},
       userAgent: () => 'Browser UA',
     })
@@ -133,6 +133,19 @@ describe('confirmation before the first request', () => {
     })
     return { ...f, confirmation, submissions, run, target }
   }
+  it('signals an error and preserves the draft when popup opening fails, without submitting', async () => {
+    const f = confirmedFixture(async () => {
+      throw new Error('popup unavailable')
+    })
+    await f.run(f.target, 4)
+    expect(f.deps.notify).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 'error' })
+    )
+    expect(f.confirmation.get(4)?.phase).toBe('editing')
+    expect(f.deps.manager.submitDownload).not.toHaveBeenCalled()
+    expect(extensionBrowser.downloads.download).not.toHaveBeenCalled()
+    f.confirmation.close(4)
+  })
   it('does not capture credentials or submit before confirmation and forwards edits once', async () => {
     const f = confirmedFixture()
     const running = f.run(f.target, 4)

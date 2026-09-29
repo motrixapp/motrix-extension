@@ -14,6 +14,8 @@ const chromeStub = {
   runtime: {
     id: 'test-extension-id',
     connectNative: vi.fn(),
+    sendNativeMessage: vi.fn(),
+    getManifest: vi.fn(() => ({ version: '0.1.14', permissions: [] })),
     openOptionsPage: vi.fn(async () => undefined),
     // `computeVerifiedOrigin` (mbp1/verified-origin.ts) calls this on every
     // MBP1 local-endpoint connect attempt. The literal string is arbitrary —
@@ -57,6 +59,9 @@ const chromeStub = {
   tabs: {
     // Default stub: returns an empty array (no active tab). Tests override as needed.
     query: vi.fn(async () => []),
+  },
+  notifications: {
+    create: vi.fn(async () => 'test-notification'),
   },
   // Default stub: behaves like the real, always-present API (mbp1/
   // permission-gate.ts's own tests mock the API-absent branch directly by

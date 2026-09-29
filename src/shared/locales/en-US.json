@@ -32,7 +32,9 @@
     "submitFailedBody": "Re-downloading in the browser.",
     "submitFailedTitle": "Motrix submit failed",
     "submitUnknownTitle": "Send result unknown. Check tasks before sending again.",
-    "submitUnknownBody": "Send result unknown. Check tasks before sending again."
+    "submitUnknownBody": "Send result unknown. Check tasks before sending again.",
+    "taskDetailsBody": "Open the task list to view details.",
+    "taskUpdatesTitle": "More task updates"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Failures / errors",
       "errorDesc": "Submit failed, not reachable, download failed",
       "reminderLabel": "Reminders",
-      "reminderDesc": "Pairing prompts, pairing revoked, skipped sites"
+      "reminderDesc": "Pairing prompts, pairing revoked, skipped sites",
+      "nativeNotDetermined": "Allow alerts in notification settings.",
+      "nativeDenied": "Notifications are turned off in System Settings.",
+      "nativeAuthorized": "Notifications are enabled.",
+      "configure": "Notification settings",
+      "openSystemSettings": "Open System Settings",
+      "test": "Send test notification",
+      "testBody": "This is a test notification from Motrix Extension.",
+      "testAccepted": "Test notification submitted.",
+      "testFailed": "Could not confirm test notification delivery.",
+      "testSuppressed": "Test notification not sent. Check permissions or try again shortly.",
+      "settingsFailed": "Could not open notification settings."
     },
     "pairing": {
       "backendTitle": "Pairing {{name}}",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Couldn’t copy diagnostics. Try again.",
       "storedPairingUnavailable": "Couldn’t connect to Motrix. Open it and try again; your saved pairing is retained."
     }
+  },
+  "safari": {
+    "previewTitle": "Safari offline preview",
+    "previewHelp": "You can discover resources. Connecting to Motrix and sending downloads are not available in this preview.",
+    "unsupportedFeature": "This feature is not available in Safari.",
+    "confirmDownloadDescription": "Open a confirmation form for right-click downloads. Turn off to send directly to Motrix.",
+    "taskPanelDescription": "Open the task panel after a download is added."
   }
 }

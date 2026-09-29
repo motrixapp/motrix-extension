@@ -30,6 +30,51 @@ jobs:
       - run: pnpm run lint
       - run: pnpm run typecheck
       - run: pnpm test
+      - run: node --test scripts/__tests__/*.test.mjs
+      - run: python3 -I scripts/__tests__/safari_release_test.py
       - run: pnpm run build:chromium
       - run: pnpm run build:firefox
+      - run: pnpm run build:safari
       - run: pnpm run build:webstore
+
+  safari-native-core:
+    name: Safari native protocol and IPC
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - run: swift test --package-path native/safari --scratch-path .cache/safari-native-tests
+
+  safari-unsigned-archive:
+    name: Safari clean unsigned archive
+    runs-on: macos-26
+    timeout-minutes: 20
+    env:
+      MOTRIX_SAFARI_RELEASE: '1'
+      MOTRIX_SAFARI_TEAM_ID: 7VMB56CA56
+      MOTRIX_SAFARI_BUILD_NUMBER: '1'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2 # v2.0.2
+        with:
+          runtime: node@24.18.0
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Select runner Xcode
+        run: |
+          echo "DEVELOPER_DIR=$(xcode-select -p)" >> "$GITHUB_ENV"
+          xcodebuild -version
+      - run: pnpm run build:safari
+      - run: node scripts/safari-native.mjs --build --archive --unsigned-archive --bootstrap-client-only
+      - name: Verify actual signing input without credentials
+        run: |
+          set -euo pipefail
+          version="$(/usr/bin/plutil -extract version raw package.json)"
+          app='.cache/safari-ci/archives/Motrix Extension for Safari-1.xcarchive/Products/Applications/Motrix Extension for Safari.app'
+          digest="$(python3 -I scripts/safari-release.py pack --input "$app" --output "$RUNNER_TEMP/safari-unsigned.zip" --commit "$GITHUB_SHA" --version "$version" --build 1 --team "$MOTRIX_SAFARI_TEAM_ID")"
+          python3 -I scripts/safari-release.py verify --input "$RUNNER_TEMP/safari-unsigned.zip" --digest "$digest" --commit "$GITHUB_SHA" --version "$version" --build 1 --team "$MOTRIX_SAFARI_TEAM_ID" --native

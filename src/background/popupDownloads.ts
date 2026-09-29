@@ -14,6 +14,7 @@ import {
 } from '@/background/mediaSubmission'
 import { resolveStoredMedia } from '@/background/mediaTrust'
 import type { Browser } from '@/shared/browser'
+import type { BrowserKind } from '@/shared/browserKind'
 import { DOWNLOAD_ERROR } from '@/shared/integration'
 import { isResolvableVideoPage } from '@/shared/media'
 import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
@@ -27,7 +28,7 @@ interface PopupDownloadDeps {
   extensionBaseUrl: string
   getActiveTabs: () => Promise<Browser.tabs.Tab[]>
   cookieApi: Parameters<typeof capturePageCookies>[0]['api']
-  browserKind: 'chromium' | 'firefox'
+  browserKind: BrowserKind
   userAgent: string
   webStore: boolean
 }

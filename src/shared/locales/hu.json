@@ -32,7 +32,9 @@
     "submitFailedBody": "Újraletöltés a böngészőben.",
     "submitFailedTitle": "Sikertelen küldés a Motrixnak",
     "submitUnknownTitle": "A küldés eredménye ismeretlen. Újraküldés előtt ellenőrizd a feladatokat.",
-    "submitUnknownBody": "A küldés eredménye ismeretlen. Újraküldés előtt ellenőrizd a feladatokat."
+    "submitUnknownBody": "A küldés eredménye ismeretlen. Újraküldés előtt ellenőrizd a feladatokat.",
+    "taskDetailsBody": "A részletekhez nyisd meg a feladatlistát.",
+    "taskUpdatesTitle": "További feladatfrissítések"
   },
   "options": {
     "diagnostics": {
@@ -82,7 +84,18 @@
       "errorLabel": "Sikertelen műveletek / hibák",
       "errorDesc": "Sikertelen küldés, elérhetetlenség, sikertelen letöltés",
       "reminderLabel": "Emlékeztetők",
-      "reminderDesc": "Párosítási kérések, visszavont párosítás, kihagyott webhelyek"
+      "reminderDesc": "Párosítási kérések, visszavont párosítás, kihagyott webhelyek",
+      "nativeNotDetermined": "Engedélyezd a jelzéseket az értesítési beállításokban.",
+      "nativeDenied": "Az értesítések ki vannak kapcsolva a Rendszerbeállításokban.",
+      "nativeAuthorized": "Az értesítések be vannak kapcsolva.",
+      "configure": "Értesítési beállítások",
+      "openSystemSettings": "Rendszerbeállítások megnyitása",
+      "test": "Tesztértesítés küldése",
+      "testBody": "Ez a Motrix Extension tesztértesítése.",
+      "testAccepted": "Tesztértesítés továbbítva.",
+      "testFailed": "Nem sikerült megerősíteni a tesztértesítés kézbesítését.",
+      "testSuppressed": "A tesztértesítés nem lett elküldve. Ellenőrizd az engedélyeket, vagy próbáld újra kis idő múlva.",
+      "settingsFailed": "Nem sikerült megnyitni az értesítési beállításokat."
     },
     "pairing": {
       "backendTitle": "{{name}} párosítása",
@@ -538,5 +551,12 @@
       "diagnosticsCopyFailed": "Nem sikerült másolni a diagnosztikát. Próbáld újra.",
       "storedPairingUnavailable": "Nem sikerült kapcsolódni a Motrixhoz. Nyisd meg és próbáld újra; a mentett párosítás megmarad."
     }
+  },
+  "safari": {
+    "previewTitle": "Safari offline előzetes",
+    "previewHelp": "Az erőforrások felderíthetők. A Motrixhoz való csatlakozás és a letöltések küldése ebben az előzetesben nem érhető el.",
+    "unsupportedFeature": "Ez a funkció nem érhető el a Safariban.",
+    "confirmDownloadDescription": "Megerősítő űrlap megnyitása a helyi menüből indított letöltéseknél. Kikapcsolva közvetlenül a Motrixnak küldi.",
+    "taskPanelDescription": "A feladatpanel megnyitása letöltés hozzáadása után."
   }
 }

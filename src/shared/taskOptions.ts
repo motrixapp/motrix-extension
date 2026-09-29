@@ -7,6 +7,9 @@ const headerValue = z
   .string()
   .max(8192)
   .refine((value) => !/[\r\n\0]/.test(value))
+// Referer is an HTTP header, not a download resource. Local pages and IP
+// literals are valid sources; z.httpUrl() additionally requires a domain name.
+const refererUrl = z.url({ protocol: /^https?$/ })
 const reserved =
   /^(host|connection|content-length|transfer-encoding|upgrade|proxy-connection|keep-alive|te|trailer|user-agent|referer|cookie|authorization)$/i
 
@@ -50,7 +53,7 @@ export const taskOptionsDraftSchema = z.object({
 export const taskOptionsSchema = taskOptionsDraftSchema.extend({
   userAgent: headerValue,
   referer: headerValue.refine(
-    (value) => !value || z.httpUrl().safeParse(value).success
+    (value) => !value || refererUrl.safeParse(value).success
   ),
   cookie: headerValue,
   authorization: headerValue,
