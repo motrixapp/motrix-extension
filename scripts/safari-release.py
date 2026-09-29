@@ -13,6 +13,7 @@ from pathlib import Path, PurePosixPath
 import plistlib
 import re
 import secrets
+import shlex
 import shutil
 import stat
 import subprocess
@@ -215,7 +216,13 @@ def run(*args, timeout=180):
         result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout, check=False)
     except (subprocess.TimeoutExpired, OSError):
         raise RuntimeError(Path(args[0]).name + ' could not complete') from None
-    require(result.returncode == 0, Path(args[0]).name + ' failed; exit ' + str(result.returncode))
+    if result.returncode != 0:
+        message = Path(args[0]).name + ' failed; exit ' + str(result.returncode)
+        # Only codesign receives public paths/identity hashes, never credentials.
+        # JSON escaping prevents diagnostic text from becoming workflow commands.
+        if args[0] == '/usr/bin/codesign':
+            message += '; diagnostic=' + json.dumps(result.stderr[:8192].decode('utf-8', errors='replace'))
+        raise ValueError(message)
     return result.stdout
 
 
@@ -240,7 +247,7 @@ def signing_entitlements(team):
 
 def verify_signature(app, team, entitlements):
     for path, identifier in ((app / EXT, EXT_ID), (app, APP_ID)):
-        requirement = (f'anchor apple generic and certificate leaf[subject.OU] = "{team}" '
+        requirement = (f'=anchor apple generic and certificate leaf[subject.OU] = "{team}" '
                        f'and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and identifier "{identifier}"')
         run('/usr/bin/codesign', '--verify', '--strict', '--all-architectures', '-R', requirement, str(path))
         for arch in ('arm64', 'x86_64'):
@@ -275,12 +282,15 @@ def sign(archive, digest, meta, output):
         key.chmod(0o600)
         keychain = str(work / 'signing.keychain-db')
         password = secrets.token_hex(32)
+        original_keychains = shlex.split(run('/usr/bin/security', 'list-keychains', '-d', 'user').decode())
         try:
             run('/usr/bin/security', 'create-keychain', '-p', password, keychain)
             run('/usr/bin/security', 'set-keychain-settings', '-lut', '7200', keychain)
             run('/usr/bin/security', 'unlock-keychain', '-p', password, keychain)
             run('/usr/bin/security', 'import', str(p12), '-P', credentials['MAC_CERTS_PASSWORD'], '-k', keychain, '-T', '/usr/bin/codesign', '-T', '/usr/bin/security')
             run('/usr/bin/security', 'set-key-partition-list', '-S', 'apple-tool:,apple:,codesign:', '-s', '-k', password, keychain)
+            # codesign also needs the private key and certificate chain discoverable.
+            run('/usr/bin/security', 'list-keychains', '-d', 'user', '-s', keychain, *original_keychains)
             listing = run('/usr/bin/security', 'find-identity', '-v', '-p', 'codesigning', keychain).decode()
             identities = re.findall(r'\b([A-Fa-f0-9]{40}) "Developer ID Application: [^"\n]+ \(' + meta['team'] + r'\)"', listing)
             require(len(identities) == 1, 'Expected one valid Developer ID Application identity for this team')
@@ -311,7 +321,9 @@ def sign(archive, digest, meta, output):
             (output / 'safari-release-receipt.json').write_text(json.dumps({**meta, 'input_sha256': digest, 'zip_sha256': sha(final.read_bytes()), 'notarization_id': result['id'], 'status': 'Accepted'}, indent=2) + '\n')
             (output / 'safari-notarization-log.json').write_bytes(log)
         finally:
-            subprocess.run(['/usr/bin/security', 'delete-keychain', keychain], capture_output=True, check=False)
+            restored = subprocess.run(['/usr/bin/security', 'list-keychains', '-d', 'user', '-s', *original_keychains], capture_output=True, check=False)
+            deleted = subprocess.run(['/usr/bin/security', 'delete-keychain', keychain], capture_output=True, check=False)
+            require(restored.returncode == 0 and deleted.returncode == 0, 'Signing keychain cleanup failed')
 
 
 def main():

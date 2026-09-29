@@ -205,12 +205,33 @@ class SigningBoundary(unittest.TestCase):
             self.assertNotIn('private-test-password', str(error.exception))
             self.assertTrue(error.exception.__suppress_context__)
 
+    def test_codesign_failure_has_bounded_escaped_diagnostic(self):
+        diagnostic = b'errSecInternalComponent\n::warning::untrusted' + b'x' * 9000
+        with patch.object(s.subprocess, 'run', return_value=subprocess.CompletedProcess([], 1, b'', diagnostic)):
+            with self.assertRaises(ValueError) as error:
+                s.run('/usr/bin/codesign', '--sign', 'public-identity', 'app')
+            self.assertIn('errSecInternalComponent', str(error.exception))
+            self.assertNotIn('\n', str(error.exception))
+            self.assertLess(len(str(error.exception)), 8400)
+
+    def test_credential_tool_failure_never_discloses_output_or_argv(self):
+        secret = b'private-test-password'
+        with patch.object(s.subprocess, 'run', return_value=subprocess.CompletedProcess([], 1, secret, secret)):
+            with self.assertRaises(ValueError) as error:
+                s.run('/usr/bin/security', 'import', '-P', secret.decode())
+            self.assertNotIn(secret.decode(), str(error.exception))
+
+    def test_codesign_failure_restores_keychain_search_list(self):
+        self.exercise_signer('--sign')
+
     def exercise_signer(self, fail_at=None):
         calls = []
         def command(*args, **kwargs):
             calls.append(args)
             if fail_at and fail_at in args:
                 raise ValueError('Injected failure')
+            if args == ('/usr/bin/security', 'list-keychains', '-d', 'user'):
+                return b'    "/Users/runner/Library/Keychains/login.keychain-db"\n    "/tmp/with space.keychain-db"\n'
             if 'find-identity' in args:
                 return ('1) ' + 'B' * 40 + ' "Developer ID Application: Test (7VMB56CA56)"').encode()
             if args[0] == '/usr/bin/ditto':
@@ -222,6 +243,7 @@ class SigningBoundary(unittest.TestCase):
             return b''
         credentials = dict(MAC_CERTS='dGVzdA==', MAC_CERTS_PASSWORD='fixture-password', API_KEY='-----BEGIN PRIVATE KEY-----\nfixture', API_KEY_ID='ABCDEFGHIJ', API_KEY_ISSUER_ID='11111111-1111-1111-1111-111111111111', RUNNER_TEMP=str(self.root))
         with patch.dict(s.os.environ, credentials), patch.object(s.sys, 'platform', 'darwin'), patch.object(s, 'inspect_macho'), patch.object(s, 'verify_signature'), patch.object(s, 'run', side_effect=command), patch.object(s.subprocess, 'run') as cleanup:
+            cleanup.return_value = subprocess.CompletedProcess([], 0)
             if fail_at:
                 with self.assertRaisesRegex(ValueError, 'Injected failure'):
                     s.sign(self.archive, self.digest, META, self.root / 'signed')
@@ -231,7 +253,8 @@ class SigningBoundary(unittest.TestCase):
                 receipt = json.loads((self.root / 'signed/safari-release-receipt.json').read_text())
                 self.assertEqual(receipt['input_sha256'], self.digest)
                 self.assertEqual(receipt['status'], 'Accepted')
-            self.assertTrue(any(call.args[0][1] == 'delete-keychain' for call in cleanup.call_args_list))
+            self.assertEqual(cleanup.call_args_list[-2].args[0], ['/usr/bin/security', 'list-keychains', '-d', 'user', '-s', '/Users/runner/Library/Keychains/login.keychain-db', '/tmp/with space.keychain-db'])
+            self.assertEqual(cleanup.call_args_list[-1].args[0][1], 'delete-keychain')
         self.assertFalse(list(self.root.glob('safari-sign-*')))
         return calls
 
@@ -240,6 +263,10 @@ class SigningBoundary(unittest.TestCase):
         signed = [a[-1] for a in calls if a[0] == '/usr/bin/codesign']
         self.assertTrue(signed[0].endswith('.appex'))
         self.assertTrue(signed[1].endswith('.app'))
+        configured = next(i for i, a in enumerate(calls) if 'list-keychains' in a and '-s' in a)
+        first_sign = next(i for i, a in enumerate(calls) if a[0] == '/usr/bin/codesign')
+        self.assertLess(configured, first_sign)
+        self.assertEqual(calls[configured][-2:], ('/Users/runner/Library/Keychains/login.keychain-db', '/tmp/with space.keychain-db'))
         stapled = next(i for i, a in enumerate(calls) if 'staple' in a)
         last_zip = max(i for i, a in enumerate(calls) if a[0] == '/usr/bin/ditto')
         self.assertLess(stapled, last_zip)
