@@ -94,6 +94,7 @@ import {
   buildPakeA,
   type FrameChannel,
   FrameError,
+  isMbp1Browser,
   MBP1_PROTOCOL_VERSION,
   type Mbp1Browser,
   type PairErrorCode,
@@ -164,7 +165,7 @@ export type PairingFailureReason =
   | 'missingNonce'
   /** The WebSocket could not be opened; the browser exposes no safe detail. */
   | 'channelUnavailable'
-  /** `principal.browser` is neither `chromium` nor `firefox`. */
+  /** `principal.browser` is not defined by the MBP1 wire schema. */
   | 'unsupportedBrowser'
   /** A ticket was supplied with no binding keypair to bind it to (§9.1). */
   | 'ticketWithoutBindingKeypair'
@@ -454,10 +455,10 @@ export class PairingFlow {
         '/pair requires a §4.2 nonce; call DiscoveryService.ensureNonce first'
       )
     }
-    if (principal.browser !== 'chromium' && principal.browser !== 'firefox') {
+    if (!isMbp1Browser(principal.browser)) {
       throw new PairingFlowError(
         'unsupportedBrowser',
-        'pairHello.browser must be chromium or firefox'
+        'pairHello.browser must be chromium, firefox, or safari'
       )
     }
 

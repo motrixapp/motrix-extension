@@ -1,5 +1,5 @@
 import type { MdxpConnection } from '@motrix/mdxp'
-import { Methods, Notifications } from '@motrix/mdxp'
+import { ErrorCodes, Methods, Notifications } from '@motrix/mdxp'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConnectionGate } from '@/background/ConnectionGate'
 import {
@@ -61,7 +61,9 @@ function makeUnavailableRemoteDiscoveryService() {
 function makeFakeConn(): MdxpConnection {
   const conn = {
     listen: vi.fn(),
-    sendRequest: vi.fn(async (method: string) => {
+    sendRequest: vi.fn(async (method: string, params: { sentAt?: number }) => {
+      if (method === Methods.SystemPing)
+        return { sentAt: params.sentAt, recvAt: Date.now() }
       if (method === 'motrix/initialize') {
         const result: Record<string, unknown> = {
           protocolVersion: '1.0',
@@ -385,7 +387,116 @@ describe('ConnectionManager — happy path', () => {
       name: 'motrix',
       version: '2.0',
       runtime: 'electron',
+      instanceId: 'fake-instance',
     })
+  })
+
+  it('refreshes capabilities on the live session and coalesces concurrent scans', async () => {
+    const conn = makeFakeConn()
+    const mgr = makeManager({ mbp1Conn: conn })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    const declared = vi.mocked(conn.sendRequest).mock.calls[0]?.[1]
+    const pending = deferred<unknown>()
+    vi.mocked(conn.sendRequest).mockImplementationOnce(
+      () => pending.promise as never
+    )
+    const first = mgr.refreshServerCapabilities()
+    const second = mgr.refreshServerCapabilities()
+    expect(first).toBe(second)
+    pending.resolve({
+      protocolVersion: '1.0',
+      server: { name: 'motrix', version: '2.0', runtime: 'electron' },
+      capabilities: {
+        ffmpegAvailable: true,
+        selectionKinds: ['direct', 'hls', 'dash', 'mux'],
+        progress: true,
+        cancellation: true,
+      },
+      serverAdapters: [],
+    })
+    await expect(first).resolves.toMatchObject({
+      selectionKinds: ['direct', 'hls', 'dash', 'mux'],
+    })
+    expect(conn.sendRequest).toHaveBeenLastCalledWith(
+      'motrix/initialize',
+      declared
+    )
+    expect(mgr.getState()).toBe('connected')
+    expect(conn.dispose).not.toHaveBeenCalled()
+    expect(conn.sendNotification).toHaveBeenCalledTimes(1)
+    // A later scan also detects removed/invalidated FFmpeg support.
+    vi.mocked(conn.sendRequest).mockResolvedValueOnce({
+      protocolVersion: '1.0',
+      server: { name: 'motrix', version: '2.0', runtime: 'electron' },
+      capabilities: {
+        ffmpegAvailable: false,
+        selectionKinds: ['direct'],
+        progress: true,
+        cancellation: true,
+      },
+      serverAdapters: [],
+    } as never)
+    await expect(mgr.refreshServerCapabilities()).resolves.toMatchObject({
+      ffmpegAvailable: false,
+      selectionKinds: ['direct'],
+    })
+  })
+
+  it('does not connect or launch Motrix to refresh an offline session', async () => {
+    const mgr = makeManager()
+    await expect(mgr.refreshServerCapabilities()).resolves.toBeNull()
+    expect(mgr.getState()).toBe('disconnected')
+  })
+
+  it('discards a capability reply after the session is stopped', async () => {
+    const conn = makeFakeConn()
+    const mgr = makeManager({ mbp1Conn: conn })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    const pending = deferred<unknown>()
+    vi.mocked(conn.sendRequest).mockImplementationOnce(
+      () => pending.promise as never
+    )
+    const refresh = mgr.refreshServerCapabilities()
+    mgr.stop()
+    pending.resolve({})
+    await expect(refresh).rejects.toThrow()
+    expect(mgr.getServerCapabilities()).toBeNull()
+    expect(mgr.getState()).toBe('disconnected')
+  })
+
+  it('bounds capability refresh time and allows another scan after failure', async () => {
+    const conn = makeFakeConn()
+    const mgr = makeManager({ mbp1Conn: conn, requestTimeoutMs: 10 })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    vi.mocked(conn.sendRequest).mockImplementationOnce(
+      () => new Promise(() => {})
+    )
+    await expect(mgr.refreshServerCapabilities()).rejects.toThrow('timed out')
+    await expect(mgr.refreshServerCapabilities()).resolves.toMatchObject({
+      selectionKinds: ['direct'],
+    })
+  })
+
+  it.each([
+    {},
+    {
+      protocolVersion: '1.0',
+      server: { name: 'motrix', version: '2.0', runtime: 'server' },
+      capabilities: {
+        ffmpegAvailable: true,
+        selectionKinds: ['direct', 'mux'],
+        progress: true,
+        cancellation: true,
+      },
+      serverAdapters: [],
+    },
+  ])('rejects an invalid or mismatched refresh reply', async (result) => {
+    const conn = makeFakeConn()
+    const mgr = makeManager({ mbp1Conn: conn })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    vi.mocked(conn.sendRequest).mockResolvedValueOnce(result as never)
+    await expect(mgr.refreshServerCapabilities()).rejects.toThrow()
+    expect(mgr.getServerCapabilities()?.selectionKinds).toEqual(['direct'])
   })
 
   it('abandons a server that never answers motrix/initialize', async () => {
@@ -964,7 +1075,7 @@ describe('ConnectionManager — pair revoked notification', () => {
     fireRevoked('user-revoked')
     await new Promise((r) => setTimeout(r, 10))
     expect(notify).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'reminder' })
+      expect.objectContaining({ severity: 'reminder', kind: 'pairing.revoked' })
     )
   })
 
@@ -1179,9 +1290,13 @@ describe('ConnectionManager — request() proxy', () => {
     expect(manager.getState()).toBe('connected')
 
     const result = await manager.request('task/list', { limit: 10 })
-    expect(fakeConn.sendRequest).toHaveBeenCalledWith('task/list', {
-      limit: 10,
-    })
+    expect(fakeConn.sendRequest).toHaveBeenCalledWith(
+      'task/list',
+      {
+        limit: 10,
+      },
+      expect.objectContaining({ isCancellationRequested: false })
+    )
     expect(result).toEqual(cannedResult)
   })
 
@@ -1563,6 +1678,7 @@ describe('ConnectionManager — local MBP1 async ownership', () => {
       name: 'server-b',
       version: '2.0',
       runtime: 'electron',
+      instanceId: 'fake-instance',
     })
     expect(mgr.getLastError()).toBeNull()
     expect(deps.revokeAll).not.toHaveBeenCalled()
@@ -1674,6 +1790,71 @@ function makeFakeConnWithNotifications(): MdxpConnection & {
 }
 
 describe('ConnectionManager — $/task/* notification handlers', () => {
+  it('binds retry progress to its source and includes the last observed progress in a failure', async () => {
+    const taskProgress = vi.fn()
+    const notify = Object.assign(vi.fn(), { taskProgress })
+    const conn = makeFakeConnWithNotifications()
+    const mgr = makeManager({ mbp1Conn: conn, notify })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    const progress = {
+      taskId: 'retry-task',
+      bytesDone: 40,
+      bytesTotal: 100,
+      speedBps: 10,
+      etaSec: 6,
+      phase: 'downloading',
+    }
+    conn.emitNotification('$/task/progress', progress)
+    conn.emitNotification('$/task/error', {
+      taskId: 'retry-task',
+      code: 'NETWORK_ERROR',
+      message: 'private details',
+    })
+    const failure = notify.mock.calls[0]![0]
+    const observation = taskProgress.mock.calls[0]![0]
+    expect(failure.failure).toEqual({
+      taskId: 'retry-task',
+      progress: { bytesDone: 40, phase: 'downloading' },
+    })
+    expect(observation.source).toEqual(failure.source)
+    expect(observation.isCurrent()).toBe(true)
+    mgr.stop()
+    expect(observation.isCurrent()).toBe(false)
+    conn.emitNotification('$/task/progress', { ...progress, bytesDone: 50 })
+    expect(taskProgress).toHaveBeenCalledOnce()
+  })
+
+  it('keeps only a safe filename and invalidates delayed notifications after disconnect', async () => {
+    const notify = vi.fn()
+    const conn = makeFakeConnWithNotifications()
+    const mgr = makeManager({ mbp1Conn: conn, notify })
+    await mgr.connect({ allowLaunch: true, userInitiated: true })
+    conn.emitNotification('$/task/completed', {
+      taskId: 't-path',
+      filePath: 'C:\\private\\folder\\report\u202e.txt',
+      durationMs: 1000,
+    })
+    const input = notify.mock.calls[0]![0]
+    expect(input.message).toBe('report .txt')
+    expect(input.kind).toBe('task.completed')
+    expect(input.source).toMatchObject({ endpointRevision: 0 })
+    expect(input.isCurrent()).toBe(true)
+    expect(mgr.isNotificationSourceCurrent(input.source)).toBe(true)
+    for (const changed of [
+      { endpointId: 'another-server' },
+      { endpointRevision: 1 },
+      { instanceId: 'another-instance' },
+      { instanceId: null },
+    ]) {
+      expect(
+        mgr.isNotificationSourceCurrent({ ...input.source, ...changed })
+      ).toBe(false)
+    }
+    mgr.stop()
+    expect(input.isCurrent()).toBe(false)
+    expect(mgr.isNotificationSourceCurrent(input.source)).toBe(false)
+  })
+
   it('fires a notification on $/task/completed and records progress', async () => {
     const notify = vi.fn()
     const taskEvents = new TaskEventStore()
@@ -1733,13 +1914,14 @@ describe('ConnectionManager — $/task/* notification handlers', () => {
     conn.emitNotification('$/task/error', {
       taskId: 't3',
       code: 'NETWORK_ERROR',
-      message: 'Connection timed out',
+      message: 'Request https://private.example/?token=secret timed out',
     })
 
     expect(notify).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Download failed',
-        message: 'Connection timed out',
+        message: 'Open the task list to view details.',
+        kind: 'task.failed',
       })
     )
   })
@@ -1751,7 +1933,7 @@ describe('ConnectionManager — $/task/* notification handlers', () => {
 
 describe('ConnectionManager — submitDownload + cancelDownload', () => {
   /** Fake conn that returns { taskId: 'task-9' } for 'download/submit' */
-  function makeSubmitFakeConn(): MdxpConnection & {
+  function makeSubmitFakeConn(downloadDirectories = false): MdxpConnection & {
     sendRequest: ReturnType<typeof vi.fn>
   } {
     const conn = {
@@ -1763,6 +1945,7 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
             server: { name: 'motrix', version: '2.0', runtime: 'electron' },
             capabilities: {
               ffmpegAvailable: true,
+              downloadDirectories,
               selectionKinds: ['direct'],
               progress: true,
               cancellation: true,
@@ -1784,6 +1967,100 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
       sendRequest: ReturnType<typeof vi.fn>
     }
   }
+
+  it('refuses explicit directories on older hosts before sending', async () => {
+    const conn = makeSubmitFakeConn()
+    const manager = makeManager({ mbp1Conn: conn })
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    await expect(
+      manager.submitDownload(
+        {
+          source: {
+            pageUrl: 'https://example.test',
+            pageTitle: '',
+            detectedAt: 0,
+          },
+          selection: {
+            kind: 'magnet',
+            uri: 'magnet:?xt=urn:btih:0123456789012345678901234567890123456789',
+          },
+          meta: { suggestedFilename: '', qualityLabel: '' },
+          saveDir: '/downloads',
+        },
+        { directoryInstanceId: 'instance' }
+      )
+    ).rejects.toThrow('download.directory-unavailable')
+    expect(
+      conn.sendRequest.mock.calls.some(
+        ([method]) => method === Methods.DownloadSubmit
+      )
+    ).toBe(false)
+    manager.stop()
+  })
+
+  it('refuses directory selections bound to a different paired instance', async () => {
+    const conn = makeSubmitFakeConn(true)
+    const manager = makeManager({ mbp1Conn: conn })
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    await expect(
+      manager.submitDownload(
+        {
+          source: {
+            pageUrl: 'https://example.test',
+            pageTitle: '',
+            detectedAt: 0,
+          },
+          selection: {
+            kind: 'magnet',
+            uri: 'magnet:?xt=urn:btih:0123456789012345678901234567890123456789',
+          },
+          meta: { suggestedFilename: '', qualityLabel: '' },
+          saveDir: '/downloads',
+        },
+        { directoryInstanceId: 'another-instance' }
+      )
+    ).rejects.toThrow('download.context-changed')
+    expect(
+      conn.sendRequest.mock.calls.some(
+        ([method]) => method === Methods.DownloadSubmit
+      )
+    ).toBe(false)
+    manager.stop()
+  })
+
+  it('reports a capability rejection as unsupported instead of an unknown download outcome', async () => {
+    const conn = makeSubmitFakeConn()
+    const manager = makeManager({ mbp1Conn: conn })
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    conn.sendRequest.mockRejectedValueOnce({
+      code: ErrorCodes.CapabilityNotSupported,
+      message: 'private native path',
+    })
+    await expect(
+      manager.submitDownload({
+        source: {
+          pageUrl: 'https://example.com',
+          pageTitle: 'Video',
+          detectedAt: 1,
+        },
+        selection: {
+          kind: 'direct',
+          primary: {
+            url: 'https://example.com/video.mp4',
+            headers: {},
+            cookies: [],
+            refererPolicy: 'strict-origin-when-cross-origin',
+          },
+        },
+        meta: { suggestedFilename: 'video.mp4', qualityLabel: '' },
+      })
+    ).rejects.toThrow('download.unsupported')
+    expect(
+      conn.sendRequest.mock.calls.filter(
+        ([method]) => method === 'download/submit'
+      )
+    ).toHaveLength(1)
+  })
 
   it('submitDownload forwards download/submit and returns the taskId', async () => {
     const fakeConn = makeSubmitFakeConn()
@@ -1874,6 +2151,33 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
     )
   })
 
+  it.each([null, {}, { taskId: 42 }])(
+    'keeps a malformed submit receipt uncertain: %j',
+    async (receipt) => {
+      const fakeConn = makeSubmitFakeConn()
+      const manager = makeManager({
+        mbp1Conn: fakeConn as unknown as MdxpConnection,
+      })
+      await manager.connect({ allowLaunch: true, userInitiated: true })
+      fakeConn.sendRequest.mockResolvedValueOnce(receipt)
+      await expect(
+        manager.submitDownload({
+          source: {
+            pageUrl: 'https://example.com/',
+            pageTitle: 'File',
+            detectedAt: 1,
+          },
+          selection: {
+            kind: 'magnet',
+            uri: 'magnet:?xt=urn:btih:0123456789012345678901234567890123456789',
+          },
+          meta: { suggestedFilename: 'file', qualityLabel: 'source' },
+        })
+      ).rejects.toThrow('download.result-unknown')
+      manager.stop()
+    }
+  )
+
   it('times out a submit whose response is permanently lost', async () => {
     const fakeConn = makeSubmitFakeConn()
     fakeConn.sendRequest.mockImplementation(async (method: string) => {
@@ -1916,7 +2220,56 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
         },
         meta: { suggestedFilename: 'a.mp4', qualityLabel: '1080p' },
       })
-    ).rejects.toThrow(/download\/submit timed out after 10ms/i)
+    ).rejects.toThrow('download.result-unknown')
+  })
+
+  it('does not mark an unsent download unknown when health changes during journal persistence', async () => {
+    const conn = makeSubmitFakeConn()
+    const manager = makeManager({ mbp1Conn: conn, requestTimeoutMs: 10 })
+    await manager.connect({ allowLaunch: true, userInitiated: true })
+    const journal = deferred<void>()
+    const started = deferred<void>()
+    conn.sendRequest.mockImplementation(async () => new Promise(() => {}))
+    const submitting = manager.submitDownload(
+      {
+        source: {
+          pageUrl: 'https://example.test/',
+          pageTitle: 'file',
+          detectedAt: 0,
+        },
+        selection: {
+          kind: 'magnet',
+          uri: 'magnet:?xt=urn:btih:0123456789012345678901234567890123456789',
+        },
+        meta: { suggestedFilename: 'file', qualityLabel: 'source' },
+      },
+      {
+        onSubmitting: async () => {
+          started.resolve()
+          await journal.promise
+        },
+      }
+    )
+    const rejected = expect(submitting).rejects.toThrow(
+      'download.connection-failed'
+    )
+    await started.promise
+    const reading = manager.request(Methods.TaskList, {}).catch(() => {})
+    await vi.waitFor(() =>
+      expect(manager.getRpcStatus().health).toBe('checking')
+    )
+    journal.resolve()
+    try {
+      await rejected
+      expect(
+        conn.sendRequest.mock.calls.filter(
+          ([method]) => method === Methods.DownloadSubmit
+        )
+      ).toHaveLength(0)
+    } finally {
+      manager.stop()
+      await reading
+    }
   })
 
   it('cancelDownload forwards download/cancel', async () => {

@@ -67,13 +67,21 @@ describe('parseManualTaskInput', () => {
   )
 
   it.each([
+    'http://172.16.50.14/file.zip',
+    'https://192.168.1.10:8443/file.zip',
     'http://localhost/file.zip',
     'http://127.0.0.1/file.zip',
+    'http://[::1]:8080/file.zip',
+    'http://nas/file.zip',
     'https://例子.测试/file.zip',
-  ])('rejects an HTTP URL outside the MDXP Resource contract: %s', (input) => {
+  ])('accepts IP, local and internationalized HTTP hosts: %s', (input) => {
     expect(parseManualTaskInput(input)).toEqual({
-      ok: false,
-      reason: 'invalid',
+      ok: true,
+      value: {
+        kind: 'direct',
+        url: new URL(input).href,
+        suggestedFilename: 'file.zip',
+      },
     })
   })
 
@@ -89,6 +97,8 @@ describe('parseManualTaskInput', () => {
     'javascript:alert(1)',
     'data:text/plain,hello',
     'ftp://example.com/file.zip',
+    'ftps://example.com/file.zip',
+    'sftp://example.com/file.zip',
   ])('rejects unsupported input %s', (input) => {
     expect(parseManualTaskInput(input)).toEqual({
       ok: false,

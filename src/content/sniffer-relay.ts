@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 // ISOLATED-world bridge for the document_start MAIN-world sniffer. The bridge
 // installs once per frame, announces readiness in both load orders, and
 // bounds/coalesces page-controlled data before runtime IPC. Firefox also keeps
@@ -12,8 +13,6 @@ import {
 } from '@/content/mediaSniffer'
 import { isWebStoreBuild } from '@/shared/buildFlags'
 import { shouldExcludeHost } from '@/shared/media'
-
-declare const __BROWSER__: 'chromium' | 'firefox'
 
 const ENTRY_SOURCE = 'motrix-sniffer'
 const RELAY_SOURCE = 'motrix-sniffer-relay'
@@ -193,10 +192,7 @@ if (!relayWindow.__motrixSnifferRelayInstalled) {
         payload: { tabUrl: location.href, items },
       }
       if (stringBytes(JSON.stringify(message)) > MAX_PACKET_BYTES) return
-      const result =
-        typeof browser !== 'undefined'
-          ? browser.runtime.sendMessage(message)
-          : chrome.runtime.sendMessage(message)
+      const result = browser.runtime.sendMessage(message)
       if (result && typeof result.catch === 'function') {
         void result.catch(() => undefined)
       }
@@ -376,11 +372,7 @@ if (!relayWindow.__motrixSnifferRelayInstalled) {
     return true
   }
 
-  if (typeof browser !== 'undefined') {
-    browser.runtime.onMessage.addListener(thumbnailListener)
-  } else {
-    chrome.runtime.onMessage.addListener(thumbnailListener)
-  }
+  browser.runtime.onMessage.addListener(thumbnailListener)
 
   if (firefoxFallbackAllowed()) {
     firefoxFallbackTimer = window.setTimeout(

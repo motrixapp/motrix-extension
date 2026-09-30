@@ -8,7 +8,7 @@ export type SpeedTileKind = 'upload' | 'download'
 export interface SpeedTileProps {
   kind: SpeedTileKind
   label: string
-  bytesPerSecond: number
+  bytesPerSecond: number | null
   className?: string
 }
 
@@ -57,14 +57,14 @@ export function SpeedTile({
   bytesPerSecond,
   className,
 }: SpeedTileProps): React.ReactElement {
-  const speed = formatSpeed(bytesPerSecond)
+  const speed = bytesPerSecond === null ? null : formatSpeed(bytesPerSecond)
   const accent = ACCENT_CLASS[kind]
 
   return (
     <DashboardTile
       label={label}
-      value={speed.number}
-      unit={speed.unit}
+      value={speed?.number ?? '—'}
+      {...(speed ? { unit: speed.unit } : {})}
       {...(className === undefined ? {} : { className })}
       decoration={
         <>

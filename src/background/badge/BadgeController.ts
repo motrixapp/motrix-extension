@@ -1,5 +1,6 @@
 import { computeBadge, type IconVariant } from '@/background/badge/computeBadge'
 import type { ConnectionState } from '@/background/ConnectionManager'
+import { extensionBrowser as browser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
 import type { Notify } from '@/shared/notifications'
 
@@ -59,9 +60,13 @@ export function makeBadgeNotify(
   base: Notify,
   badge: Pick<BadgeController, 'markError' | 'clearError'>
 ): Notify {
-  return (n) => {
+  const notify: Notify = (n) => {
     base(n)
     if (n.severity === 'error') void badge.markError()
     else if (n.severity === 'confirm') void badge.clearError()
   }
+  return Object.assign(
+    notify,
+    base.taskProgress ? { taskProgress: base.taskProgress } : {}
+  )
 }

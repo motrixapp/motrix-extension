@@ -1,14 +1,20 @@
-import type { TakeoverConfig, TakeoverRule } from '@/shared/takeover'
+import type {
+  DownloadMode,
+  TakeoverRule,
+  TakeoverSettings,
+} from '@/shared/takeover'
 
 export interface TakeoverForm {
+  downloadMode: DownloadMode
   enabled: boolean
   thresholdMB: string // '' = none
+  unknownSizeAction: TakeoverSettings['unknownSizeAction']
   denylist: string // newline-separated hosts
 }
 
 const THRESHOLD_RULE_ID = 'mvp.threshold'
 
-export function configToForm(config: TakeoverConfig): TakeoverForm {
+export function configToForm(config: TakeoverSettings): TakeoverForm {
   const threshold = config.rules.find((r) => r.id === THRESHOLD_RULE_ID)?.match
     .minSizeMB
   const denylist = config.rules
@@ -18,8 +24,10 @@ export function configToForm(config: TakeoverConfig): TakeoverForm {
     )
     .flatMap((r) => r.match.domains ?? [])
   return {
+    downloadMode: config.downloadMode ?? 'direct',
     enabled: config.enabled,
     thresholdMB: typeof threshold === 'number' ? String(threshold) : '',
+    unknownSizeAction: config.unknownSizeAction ?? 'chrome',
     denylist: denylist.join('\n'),
   }
 }
@@ -27,7 +35,7 @@ export function configToForm(config: TakeoverConfig): TakeoverForm {
 export function formToConfig(
   form: TakeoverForm,
   consentAckVersion: number
-): TakeoverConfig {
+): TakeoverSettings {
   const rules: TakeoverRule[] = []
   const domains = form.denylist
     .split('\n')
@@ -49,9 +57,11 @@ export function formToConfig(
     })
   }
   return {
+    downloadMode: form.downloadMode ?? 'direct',
     enabled: form.enabled,
     consentAckVersion,
     defaultAction: 'motrix',
+    unknownSizeAction: form.unknownSizeAction,
     rules,
   }
 }

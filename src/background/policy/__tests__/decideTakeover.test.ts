@@ -21,6 +21,7 @@ function cfg(over: Partial<TakeoverConfig> = {}): TakeoverConfig {
     enabled: true,
     consentAckVersion: 1,
     defaultAction: 'motrix',
+    unknownSizeAction: 'chrome',
     rules: [],
     ...over,
   }
@@ -78,6 +79,22 @@ describe('decideTakeover', () => {
     ).toBe('chrome')
   })
 
+  it('keeps downloads from an excluded page in the browser even when a different CDN serves the file', () => {
+    const c = cfg({
+      rules: [
+        { id: 'site', match: { domains: ['example.com'] }, action: 'chrome' },
+      ],
+    })
+    const download = target({ url: 'https://cdn.other.test/file.zip' })
+    expect(decideTakeover(c, download)).toBe('chrome')
+    expect(
+      decideTakeover(c, { ...download, pageUrl: 'https://notexample.com/page' })
+    ).toBe('motrix')
+    expect(decideTakeover(c, { ...download, origin: 'context-menu' })).toBe(
+      'motrix'
+    )
+  })
+
   it('below-threshold rule routes small files to chrome; large stay motrix', () => {
     const c = cfg({
       rules: [{ id: 't', match: { minSizeMB: 10 }, action: 'chrome' }],
@@ -90,11 +107,74 @@ describe('decideTakeover', () => {
     )
   })
 
-  it('unknown size never matches the below-threshold rule -> defaultAction', () => {
+  it('keeps unknown sizes in the browser when a minimum size is configured', () => {
     const c = cfg({
       rules: [{ id: 't', match: { minSizeMB: 10 }, action: 'chrome' }],
     })
-    expect(decideTakeover(c, target({ sizeBytes: null }))).toBe('motrix')
+    expect(decideTakeover(c, target({ sizeBytes: null }))).toBe('chrome')
+    expect(
+      decideTakeover(c, target({ sizeBytes: null, origin: 'context-menu' }))
+    ).toBe('motrix')
+  })
+
+  it('takes over files exactly at the minimum size', () => {
+    const c = cfg({
+      rules: [{ id: 't', match: { minSizeMB: 10 }, action: 'chrome' }],
+    })
+    expect(decideTakeover(c, target({ sizeBytes: 10 * 1024 * 1024 }))).toBe(
+      'motrix'
+    )
+  })
+
+  it.each(['chrome', 'motrix'] as const)(
+    'routes unknown sizes to the selected handler: %s, with or without a minimum',
+    (unknownSizeAction) => {
+      for (const rules of [
+        [],
+        [{ id: 't', match: { minSizeMB: 10 }, action: 'chrome' as const }],
+      ]) {
+        const c = cfg({ unknownSizeAction, rules })
+        expect(decideTakeover(c, target({ sizeBytes: null }))).toBe(
+          unknownSizeAction
+        )
+      }
+    }
+  )
+
+  it('still leaves known small files in the browser when unknown sizes go to Motrix', () => {
+    const c = cfg({
+      unknownSizeAction: 'motrix',
+      rules: [{ id: 't', match: { minSizeMB: 10 }, action: 'chrome' }],
+    })
+    expect(decideTakeover(c, target({ sizeBytes: 1024 }))).toBe('chrome')
+  })
+
+  it('honors site exclusions and disabled takeover before the unknown-size choice', () => {
+    const c = cfg({
+      unknownSizeAction: 'motrix',
+      rules: [
+        { id: 'site', match: { domains: ['example.com'] }, action: 'chrome' },
+      ],
+    })
+    expect(decideTakeover(c, target({ sizeBytes: null }))).toBe('chrome')
+    expect(
+      decideTakeover(
+        cfg({ enabled: false, unknownSizeAction: 'motrix' }),
+        target({ sizeBytes: null })
+      )
+    ).toBe('chrome')
+  })
+
+  it('does not use an unknown size as evidence for a Motrix allow rule', () => {
+    expect(
+      decideTakeover(
+        cfg({
+          defaultAction: 'chrome',
+          rules: [{ id: 't', match: { minSizeMB: 10 }, action: 'motrix' }],
+        }),
+        target({ sizeBytes: null })
+      )
+    ).toBe('chrome')
   })
 
   it("treats the model's 'ask' action as chrome in the MVP", () => {

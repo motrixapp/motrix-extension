@@ -1,9 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/shared/i18n'
 import { App } from '@/options/App'
 import { LINKS } from '@/shared/links'
+
+afterEach(() => vi.unstubAllGlobals())
 
 // jsdom doesn't include ResizeObserver; the headless Switch thumb needs it.
 if (typeof globalThis.ResizeObserver === 'undefined') {
@@ -28,6 +30,7 @@ beforeEach(() => {
   browser.runtime.sendMessage = vi.fn(async (env) => {
     if (env.kind === 'bg.getTakeoverConfig')
       return {
+        openTaskPanelAfterSubmit: false,
         enabled: false,
         consentAckVersion: 0,
         defaultAction: 'motrix',
@@ -50,7 +53,25 @@ beforeEach(() => {
 })
 
 describe('options App', () => {
-  it('groups appearance and notifications in General and takeover in Downloads', async () => {
+  it('hides unavailable backend modules in a temporary Safari extension', async () => {
+    vi.stubGlobal('__BROWSER__', 'safari')
+    render(<App />)
+    expect(
+      await screen.findByRole('combobox', { name: /theme|主题/i })
+    ).toBeTruthy()
+    expect(screen.queryByRole('tab', { name: /downloads|下载/i })).toBeNull()
+    expect(screen.queryByRole('tab', { name: /integration|集成/i })).toBeNull()
+    expect(
+      screen.queryByRole('switch', { name: /open task panel|展开任务面板/i })
+    ).toBeNull()
+    expect(
+      screen.queryByRole('switch', { name: /system notifications|系统通知/i })
+    ).toBeNull()
+    expect(
+      screen.queryByText(/Safari offline preview|Safari 离线预览/i)
+    ).toBeNull()
+  })
+  it('groups appearance, task panel and notifications in General and takeover in Downloads', async () => {
     const user = userEvent.setup()
     render(<App />)
     for (const name of [
@@ -70,6 +91,11 @@ describe('options App', () => {
     expect(
       screen.getByRole('switch', { name: /system notifications|启用系统通知/i })
     ).toBeTruthy()
+    expect(
+      screen.getByRole('switch', {
+        name: /open task panel after adding a download|添加下载后展开任务面板/i,
+      })
+    ).toBeTruthy()
     expect(screen.queryByRole('spinbutton')).toBeNull()
 
     await user.click(screen.getByRole('tab', { name: /downloads|下载/i }))
@@ -77,9 +103,25 @@ describe('options App', () => {
     expect(
       screen.getByRole('switch', { name: /send eligible downloads|启用接管/i })
     ).toBeTruthy()
-    await waitFor(() =>
-      expect(screen.queryAllByRole('combobox')).toHaveLength(0)
-    )
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('switch', {
+          name: /open task panel after adding a download|添加下载后展开任务面板/i,
+        })
+      ).toBeNull()
+      expect(screen.queryByRole('combobox', { name: /theme|主题/i })).toBeNull()
+      expect(
+        screen.queryByRole('combobox', { name: /language|语言/i })
+      ).toBeNull()
+      expect(
+        screen.getByRole('combobox', {
+          name: /when file size is unknown|文件大小未知时/i,
+        })
+      ).toBeTruthy()
+    })
+    expect(
+      screen.getByRole('switch', { name: /ask before downloading|下载前询问/i })
+    ).toBeTruthy()
     expect(
       screen.queryByRole('switch', {
         name: /system notifications|启用系统通知/i,

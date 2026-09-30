@@ -1,3 +1,5 @@
+import { extensionBrowser as browser } from '@/shared/browser'
+
 const THEME_KEY = 'motrix.theme'
 
 export type ThemeOverride = 'light' | 'dark'

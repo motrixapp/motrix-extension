@@ -13,21 +13,31 @@ const LOCALES_DIR = path.resolve(
   '../../public/_locales'
 )
 const DEFAULT_LOCALE = 'en'
-// RTL locales require explicit bidirectional-layout coverage before shipping.
 const SUPPORTED_STORE_LOCALES = [
+  'ar',
+  'bg',
+  'ca',
   'de',
+  'el',
   'en',
   'es',
+  'fa',
   'fr',
   'hi',
+  'hu',
   'id',
   'it',
   'ja',
   'ko',
+  'nl',
+  'no',
+  'pl',
   'pt_BR',
+  'ro',
   'ru',
   'th',
   'tr',
+  'uk',
   'vi',
   'zh_CN',
   'zh_TW',

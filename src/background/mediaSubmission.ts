@@ -2,6 +2,7 @@ import {
   type DownloadSubmitParams,
   DownloadSubmitParamsSchema,
 } from '@motrix/mdxp'
+import { isDownloadErrorReason } from '@/shared/integration'
 import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
 
 const MIN_IDEMPOTENCY_KEY_LENGTH = 8
@@ -37,7 +38,8 @@ export function applyCallerIdempotencyKey(
 
 /** Prevent active URLs, cookies, native paths and transport details leaking. */
 export function toSafeMediaSubmitError(error: unknown): Error {
-  return (error as Error)?.message === MEDIA_SUBMIT_ERROR.invalidRequest
+  return isDownloadErrorReason((error as Error)?.message) ||
+    (error as Error)?.message === MEDIA_SUBMIT_ERROR.invalidRequest
     ? (error as Error)
     : new Error(MEDIA_SUBMIT_ERROR.submitFailed)
 }

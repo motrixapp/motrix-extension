@@ -33,6 +33,7 @@ describe('PairNudge', () => {
       title: i18n.t('notify.pairNudgeTitle'),
       message: i18n.t('notify.pairNudgeBody'),
       severity: 'reminder',
+      kind: 'connection.reminder',
     })
     now += 25 * 60 * 60 * 1000 // 25h later
     await nudge.maybeNudge()

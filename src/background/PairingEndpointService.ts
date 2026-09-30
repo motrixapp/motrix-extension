@@ -17,6 +17,12 @@ import type {
 } from '@/background/mbp1/credential-store'
 import type { PinStore } from '@/background/mbp1/pin-store'
 import { computeVerifiedOrigin } from '@/background/mbp1/verified-origin'
+import {
+  type BrowserKind,
+  requireProtocolBrowser,
+  supportsBackendConnections,
+} from '@/shared/browserKind'
+import type { PairingState } from '@/shared/integration'
 
 /**
  * What this service needs to answer "is this endpoint paired" and revoke it.
@@ -26,7 +32,7 @@ import { computeVerifiedOrigin } from '@/background/mbp1/verified-origin'
 export interface LocalPairingDeps {
   credentialStore: CredentialStore
   pinStore: PinStore
-  browser: 'chromium' | 'firefox'
+  browser: BrowserKind
 }
 
 export interface PairingEndpointServiceOptions {
@@ -102,7 +108,25 @@ export class PairingEndpointService {
     })
   }
 
+  /** Read pairing and presentation under the same short lifecycle lease.
+   * The callback is synchronous: network work must never hold this queue. */
+  readActiveSnapshot<T>(read: () => T) {
+    return this.coordinator.run(async () => {
+      const endpoint = await this.endpointConfigStore.getForLifecycleMutation()
+      let pairing: PairingState
+      try {
+        pairing = (await this.paired(resolveActiveEndpoint(endpoint)))
+          ? 'stored'
+          : 'none'
+      } catch {
+        pairing = 'unavailable'
+      }
+      return { ...read(), endpoint, pairing }
+    })
+  }
+
   private async paired(endpoint: ResolvedEndpointConfig): Promise<boolean> {
+    if (!supportsBackendConnections(this.local.browser)) return false
     const authority = pairingAuthorityForEndpoint(endpoint)
     return this.local.credentialStore.hasCommittedCredentialForAuthority(
       authority,
@@ -149,7 +173,7 @@ export class PairingEndpointService {
 
   private async localPrincipal(): Promise<Principal> {
     return {
-      browser: this.local.browser,
+      browser: requireProtocolBrowser(this.local.browser),
       verifiedOrigin: computeVerifiedOrigin(),
       clientInstallationId: await getClientInstallationId(),
     }

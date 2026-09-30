@@ -23,9 +23,10 @@ import { RemoteServerCard } from '@/options/integration/RemoteServerCard'
 import { ServerEditorDialog } from '@/options/integration/ServerEditorDialog'
 import { useIntegrationSettings } from '@/options/integration/useIntegrationSettings'
 import { SettingPanel } from '@/options/SettingPanel'
+import { supportsBackendConnections } from '@/shared/browserKind'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 
-export function IntegrationTab(): React.ReactElement {
+export function IntegrationTab(): React.ReactElement | null {
   const { t } = useTranslation()
   const localBackendAvailable = hasNativeMessagingSupport()
   const [pairDialogOpen, setPairDialogOpen] = useState(false)
@@ -66,6 +67,8 @@ export function IntegrationTab(): React.ReactElement {
         ? 'options.endpoint.localName'
         : 'popup.backend.server'
     )
+
+  if (!supportsBackendConnections()) return null
 
   return (
     <>

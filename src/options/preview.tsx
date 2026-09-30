@@ -1,5 +1,16 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
+import type { NotificationsConfig } from '@/shared/notifications'
+import { resolveLocale } from '@/shared/supportedLocales'
+import { TAKEOVER_DEFAULT, type TakeoverSettings } from '@/shared/takeover'
+
+const previewParams = new URLSearchParams(location.search)
+let previewNotifications: NotificationsConfig = {
+  master: previewParams.get('notificationMaster') === 'on',
+  confirm: false,
+  error: true,
+  reminder: true,
+}
 
 type PreviewEndpoint = {
   version: 3
@@ -42,12 +53,18 @@ let previewEndpoint: PreviewEndpoint = {
 
 const pairedEndpoints = new Set(['local', 'studio'])
 let nextServerId = 1
+let previewTakeover = { ...TAKEOVER_DEFAULT }
 let previewConnectionState: 'connected' | 'disconnected' = 'connected'
 
 const previewRuntime = {
   id: 'motrix-options-preview',
   connectNative: () => undefined,
-  getManifest: () => ({ version: '0.1.0' }),
+  getManifest: () => ({
+    version: '0.1.0',
+    permissions:
+      previewParams.get('native') === 'off' ? [] : ['nativeMessaging'],
+  }),
+  sendNativeMessage: async () => undefined,
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }
     switch (request.kind) {
@@ -232,14 +249,39 @@ const previewRuntime = {
       case 'bg.getState':
         return { state: previewConnectionState }
       case 'bg.getTakeoverConfig':
-        return {
-          enabled: false,
-          consentAckVersion: 0,
-          defaultAction: 'motrix',
-          rules: [],
+        return previewTakeover
+      case 'bg.patchDownloadMode':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as Pick<TakeoverSettings, 'downloadMode'>),
         }
+        return previewTakeover
+      case 'bg.patchTaskPanelPreference':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as { openTaskPanelAfterSubmit: boolean }),
+        }
+        return previewTakeover
+      case 'bg.setTakeoverConfig':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as TakeoverSettings),
+        }
+        return { ok: true }
       case 'bg.getNotificationsConfig':
-        return { master: true, confirm: false, error: true, reminder: true }
+        return previewNotifications
+      case 'bg.setNotificationsConfig':
+        previewNotifications = request.payload as NotificationsConfig
+        return { ok: true }
+      case 'bg.getNotificationCapability':
+        return {
+          available: previewParams.get('notifications') !== 'unavailable',
+          authorization: previewParams.get('notifications') ?? 'authorized',
+        }
+      case 'bg.testNotification':
+        return { status: 'accepted' }
+      case 'bg.openNotificationSettings':
+        return { opened: true }
       case 'bg.listAdapters':
         return { adapters: [] }
       default:
@@ -253,8 +295,14 @@ const storageChanged = {
   removeListener: () => undefined,
 }
 const previewBrowser = {
+  action: { openPopup: async () => undefined },
   runtime: previewRuntime,
-  i18n: { getUILanguage: () => 'zh-CN' },
+  i18n: {
+    getUILanguage: () =>
+      resolveLocale(
+        new URLSearchParams(location.search).get('lang') ?? 'zh-CN'
+      ),
+  },
   storage: {
     local: {
       get: async () => ({}),
@@ -268,14 +316,21 @@ const previewBrowser = {
 ;(globalThis as unknown as { browser: unknown }).browser = previewBrowser
 ;(globalThis as unknown as { chrome: unknown }).chrome = previewBrowser
 
-const [{ App }, { initI18n }, { initTheme }] = await Promise.all([
-  import('@/options/App'),
-  import('@/shared/i18n'),
-  import('@/shared/theme'),
-])
+const [{ App }, { initI18n }, { initTheme }, { LocaleProvider }] =
+  await Promise.all([
+    import('@/options/App'),
+    import('@/shared/i18n'),
+    import('@/shared/theme'),
+    import('@/shared/LocaleProvider'),
+  ])
 
 initTheme()
 await initI18n()
 
 const root = document.getElementById('root')
-if (root) createRoot(root).render(<App />)
+if (root)
+  createRoot(root).render(
+    <LocaleProvider>
+      <App />
+    </LocaleProvider>
+  )

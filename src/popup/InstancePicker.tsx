@@ -54,7 +54,7 @@ export function InstancePicker({
           type="button"
           size="sm"
           variant="outline"
-          className="ml-auto"
+          className="ms-auto"
           disabled={disabled || rescanning}
           onClick={onRescan}
         >

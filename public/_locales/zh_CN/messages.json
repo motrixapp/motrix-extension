@@ -4,7 +4,7 @@
     "description": "Extension name shown in the browser and in store listings."
   },
   "appDescription": {
-    "message": "把下载交给 Motrix",
+    "message": "Motrix 官方浏览器扩展，把下载交给 Motrix。",
     "description": "Short summary shown under the name in the browser and in store listings."
   }
 }

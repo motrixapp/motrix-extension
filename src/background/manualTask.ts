@@ -3,11 +3,19 @@ import {
   DownloadSubmitParamsSchema,
   type DownloadSubmitResult,
 } from '@motrix/mdxp'
+import type { DirectorySelection } from '@/shared/downloadDirectories'
+import { isDownloadErrorReason } from '@/shared/integration'
 import {
   type CreateManualTaskRequest,
   type ParsedManualTaskInput,
   parseManualTaskInput,
 } from '@/shared/manualTask'
+import {
+  applyTaskOptions,
+  defaultTaskOptions,
+  type TaskOptions,
+  taskOptionsSchema,
+} from '@/shared/taskOptions'
 
 export interface ManualTaskMessageSender {
   id?: string | undefined
@@ -20,7 +28,11 @@ export interface ManualTaskHandlerDeps {
   extensionBaseUrl: string
   now?: () => number
   submitDownload: (
-    params: DownloadSubmitParams
+    params: DownloadSubmitParams,
+    options: {
+      pairIfNeeded: boolean
+      directory?: DirectorySelection | undefined
+    }
   ) => Promise<DownloadSubmitResult>
 }
 
@@ -49,7 +61,8 @@ export function isExtensionPageSender(
 export function buildManualTaskSubmitParams(
   parsed: ParsedManualTaskInput,
   idempotencyKey: string,
-  detectedAt: number
+  detectedAt: number,
+  options?: TaskOptions
 ): DownloadSubmitParams {
   const source = {
     pageUrl: parsed.kind === 'direct' ? parsed.url : parsed.uri,
@@ -80,7 +93,7 @@ export function buildManualTaskSubmitParams(
     idempotencyKey,
   })
   if (!result.success) throw new Error(MANUAL_TASK_ERROR.invalidRequest)
-  return result.data
+  return options ? applyTaskOptions(result.data, options) : result.data
 }
 
 export function createManualTaskHandler(deps: ManualTaskHandlerDeps) {
@@ -100,15 +113,26 @@ export function createManualTaskHandler(deps: ManualTaskHandlerDeps) {
     const parsed = parseManualTaskInput(request.input)
     if (!parsed.ok) throw new Error(MANUAL_TASK_ERROR.invalidRequest)
 
+    const options = taskOptionsSchema.safeParse(
+      request.options ?? defaultTaskOptions(navigator.userAgent)
+    )
+    if (!options.success) throw new Error(MANUAL_TASK_ERROR.invalidRequest)
     const params = buildManualTaskSubmitParams(
       parsed.value,
       request.idempotencyKey,
-      (deps.now ?? Date.now)()
+      (deps.now ?? Date.now)(),
+      options.data
     )
 
     try {
-      return await deps.submitDownload(params)
-    } catch {
+      return await deps.submitDownload(params, {
+        pairIfNeeded: request.pairIfNeeded === true,
+        ...(options.data.directory
+          ? { directory: options.data.directory }
+          : {}),
+      })
+    } catch (error) {
+      if (isDownloadErrorReason((error as Error)?.message)) throw error
       // The transport/desktop error may contain a URL, credentials, or a
       // native path. Only return a stable, localizable reason to the caller.
       throw new Error(MANUAL_TASK_ERROR.submitFailed)

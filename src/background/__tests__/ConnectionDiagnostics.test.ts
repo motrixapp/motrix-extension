@@ -10,6 +10,7 @@ import {
   NativeBootstrap,
   NativeBootstrapError,
 } from '@/background/NativeBootstrap'
+import type { Browser } from '@/shared/browser'
 import { LOG_LEVEL_KEY } from '@/shared/logLevel'
 
 const local: EndpointConfig = {
@@ -78,7 +79,7 @@ describe('connection diagnostics', () => {
       onDisconnect: { addListener: vi.fn() },
     }
     vi.mocked(browser.runtime.connectNative).mockReturnValue(
-      port as unknown as browser.runtime.Port
+      port as unknown as Browser.runtime.Port
     )
     const task = runConnectionDiagnostics(deps(), 'local')
     await vi.advanceTimersByTimeAsync(4001)
@@ -124,7 +125,7 @@ describe('connection diagnostics', () => {
   it('reports a packaged install separately from the build variant', async () => {
     vi.mocked(browser.management.getSelf).mockResolvedValue({
       installType: 'normal',
-    } as browser.management.ExtensionInfo)
+    } as Browser.management.ExtensionInfo)
     expect(
       find(await runConnectionDiagnostics(deps(), 'local'), 'installation')
         .detail

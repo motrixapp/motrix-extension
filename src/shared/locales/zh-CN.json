@@ -21,7 +21,7 @@
     "handedToMotrix": "已交给 Motrix",
     "notConnectedBody": "请配对 Motrix 以接管下载。",
     "notConnectedTitle": "Motrix 未连接",
-    "notReachableBody": "请先配对 Motrix，再重试下载。",
+    "notReachableBody": "暂时无法连接 Motrix。请打开 App 后重试，已保存的配对会保留。",
     "notReachableTitle": "无法连接 Motrix",
     "pairNudgeBody": "打开 Motrix 完成配对。",
     "pairNudgeTitle": "配对 Motrix",
@@ -30,7 +30,11 @@
     "sensitiveSkippedBody": "敏感站点交由浏览器下载。",
     "sensitiveSkippedTitle": "已跳过",
     "submitFailedBody": "改用浏览器重新下载。",
-    "submitFailedTitle": "Motrix 提交失败"
+    "submitFailedTitle": "Motrix 提交失败",
+    "submitUnknownTitle": "发送结果待确认，请先查看任务，避免重复发送。",
+    "submitUnknownBody": "发送结果待确认，请先查看任务，避免重复发送。",
+    "taskDetailsBody": "请在任务列表中查看详情。",
+    "taskUpdatesTitle": "更多任务动态"
   },
   "options": {
     "diagnostics": {
@@ -80,7 +84,18 @@
       "errorLabel": "失败 / 错误",
       "errorDesc": "提交失败、连不上、下载失败",
       "reminderLabel": "提醒",
-      "reminderDesc": "配对提醒、配对被撤销、已跳过站点"
+      "reminderDesc": "配对提醒、配对被撤销、已跳过站点",
+      "nativeNotDetermined": "请在通知设置中允许提醒。",
+      "nativeDenied": "系统设置中已关闭通知。",
+      "nativeAuthorized": "通知已启用。",
+      "configure": "通知设置",
+      "openSystemSettings": "打开系统设置",
+      "test": "发送测试通知",
+      "testBody": "这是一条来自 Motrix Extension 的测试通知。",
+      "testAccepted": "测试通知已提交。",
+      "testFailed": "无法确认测试通知是否已投递。",
+      "testSuppressed": "测试通知未发送，请检查权限或稍后重试。",
+      "settingsFailed": "无法打开通知设置。"
     },
     "pairing": {
       "backendTitle": "配对 {{name}}",
@@ -155,6 +170,9 @@
       "loading": "加载接管设置…",
       "minSizeLabel": "最小体积（MB）",
       "minSizePlaceholder": "0 = 全部",
+      "unknownSizeLabel": "文件大小未知时",
+      "unknownSizeBrowser": "由浏览器下载",
+      "unknownSizeMotrix": "由 Motrix 下载",
       "thresholdInvalid": "最小体积必须是非负数字",
       "save": "保存",
       "saved": "已保存",
@@ -200,10 +218,22 @@
       "diagnosticsDescription": "调整日志级别并复制排障所需信息。"
     },
     "about": {
-      "subtitle": "使用 Motrix 下载网页中的文件",
+      "subtitle": "Motrix 官方浏览器扩展，把下载交给 Motrix。",
       "website": "官方网站"
     },
-    "title": "Motrix 扩展设置"
+    "title": "Motrix 扩展设置",
+    "taskPanel": {
+      "title": "任务面板",
+      "openAfterSubmit": "添加下载后展开任务面板",
+      "description": "下载成功添加到 Motrix 后自动展开，右键下载和自动接管都适用。连续添加多个下载时只展开一次。",
+      "unsupported": "浏览器版本过低，无法自动弹出扩展窗口。建议升级至 Chrome / Edge 127 或 Firefox 149 及以上版本。"
+    },
+    "downloadMode": {
+      "label": "下载前询问",
+      "confirm": "下载前询问",
+      "direct": "直接交给 Motrix 下载",
+      "description": "右键下载和自动接管时弹出表单，确认后发送到 Motrix；关闭后直接发送。"
+    }
   },
   "popup": {
     "diagnostics": {
@@ -213,8 +243,9 @@
       "title": "诊断结果",
       "runningHelp": "正在启用 debug 日志并检查连接环境，通常需要数秒。",
       "firstLaunchHint": "先手动打开 Motrix，阅读并同意首次启动条款，进入主界面后再重试配对。",
-      "homebrewHint": "通过 Homebrew 安装？有用户改用官方 Release 安装包并完成首次启动后恢复了配对，可尝试此办法。",
-      "appReleases": "Motrix 官方安装包",
+      "latestVersionHint": "请尝试下载并安装最新版 Motrix，完成首次启动后再重试配对。",
+      "appReleases": "下载最新版 Motrix",
+      "advanced": "高级排查",
       "allowlistHint": "开发版或未打包扩展请检查：当前扩展 ID 是否已加入 Motrix「设置 → 集成 → 受信任的扩展」及 Native Host 白名单。"
     },
     "backend": {
@@ -249,7 +280,12 @@
       "notificationsDescription": "控制扩展发送的系统通知",
       "retry": "重试",
       "saveError": "设置保存失败，请重试。",
-      "takeoverDescription": "将浏览器下载交给当前 Motrix 后端"
+      "takeoverDescription": "将浏览器下载交给当前 Motrix 后端",
+      "excludeCurrentSite": "排除当前站点",
+      "excludeCurrentSiteDescription": "不自动接管 {{site}} 的下载",
+      "noCurrentSite": "当前页面没有可排除的网站域名。",
+      "inheritedExclusion": "{{site}} 已被 {{domain}} 的排除规则覆盖，可在完整设置中修改。",
+      "taskPanelDescription": "右键下载、自动接管等任务添加成功后展开"
     },
     "quickAdd": {
       "title": "新建任务",
@@ -328,9 +364,10 @@
       "unavailableDescription": "切换页面或稍后重试。",
       "unavailableTitle": "当前页面不可扫描",
       "unsupported": "需要 ffmpeg",
-      "unsupportedReason": "所选后端不支持提交 {{kind}} 资源，因为当前没有 ffmpeg 能力。",
+      "unsupportedReason": "下载此内容需要 FFmpeg。",
       "unsupportedSelectionReason": "所选后端不支持一个或多个已选资源类型。",
-      "unsupportedResource": "无法提交 {{name}}。{{reason}}"
+      "unsupportedResource": "无法提交 {{name}}。{{reason}}",
+      "refreshCapabilitiesHint": "请在 Motrix 设置中配置 FFmpeg，然后点击“重新扫描”。"
     },
     "speed": {
       "download": "下载",
@@ -356,6 +393,7 @@
     },
     "tasks": {
       "actions": "{{name}} 的操作",
+      "openTaskInApp": "在 Motrix App 中查看任务详情",
       "openFolder": "在 Motrix 中打开所在目录",
       "openFolderError": "无法打开任务所在目录，请重试。",
       "openFolderMetadataPending": "获取任务元数据后可打开目录",
@@ -423,6 +461,61 @@
       "degradedBody": "你可以正常使用 Motrix。当前连接仅完成基础验证；如需更完整的安全保护，请更新 Motrix 后重新配对。",
       "recoveryExhaustedTitle": "无法自动重新连接",
       "recoveryExhaustedBody": "暂时无法恢复已保存的配对。请重试连接；如需重新配对，先到设置 → 集成中点击「忘记配对」。"
+    },
+    "integration": {
+      "pairedTitle": "已配对，可直接发送下载",
+      "pairedBody": "发送时会按需打开 Motrix，连接后可查看任务进度。",
+      "pairedRemoteBody": "可直接发送下载，连接后可查看任务进度。",
+      "viewTasks": "查看任务",
+      "waking": "正在打开 Motrix…",
+      "pairingUnavailable": "暂时无法读取配对信息，请重试。",
+      "pairingRequired": "请先配对 Motrix，再发送此下载。",
+      "connectionFailed": "暂时无法连接 Motrix。请打开 App 后重试，已保存的配对会保留。",
+      "resultUnknown": "发送结果待确认，请先查看任务，避免重复发送。",
+      "contextChanged": "页面或所选后端已变化，请重新选择下载。",
+      "preparing": "正在准备下载…",
+      "sending": "正在发送下载…",
+      "pairedStatus": "已配对"
+    },
+    "rpc": {
+      "checking": "Motrix 响应超时，正在检查连接…",
+      "failed": "Motrix 未响应，请重新连接后重试。",
+      "stale": "当前显示上次更新的数据。",
+      "added": "已添加下载：{{count}}"
+    },
+    "taskForm": {
+      "filename": "文件名",
+      "filenameAuto": "自动",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie（覆盖自动获取值）",
+      "authorization": "Authorization",
+      "extraHeaders": "自定义请求头",
+      "browserCookies": "使用此网站的 Cookie",
+      "advanced": "请求选项",
+      "defaultDirectory": "使用 Motrix 的默认下载目录。",
+      "invalidOptions": "请检查文件名和请求头。自定义请求头每行填写 Name: value，不要重复已有字段。",
+      "directory": "保存到",
+      "directoryRefresh": "刷新",
+      "directoryDefault": "默认目录",
+      "directoryFavorites": "常用目录",
+      "directoryRecent": "最近使用",
+      "directoryLoading": "正在加载目录…",
+      "directoryAutomatic": "使用 Motrix 默认目录",
+      "directoryUnsupported": "升级 Motrix 后可选择目录。",
+      "directoryOffline": "连接 Motrix 后刷新，即可选择目录。",
+      "directoryHint": "目录位于当前连接的 Motrix，可在 Motrix 中管理收藏目录。",
+      "directoryUnavailable": "目录不可用或后端已变更。请刷新并重新选择，或使用默认目录。"
+    },
+    "confirmDownload": {
+      "description": "确认后才发起下载请求。临时链接可能在等待时过期。",
+      "expires": "草稿将在 {{seconds}} 秒后过期。误关后可点击扩展图标恢复。",
+      "browser": "用浏览器下载",
+      "browserHint": "选择浏览器下载将使用浏览器自身的文件名和请求设置。",
+      "unavailable": "无法打开确认表单。请先处理已打开的下载表单，再重试。尚未发起下载。",
+      "close": "关闭",
+      "interceptedDescription": "浏览器已开始下载。Motrix 会重新请求链接，一次性链接可能失败。原下载将继续，可能产生重复文件。",
+      "keepBrowser": "保留浏览器下载"
     }
   },
   "errors": {
@@ -456,7 +549,14 @@
       "channelClosed": "连接已断开，请重新连接。",
       "channelUnavailable": "当前无法连接到 Motrix，请确认它正在运行。",
       "diagnosticsCopyFailed": "复制诊断信息失败，请重试。",
-      "storedPairingUnavailable": "暂时无法恢复已保存的配对。请重试连接；如需重新配对，先到设置 → 集成中点击「忘记配对」。"
+      "storedPairingUnavailable": "暂时无法连接 Motrix。请打开 App 后重试，已保存的配对会保留。"
     }
+  },
+  "safari": {
+    "previewTitle": "Safari 离线预览",
+    "previewHelp": "可以发现网页资源。此预览版暂不支持连接 Motrix 或发送下载任务。",
+    "unsupportedFeature": "Safari 暂不支持此功能。",
+    "confirmDownloadDescription": "右键下载时先打开确认表单；关闭后直接发送到 Motrix。",
+    "taskPanelDescription": "添加下载成功后自动展开任务面板。"
   }
 }

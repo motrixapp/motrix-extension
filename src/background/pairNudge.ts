@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
 import type { Notify } from '@/shared/notifications'
 
@@ -29,6 +30,7 @@ export class PairNudge {
       title: i18n.t('notify.pairNudgeTitle'),
       message: i18n.t('notify.pairNudgeBody'),
       severity: 'reminder',
+      kind: 'connection.reminder',
     })
   }
 }

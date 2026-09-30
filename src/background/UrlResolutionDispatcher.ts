@@ -1,6 +1,7 @@
 import type { UrlResolveParams, UrlResolveResult } from '@motrix/mdxp'
 import { BgAdapterRegistry } from '@/background/AdapterRegistry'
 import { log } from '@/background/log'
+import { extensionBrowser as browser } from '@/shared/browser'
 
 export interface UrlResolutionDispatcherOptions {
   registry?: BgAdapterRegistry

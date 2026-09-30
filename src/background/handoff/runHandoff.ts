@@ -11,6 +11,11 @@ import { i18n } from '@/shared/i18n'
 import type { Notify } from '@/shared/notifications'
 import { hostOf, isMagnetUrl, type TakeoverTarget } from '@/shared/takeover'
 
+export type HandoffResult =
+  | { kind: 'accepted'; taskId: string; operationId: string }
+  | { kind: 'unknown'; operationId: string }
+  | { kind: 'browser' | 'skipped' | 'failed' }
+
 export interface HandoffOps {
   assertCurrent(): void
   getState(): ConnectionState
@@ -87,19 +92,20 @@ async function prepareHandoff(
 export async function runHandoff(
   target: TakeoverTarget,
   ops: HandoffOps
-): Promise<void> {
+): Promise<HandoffResult> {
   try {
-    await runCurrentHandoff(target, ops)
+    return await runCurrentHandoff(target, ops)
   } catch (error) {
     // Before cancellation, the original browser download is still intact.
     if (!(error instanceof HandoffEndpointChangedError)) throw error
+    return { kind: 'skipped' }
   }
 }
 
 async function runCurrentHandoff(
   target: TakeoverTarget,
   ops: HandoffOps
-): Promise<void> {
+): Promise<HandoffResult> {
   ops.assertCurrent()
   // Step 1 — resolve connection without touching the native download.
   if (ops.getState() !== 'connected') {
@@ -114,7 +120,7 @@ async function runCurrentHandoff(
         message: i18n.t('notify.notConnectedBody'),
         severity: 'reminder',
       })
-      return
+      return { kind: 'skipped' }
     }
     let connected = false
     try {
@@ -128,14 +134,14 @@ async function runCurrentHandoff(
     if (!connected) {
       if (await fallbackExplicitly(target, ops)) {
         notifyBrowserFallback(ops)
-        return
+        return { kind: 'browser' }
       }
       notifySafely(ops, {
         title: i18n.t('notify.notReachableTitle'),
         message: i18n.t('notify.notReachableBody'),
         severity: 'error',
       })
-      return
+      return { kind: 'skipped' }
     }
   }
 
@@ -150,7 +156,7 @@ async function runCurrentHandoff(
     if (error instanceof HandoffEndpointChangedError) throw error
     if (await fallbackExplicitly(target, ops)) {
       notifyBrowserFallback(ops)
-      return
+      return { kind: 'browser' }
     }
     throw error
   }
@@ -162,17 +168,17 @@ async function runCurrentHandoff(
         message: i18n.t('notify.sensitiveSkippedBody'),
         severity: 'reminder',
       })
-      return
+      return { kind: 'browser' }
     }
     notifySafely(ops, {
       title: i18n.t('notify.sensitiveSkippedTitle'),
       message: i18n.t('notify.sensitiveSkippedBody'),
       severity: 'reminder',
     })
-    return
+    return { kind: 'skipped' }
   }
 
   // Step 3 — commit. Only now may the auto path cancel its native download.
   ops.assertCurrent()
-  await commitHandoff(prepared.params, ops)
+  return await commitHandoff(prepared.params, ops)
 }

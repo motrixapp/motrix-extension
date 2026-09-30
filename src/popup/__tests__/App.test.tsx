@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from '@/popup/App'
 import { i18n } from '@/shared/i18n'
+import { defaultTaskOptions } from '@/shared/taskOptions'
 
 declare const browser: {
   runtime: {
@@ -69,12 +70,22 @@ const LOCAL_ENDPOINT = {
   cleanupTombstones: [],
 }
 
+const SNAPSHOT = {
+  endpoint: LOCAL_ENDPOINT,
+  pairing: 'stored',
+  phase: 'idle',
+  attemptIntent: null,
+}
+
 function installConnectedBus(): ReturnType<typeof vi.fn> {
   let endpoint = LOCAL_ENDPOINT
   const sendMessage = vi.fn(async (msg: unknown) => {
     const env = msg as Envelope
     if (env.kind === 'bg.getState') {
       return {
+        ...SNAPSHOT,
+        endpoint,
+        phase: 'ready',
         state: 'connected',
         capabilities: { taskReveal: true },
         server: {
@@ -137,7 +148,41 @@ describe('Popup App', () => {
   })
 
   afterEach(async () => {
+    vi.unstubAllGlobals()
     await i18n.changeLanguage('en-US')
+  })
+
+  it('shows Safari offline resources without presenting send or connection actions', async () => {
+    vi.stubGlobal('__BROWSER__', 'safari')
+    const sendMessage = installConnectedBus()
+    render(<App />)
+    expect(
+      await screen.findByRole('heading', {
+        name: i18n.t('popup.sniffer.pageResources'),
+      })
+    ).toBeTruthy()
+    expect(screen.queryByText(i18n.t('safari.previewTitle'))).toBeNull()
+    expect(screen.queryByText(i18n.t('safari.previewHelp'))).toBeNull()
+    expect(screen.queryByTestId('dashboard-tiles')).toBeNull()
+    expect(
+      screen.queryByRole('tab', { name: i18n.t('popup.tabs.tasks') })
+    ).toBeNull()
+    expect(
+      screen.queryByRole('button', {
+        name: i18n.t('popup.sniffer.downloadSelected'),
+      })
+    ).toBeNull()
+    expect(screen.queryByTestId('takeover-switch')).toBeNull()
+    expect(
+      sendMessage.mock.calls.some(([message]) =>
+        [
+          'bg.reconnect',
+          'bg.listPairCandidates',
+          'bg.submitMedia',
+          'bg.taskList',
+        ].includes((message as Envelope).kind)
+      )
+    ).toBe(false)
   })
 
   it('renders the connected App backend, speed tiles, and active tasks', async () => {
@@ -148,6 +193,13 @@ describe('Popup App', () => {
     expect(await screen.findByText('Motrix App')).toBeTruthy()
     expect(await screen.findByText('ubuntu.iso')).toBeTruthy()
     expect(screen.getByTestId('task-reveal-task-1')).toBeTruthy()
+    expect(
+      screen
+        .getByRole('link', {
+          name: 'View task details in Motrix App: ubuntu.iso',
+        })
+        .getAttribute('href')
+    ).toBe('motrix://tasks/task-1')
 
     const popup = screen.getByTestId('compact-popup')
     expect(popup.className).toContain('h-[600px]')
@@ -171,6 +223,7 @@ describe('Popup App', () => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'disconnected',
           lastError: rawError,
           lastErrorReason: 'backendUpgradeRequired',
@@ -200,6 +253,7 @@ describe('Popup App', () => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'handshaking',
           pairingCode: {
             instanceId: 'motrix-desktop-1',
@@ -250,6 +304,7 @@ describe('Popup App', () => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'awaiting-code',
           pairingCode: {
             instanceId: 'motrix-desktop-1',
@@ -369,7 +424,8 @@ describe('Popup App', () => {
     browser.runtime.connectNative = undefined
     browser.runtime.sendMessage = vi.fn(async (msg: unknown) => {
       const env = msg as Envelope
-      if (env.kind === 'bg.getState') return { state: 'disconnected' }
+      if (env.kind === 'bg.getState')
+        return { ...SNAPSHOT, state: 'disconnected' }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       if (env.kind === 'bg.scanActiveTab') {
         return { media: [], selectionKinds: ['direct'] }
@@ -496,6 +552,7 @@ describe('Popup App', () => {
       kind: 'bg.createManualTask',
       payload: {
         input: 'https://example.com/new-file.zip',
+        options: defaultTaskOptions(navigator.userAgent),
         idempotencyKey: expect.any(String),
       },
     })
@@ -512,7 +569,12 @@ describe('Popup App', () => {
     const sendMessage = vi.fn(async (msg: unknown) => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
-        return { state: 'disconnected', lastError: 'socket ECONNREFUSED' }
+        return {
+          ...SNAPSHOT,
+          state: 'disconnected',
+          lastError: 'socket ECONNREFUSED',
+          attemptIntent: 'background-probe',
+        }
       }
       if (env.kind === 'bg.getEndpointConfig') {
         return LOCAL_ENDPOINT
@@ -548,11 +610,7 @@ describe('Popup App', () => {
 
     const row = screen.getByTestId(`resource-row-${MEDIA_ITEM.url}`)
     const submit = within(row).getByRole('button')
-    expect((submit as HTMLButtonElement).disabled).toBe(true)
-    const reasonId = submit.getAttribute('aria-describedby')
-    expect(document.getElementById(reasonId ?? '')?.textContent).toBe(
-      i18n.t('popup.sniffer.connectToSubmit')
-    )
+    expect((submit as HTMLButtonElement).disabled).toBe(false)
     expect(screen.queryByText('socket ECONNREFUSED')).toBeNull()
 
     const resourceTile = screen.getByTestId('tile-resources')
@@ -580,7 +638,9 @@ describe('Popup App', () => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'connected',
+          endpoint: { ...LOCAL_ENDPOINT, activeEndpointId },
           server: {
             name: activeEndpointId === 'local' ? 'Motrix' : 'Studio Server',
             version: '2.0.0',

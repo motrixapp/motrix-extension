@@ -1,8 +1,8 @@
-# Motrix 浏览器扩展
+# Motrix Extension
 
 [English](./README.md) | 简体中文
 
-把浏览器里的下载交给 [Motrix](https://motrix.app)，然后在同一个地方查看进度、调整任务，或者从当前网页挑出真正想保存的视频、音频和图片。
+这是 [Motrix](https://motrix.app) 的官方浏览器扩展。把浏览器里的下载交给 Motrix，然后在同一个地方查看进度、调整任务，或者从当前网页挑出真正想保存的视频、音频和图片。
 
 ## 你可以用它做什么
 
@@ -19,22 +19,25 @@
 
 你需要：
 
-- Chrome 120 或更高版本、当前版本的 Microsoft Edge，或者 Firefox 142 或更高版本；
+- Chrome 120 或更高版本、当前版本的 Microsoft Edge，Firefox 142 或更高版本，或 macOS 13 及以上系统中的 Safari；
 - 支持当前 MDXP / MBP1 协议的 Motrix App 或 Motrix Server；
-- 如果要连接本机 Motrix App，请先启动 Motrix，并确保它的浏览器连接组件已经正确安装。
+- 首次配对本机 Motrix App 时，请先启动 Motrix，并确保它的浏览器连接组件已经正确安装。
 
 Firefox Android 通过 Motrix Server 连接。Android 不支持 Native Messaging，
 因此本机 Motrix App 后端只会在桌面浏览器中显示。
 
 ## 安装
 
-先安装 [Motrix 2](https://motrix.app/zh/download?channel=beta)，再从浏览器商店安装扩展：
+先安装 [Motrix 2](https://motrix.app/zh/download?channel=beta)，再安装对应浏览器的扩展：
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
 - [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)
 - [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/motrix-extension/)
+- [Safari macOS 版](https://github.com/motrixapp/motrix-extension/releases?q=safari&expanded=true)
 
 商店版无需开启开发者模式，也无需手动添加受信任的扩展 ID。按下方[第一次连接](#第一次连接)完成配对，或参阅[浏览器扩展指南](https://motrix.app/zh/manual/browser-extension/)。
+
+Safari 用户请下载并解压 macOS ZIP，将 `Motrix Extension for Safari.app` 移入 Applications，打开后在 Safari“设置 → 扩展”中启用 **Motrix Extension**，按需授予网站访问权限并配对。该应用已完成签名和公证，与 Motrix 配套发布，已正式可用；无需启用开发者模式或允许未签名扩展。Safari 支持连接 App/Server、配对、重连和提交下载，但不支持自动拦截下载。
 
 Motrix AppImage 安装包目前不支持本机浏览器集成。在 Linux 上需要本机配对时，请使用 DEB 或 RPM 安装包。
 
@@ -66,6 +69,12 @@ Chrome 或 Edge：打开 `chrome://extensions` 或 `edge://extensions`，启用�
 
 Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入附加组件”，选择 `dist/firefox/manifest.json`。临时扩展会在 Firefox 重启后被移除。
 
+macOS 上的 Safari 18.4+：运行 `pnpm build:safari`，然后在 Safari“设置 → 开发者 → 添加临时扩展”中选择 `dist/safari/`。需要启用网页开发者功能，并按 Safari 提示允许未签名扩展。临时扩展会在退出 Safari 或 24 小时后移除。
+
+直接加载 `dist/safari/` 仅适合测试网页界面，其中没有连接 Motrix 所需的原生消息组件。正常使用及连接 App/Server，请安装[打包的 Safari 应用](#安装)。
+
+开发原生集成时，请安装完整 Xcode 并按 [Safari 构建与分发说明](./native/safari/README.md)操作。桌面集成需要兼容的同 Team Motrix bootstrap 服务；独立 GitHub Actions 工作流负责 Safari 发布包的 Developer ID 签名和公证。
+
 </details>
 
 ## 第一次连接
@@ -73,11 +82,15 @@ Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入
 ### 连接这台电脑上的 Motrix
 
 1. 启动 Motrix App。
-2. 点击浏览器工具栏中的 Motrix 图标，再点击“连接”。
+2. 点击浏览器工具栏中的 Motrix 图标，再点击“配对”。
 3. 如果发现多个 Motrix 实例，选择你正在使用的那一个。
 4. 在扩展中输入 Motrix 显示的 8 位配对码。
 
-配对成功后，扩展会保存仅属于这台 Motrix 的连接凭据。以后通常可以自动重连，不必每次输入配对码；如果你在 Motrix 端撤销了配对，扩展会要求重新授权。
+配对成功后，即使退出 Motrix，连接凭据也会保留。App 关闭时仍可发送下载：扩展会按需启动 App，并使用已保存的配对恢复连接。只打开扩展不会启动 App；点击“查看任务”可以连接并查看进度。远程 Server 需要已经运行且可访问。
+
+后端指示灯用蓝色表示已配对待命、绿色表示已连接、橙色表示连接中、灰色表示未配对，红色表示需要处理的异常。悬停在选择器上可查看状态。无法取得的实时统计显示为 `—`。
+
+如果发送后没有收到回执，请先查看任务列表再决定是否重试。扩展会保留“发送结果待确认”状态，避免自动创建重复下载。连接失败不会清除配对；只有明确遗忘配对或在 Motrix 中撤销后，才需要重新配对。
 
 ### 连接远程 Motrix Server
 
@@ -93,11 +106,27 @@ Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入
 
 在网页中的下载链接上点击右键，选择“用 Motrix 下载”。这是最直接的方式，也不要求先开启自动接管。
 
-当前选择远程 Server 时，右键交接会被安全策略拦下。请改用下面两种方式：在扩展中手动新建任务，或者从“嗅探”页选择资源后提交。
+右键发送也支持已选择的远程 Server，需要先完成配对并开启“远程下载”。Cookie 和请求头仍受该 Server 单独的数据权限控制。
+
+开启“设置 → 下载 → 下载前询问”后，右键下载与符合接管规则的下载会自动打开同一份确认表单；popup 快捷设置中也有同名开关。关闭后直接发送到 Motrix。“下载接管”仍独立控制是否自动拦截，大小和网站排除规则继续生效。询问前不额外探测下载链接；大小未知时遵循已设置的处理方式。此功能无需开启“添加下载后展开任务面板”。表单支持文件名、当前浏览器 User-Agent、Referer、Cookie、Authorization 和自定义请求头，保存位置默认使用 Motrix 的默认目录，也可在支持此能力的后端中选择其他可用目录。
+
+关闭 popup 会保留草稿和已填写内容，直到原定的两分钟有效期结束。在同一个浏览器窗口点击扩展图标即可恢复。草稿使用会话存储，后台休眠重启后仍可恢复，包括尚未填完整的字段。明确取消、过期、关闭来源浏览器窗口或切换目标后端会清除草稿；重启浏览器、重新加载或更新扩展也会清空会话存储。临时下载链接可能比草稿更早过期。不支持自动展开 popup 的浏览器会禁止开启此选项并建议升级；已开启的选项仍可关闭。
+
+确认后的连接或提交失败会保留表单和填写的信息，不自动回退到浏览器。发送结果未知时，包括后台在提交中途重启的情况，会禁止再次提交。确认表单绑定原浏览器窗口与目标后端。
+
+右键下载会在确认后才请求源链接。自动接管发现下载时，浏览器已经发起请求，因此扩展会在弹出表单前释放短时拦截，让原下载继续。关闭 popup 或 Motrix 提交失败都不会取消原下载；选择“保留浏览器下载”只结束询问，不发起新请求。选择发送到 Motrix 会重新请求链接，一次性链接可能失效，也可能产生重复文件，表单会提前说明。扩展无法移交浏览器已有的响应流，也无法保证在所有网盘首次请求前拦截。
 
 ### 手动新建任务
 
-连接 Motrix 后，打开扩展的“任务”页，点击右上角的加号，粘贴一个 HTTP、HTTPS 或 `magnet:?` 地址。当前一次只能添加一个地址。
+连接 Motrix 后，打开扩展的“任务”页，点击右上角的加号，粘贴一个 HTTP、HTTPS 或 `magnet:?` 地址。当前一次只能添加一个地址。HTTP(S) 任务与确认表单共用文件名和请求选项，默认填入当前浏览器 User-Agent。参数不变时重试会沿用同一提交标识；修改地址或选项则开始一次新提交。
+
+### 选择下载目录
+
+下载前询问和快捷添加表单支持选择当前 Motrix 的可用默认目录、收藏目录和最近
+目录，需要 Motrix 提供 MDXP 0.7.0 对应能力。目录由 Motrix 管理，扩展不提供
+任意文件系统浏览或新建文件夹。旧版或未连接时仍可按原流程使用默认目录；草稿中
+已明确选择的目录不会被静默替换，失效时需重新选择，或主动改回默认目录。
+目录草稿绑定后端配置和已配对实例，切换后端后不可直接沿用。
 
 ### 从页面资源中选择
 
@@ -107,12 +136,16 @@ Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入
 
 ## 下载接管
 
-“接管”开启后，符合条件的浏览器下载会自动交给本机 Motrix App。远程 Server 当前只接受你主动发起的任务，不允许自动接管；这道限制有点保守，但让浏览数据跨设备时多一次明确选择，我认为是合理的。你可以在设置中填写：
+“接管”开启后，符合条件的浏览器下载会自动交给本机 Motrix App。远程 Server 开启远程下载权限后可接受手动任务、选中的页面资源和右键下载，自动接管仍仅支持本机 App。你可以在设置中填写：
 
 - 最小文件大小，低于这个值的下载仍由浏览器处理；
 - 黑名单域名，每行一个，这些站点始终交给浏览器。
 
 接管默认关闭，第一次开启时会要求确认。原因很具体：为了让需要登录的下载继续有效，扩展可能读取目标域名的 Cookie 并随任务发送给 Motrix。内置敏感域名列表会把部分银行、政务和医疗站点排除在外；如果 Motrix 无法接收普通 HTTP(S) 下载，扩展会尽可能退回浏览器下载。磁力链接没有对应的浏览器下载可退回。
+
+设置 → 下载中新增“接管成功后展开任务面板”，默认关闭，点击“应用”保存。Chrome / Edge 127+、Firefox 149+ 支持在 Motrix 确认收到自动接管的下载后展开扩展弹窗。相邻间隔小于 10 秒的连续下载只展开一次；面板已打开时只刷新数据，保留当前页面和筛选。切换窗口或手动关闭面板后，同批下载不会再次将它展开。
+
+请求超时后，面板会检查连接，保留上次的任务数据并暂停操作和轮询。恢复过程先探测当前连接，必要时使用已有凭证重连一次；任务和状态查询最多重试一次。下载提交和任务操作不会自动重放，结果待确认的下载仍需先在 Motrix 中检查。
 
 ## 数据与权限
 
@@ -143,7 +176,7 @@ Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入
 
 ### 为什么 Chrome 开发版无法连接 Motrix？
 
-先检查扩展 ID 是否已经加入 Motrix 的“设置 → 集成 → 浏览器扩展 → 受信任的扩展”。ID 可以在 `chrome://extensions` 的 Motrix Extension 卡片上找到。开发版换了加载目录后，ID 可能与之前不同，Motrix 里的记录也要跟着更新。
+先检查扩展 ID 是否已经加入 Motrix 的“设置 → 集成 → 浏览器扩展 → 受信任的扩展”。ID 可以在 `chrome://extensions` 的“Motrix 扩展”卡片上找到。开发版换了加载目录后，ID 可能与之前不同，Motrix 里的记录也要跟着更新。
 
 ### 为什么一直找不到本机 Motrix？
 

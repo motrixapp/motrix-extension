@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { probeTarget } from '@/background/capture/probeSize'
 import type { HandoffOps } from '@/background/handoff/runHandoff'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import {
@@ -6,13 +7,17 @@ import {
   HOLD_DEADLINE_MS,
   registerChromiumInterception,
 } from '@/background/interception/chromium'
+import { formToConfig } from '@/options/takeoverForm'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 vi.mock('@/background/handoff/runHandoff', () => ({
   runHandoff: vi.fn(async () => {}),
 }))
 vi.mock('@/background/capture/probeSize', () => ({
-  probeSize: vi.fn(async () => 5 * 1024 * 1024), // 5 MiB
+  probeTarget: vi.fn(async () => ({
+    sizeBytes: 5 * 1024 * 1024, // 5 MiB
+    contentType: 'application/octet-stream',
+  })),
 }))
 
 const mockedRunHandoff = vi.mocked(runHandoff)
@@ -39,6 +44,7 @@ function enabledConfig(
     enabled: true,
     consentAckVersion: 1,
     defaultAction: 'motrix',
+    unknownSizeAction: 'chrome',
     rules: [],
     ...overrides,
   }
@@ -80,6 +86,12 @@ function item(
 }
 
 beforeEach(() => {
+  vi.mocked(probeTarget)
+    .mockReset()
+    .mockResolvedValue({
+      sizeBytes: 5 * 1024 * 1024,
+      contentType: 'application/octet-stream',
+    })
   listener = undefined
   downloads = {
     onDeterminingFilename: {
@@ -114,6 +126,68 @@ function register(cfg: TakeoverConfig): ChromiumInterceptionDeps {
 }
 
 describe('registerChromiumInterception', () => {
+  it('preserves an already-requested one-use download in confirmation mode without a probe', async () => {
+    register(enabledConfig({ downloadMode: 'confirm' }))
+    const suggest = vi.fn()
+    listener?.(item(), suggest)
+    await vi.waitFor(() => expect(suggest).toHaveBeenCalledOnce())
+    expect(probeTarget).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+    expect(downloads.download).not.toHaveBeenCalled()
+    expect(mockedRunHandoff).not.toHaveBeenCalled()
+  })
+
+  it('releases the native filename hold before opening confirmation and never cancels while waiting', async () => {
+    vi.useFakeTimers()
+    const deps = makeDeps(enabledConfig({ downloadMode: 'confirm' }))
+    const suggest = vi.fn()
+    let finish!: () => void
+    const confirm = vi.fn(() => {
+      expect(suggest).toHaveBeenCalledOnce()
+      return new Promise<void>((resolve) => {
+        finish = resolve
+      })
+    })
+    registerChromiumInterception({
+      ...deps,
+      confirm,
+      popup: { captureWindow: async () => 4 } as never,
+    })
+    listener?.(item(), suggest)
+    await vi.waitFor(() =>
+      expect(confirm).toHaveBeenCalledWith(
+        expect.objectContaining({ origin: 'auto' }),
+        4,
+        expect.anything()
+      )
+    )
+    await vi.advanceTimersByTimeAsync(HOLD_DEADLINE_MS + 20_000)
+    expect(downloads.cancel).not.toHaveBeenCalled()
+    expect(downloads.erase).not.toHaveBeenCalled()
+    expect(probeTarget).not.toHaveBeenCalled()
+    expect(mockedRunHandoff).not.toHaveBeenCalled()
+    finish()
+    await Promise.resolve()
+    expect(suggest).toHaveBeenCalledOnce()
+  })
+
+  it('passes only the leaf of a Windows download path to handoff', async () => {
+    register(enabledConfig())
+    listener?.(
+      item({ filename: String.raw`E:\Downloads\asset_v1.2.8.1.zip` }),
+      vi.fn()
+    )
+    await vi.waitFor(() =>
+      expect(mockedRunHandoff).toHaveBeenCalledWith(
+        expect.objectContaining({
+          suggestedFilename: 'asset_v1.2.8.1.zip',
+          filenameFromUrl: false,
+        }),
+        expect.anything()
+      )
+    )
+  })
+
   it('no-ops when onDeterminingFilename is unavailable (Firefox)', () => {
     ;(
       globalThis as Record<string, unknown> & {
@@ -174,8 +248,8 @@ describe('registerChromiumInterception', () => {
     const suggest = vi.fn()
     listener?.(item({ totalBytes: -1 }), suggest)
     await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1))
-    const { probeSize } = await import('@/background/capture/probeSize')
-    expect(probeSize).not.toHaveBeenCalled()
+    const { probeTarget } = await import('@/background/capture/probeSize')
+    expect(probeTarget).not.toHaveBeenCalled()
     expect(mockedRunHandoff).not.toHaveBeenCalled()
     expect(deps.manager.clearGateAndStart).not.toHaveBeenCalled()
     expect(deps.manager.submitDownload).not.toHaveBeenCalled()
@@ -195,12 +269,133 @@ describe('registerChromiumInterception', () => {
     const suggest = vi.fn()
     listener?.(item({ totalBytes: -1 }), suggest)
     await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1))
-    const { probeSize } = await import('@/background/capture/probeSize')
-    expect(vi.mocked(probeSize)).toHaveBeenCalledWith(
+    const { probeTarget } = await import('@/background/capture/probeSize')
+    expect(vi.mocked(probeTarget)).toHaveBeenCalledWith(
       'https://files.example/a.bin',
       expect.anything()
     )
     expect(mockedRunHandoff).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    { totalBytes: 1024, probedSize: null, handoff: false },
+    { totalBytes: -1, probedSize: 1024, handoff: false },
+    { totalBytes: -1, probedSize: null, handoff: false },
+    { totalBytes: 0, probedSize: null, handoff: false },
+    { totalBytes: 10 * 1024 * 1024, probedSize: null, handoff: true },
+    { totalBytes: -1, probedSize: 10 * 1024 * 1024, handoff: true },
+  ])(
+    'honors a saved 10 MB minimum for TXT: browser=$totalBytes, probe=$probedSize',
+    async ({ totalBytes, probedSize, handoff }) => {
+      vi.mocked(probeTarget).mockResolvedValue({
+        sizeBytes: probedSize,
+        contentType: 'text/plain',
+      })
+      register(
+        enabledConfig(
+          formToConfig(
+            {
+              enabled: true,
+              thresholdMB: '10',
+              unknownSizeAction: 'chrome',
+              denylist: '',
+            },
+            1
+          )
+        )
+      )
+      const suggest = vi.fn()
+      listener?.(
+        item({
+          url: 'https://files.example/report.txt',
+          filename: 'report.txt',
+          mime: 'text/plain',
+          totalBytes,
+        }),
+        suggest
+      )
+      await vi.waitFor(() => expect(suggest).toHaveBeenCalledOnce())
+      expect(mockedRunHandoff).toHaveBeenCalledTimes(handoff ? 1 : 0)
+      expect(probeTarget).toHaveBeenCalledTimes(totalBytes === 1024 ? 0 : 1)
+      expect(downloads.cancel).not.toHaveBeenCalled()
+      expect(downloads.download).not.toHaveBeenCalled()
+    }
+  )
+
+  it.each(['', '10'])(
+    'uses the chosen handler for unknown TXT sizes with threshold %s',
+    async (thresholdMB) => {
+      for (const unknownSizeAction of ['chrome', 'motrix'] as const) {
+        vi.clearAllMocks()
+        vi.mocked(probeTarget).mockResolvedValue({
+          sizeBytes: null,
+          contentType: 'text/plain',
+        })
+        register(
+          enabledConfig(
+            formToConfig(
+              { enabled: true, thresholdMB, unknownSizeAction, denylist: '' },
+              1
+            )
+          )
+        )
+        const suggest = vi.fn()
+        listener?.(
+          item({ totalBytes: -1, mime: 'text/plain', filename: 'report.txt' }),
+          suggest
+        )
+        await vi.waitFor(() => expect(suggest).toHaveBeenCalledOnce())
+        expect(mockedRunHandoff).toHaveBeenCalledTimes(
+          unknownSizeAction === 'motrix' ? 1 : 0
+        )
+        expect(probeTarget).toHaveBeenCalledOnce()
+      }
+    }
+  )
+
+  it('declines a form-POST download whose GET replay serves HTML', async () => {
+    // uupdump.net: the browser saved the POST response (a zip); a GET to the
+    // same URL returns the configuration page. Motrix can only replay GET, so
+    // the download must stay native rather than land as a renamed HTML file.
+    const { probeTarget } = await import('@/background/capture/probeSize')
+    vi.mocked(probeTarget).mockResolvedValueOnce({
+      sizeBytes: null,
+      contentType: 'text/html; charset=UTF-8',
+    })
+    register(enabledConfig({ unknownSizeAction: 'motrix' }))
+    const suggest = vi.fn()
+    listener?.(
+      item({
+        url: 'https://uupdump.net/get.php?id=abc&pack=en-us&edition=core',
+        filename: 'uupdump_abc.zip',
+        mime: 'application/zip',
+        totalBytes: -1,
+      }),
+      suggest
+    )
+    await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1))
+    expect(mockedRunHandoff).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+  })
+
+  it('still takes over an HTML page the user genuinely asked to download', async () => {
+    const { probeTarget } = await import('@/background/capture/probeSize')
+    vi.mocked(probeTarget).mockResolvedValueOnce({
+      sizeBytes: null,
+      contentType: 'text/html; charset=UTF-8',
+    })
+    register(enabledConfig({ unknownSizeAction: 'motrix' }))
+    const suggest = vi.fn()
+    listener?.(
+      item({
+        url: 'https://page.example/report.html',
+        filename: 'report.html',
+        mime: 'text/html',
+        totalBytes: -1,
+      }),
+      suggest
+    )
+    await vi.waitFor(() => expect(mockedRunHandoff).toHaveBeenCalledTimes(1))
   })
 
   it('commit path: handoff cancels via ops → cancel+erase, suggest never called', async () => {
@@ -250,8 +445,48 @@ describe('registerChromiumInterception', () => {
     await vi.advanceTimersByTimeAsync(HOLD_DEADLINE_MS)
     expect(suggest).toHaveBeenCalledTimes(1)
     await expect(heldOps?.cancelNative()).rejects.toThrow(
-      'determination already released'
+      'download.preparation-timeout'
     )
     expect(downloads.cancel).not.toHaveBeenCalled()
   })
 })
+
+it.each(['accepted', 'unknown', 'browser', 'skipped', 'failed'] as const)(
+  'presents only an accepted handoff after releasing the native hold: %s',
+  async (kind) => {
+    const suggest = vi.fn()
+    const deps = makeDeps(enabledConfig({ openTaskPanelAfterSubmit: true }))
+    const popup = {
+      captureWindow: vi.fn(async () => 42),
+      present: vi.fn(async () => {
+        expect(suggest).toHaveBeenCalledOnce()
+      }),
+    }
+    deps.popup = popup as never
+    deps.captureGuard = vi.fn(async () => ({
+      origin: 'auto',
+      endpointId: 'local',
+      endpointRevision: 0,
+      assertCurrent: vi.fn(),
+    }))
+    mockedRunHandoff.mockResolvedValueOnce({
+      kind,
+      operationId: 'op1',
+      taskId: 'task1',
+    } as never)
+    registerChromiumInterception(deps)
+    listener?.(item(), suggest)
+    await vi.waitFor(() => expect(suggest).toHaveBeenCalledOnce())
+    if (kind === 'accepted')
+      expect(popup.present).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'task1',
+          operationId: 'op1',
+          windowId: 42,
+          enabledAtCapture: true,
+        })
+      )
+    else expect(popup.present).not.toHaveBeenCalled()
+    expect(downloads.download).not.toHaveBeenCalled()
+  }
+)

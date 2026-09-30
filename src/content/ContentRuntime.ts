@@ -1,6 +1,7 @@
 import type { UrlResolveParams } from '@motrix/mdxp'
 import { adapterRegistry } from '@/adapters/index'
 import type { SiteAdapter } from '@/adapters/SiteAdapter'
+import { extensionBrowser as browser } from '@/shared/browser'
 
 /**
  * Owns the SiteAdapter that matches the current tab. Announces itself

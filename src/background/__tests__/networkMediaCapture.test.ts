@@ -7,6 +7,7 @@ import {
   REQUEST_HEADERS_TTL_MS,
   registerNetworkMediaCapture,
 } from '@/background/networkMediaCapture'
+import { extensionBrowser } from '@/shared/browser'
 
 function request(
   changes: Partial<NetworkRequestDetails> = {}
@@ -1103,12 +1104,12 @@ describe('registerNetworkMediaCapture', () => {
       browser?: unknown
       chrome?: unknown
     }
-    const originalBrowser = globals.browser
+    const originalBrowser = { ...extensionBrowser }
     const originalChrome = globals.chrome
     const browserAddListener = vi.fn()
     const chromeAddListener = vi.fn()
 
-    globals.browser = {
+    Object.assign(extensionBrowser, {
       tabs: { get: vi.fn(async () => ({})) },
       webRequest: {
         onHeadersReceived: {
@@ -1116,7 +1117,7 @@ describe('registerNetworkMediaCapture', () => {
           removeListener: vi.fn(),
         },
       },
-    }
+    })
     globals.chrome = {
       tabs: {
         get: vi.fn((_tabId: number, callback: () => void) => callback()),
@@ -1142,7 +1143,11 @@ describe('registerNetworkMediaCapture', () => {
       expect(chromeAddListener).not.toHaveBeenCalled()
       unregister()
     } finally {
-      globals.browser = originalBrowser
+      Object.assign(
+        extensionBrowser,
+        { webRequest: undefined },
+        originalBrowser
+      )
       globals.chrome = originalChrome
     }
   })

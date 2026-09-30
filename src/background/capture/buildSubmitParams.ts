@@ -10,15 +10,19 @@ export function buildSubmitParams(
   cookies: Cookie[],
   headers: Record<string, string>
 ): DownloadSubmitParams {
+  // An empty hint is valid MDXP and lets Motrix discover Content-Disposition.
+  // A URL basename is useful for display, but is not a user-chosen filename.
+  const suggestedFilename =
+    t.filenameFromUrl && !isMagnetUrl(t.url) ? '' : t.suggestedFilename
   const meta: DownloadSubmitParams['meta'] =
     t.sizeBytes !== null
       ? {
-          suggestedFilename: t.suggestedFilename,
+          suggestedFilename,
           qualityLabel: QUALITY_SENTINEL,
           estimatedBytes: t.sizeBytes,
         }
       : {
-          suggestedFilename: t.suggestedFilename,
+          suggestedFilename,
           qualityLabel: QUALITY_SENTINEL,
         }
 

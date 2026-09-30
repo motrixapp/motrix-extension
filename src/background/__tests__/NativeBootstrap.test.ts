@@ -199,6 +199,61 @@ describe('NativeBootstrap', () => {
     await expect(promise).rejects.toThrow(/malformed/i)
   })
 
+  it.each([null, undefined, [], 'reply', 1, true])(
+    'rejects non-object replies without throwing from the message listener: %j',
+    async (reply) => {
+      const port = makeFakePort()
+      browser.runtime.connectNative = vi.fn(() => port)
+      const promise = new NativeBootstrap().discover()
+
+      expect(() => port.__fireMessage(reply)).not.toThrow()
+      await expect(promise).rejects.toMatchObject({ code: 'malformed' })
+      expect(port.disconnect).toHaveBeenCalledExactlyOnceWith()
+    }
+  )
+
+  it.each([
+    { nonce: '' },
+    { nonce: 'x'.repeat(513) },
+    { nonce: 1 },
+    { protocolVersion: -1 },
+    { protocolVersion: 1.5 },
+    { nmTicket: [] },
+  ])('rejects invalid handoff fields: %j', async (fields) => {
+    const port = makeFakePort()
+    browser.runtime.connectNative = vi.fn(() => port)
+    const promise = new NativeBootstrap().discover()
+    port.__fireMessage({
+      action: 'requestPair',
+      protocolVersion: 1,
+      port: 12345,
+      nonce: 'n-1',
+      ...fields,
+    })
+
+    await expect(promise).rejects.toMatchObject({ code: 'malformed' })
+  })
+
+  it('preserves legacy protocol version 0, boundary values and opaque ticket objects', async () => {
+    const port = makeFakePort()
+    browser.runtime.connectNative = vi.fn(() => port)
+    const promise = new NativeBootstrap().discover()
+    port.__fireMessage({
+      action: 'requestPair',
+      protocolVersion: 0,
+      port: 65_535,
+      nonce: 'x'.repeat(512),
+      nmTicket: {},
+    })
+
+    await expect(promise).resolves.toEqual({
+      wsPort: 65_535,
+      nonce: 'x'.repeat(512),
+      nmTicket: {},
+      protocolVersion: 0,
+    })
+  })
+
   it.each([0, 65_536, 1.5, Number.NaN])(
     'rejects invalid native host port %s',
     async (invalidPort) => {
@@ -208,6 +263,7 @@ describe('NativeBootstrap', () => {
       const promise = new NativeBootstrap().discover()
       port.__fireMessage({
         action: 'requestPair',
+        protocolVersion: 1,
         port: invalidPort,
         nonce: 'n-1',
       })

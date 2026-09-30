@@ -278,7 +278,7 @@ export function ImageQuickFilterPopover({
             {t('popup.sniffer.imageFilters.title')}
           </PopoverTitle>
           <span
-            className="ml-auto text-[11px] tabular-nums text-muted-foreground"
+            className="ms-auto text-[11px] tabular-nums text-muted-foreground"
             aria-live="polite"
           >
             {t('popup.sniffer.imageFilters.result', {

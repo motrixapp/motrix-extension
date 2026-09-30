@@ -21,7 +21,7 @@
     "handedToMotrix": "Handed to Motrix",
     "notConnectedBody": "Pair Motrix to take over downloads.",
     "notConnectedTitle": "Motrix not connected",
-    "notReachableBody": "Pair Motrix, then try the download again.",
+    "notReachableBody": "Couldn’t connect to Motrix. Open it and try again; your saved pairing is retained.",
     "notReachableTitle": "Motrix not reachable",
     "pairNudgeBody": "Open Motrix to finish pairing.",
     "pairNudgeTitle": "Pair Motrix",
@@ -30,7 +30,11 @@
     "sensitiveSkippedBody": "Sensitive site left to the browser.",
     "sensitiveSkippedTitle": "Skipped",
     "submitFailedBody": "Re-downloading in the browser.",
-    "submitFailedTitle": "Motrix submit failed"
+    "submitFailedTitle": "Motrix submit failed",
+    "submitUnknownTitle": "Send result unknown. Check tasks before sending again.",
+    "submitUnknownBody": "Send result unknown. Check tasks before sending again.",
+    "taskDetailsBody": "Open the task list to view details.",
+    "taskUpdatesTitle": "More task updates"
   },
   "options": {
     "diagnostics": {
@@ -80,7 +84,18 @@
       "errorLabel": "Failures / errors",
       "errorDesc": "Submit failed, not reachable, download failed",
       "reminderLabel": "Reminders",
-      "reminderDesc": "Pairing prompts, pairing revoked, skipped sites"
+      "reminderDesc": "Pairing prompts, pairing revoked, skipped sites",
+      "nativeNotDetermined": "Allow alerts in notification settings.",
+      "nativeDenied": "Notifications are turned off in System Settings.",
+      "nativeAuthorized": "Notifications are enabled.",
+      "configure": "Notification settings",
+      "openSystemSettings": "Open System Settings",
+      "test": "Send test notification",
+      "testBody": "This is a test notification from Motrix Extension.",
+      "testAccepted": "Test notification submitted.",
+      "testFailed": "Could not confirm test notification delivery.",
+      "testSuppressed": "Test notification not sent. Check permissions or try again shortly.",
+      "settingsFailed": "Could not open notification settings."
     },
     "pairing": {
       "backendTitle": "Pairing {{name}}",
@@ -155,6 +170,9 @@
       "loading": "Loading takeover settings…",
       "minSizeLabel": "Minimum size (MB)",
       "minSizePlaceholder": "0 = all",
+      "unknownSizeLabel": "When file size is unknown",
+      "unknownSizeBrowser": "Download with browser",
+      "unknownSizeMotrix": "Download with Motrix",
       "thresholdInvalid": "Minimum size must be a non-negative number",
       "save": "Save",
       "saved": "Saved",
@@ -200,10 +218,22 @@
       "diagnosticsDescription": "Adjust logging and copy details useful for troubleshooting."
     },
     "about": {
-      "subtitle": "Download files from the web with Motrix",
+      "subtitle": "The official Motrix browser extension. Send downloads to Motrix.",
       "website": "Official website"
     },
-    "title": "Motrix Extension Settings"
+    "title": "Motrix Extension Settings",
+    "taskPanel": {
+      "title": "Task panel",
+      "openAfterSubmit": "Open task panel after adding a download",
+      "description": "Automatically open the task panel after a download is added to Motrix, including right-click downloads and automatic takeover. Multiple downloads added in quick succession open it only once.",
+      "unsupported": "Your browser version is too old to open the extension popup automatically. Please upgrade to Chrome / Edge 127+ or Firefox 149+."
+    },
+    "downloadMode": {
+      "label": "Ask before downloading",
+      "confirm": "Ask before downloading",
+      "direct": "Send directly to Motrix",
+      "description": "Automatically open a form for right-click and intercepted downloads. Turn off to send directly to Motrix."
+    }
   },
   "popup": {
     "diagnostics": {
@@ -213,8 +243,9 @@
       "title": "Diagnostic results",
       "runningHelp": "Enabling debug logging and checking the connection environment. This usually takes a few seconds.",
       "firstLaunchHint": "Open Motrix manually, review and accept the first-launch terms if you agree, then retry pairing once its main window appears.",
-      "homebrewHint": "Installed via Homebrew? A user restored pairing by installing from official Releases and completing first-launch setup.",
-      "appReleases": "Official Motrix releases",
+      "latestVersionHint": "Try downloading and installing the latest version of Motrix, complete the first-launch setup, then try pairing again.",
+      "appReleases": "Download the latest Motrix",
+      "advanced": "Advanced troubleshooting",
       "allowlistHint": "For development or unpacked installs, check that this extension ID is in Motrix Settings → Integration → trusted extensions and the Native Host allowlist."
     },
     "backend": {
@@ -249,7 +280,12 @@
       "notificationsDescription": "Manage extension system notifications",
       "retry": "Retry",
       "saveError": "Couldn’t save setting. Try again.",
-      "takeoverDescription": "Send browser downloads to the current Motrix Backend"
+      "takeoverDescription": "Send browser downloads to the current Motrix Backend",
+      "excludeCurrentSite": "Exclude current site",
+      "excludeCurrentSiteDescription": "Keep downloads from {{site}} in the browser",
+      "noCurrentSite": "This page has no website domain to exclude.",
+      "inheritedExclusion": "{{site}} is covered by the exclusion for {{domain}}. Edit it in full settings.",
+      "taskPanelDescription": "Open after right-click downloads, automatic takeover, or other downloads are added"
     },
     "quickAdd": {
       "title": "New task",
@@ -328,9 +364,10 @@
       "unavailableDescription": "Switch pages or try again later.",
       "unavailableTitle": "Page can’t be scanned",
       "unsupported": "Requires ffmpeg",
-      "unsupportedReason": "The selected backend cannot submit {{kind}} resources because ffmpeg support is unavailable.",
+      "unsupportedReason": "FFmpeg is needed to download this item.",
       "unsupportedSelectionReason": "The selected backend cannot submit one or more selected resource types.",
-      "unsupportedResource": "{{name}} cannot be sent. {{reason}}"
+      "unsupportedResource": "{{name}} cannot be sent. {{reason}}",
+      "refreshCapabilitiesHint": "Set up FFmpeg in Motrix settings, then click “Scan again”."
     },
     "speed": {
       "download": "Download",
@@ -356,6 +393,7 @@
     },
     "tasks": {
       "actions": "Actions for {{name}}",
+      "openTaskInApp": "View task details in Motrix App",
       "openFolder": "Open containing folder in Motrix",
       "openFolderError": "Couldn't open the task folder. Try again.",
       "openFolderMetadataPending": "Wait for task metadata before opening the folder",
@@ -423,6 +461,61 @@
       "degradedBody": "You can use Motrix normally. This connection has basic verification only. For stronger protection, update Motrix and pair again.",
       "recoveryExhaustedTitle": "Couldn't reconnect automatically",
       "recoveryExhaustedBody": "The saved pairing could not reconnect. Retry the connection, or choose Forget pairing in Settings → Integration before pairing again."
+    },
+    "integration": {
+      "pairedTitle": "Paired. Ready to send downloads.",
+      "pairedBody": "Motrix opens when needed. Connect to view task progress.",
+      "pairedRemoteBody": "Send downloads directly. Connect to view task progress.",
+      "viewTasks": "View tasks",
+      "waking": "Opening Motrix…",
+      "pairingUnavailable": "Pairing information is unavailable. Try again.",
+      "pairingRequired": "Pair Motrix to send this download.",
+      "connectionFailed": "Couldn’t connect to Motrix. Open it and try again; your saved pairing is retained.",
+      "resultUnknown": "Send result unknown. Check tasks before sending again.",
+      "contextChanged": "The page or selected backend changed. Select the download again.",
+      "preparing": "Preparing download…",
+      "sending": "Sending download…",
+      "pairedStatus": "Paired"
+    },
+    "rpc": {
+      "checking": "Motrix is slow to respond. Checking the connection…",
+      "failed": "Motrix did not respond. Reconnect to try again.",
+      "stale": "Showing the last available data.",
+      "added": "Downloads added: {{count}}"
+    },
+    "taskForm": {
+      "filename": "Filename",
+      "filenameAuto": "Auto",
+      "userAgent": "User-Agent",
+      "referer": "Referer",
+      "cookie": "Cookie (override)",
+      "authorization": "Authorization",
+      "extraHeaders": "Additional headers",
+      "browserCookies": "Use cookies from this site",
+      "advanced": "Request options",
+      "defaultDirectory": "Uses the default download directory in Motrix.",
+      "invalidOptions": "Check the filename and request headers. Use one Name: value header per line; do not repeat the dedicated fields.",
+      "directory": "Save to",
+      "directoryRefresh": "Refresh",
+      "directoryDefault": "Default folder",
+      "directoryFavorites": "Favorite folders",
+      "directoryRecent": "Recent folders",
+      "directoryLoading": "Loading directories…",
+      "directoryAutomatic": "Use Motrix default",
+      "directoryUnsupported": "Update Motrix to choose a folder.",
+      "directoryOffline": "Connect to Motrix, then refresh to choose a folder.",
+      "directoryHint": "Folders are on the selected Motrix host. Manage favorites in Motrix.",
+      "directoryUnavailable": "This folder is unavailable or the backend changed. Refresh and select again, or use the default."
+    },
+    "confirmDownload": {
+      "description": "Review before the first download request. Temporary links may expire while you wait.",
+      "expires": "Draft expires in {{seconds}} seconds. Reopen the extension to resume after closing the popup.",
+      "browser": "Use browser",
+      "browserHint": "Browser downloads use the browser’s own filename and request settings.",
+      "unavailable": "Could not open confirmation. Finish any open download form, then try again. No download was started.",
+      "close": "Close",
+      "interceptedDescription": "The browser has already started this download. Motrix will request the link again, which may fail for one-use links. The original download continues and may produce a duplicate.",
+      "keepBrowser": "Keep browser download"
     }
   },
   "errors": {
@@ -456,7 +549,14 @@
       "channelClosed": "The connection was closed. Reconnect to continue.",
       "channelUnavailable": "Motrix isn't reachable right now. Make sure it's running.",
       "diagnosticsCopyFailed": "Couldn’t copy diagnostics. Try again.",
-      "storedPairingUnavailable": "The saved pairing could not reconnect. Retry the connection, or choose Forget pairing in Settings → Integration before pairing again."
+      "storedPairingUnavailable": "Couldn’t connect to Motrix. Open it and try again; your saved pairing is retained."
     }
+  },
+  "safari": {
+    "previewTitle": "Safari offline preview",
+    "previewHelp": "You can discover resources. Connecting to Motrix and sending downloads are not available in this preview.",
+    "unsupportedFeature": "This feature is not available in Safari.",
+    "confirmDownloadDescription": "Open a confirmation form for right-click downloads. Turn off to send directly to Motrix.",
+    "taskPanelDescription": "Open the task panel after a download is added."
   }
 }

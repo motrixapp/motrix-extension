@@ -5,8 +5,10 @@ import {
   handleMenuClick,
   handleMenuClickSafely,
   MENU_ID,
+  registerContextMenu,
   updateContextMenuTitle,
 } from '@/background/contextMenu/register'
+import { type Browser, extensionBrowser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
 import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 
@@ -21,8 +23,8 @@ describe('handleMenuClick', () => {
       {
         linkUrl: 'https://cdn.example.com/a.bin',
         pageUrl: 'https://example.com/p',
-      } as browser.contextMenus.OnClickData,
-      { title: 'Example' } as browser.tabs.Tab,
+      } as Browser.contextMenus.OnClickData,
+      { title: 'Example' } as Browser.tabs.Tab,
       {
         getConfig: async () => ({
           ...TAKEOVER_DEFAULT,
@@ -53,7 +55,7 @@ describe('handleMenuClick', () => {
       {
         srcUrl: 'data:image/png;base64,AAAA',
         pageUrl: 'https://example.com',
-      } as browser.contextMenus.OnClickData,
+      } as Browser.contextMenus.OnClickData,
       undefined,
       {
         getConfig: async () => ({ ...TAKEOVER_DEFAULT, enabled: true }),
@@ -70,8 +72,8 @@ describe('handleMenuClick', () => {
       {
         linkUrl: 'magnet:?xt=urn:btih:abc&dn=Cool+File',
         pageUrl: 'https://example.com/p',
-      } as browser.contextMenus.OnClickData,
-      { title: 'Example' } as browser.tabs.Tab,
+      } as Browser.contextMenus.OnClickData,
+      { title: 'Example' } as Browser.tabs.Tab,
       {
         getConfig: async () => ({ ...TAKEOVER_DEFAULT, enabled: true }),
         run: async (t) =>
@@ -97,7 +99,7 @@ describe('handleMenuClick', () => {
         {
           linkUrl: 'https://private.example/download',
           pageUrl: 'https://private.example/page',
-        } as browser.contextMenus.OnClickData,
+        } as Browser.contextMenus.OnClickData,
         undefined,
         {
           getConfig: async () => TAKEOVER_DEFAULT,
@@ -149,24 +151,92 @@ describe('contextMenuTitle', () => {
 
 describe('updateContextMenuTitle', () => {
   beforeEach(() => {
-    ;(globalThis as { browser?: unknown }).browser = {
+    Object.assign(extensionBrowser, {
       contextMenus: {
         update: vi.fn(),
         create: vi.fn(),
         removeAll: vi.fn(async () => {}),
         onClicked: { addListener: vi.fn() },
       },
-    }
+    })
+  })
+  it('keeps the menu alive during background wake and attaches its click listener immediately', async () => {
+    let finishUpdate!: () => void
+    const update = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          finishUpdate = resolve
+        })
+    )
+    Object.assign(extensionBrowser.contextMenus, { update })
+    const run = vi.fn(async () => {})
+    registerContextMenu({ run, getConfig: async () => TAKEOVER_DEFAULT })
+    const listener = vi.mocked(
+      extensionBrowser.contextMenus.onClicked.addListener
+    ).mock.calls[0]![0]
+    listener(
+      {
+        menuItemId: MENU_ID,
+        linkUrl: 'https://example.com/download',
+      } as Browser.contextMenus.OnClickData,
+      { windowId: 7 } as Browser.tabs.Tab
+    )
+    await vi.waitFor(() =>
+      expect(run).toHaveBeenCalledWith(
+        expect.objectContaining({ origin: 'context-menu' }),
+        7
+      )
+    )
+    expect(extensionBrowser.contextMenus.removeAll).not.toHaveBeenCalled()
+    expect(extensionBrowser.contextMenus.create).not.toHaveBeenCalled()
+    finishUpdate()
+  })
+  it('creates the item when no persisted menu exists', async () => {
+    Object.assign(extensionBrowser.contextMenus, {
+      update: vi.fn(async () => {
+        throw new Error('missing item')
+      }),
+    })
+    registerContextMenu({
+      run: vi.fn(),
+      getConfig: async () => TAKEOVER_DEFAULT,
+    })
+    await vi.waitFor(() =>
+      expect(extensionBrowser.contextMenus.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: MENU_ID,
+          contexts: ['link', 'image', 'video', 'audio'],
+        })
+      )
+    )
   })
   it('updates the menu item with the paired title', async () => {
     await i18n.changeLanguage('en-US')
     const update = vi.fn(async () => {})
-    ;(globalThis as { browser?: unknown }).browser = {
+    Object.assign(extensionBrowser, {
       contextMenus: { update },
-    }
+    })
     updateContextMenuTitle(true)
     expect(update).toHaveBeenCalledWith(MENU_ID, {
       title: 'Download with Motrix',
     })
   })
+})
+
+it('preserves the source window for HTTP and magnet confirmations', async () => {
+  for (const linkUrl of [
+    'https://example.com/once.zip',
+    'magnet:?xt=urn:btih:abc',
+  ]) {
+    const run = vi.fn(async () => {})
+    await handleMenuClick(
+      { linkUrl } as Browser.contextMenus.OnClickData,
+      { windowId: 17 } as Browser.tabs.Tab,
+      { run, getConfig: async () => TAKEOVER_DEFAULT }
+    )
+    expect(run).toHaveBeenCalledWith(
+      expect.objectContaining({ url: linkUrl }),
+      17
+    )
+  }
 })

@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { send } from '@/background/MessageBus'
+import { useCurrentSite } from '@/popup/useCurrentSite'
 import type { NotificationsConfig } from '@/shared/notifications'
+import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
+import { excludedSiteDomain, withSiteExcluded } from '@/shared/siteExclusion'
+import type { DownloadMode } from '@/shared/takeover'
 import { CONSENT_VERSION, type TakeoverConfig } from '@/shared/takeover'
 
 export type NotificationSetting = keyof NotificationsConfig
@@ -11,7 +15,11 @@ export interface QuickSettingsError {
 }
 
 export interface QuickSettingsController {
+  setDownloadMode: (mode: DownloadMode) => Promise<void>
   takeoverSupported: boolean
+  taskPanelSupported: boolean
+  currentSite: string | null
+  excludedSite: string | null
   takeover: TakeoverConfig | null
   notifications: NotificationsConfig | null
   loading: boolean
@@ -22,6 +30,8 @@ export interface QuickSettingsController {
   requestTakeoverEnabled: (enabled: boolean) => Promise<void>
   confirmTakeoverConsent: () => Promise<void>
   cancelTakeoverConsent: () => void
+  setOpenTaskPanelAfterSubmit: (enabled: boolean) => Promise<void>
+  setCurrentSiteExcluded: (excluded: boolean) => Promise<void>
   setNotification: (
     setting: NotificationSetting,
     enabled: boolean
@@ -34,12 +44,14 @@ function errorMessage(error: unknown): string {
 
 /**
  * Loads and persists the two real background-owned configs used by the popup's
- * quick settings. Mutations always spread the last full config so fields that
- * are only editable on the Options page are not reset by a quick toggle.
+ * quick settings. Download preferences use atomic patches so quick toggles
+ * preserve rules and settings saved by another extension page.
  */
 export function useQuickSettings(
   takeoverSupported = true
 ): QuickSettingsController {
+  const currentSite = useCurrentSite()
+  const taskPanelSupported = supportsAutoOpenPopup()
   const [takeover, setTakeover] = useState<TakeoverConfig | null>(null)
   const [notifications, setNotifications] =
     useState<NotificationsConfig | null>(null)
@@ -99,7 +111,14 @@ export function useQuickSettings(
   }, [reload])
 
   const persistTakeover = useCallback(
-    async (next: TakeoverConfig): Promise<boolean> => {
+    async (
+      next: TakeoverConfig,
+      persist: () => Promise<TakeoverConfig> = () =>
+        send('bg.patchTakeoverEnabled', {
+          enabled: next.enabled,
+          consentAckVersion: next.consentAckVersion,
+        })
+    ): Promise<boolean> => {
       const previous = takeoverRef.current
       if (previous === null || savingRef.current) return false
 
@@ -112,7 +131,9 @@ export function useQuickSettings(
       }
 
       try {
-        await send('bg.setTakeoverConfig', next)
+        const saved = await persist()
+        takeoverRef.current = saved
+        if (mountedRef.current) setTakeover(saved)
         return true
       } catch (saveError) {
         const shouldRollback = takeoverRef.current === next
@@ -197,6 +218,50 @@ export function useQuickSettings(
     if (mountedRef.current) setConsentRequired(false)
   }, [])
 
+  const setDownloadMode = useCallback(
+    async (downloadMode: DownloadMode): Promise<void> => {
+      const current = takeoverRef.current
+      if (!current || current.downloadMode === downloadMode) return
+      await persistTakeover({ ...current, downloadMode }, () =>
+        send('bg.patchDownloadMode', { downloadMode })
+      )
+    },
+    [persistTakeover]
+  )
+
+  const setOpenTaskPanelAfterSubmit = useCallback(
+    async (enabled: boolean): Promise<void> => {
+      const current = takeoverRef.current
+      if (
+        !taskPanelSupported ||
+        current === null ||
+        current.openTaskPanelAfterSubmit === enabled
+      )
+        return
+      await persistTakeover(
+        { ...current, openTaskPanelAfterSubmit: enabled },
+        () =>
+          send('bg.patchTaskPanelPreference', {
+            openTaskPanelAfterSubmit: enabled,
+          })
+      )
+    },
+    [persistTakeover, taskPanelSupported]
+  )
+
+  const setCurrentSiteExcluded = useCallback(
+    async (excluded: boolean): Promise<void> => {
+      const current = takeoverRef.current
+      if (current === null || currentSite === null) return
+      const next = withSiteExcluded(current, currentSite, excluded)
+      if (next === current) return
+      await persistTakeover(next, () =>
+        send('bg.patchSiteExclusion', { domain: currentSite, excluded })
+      )
+    },
+    [currentSite, persistTakeover]
+  )
+
   const setNotification = useCallback(
     async (setting: NotificationSetting, enabled: boolean): Promise<void> => {
       const current = notificationsRef.current
@@ -209,6 +274,12 @@ export function useQuickSettings(
   return useMemo(
     () => ({
       takeoverSupported,
+      taskPanelSupported,
+      currentSite,
+      excludedSite:
+        currentSite && takeover
+          ? excludedSiteDomain(takeover, currentSite)
+          : null,
       takeover,
       notifications,
       loading,
@@ -219,12 +290,16 @@ export function useQuickSettings(
       requestTakeoverEnabled,
       confirmTakeoverConsent,
       cancelTakeoverConsent,
+      setDownloadMode,
+      setOpenTaskPanelAfterSubmit,
+      setCurrentSiteExcluded,
       setNotification,
     }),
     [
       cancelTakeoverConsent,
       confirmTakeoverConsent,
       consentRequired,
+      currentSite,
       error,
       loading,
       notifications,
@@ -232,8 +307,12 @@ export function useQuickSettings(
       requestTakeoverEnabled,
       saving,
       setNotification,
+      setDownloadMode,
+      setOpenTaskPanelAfterSubmit,
+      setCurrentSiteExcluded,
       takeover,
       takeoverSupported,
+      taskPanelSupported,
     ]
   )
 }

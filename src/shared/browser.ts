@@ -1,12 +1,15 @@
+import { type Browser, browser as nativeBrowser } from '@wxt-dev/browser'
 import browserPolyfill from 'webextension-polyfill'
 
-// Chromium exposes `chrome.*`, while Firefox exposes `browser.*` natively.
-// Install the promise-based polyfill before any shared module reads the
-// ambient `browser` global during module evaluation.
-const extensionGlobals = globalThis as unknown as {
-  browser?: typeof browserPolyfill
-}
+export type { Browser } from '@wxt-dev/browser'
 
-extensionGlobals.browser ??= browserPolyfill
+// Chrome 120 remains supported. The polyfill preserves Promise semantics on
+// older Chromium and returns the native API on Firefox and Chrome 148+.
+// Keep its older declaration format behind this boundary; application types
+// come from WXT's module-scoped, current Chrome API declarations. Use Promise
+// calls here; callback-sensitive Chromium APIs must use nativeBrowser below.
+export const extensionBrowser = browserPolyfill as unknown as typeof Browser
 
-export const extensionBrowser = extensionGlobals.browser
+// Only native event protocols (such as onDeterminingFilename) should bypass
+// the compatibility adapter. Callers must feature-detect browser-only APIs.
+export { nativeBrowser }

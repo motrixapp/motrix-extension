@@ -1,5 +1,6 @@
 import type { MediaStore } from '@/background/MediaStore'
 import { resolveStoredMedia } from '@/background/mediaTrust'
+import { extensionBrowser as browser } from '@/shared/browser'
 import {
   type DetectedMedia,
   mediaCategory,

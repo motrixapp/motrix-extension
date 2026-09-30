@@ -40,22 +40,17 @@ function DashboardTileContent({
 }: DashboardTileCommonProps): React.ReactElement {
   return (
     <>
-      <span className="flex min-w-0 items-start justify-between gap-1">
-        <span className="min-w-0 text-[9px]/3 font-medium text-muted-foreground [overflow-wrap:anywhere]">
-          {label}
-        </span>
-        {Icon ? (
-          <Icon
-            aria-hidden="true"
-            data-slot="dashboard-tile-icon"
-            className={cn('size-4 shrink-0', iconClassName)}
-            strokeWidth={2}
-          />
-        ) : null}
+      <span
+        data-slot="dashboard-tile-label"
+        title={label}
+        className="block min-w-0 truncate text-[9px]/3 font-medium text-muted-foreground"
+      >
+        {label}
       </span>
       <span
         data-slot="dashboard-tile-value-row"
-        className="flex min-h-[22px] min-w-0 items-baseline gap-0.5 whitespace-nowrap"
+        dir="ltr"
+        className="flex min-h-[22px] min-w-0 items-baseline justify-self-start gap-0.5 whitespace-nowrap"
       >
         <span
           data-slot="dashboard-tile-value"
@@ -72,13 +67,21 @@ function DashboardTileContent({
           </span>
         ) : null}
       </span>
+      {Icon ? (
+        <Icon
+          aria-hidden="true"
+          data-slot="dashboard-tile-icon"
+          className={cn('absolute end-2 bottom-3 size-4', iconClassName)}
+          strokeWidth={2}
+        />
+      ) : null}
       {decoration}
     </>
   )
 }
 
 const TILE_CLASS_NAME =
-  'relative row-span-3 grid min-h-20 min-w-0 grid-rows-subgrid gap-y-2 overflow-hidden p-2 pb-4 rounded-[10px] border border-border bg-card text-left shadow-card'
+  'relative row-span-3 grid min-h-20 min-w-0 grid-rows-subgrid gap-y-2 overflow-hidden p-2 pb-4 rounded-[10px] border border-border bg-card text-start shadow-card'
 
 export function DashboardTile(props: DashboardTileProps): React.ReactElement {
   const {

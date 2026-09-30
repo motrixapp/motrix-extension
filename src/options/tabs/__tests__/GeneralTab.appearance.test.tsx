@@ -6,6 +6,7 @@ import { GeneralTab } from '@/options/tabs/GeneralTab'
 import { i18n } from '@/shared/i18n'
 import { getLocaleOverride } from '@/shared/localeStore'
 import { LOCALE_NAMES, SUPPORTED_LOCALES } from '@/shared/supportedLocales'
+import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 import { getThemeOverride } from '@/shared/themeStore'
 
 declare const browser: {
@@ -23,6 +24,7 @@ declare const browser: {
 
 beforeEach(() => {
   browser.runtime.sendMessage = vi.fn(async (env) => {
+    if (env.kind === 'bg.getTakeoverConfig') return TAKEOVER_DEFAULT
     if (env.kind === 'bg.getNotificationsConfig')
       return { master: true, confirm: false, error: true, reminder: true }
     if (env.kind === 'bg.setNotificationsConfig') return { ok: true }

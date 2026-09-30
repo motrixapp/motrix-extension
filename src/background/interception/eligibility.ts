@@ -1,7 +1,7 @@
 export interface DownloadItemLike {
   finalUrl?: string
   url: string
-  byExtensionId?: string
+  byExtensionId?: string | undefined
 }
 
 /** The URL a takeover should act on: post-redirect finalUrl when present. */

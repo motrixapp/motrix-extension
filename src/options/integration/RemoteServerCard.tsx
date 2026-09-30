@@ -94,10 +94,10 @@ export function RemoteServerCard({
   return (
     <Alert
       aria-label={t('options.servers.statusTitle')}
-      className="gap-y-1 pr-4 has-data-[slot=alert-action]:pr-4"
+      className="gap-y-1 pe-4 has-data-[slot=alert-action]:pe-4"
     >
       <ServerIcon />
-      <AlertTitle className={cn('truncate', paired && 'pr-40')}>
+      <AlertTitle className={cn('truncate', paired && 'pe-40')}>
         {server.name}
       </AlertTitle>
       {paired && (

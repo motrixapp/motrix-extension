@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 /**
  * Persists the Motrix backend catalogue in browser.storage.local.
  *

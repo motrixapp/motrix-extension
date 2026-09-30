@@ -1,6 +1,7 @@
 import type {
   DownloadSubmitParams,
   DownloadSubmitResult,
+  InitializeParams,
   MdxpConnection,
   MdxpRequestMap,
   TaskCompletedParams,
@@ -9,6 +10,7 @@ import type {
 } from '@motrix/mdxp'
 import {
   createMdxpConnection,
+  DownloadSubmitResultSchema,
   ErrorCodes,
   InitializeResultSchema,
   Methods,
@@ -16,7 +18,14 @@ import {
 } from '@motrix/mdxp'
 import type { BgAdapterRegistry } from '@/background/AdapterRegistry'
 import { BackendOperationCoordinator } from '@/background/BackendOperationCoordinator'
+import type { BootstrapProvider } from '@/background/BootstrapProvider'
 import { ConnectionGate } from '@/background/ConnectionGate'
+import { createBootstrapProvider } from '@/background/createBootstrapProvider'
+import {
+  beforeDeadline,
+  DownloadOutcomeUnknownError,
+  DownloadPreparationError,
+} from '@/background/download-errors'
 import {
   type BackendAttemptLease,
   type BackendAttemptMutationCapability,
@@ -81,25 +90,44 @@ import {
   generateBindingKeypair,
 } from '@/background/mbp1/ticket-bootstrap'
 import { computeVerifiedOrigin } from '@/background/mbp1/verified-origin'
-import {
-  NativeBootstrap,
-  NativeBootstrapError,
-} from '@/background/NativeBootstrap'
+import { NativeBootstrapError } from '@/background/NativeBootstrap'
 import {
   createLeaseBoundRemoteBackendPolicyStore,
   type RemoteBackendPolicyReplacement,
   type RemoteBackendPolicyV1,
 } from '@/background/RemoteBackendPolicyStore'
 import {
+  RpcNotReadyError,
+  RpcRecovery,
+  type RpcSession,
+  rpcDeadline,
+} from '@/background/RpcRecovery'
+import {
   applyRemoteSubmitPolicy,
   RemoteAutomaticTakeoverConsentRequiredError,
 } from '@/background/remote-submit-policy'
+import { notificationText } from '@/background/SafariNotificationTransport'
 import { TaskEventStore } from '@/background/TaskEventStore'
 import type { UrlResolutionDispatcher } from '@/background/UrlResolutionDispatcher'
 import { WebSocketClient } from '@/background/WebSocketClient'
 import { WebSocketFrameChannel } from '@/background/WebSocketFrameChannel'
+import { extensionBrowser as browser } from '@/shared/browser'
+import {
+  type BrowserKind,
+  requireProtocolBrowser,
+  supportsBackendConnections,
+} from '@/shared/browserKind'
 import { i18n } from '@/shared/i18n'
-import type { Notify, NotifyInput } from '@/shared/notifications'
+import {
+  type ConnectionIntent,
+  type ConnectionPhase,
+  DOWNLOAD_ERROR,
+} from '@/shared/integration'
+import type {
+  NotificationSource,
+  Notify,
+  NotifyInput,
+} from '@/shared/notifications'
 
 export type ConnectionState =
   | 'disconnected'
@@ -151,7 +179,7 @@ export interface ConnectionManagerClientInfo {
   name: string
   version: string
   extensionId: string
-  browser: 'chromium' | 'firefox'
+  browser: BrowserKind
   browserVersion: string
   locale: string
 }
@@ -172,7 +200,7 @@ export interface Mbp1FrameChannel extends FrameChannel {
 
 export interface ConnectionManagerOptions {
   /** dependency-injection slots, mainly for tests */
-  bootstrap?: NativeBootstrap
+  bootstrap?: BootstrapProvider
   client?: WebSocketClient
   endpointConfigStore?: EndpointConfigStore
   /** Serializes endpoint catalogue changes with the short-lived durable
@@ -203,6 +231,12 @@ export interface ConnectionManagerOptions {
   notify?: Notify
   /** Max time for an ordinary MDXP request before the caller may recover. */
   requestTimeoutMs?: number
+  rpcRecoveryTimeouts?: {
+    probeTimeoutMs?: number
+    reconnectTimeoutMs?: number
+    retryTimeoutMs?: number
+    totalTimeoutMs?: number
+  }
   /** Max time for the pairing/initialize handshake, including user approval. */
   initializeTimeoutMs?: number
   /** Delay before the single unattended probe after an established socket
@@ -476,7 +510,7 @@ export class ConnectionManager {
    *  "use whatever `discoverForFirstPair` ranks first", the existing
    *  default. */
   private preferredCandidatePort: number | null = null
-  private readonly bootstrap: NativeBootstrap
+  private readonly bootstrap: BootstrapProvider
   private readonly client: WebSocketClient
   private readonly endpointConfigStore: EndpointConfigStore
   private readonly backendOperationCoordinator: BackendOperationCoordinator
@@ -490,13 +524,22 @@ export class ConnectionManager {
   private readonly opts: ConnectionManagerOptions
   private readonly taskEvents: TaskEventStore
   private readonly notify: Notify
+  private readonly rpcRecovery: RpcRecovery
   private readonly requestTimeoutMs: number
   private readonly initializeTimeoutMs: number
   private readonly closeReconnectDelayMs: number
+  private initializeRequest: {
+    conn: MdxpConnection
+    params: InitializeParams
+  } | null = null
+  private capabilitiesRefreshFlight: Promise<
+    ReturnType<ConnectionManager['getServerCapabilities']>
+  > | null = null
   private serverCapabilities: {
     ffmpegAvailable: boolean
     selectionKinds: string[]
     taskReveal: boolean
+    downloadDirectories?: boolean | undefined
   } | null = null
   private serverIdentity: ServerIdentity | null = null
   /**
@@ -531,6 +574,10 @@ export class ConnectionManager {
    *  replacement out. `stop()` clears the flight so an endpoint/lifecycle
    *  change can start a genuinely new intent. */
   private explicitConnectFlight: Promise<void> | null = null
+  private readyFlight: Promise<void> | null = null
+  private lastAttemptIntent: ConnectionIntent | null = null
+  private connectionPhase: ConnectionPhase = 'idle'
+
   private readonly credentialStore: CredentialStore
   private readonly pinStore: PinStore
   private readonly discoveryService: DiscoveryService
@@ -551,7 +598,8 @@ export class ConnectionManager {
 
   constructor(opts: ConnectionManagerOptions) {
     this.opts = opts
-    this.bootstrap = opts.bootstrap ?? new NativeBootstrap()
+    this.bootstrap =
+      opts.bootstrap ?? createBootstrapProvider(opts.clientInfo.browser)
     this.client = opts.client ?? new WebSocketClient()
     this.endpointConfigStore =
       opts.endpointConfigStore ?? new EndpointConfigStore()
@@ -571,6 +619,16 @@ export class ConnectionManager {
     this.gate = opts.gate ?? new ConnectionGate()
     this.taskEvents = opts.taskEvents ?? new TaskEventStore()
     this.requestTimeoutMs = opts.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS
+    this.rpcRecovery = new RpcRecovery({
+      requestTimeoutMs: this.requestTimeoutMs,
+      ...opts.rpcRecoveryTimeouts,
+      session: () =>
+        this.state === 'connected' && this.currentConn
+          ? { conn: this.currentConn, generation: this.generation }
+          : null,
+      reconnect: (session, timeoutMs) =>
+        this.recoverRpcSession(session, timeoutMs),
+    })
     this.initializeTimeoutMs =
       opts.initializeTimeoutMs ?? DEFAULT_INITIALIZE_TIMEOUT_MS
     this.closeReconnectDelayMs = opts.closeReconnectDelayMs ?? 250
@@ -638,6 +696,74 @@ export class ConnectionManager {
           new EnvelopeMessageReader(socket, envelope, queuedFrames),
           new EnvelopeMessageWriter(socket, envelope)
         ))
+  }
+
+  getLastAttemptIntent(): ConnectionIntent | null {
+    return this.lastAttemptIntent
+  }
+
+  getConnectionPhase(): ConnectionPhase {
+    return this.connectionPhase
+  }
+
+  /** Prepare a retained pairing without granting first-pair or clearing a gate.
+   * Each caller owns its deadline; the bounded underlying flight is shared. */
+  async ensureReady(options: {
+    intent: 'automatic-download' | 'explicit-download' | 'view-tasks'
+    deadlineAt?: number
+    assertCurrent?: () => void
+  }): Promise<void> {
+    requireProtocolBrowser(this.opts.clientInfo.browser)
+    const deadlineAt = options.deadlineAt ?? Date.now() + 30_000
+    const check = (): void => {
+      options.assertCurrent?.()
+      if (Date.now() >= deadlineAt) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.preparationTimeout)
+      }
+    }
+    check()
+    if (this.rpcRecovery.isRecovering()) {
+      await beforeDeadline(this.rpcRecovery.ready(deadlineAt), deadlineAt)
+      check()
+    }
+    if (this.state === 'connected' && this.getRpcStatus().health === 'healthy')
+      return
+    this.rpcRecovery.reset()
+    let flight = this.readyFlight ?? this.explicitConnectFlight
+    if (flight === null) {
+      // A passive probe must not prevent a real download from waking the App.
+      // Explicit pairing owns its own flight and is joined above.
+      this.stopCurrentAttempt()
+      const work = this.connectExpected(
+        {
+          allowLaunch: true,
+          userInitiated: true,
+          allowFirstPair: false,
+          intent: options.intent,
+        },
+        null
+      )
+      let owned: Promise<void>
+      owned = beforeDeadline(work, Date.now() + 30_000)
+        .catch((error) => {
+          if (this.readyFlight === owned) this.stopCurrentAttempt()
+          throw error
+        })
+        .finally(() => {
+          if (this.readyFlight === owned) this.readyFlight = null
+        })
+      this.readyFlight = owned
+      flight = owned
+    }
+    await beforeDeadline(flight, deadlineAt)
+    check()
+    if (this.getState() !== 'connected') {
+      throw new DownloadPreparationError(
+        this.lastErrorReason === DOWNLOAD_ERROR.pairingRequired
+          ? DOWNLOAD_ERROR.pairingRequired
+          : DOWNLOAD_ERROR.connectionFailed
+      )
+    }
   }
 
   getState(): ConnectionState {
@@ -755,6 +881,7 @@ export class ConnectionManager {
   async listPairCandidates(opts: {
     allowLaunch: boolean
   }): Promise<PairCandidate[]> {
+    requireProtocolBrowser(this.opts.clientInfo.browser)
     const results = await this.discoveryService.discoverForFirstPair(opts)
     return results.map((r: DiscoveryResult) => ({
       port: r.wsPort,
@@ -769,8 +896,48 @@ export class ConnectionManager {
     ffmpegAvailable: boolean
     selectionKinds: string[]
     taskReveal: boolean
+    downloadDirectories?: boolean | undefined
   } | null {
     return this.serverCapabilities
+  }
+
+  /** Re-read capabilities over the authenticated session without reconnecting,
+   * launching Motrix, changing consent, or replaying a download. MDXP initialize
+   * is a capability exchange; reuse exactly the session's original declaration. */
+  refreshServerCapabilities(): Promise<
+    ReturnType<ConnectionManager['getServerCapabilities']>
+  > {
+    if (this.capabilitiesRefreshFlight) return this.capabilitiesRefreshFlight
+    const request = this.initializeRequest
+    const scope = this.currentEndpointScope
+    if (this.state !== 'connected' || !request || !scope)
+      return Promise.resolve(null)
+    const generation = this.generation
+    const flight = (async () => {
+      const rawResult = await this.request(
+        Methods.MotrixInitialize,
+        request.params
+      )
+      this.ensureCurrentConnection(generation, request.conn)
+      const result = InitializeResultSchema.parse(rawResult)
+      const expectedRuntime =
+        scope.endpointConfig.mode === 'local' ? 'electron' : 'server'
+      if (result.server.runtime !== expectedRuntime) {
+        throw new BackendCompatibilityError(
+          'unsupportedRemote',
+          'Motrix runtime changed during capability refresh'
+        )
+      }
+      this.captureCapabilities(result.capabilities)
+      return this.getServerCapabilities()
+    })()
+    this.capabilitiesRefreshFlight = flight
+    const release = () => {
+      if (this.capabilitiesRefreshFlight === flight)
+        this.capabilitiesRefreshFlight = null
+    }
+    void flight.then(release, release)
+    return flight
   }
 
   /** Identity reported by the backend during the latest successful handshake. */
@@ -801,11 +968,39 @@ export class ConnectionManager {
     if (conn === null || this.state !== 'connected') {
       throw new Error(`bridge not connected (state: ${this.state})`)
     }
-    return await this.withTimeout(
-      conn.sendRequest(method, params),
-      this.requestTimeoutMs,
-      String(method)
+    return this.rpcRecovery.request(method, params)
+  }
+
+  getRpcStatus(): import('@/shared/integration').RpcStatus {
+    return this.rpcRecovery.snapshot()
+  }
+
+  private async recoverRpcSession(
+    session: RpcSession,
+    timeoutMs: number
+  ): Promise<RpcSession> {
+    this.ensureCurrentConnection(session.generation, session.conn)
+    const scope = this.currentEndpointScope
+    if (!scope || timeoutMs <= 0) throw new Error('RPC recovery expired')
+    this.stopCurrentAttempt()
+    const work = this.connectExpected(
+      { allowLaunch: false, userInitiated: false, allowFirstPair: false },
+      scope
     )
+    const generation = this.generation
+    try {
+      await rpcDeadline(work, timeoutMs, 'connection recovery')
+    } catch (error) {
+      if (this.generation === generation) this.stopCurrentAttempt()
+      throw error
+    }
+    if (
+      this.generation !== generation ||
+      !this.currentConn ||
+      this.getState() !== 'connected'
+    )
+      throw new Error('RPC recovery unavailable')
+    return { conn: this.currentConn, generation }
   }
 
   /** Hand a browser-detected download to Motrix (the page-shaped submit path).
@@ -815,7 +1010,9 @@ export class ConnectionManager {
     params: DownloadSubmitParams,
     options: {
       automaticTakeover?: boolean
+      directoryInstanceId?: string | undefined
       assertCurrent?: () => void
+      onSubmitting?: () => Promise<void>
     } = {}
   ): Promise<DownloadSubmitResult> {
     options.assertCurrent?.()
@@ -835,15 +1032,76 @@ export class ConnectionManager {
       outbound = applyRemoteSubmitPolicy(params, policy)
     }
     // Every logical submit carries an idempotency key. Motrix scopes it to the
-    // stable extension identity (browser + extensionId), so a retransmit after
-    // a lost response or reconnect returns the original task. Retry-owning
-    // callers must supply and reuse their key; an unkeyed call starts a new
+    // stable extension identity (browser + extensionId) within its bounded
+    // process-local cache. A lost response does not prove the cache still
+    // retains the result. Callers reuse their key; an unkeyed call starts a new
     // logical submit and therefore receives a fresh key here.
     const withKey: DownloadSubmitParams = outbound.idempotencyKey
       ? outbound
       : { ...outbound, idempotencyKey: crypto.randomUUID() }
     options.assertCurrent?.()
-    return this.request(Methods.DownloadSubmit, withKey)
+    const conn = this.currentConn
+    const generation = this.generation
+    if (
+      conn === null ||
+      this.state !== 'connected' ||
+      this.getRpcStatus().health !== 'healthy'
+    ) {
+      throw new DownloadPreparationError(DOWNLOAD_ERROR.connectionFailed)
+    }
+    const assertDirectory = () => {
+      if (params.saveDir === undefined) return
+      if (this.serverCapabilities?.downloadDirectories !== true)
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.directoryUnavailable)
+      if (
+        !options.directoryInstanceId ||
+        options.directoryInstanceId !== this.currentAuthenticatedInstanceId
+      )
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.contextChanged)
+    }
+    assertDirectory()
+    await options.onSubmitting?.()
+    options.assertCurrent?.()
+    this.ensureCurrentConnection(generation, conn)
+    assertDirectory()
+    try {
+      const result = DownloadSubmitResultSchema.safeParse(
+        await this.request(Methods.DownloadSubmit, withKey)
+      )
+      if (!result.success) throw new DownloadOutcomeUnknownError()
+      return result.data
+    } catch (error) {
+      // Only explicit pre-dispatch rejections prove that no task was accepted.
+      // Transport loss, cancellation and generic server errors may arrive after
+      // task creation. Never automatically retry or browser-fallback those.
+      if (error instanceof RpcNotReadyError) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.connectionFailed)
+      }
+      const code = (error as { code?: unknown } | null)?.code
+      if (
+        code === ErrorCodes.InvalidParams &&
+        (error as { data?: { appCode?: string } })?.data?.appCode ===
+          'download-directory-unavailable'
+      ) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.directoryUnavailable)
+      }
+      if (code === ErrorCodes.CapabilityNotSupported) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.unsupported)
+      }
+      const rejected: unknown[] = [
+        ErrorCodes.ParseError,
+        ErrorCodes.InvalidRequest,
+        ErrorCodes.MethodNotFound,
+        ErrorCodes.InvalidParams,
+        ErrorCodes.PermissionDenied,
+        ErrorCodes.RateLimited,
+        ErrorCodes.PairRevoked,
+      ]
+      if (rejected.includes(code)) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.rejected)
+      }
+      throw new DownloadOutcomeUnknownError()
+    }
   }
 
   /** Current remote authority's consent, bound to the MBP1-authenticated
@@ -886,7 +1144,12 @@ export class ConnectionManager {
     // no later state subscription to correct it. Complete this single
     // attempt before acknowledging the policy change; connect() already
     // contains failures and leaves an authoritative terminal state.
-    await this.connect({ allowLaunch: false, userInitiated: true })
+    await this.connect({
+      allowLaunch: false,
+      userInitiated: true,
+      allowFirstPair: false,
+      intent: 'retry-connection',
+    })
     return policy
   }
 
@@ -897,6 +1160,22 @@ export class ConnectionManager {
 
   onStateChange(cb: (s: ConnectionState) => void): void {
     this.stateListeners.push(cb)
+  }
+
+  /** Restored notifications may only reach the same authenticated endpoint. */
+  isNotificationSourceCurrent(source: NotificationSource): boolean {
+    const scope = this.currentEndpointScope
+    return (
+      this.state === 'connected' &&
+      scope !== null &&
+      source.instanceId !== null &&
+      source.instanceId === this.currentAuthenticatedInstanceId &&
+      source.endpointId === scope.activeEndpointId &&
+      source.endpointRevision ===
+        (scope.endpointConfig.mode === 'remote'
+          ? scope.endpointConfig.revision
+          : 0)
+    )
   }
 
   onActivityChange(cb: () => void): void {
@@ -910,6 +1189,8 @@ export class ConnectionManager {
   private setState(s: ConnectionState): void {
     if (this.state === s) return
     this.state = s
+    if (s === 'disconnected' || s === 'denied') this.connectionPhase = 'idle'
+    if (s === 'connected') this.connectionPhase = 'ready'
     for (const cb of this.stateListeners) cb(s)
   }
 
@@ -918,6 +1199,7 @@ export class ConnectionManager {
     this.lastErrorReason = null
     this.lastErrorRetryAtMs = null
     this.pendingPairingCode = null
+    this.lastAttemptIntent = null
   }
 
   private adoptPresentationEndpoint(incarnation: EndpointIncarnation): void {
@@ -1102,38 +1384,29 @@ export class ConnectionManager {
     return released
   }
 
-  /**
-   * Unified connect entry. `allowLaunch` and `userInitiated` answer two
-   * different questions and MUST NOT be conflated even though every caller
-   * today happens to pass the same value for both:
-   *
-   * - `allowLaunch`: may this attempt wake Motrix via the native host
-   *   (`NativeBootstrap`)? Forwarded to the discovery chain.
-   * - `userInitiated`: did an actual human ask for this attempt, as opposed
-   *   to an automatic background one (SW-startup autostart, or the single
-   *   probe-reconnect after a socket closes)? Consulted only by
-   *   `connectLocalMbp1`, which refuses to fall through to fresh
-   *   code-entry pairing once the recovery order is exhausted unless this
-   *   is `true` — see `RecoveryExhaustedUnattendedError`.
-   *
-   * Single attempt only. On failure: enters denied (if pair denied/revoked)
-   * or returns to disconnected (dormant). No backoff loop.
-   *
-   * Respects the connection gate: if a pair attempt is pending or a denial
-   * is recorded, surfaces the prior state without re-attempting.
-   */
+  /** Low-level single attempt. Launch, error presentation and first pairing
+   * are independent permissions. Product callers use ensureReady or the
+   * explicit pairing/retry entry instead of choosing these flags themselves. */
   async connect(opts: {
     allowLaunch: boolean
     userInitiated: boolean
+    allowFirstPair?: boolean
+    intent?: ConnectionIntent
   }): Promise<void> {
     await this.connectExpected(opts, null, this.takePreferredCandidatePort())
   }
 
   private async connectExpected(
-    opts: { allowLaunch: boolean; userInitiated: boolean },
+    opts: {
+      allowLaunch: boolean
+      userInitiated: boolean
+      allowFirstPair?: boolean
+      intent?: ConnectionIntent
+    },
     expected: EndpointIncarnation | null,
     preferredCandidatePort: number | null = null
   ): Promise<void> {
+    requireProtocolBrowser(this.opts.clientInfo.browser)
     if (this.state !== 'disconnected' && this.state !== 'denied') {
       log.warn('connect called in state', this.state)
       return
@@ -1160,6 +1433,8 @@ export class ConnectionManager {
         expected
       )
       scope = attemptScope
+      this.lastAttemptIntent =
+        opts.intent ?? (opts.userInitiated ? 'first-pair' : 'background-probe')
       this.ensureCurrentAttempt(generation)
 
       // SW-restart safety: skip auto-attempt if a pair attempt is still
@@ -1208,7 +1483,8 @@ export class ConnectionManager {
         opts.allowLaunch,
         opts.userInitiated,
         attemptScope,
-        preferredCandidatePort
+        preferredCandidatePort,
+        opts.allowFirstPair ?? opts.userInitiated
       )
     } catch (e) {
       // A superseded attempt owns neither the visible error/state nor the
@@ -1256,12 +1532,13 @@ export class ConnectionManager {
    * never a proof of pairing and is never consulted.
    */
   async autostart(): Promise<void> {
+    if (!supportsBackendConnections(this.opts.clientInfo.browser)) return
     const generation = this.generation
     const scope = await this.captureEndpointAttempt(generation)
     if (!this.isCurrentAttempt(generation)) return
 
     const principal: Principal = {
-      browser: this.opts.clientInfo.browser,
+      browser: requireProtocolBrowser(this.opts.clientInfo.browser),
       verifiedOrigin: computeVerifiedOrigin(),
       clientInstallationId: await getClientInstallationId(),
     }
@@ -1279,31 +1556,13 @@ export class ConnectionManager {
     )
   }
 
-  /**
-   * Explicit user-triggered reconnect. Clears the gate so the next SW
-   * restart can auto-connect again, then connects wake-authorized and
-   * user-initiated. This is the only caller that passes `userInitiated:
-   * true` — every automatic path (`autostart`, the post-close probe-
-   * reconnect) passes `false` for both.
-   *
-   * Four call sites, all downstream of a real click: `bg.reconnect` (popup
-   * "Connect"), `bg.chooseCandidate` (the "Pair" dialog),
-   * `EndpointCatalogService.afterConnectionChange`, and
-   * `makeOps.connectWithLaunch`. The last two are worth naming explicitly,
-   * since "a human asked for *this*" takes some interpreting there:
-   * switching the backend selector to the local App while unpaired, and a
-   * right-click "Download with Motrix" on an unpaired endpoint, both reach
-   * this method — and therefore `/pair` — as a side effect of an action that
-   * was not itself "pair". Both are treated as user-initiated on purpose:
-   * choosing that backend, or explicitly asking to download via Motrix, is
-   * already an expressed intent to use it, and offering to pair is the
-   * right response to either. Recorded here so the next reader finds a
-   * decision, not an oversight.
-   */
+  /** Explicit Pair/Retry action. Retained credentials still never fall
+   * through to first pairing; automatic downloads must use ensureReady. */
   clearGateAndStart(): Promise<void> {
-    const active = this.explicitConnectFlight
+    const active = this.explicitConnectFlight ?? this.readyFlight
     if (active !== null) return active
 
+    this.rpcRecovery.reset()
     const flight = this.runExplicitConnect()
     this.explicitConnectFlight = flight
     const release = (): void => {
@@ -1320,6 +1579,7 @@ export class ConnectionManager {
   }
 
   private async runExplicitConnect(): Promise<void> {
+    requireProtocolBrowser(this.opts.clientInfo.browser)
     // Claim an explicit picker result before any await or internal stop. It
     // now belongs only to this lifecycle intent; if the intent is stale or
     // cannot start, the choice is discarded rather than leaking into a later
@@ -1340,18 +1600,25 @@ export class ConnectionManager {
       this.stopCurrentAttempt()
     }
     await this.connectExpected(
-      { allowLaunch: true, userInitiated: true },
+      {
+        allowLaunch: true,
+        userInitiated: true,
+        allowFirstPair: true,
+        intent: 'first-pair',
+      },
       intent,
       preferredCandidatePort
     )
   }
 
   stop(): void {
+    this.rpcRecovery.reset()
     // A lifecycle boundary (endpoint edit/switch, explicit unpair, policy
     // replacement) must never make the next intent join work it just
     // invalidated. The old flight's guarded completion cannot clear a newer
     // replacement.
     this.explicitConnectFlight = null
+    this.readyFlight = null
     this.stopCurrentAttempt()
   }
 
@@ -1363,6 +1630,11 @@ export class ConnectionManager {
     this.preferredCandidatePort = null
     this.pendingPairingCode = null
     this.closePreAuthChannel()
+    try {
+      this.currentConn?.dispose()
+    } catch {
+      /* best effort */
+    }
     try {
       this.client.close()
     } catch {
@@ -1380,6 +1652,8 @@ export class ConnectionManager {
     this.currentEndpointScope = null
     this.currentAuthenticatedInstanceId = null
     this.serverCapabilities = null
+    this.initializeRequest = null
+    this.capabilitiesRefreshFlight = null
     this.serverIdentity = null
     this.degraded = null
     this.taskEvents.clear()
@@ -1402,13 +1676,15 @@ export class ConnectionManager {
     allowLaunch: boolean,
     userInitiated: boolean,
     scope: EndpointAttemptScope,
-    preferredCandidatePort: number | null
+    preferredCandidatePort: number | null,
+    allowFirstPair: boolean
   ): Promise<void> {
     const { generation, endpointConfig } = scope
     this.ensureCurrentAttempt(generation)
     const seq = ++this.attemptSeq
     this.serverIdentity = null
     this.degraded = null
+    this.connectionPhase = 'probing'
     this.setState('bootstrapping')
     log.info(
       `[connect#${seq}] connectOnce start; mode=${endpointConfig.mode} ` +
@@ -1426,23 +1702,25 @@ export class ConnectionManager {
         allowLaunch,
         userInitiated,
         scope,
-        preferredCandidatePort
+        preferredCandidatePort,
+        allowFirstPair
       )
       return
     }
 
-    await this.connectRemoteMbp1(seq, userInitiated, scope)
+    await this.connectRemoteMbp1(seq, userInitiated, scope, allowFirstPair)
   }
 
   private async connectRemoteMbp1(
     seq: number,
     userInitiated: boolean,
-    scope: EndpointAttemptScope
+    scope: EndpointAttemptScope,
+    allowFirstPair: boolean
   ): Promise<void> {
     const { generation, authority } = scope
     if (authority.kind !== 'remote') throw new StaleConnectionAttemptError()
     const principal: Principal = {
-      browser: this.opts.clientInfo.browser,
+      browser: requireProtocolBrowser(this.opts.clientInfo.browser),
       verifiedOrigin: computeVerifiedOrigin(),
       clientInstallationId: await getClientInstallationId(),
     }
@@ -1532,6 +1810,9 @@ export class ConnectionManager {
     }
 
     if (!userInitiated) throw new RecoveryExhaustedUnattendedError()
+    if (order.length > 0) throw new StoredPairingUnavailableError()
+    if (!allowFirstPair)
+      throw new DownloadPreparationError(DOWNLOAD_ERROR.pairingRequired)
     if (this.opts.pairingCodeSource === undefined) {
       throw new Error(
         'first-pair requires a pairing code source; none configured'
@@ -1617,11 +1898,12 @@ export class ConnectionManager {
     allowLaunch: boolean,
     userInitiated: boolean,
     scope: EndpointAttemptScope,
-    preferredCandidatePort: number | null
+    preferredCandidatePort: number | null,
+    allowFirstPair: boolean
   ): Promise<void> {
     const { generation } = scope
     const principal: Principal = {
-      browser: this.opts.clientInfo.browser,
+      browser: requireProtocolBrowser(this.opts.clientInfo.browser),
       verifiedOrigin: computeVerifiedOrigin(),
       clientInstallationId: await getClientInstallationId(),
     }
@@ -1696,6 +1978,7 @@ export class ConnectionManager {
             pins: this.pinStore,
             isCurrent: () => this.isCurrentAttempt(generation),
           })
+          this.connectionPhase = 'authenticating'
           result = await flow.run({
             credential,
             discovery: discovered,
@@ -1746,7 +2029,8 @@ export class ConnectionManager {
             result.envelope,
             scope,
             seq,
-            false
+            false,
+            instanceId
           )
         } catch (error) {
           this.closePreAuthChannel(channel)
@@ -1755,8 +2039,8 @@ export class ConnectionManager {
         return
       }
 
-      // Only an explicit click may wake an offline paired app. Complete the
-      // ordinary recovery walk first, and never launch after an auth failure.
+      // A concrete download or an explicit connection may wake a paired App.
+      // Complete ordinary recovery first; never launch after an auth failure.
       if (
         pass !== 0 ||
         foundEndpoint ||
@@ -1765,6 +2049,7 @@ export class ConnectionManager {
         !allowLaunch
       )
         break
+      this.connectionPhase = 'waking'
       awakened = await this.discoveryService.wakeForReconnect(
         order.map((c) => c.credentialId)
       )
@@ -1787,6 +2072,8 @@ export class ConnectionManager {
     if (!userInitiated) {
       throw new RecoveryExhaustedUnattendedError()
     }
+    if (!allowFirstPair)
+      throw new DownloadPreparationError(DOWNLOAD_ERROR.pairingRequired)
     await this.connectFirstPairMbp1(
       seq,
       allowLaunch,
@@ -1887,7 +2174,8 @@ export class ConnectionManager {
         result.envelope,
         scope,
         seq,
-        true
+        true,
+        result.instanceId
       )
     } catch (error) {
       this.closePreAuthChannel(channel)
@@ -1909,7 +2197,7 @@ export class ConnectionManager {
     scope: EndpointAttemptScope,
     seq: number,
     isFirstPair: boolean,
-    authenticatedInstanceId: string | null = null
+    authenticatedInstanceId: string | null
   ): Promise<void> {
     const { generation } = scope
     const { socket, queuedFrames } = this.releasePreAuthChannel(
@@ -1951,6 +2239,7 @@ export class ConnectionManager {
     socket.addEventListener('close', () => this.handleClose(generation, conn))
 
     this.ensureCurrentConnection(generation, conn)
+    this.connectionPhase = 'initializing'
     this.setState('handshaking')
 
     // By this point PairingFlow.run has already completed — the dialog was
@@ -2033,31 +2322,87 @@ export class ConnectionManager {
       })
     }
 
+    const notificationSource: NotificationSource = {
+      endpointId: scope.activeEndpointId,
+      endpointRevision:
+        scope.endpointConfig.mode === 'remote'
+          ? scope.endpointConfig.revision
+          : 0,
+      instanceId: authenticatedInstanceId,
+    }
+    // Legacy unauthenticated instance identities cannot deduplicate across sessions.
+    const notificationSession = authenticatedInstanceId ?? crypto.randomUUID()
+    const notificationMetadata = (
+      kind: string,
+      taskId: string,
+      code?: string
+    ) => ({
+      source: notificationSource,
+      deduplicationKey: JSON.stringify([
+        notificationSession,
+        kind,
+        taskId,
+        code ?? null,
+      ]),
+      isCurrent: () => this.isCurrentConnection(generation, conn),
+    })
+
     // Task lifecycle push notifications
     conn.onNotification(Notifications.TaskProgress, (p: TaskProgressParams) => {
       if (!this.isCurrentConnection(generation, conn)) return
       this.taskEvents.recordProgress(p)
+      try {
+        this.notify.taskProgress?.({
+          taskId: p.taskId,
+          bytesDone: p.bytesDone,
+          phase: p.phase,
+          source: notificationSource,
+          isCurrent: () => this.isCurrentConnection(generation, conn),
+        })
+      } catch {
+        // Advisory notification bookkeeping cannot interrupt task updates.
+      }
     })
     conn.onNotification(
       Notifications.TaskCompleted,
       (p: TaskCompletedParams) => {
         if (!this.isCurrentConnection(generation, conn)) return
         this.taskEvents.take(p.taskId)
-        const name = p.filePath.split('/').pop() ?? p.filePath
+        const name = notificationText(
+          p.filePath.split(/[\\/]/).pop() ?? '',
+          300
+        )
         this.notify({
           title: i18n.t('notify.downloadComplete'),
-          message: name,
+          message: name || i18n.t('notify.taskDetailsBody'),
           severity: 'confirm',
+          kind: 'task.completed',
+          ...notificationMetadata('completed', p.taskId),
+          deduplicationMs: 7 * 24 * 60 * 60 * 1000,
         })
       }
     )
     conn.onNotification(Notifications.TaskError, (p: TaskErrorParams) => {
       if (!this.isCurrentConnection(generation, conn)) return
-      this.taskEvents.take(p.taskId)
+      const progress = this.taskEvents.take(p.taskId)
       this.notify({
         title: i18n.t('notify.downloadFailed'),
-        message: p.message,
+        message: i18n.t('notify.taskDetailsBody'),
         severity: 'error',
+        kind: 'task.failed',
+        failure: {
+          taskId: p.taskId,
+          ...(progress
+            ? {
+                progress: {
+                  bytesDone: progress.bytesDone,
+                  phase: progress.phase,
+                },
+              }
+            : {}),
+        },
+        ...notificationMetadata('error', p.taskId, p.code),
+        deduplicationMs: 10 * 60 * 1000,
       })
     })
 
@@ -2072,19 +2417,23 @@ export class ConnectionManager {
 
     this.ensureCurrentConnection(generation, conn)
     conn.listen()
+    const initializeParams: InitializeParams = {
+      protocolVersion: '1.0',
+      client: {
+        ...this.opts.clientInfo,
+        browser: requireProtocolBrowser(this.opts.clientInfo.browser),
+      },
+      capabilities: {
+        submitDownload: allowBrowserData || allowRemoteSubmit,
+        resolveUrl: canResolve,
+        probeUrl: adapters.length > 0,
+        cancellation: true,
+        progress: true,
+      },
+      adapters,
+    }
     const rawResult: unknown = await this.withTimeout(
-      conn.sendRequest(Methods.MotrixInitialize, {
-        protocolVersion: '1.0',
-        client: this.opts.clientInfo,
-        capabilities: {
-          submitDownload: allowBrowserData || allowRemoteSubmit,
-          resolveUrl: canResolve,
-          probeUrl: adapters.length > 0,
-          cancellation: true,
-          progress: true,
-        },
-        adapters,
-      }),
+      conn.sendRequest(Methods.MotrixInitialize, initializeParams),
       this.initializeTimeoutMs,
       Methods.MotrixInitialize
     )
@@ -2118,6 +2467,7 @@ export class ConnectionManager {
         : { instanceId: authenticatedInstanceId }),
     }
     this.captureCapabilities(result.capabilities)
+    this.initializeRequest = { conn, params: initializeParams }
     conn.sendNotification(Notifications.MotrixInitialized, undefined)
   }
 
@@ -2147,6 +2497,14 @@ export class ConnectionManager {
     // 'denied' is terminal (pair denied or revoked) — never reconnect
     // automatically; wait for explicit user action.
     if (this.state === 'disconnected' || this.state === 'denied') return
+    if (this.rpcRecovery.onSocketClosed({ conn, generation })) return
+    if (
+      this.rpcRecovery.isRecovering() ||
+      this.getRpcStatus().health === 'unresponsive'
+    ) {
+      this.stopCurrentAttempt()
+      return
+    }
     log.info('WS closed; one probe-reconnect (allowLaunch:false)')
     this.stop() // releases the closed socket and invalidates duplicate callbacks
     // A Server restart closes the old socket before its replacement listener
@@ -2191,6 +2549,7 @@ export class ConnectionManager {
       title: i18n.t('notify.pairRevokedTitle'),
       message: i18n.t('notify.pairRevokedBody'),
       severity: 'reminder',
+      kind: 'pairing.revoked',
     })
     await this.enterDenied(
       {
@@ -2281,9 +2640,12 @@ export class ConnectionManager {
     this.currentEndpointScope = null
     this.currentAuthenticatedInstanceId = null
     this.serverCapabilities = null
+    this.initializeRequest = null
+    this.capabilitiesRefreshFlight = null
     this.serverIdentity = null
     this.degraded = null
     this.taskEvents.clear()
+    this.rpcRecovery.reset()
     this.setState('denied')
     try {
       this.client.close()
@@ -2335,7 +2697,7 @@ export class ConnectionManager {
     if (scope === null) return
     try {
       const principal: Principal = {
-        browser: this.opts.clientInfo.browser,
+        browser: requireProtocolBrowser(this.opts.clientInfo.browser),
         verifiedOrigin: computeVerifiedOrigin(),
         clientInstallationId: await getClientInstallationId(),
       }
@@ -2412,6 +2774,7 @@ export class ConnectionManager {
     ffmpegAvailable: boolean
     selectionKinds: string[]
     taskReveal?: boolean
+    downloadDirectories?: boolean | undefined
   }): void {
     this.serverCapabilities = {
       ffmpegAvailable: caps.ffmpegAvailable,
@@ -2419,6 +2782,7 @@ export class ConnectionManager {
       // Optional on the 1.0 wire so an older backend remains compatible,
       // but absent must never accidentally enable a desktop-shell action.
       taskReveal: caps.taskReveal === true,
+      downloadDirectories: caps.downloadDirectories === true,
     }
   }
 }

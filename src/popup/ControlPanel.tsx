@@ -125,12 +125,12 @@ const TaskIdentity = memo(function TaskIdentity({
   return (
     <>
       <span
-        className={`absolute top-[17px] left-4 flex size-10 items-center justify-center rounded-[10px] ${taskIconClassName(status)}`}
+        className={`absolute top-[17px] start-4 flex size-10 items-center justify-center rounded-[10px] ${taskIconClassName(status)}`}
       >
         <Icon className="size-5" strokeWidth={1.8} aria-hidden="true" />
       </span>
       <span
-        className="absolute top-[9px] right-2 left-[72px] truncate text-[13px]/5 font-normal"
+        className="absolute top-[9px] end-2 start-[72px] truncate text-[13px]/5 font-normal"
         title={name}
       >
         {name}
@@ -177,7 +177,7 @@ const TaskLiveMetrics = memo(function TaskLiveMetrics({
     <>
       <span
         id={secondaryId}
-        className="absolute top-[31px] right-2 left-[72px] truncate text-[11px]/4 text-muted-foreground"
+        className="absolute top-[31px] end-2 start-[72px] truncate text-[11px]/4 text-muted-foreground"
         title={secondary}
       >
         {secondary}
@@ -186,7 +186,7 @@ const TaskLiveMetrics = memo(function TaskLiveMetrics({
         <Progress
           value={progressPercent}
           aria-label={`${name} ${progressPercent}%`}
-          className={`absolute top-[55px] right-2 left-[72px] h-1 gap-0 [&_[data-slot=progress-track]]:h-1 [&_[data-slot=progress-track]]:bg-muted ${
+          className={`absolute top-[55px] end-2 start-[72px] h-1 gap-0 [&_[data-slot=progress-track]]:h-1 [&_[data-slot=progress-track]]:bg-muted ${
             status === 'paused'
               ? '[&_[data-slot=progress-indicator]]:bg-muted-foreground'
               : '[&_[data-slot=progress-indicator]]:bg-speed-download'
@@ -207,6 +207,7 @@ const TaskActions = memo(function TaskActions({
   onRemove,
   canRevealTask,
   revealing,
+  readOnly,
 }: {
   taskId: string
   taskName: string
@@ -217,6 +218,7 @@ const TaskActions = memo(function TaskActions({
   onRemove: (id: string, deleteFiles: boolean) => void
   canRevealTask: boolean
   revealing: boolean
+  readOnly: boolean
 }): React.ReactElement {
   const { t } = useTranslation()
   const revealReady = canRevealTask && status !== 'fetching_metadata'
@@ -225,7 +227,7 @@ const TaskActions = memo(function TaskActions({
     : status === 'fetching_metadata'
       ? t('popup.tasks.openFolderMetadataPending')
       : t('popup.tasks.openFolderTask', { name: taskName })
-  const revealUnavailable = !revealReady || revealing
+  const revealUnavailable = readOnly || !revealReady || revealing
   const transferAction = PAUSABLE.has(status)
     ? 'pause'
     : RESUMABLE.has(status)
@@ -241,7 +243,7 @@ const TaskActions = memo(function TaskActions({
   return (
     <div
       data-testid={`task-actions-${taskId}`}
-      className="absolute top-[23px] right-3 z-10 flex w-[88px] items-center justify-end gap-0.5"
+      className="absolute top-[23px] end-3 z-10 flex w-[88px] items-center justify-end gap-0.5"
     >
       <Button
         type="button"
@@ -271,6 +273,7 @@ const TaskActions = memo(function TaskActions({
           data-testid={`task-transfer-${taskId}`}
           data-task-id={taskId}
           data-task-action="transfer"
+          disabled={readOnly}
           className="size-7 text-muted-foreground"
           aria-label={transferLabel}
           title={transferLabel}
@@ -289,6 +292,7 @@ const TaskActions = memo(function TaskActions({
         size="icon-xs"
         data-task-id={taskId}
         data-task-action="remove"
+        disabled={readOnly}
         className="size-7 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
         aria-label={removeLabel}
         title={removeLabel}
@@ -310,7 +314,9 @@ interface TaskRowProps {
   onReveal: (id: string) => void
   onRemove: (id: string, deleteFiles: boolean) => void
   canRevealTask: boolean
+  canOpenApp: boolean
   revealing: boolean
+  readOnly: boolean
 }
 
 function taskRowPropsEqual(
@@ -325,7 +331,9 @@ function taskRowPropsEqual(
     previous.onReveal === next.onReveal &&
     previous.onRemove === next.onRemove &&
     previous.canRevealTask === next.canRevealTask &&
+    previous.canOpenApp === next.canOpenApp &&
     previous.revealing === next.revealing &&
+    previous.readOnly === next.readOnly &&
     a.id === b.id &&
     a.name === b.name &&
     a.type === b.type &&
@@ -345,39 +353,34 @@ const TaskRow = memo(function TaskRow({
   onReveal,
   onRemove,
   canRevealTask,
+  canOpenApp,
   revealing,
+  readOnly,
 }: TaskRowProps): React.ReactElement {
   const { t } = useTranslation()
-  const revealReady = canRevealTask && task.status !== 'fetching_metadata'
   const secondaryId = `task-secondary-${task.id}`
-  const revealUnavailable = !revealReady || revealing
+  const openAppLabel = `${t('popup.tasks.openTaskInApp')}: ${task.name}`
 
   return (
     <li
       data-testid={`task-row-${task.id}`}
       className="relative h-[74px] shrink-0 after:pointer-events-none after:absolute after:inset-x-4 after:bottom-0 after:h-px after:bg-border"
     >
-      <button
-        type="button"
-        data-testid={`task-main-${task.id}`}
-        data-task-id={task.id}
-        data-task-action="main"
-        className="absolute inset-y-0 right-[108px] left-0 text-left transition-colors hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 focus-visible:outline-none aria-disabled:pointer-events-none"
-        aria-label={
-          revealReady
-            ? t('popup.tasks.openFolderTask', { name: task.name })
-            : undefined
-        }
-        aria-describedby={secondaryId}
-        aria-busy={revealing || undefined}
-        aria-disabled={revealUnavailable || undefined}
-        aria-hidden={revealReady ? undefined : true}
-        tabIndex={revealReady ? 0 : -1}
-        onClick={() => {
-          if (!revealUnavailable) onReveal(task.id)
-        }}
-      />
-      <div className="pointer-events-none absolute inset-y-0 right-[108px] left-0">
+      {canOpenApp && (
+        <a
+          href={`motrix://tasks/${encodeURIComponent(task.id)}`}
+          data-testid={`task-main-${task.id}`}
+          data-task-id={task.id}
+          data-task-action="main"
+          className="absolute inset-0 text-start transition-colors hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 focus-visible:outline-none"
+          title={openAppLabel}
+          aria-describedby={secondaryId}
+          tabIndex={0}
+        >
+          <span className="sr-only">{openAppLabel}</span>
+        </a>
+      )}
+      <div className="pointer-events-none absolute inset-y-0 end-[108px] start-0">
         <TaskIdentity name={task.name} type={task.type} status={task.status} />
         <TaskLiveMetrics
           name={task.name}
@@ -400,6 +403,7 @@ const TaskRow = memo(function TaskRow({
         onRemove={onRemove}
         canRevealTask={canRevealTask}
         revealing={revealing}
+        readOnly={readOnly}
       />
     </li>
   )
@@ -427,16 +431,22 @@ function EmptyTasks({ view }: { view: TaskView }): React.ReactElement {
 interface ControlPanelProps {
   connection: ConnectionState | null
   controller: ControlPanelController
+  readOnly?: boolean
   canRevealTask?: boolean
+  canOpenApp?: boolean
   onReconnect: () => void
+  onNewTask?: () => void
   notice?: ReactNode
 }
 
 export const ControlPanel = memo(function ControlPanel({
   connection,
   controller,
+  readOnly = false,
   canRevealTask = false,
+  canOpenApp = false,
   onReconnect,
+  onNewTask,
   notice,
 }: ControlPanelProps): React.ReactElement {
   const { t } = useTranslation()
@@ -528,7 +538,7 @@ export const ControlPanel = memo(function ControlPanel({
   )
 
   const confirmRemoveTask = useCallback(async (): Promise<void> => {
-    if (taskToRemove === null || removingTask) return
+    if (taskToRemove === null || removingTask || readOnly) return
     setActionError(null)
     setRemovingTask(true)
     try {
@@ -540,7 +550,7 @@ export const ControlPanel = memo(function ControlPanel({
       setDeleteTaskFiles(false)
       setRemoveDialogOpen(false)
     }
-  }, [controller.remove, deleteTaskFiles, removingTask, taskToRemove])
+  }, [controller.remove, deleteTaskFiles, removingTask, taskToRemove, readOnly])
 
   const filter = (
     <TabsList className="h-auto min-h-8 w-full min-w-0 flex-1 flex-wrap items-stretch gap-0 rounded-[10px] bg-tab-background p-0.5 group-data-horizontal/tabs:h-auto">
@@ -565,8 +575,8 @@ export const ControlPanel = memo(function ControlPanel({
         className="size-8 rounded-full"
         aria-label={t('popup.quickAdd.title')}
         title={t('popup.quickAdd.title')}
-        disabled={controller.loading}
-        onClick={() => setQuickAddOpen(true)}
+        disabled={controller.loading || readOnly}
+        onClick={() => (onNewTask ? onNewTask() : setQuickAddOpen(true))}
       >
         <Plus className="size-4.5" aria-hidden="true" />
       </Button>
@@ -653,7 +663,9 @@ export const ControlPanel = memo(function ControlPanel({
                             onReveal={revealTask}
                             onRemove={removeTask}
                             canRevealTask={canRevealTask}
+                            canOpenApp={canOpenApp}
                             revealing={revealingTaskIds.has(task.id)}
+                            readOnly={readOnly}
                           />
                         ))}
                       </ul>
@@ -731,7 +743,7 @@ export const ControlPanel = memo(function ControlPanel({
             <AlertDialogAction
               type="button"
               variant="destructive"
-              disabled={removingTask}
+              disabled={removingTask || readOnly}
               onClick={() => void confirmRemoveTask()}
             >
               {removingTask && <Spinner data-icon="inline-start" />}

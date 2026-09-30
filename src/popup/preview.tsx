@@ -1,11 +1,18 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
+import { createPreviewConfirmationPort } from '@/popup/previewConfirmation'
 import type { NotificationsConfig } from '@/shared/notifications'
+import { withSiteExcluded } from '@/shared/siteExclusion'
 import { resolveLocale } from '@/shared/supportedLocales'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 const previewParams = new URLSearchParams(globalThis.location.search)
 const previewScan = previewParams.get('scan')
+const previewFfmpegAvailable = previewParams.get('ffmpeg') !== 'missing'
+const previewPageUrl =
+  previewParams.get('page') === 'video'
+    ? 'https://www.youtube.com/watch?v=preview'
+    : 'https://example.com/watch'
 const previewLocale = resolveLocale(previewParams.get('lang') ?? 'en-US')
 let previewConnection =
   previewParams.get('connection') === 'offline' ? 'disconnected' : 'connected'
@@ -69,9 +76,12 @@ let previewEndpoint: PreviewEndpoint = {
 }
 
 let previewTakeover: TakeoverConfig = {
+  downloadMode: 'direct',
+  openTaskPanelAfterSubmit: false,
   enabled: true,
   consentAckVersion: 1,
   defaultAction: 'motrix',
+  unknownSizeAction: 'chrome',
   rules: [],
 }
 let previewNotifications: NotificationsConfig = {
@@ -85,6 +95,8 @@ const previewRuntime = {
   id: 'motrix-popup-preview',
   onMessage: { addListener: () => undefined, removeListener: () => undefined },
   connectNative: () => undefined,
+  connect: () =>
+    createPreviewConfirmationPort(previewParams.get('confirmation')),
   openOptionsPage: async () => undefined,
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }
@@ -130,11 +142,48 @@ const previewRuntime = {
         }
       case 'bg.getTakeoverConfig':
         return previewTakeover
+      case 'bg.patchTakeoverEnabled':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as {
+            enabled: boolean
+            consentAckVersion?: number
+          }),
+        }
+        return previewTakeover
       case 'bg.setTakeoverConfig':
-        previewTakeover = request.payload as TakeoverConfig
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as TakeoverConfig),
+        }
         return { ok: true }
+      case 'bg.patchDownloadMode':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as Pick<TakeoverConfig, 'downloadMode'>),
+        }
+        return previewTakeover
+      case 'bg.patchTaskPanelPreference':
+        previewTakeover = {
+          ...previewTakeover,
+          ...(request.payload as { openTaskPanelAfterSubmit: boolean }),
+        }
+        return previewTakeover
+      case 'bg.patchSiteExclusion': {
+        const { domain, excluded } = request.payload as {
+          domain: string
+          excluded: boolean
+        }
+        previewTakeover = withSiteExcluded(previewTakeover, domain, excluded)
+        return previewTakeover
+      }
       case 'bg.getNotificationsConfig':
         return previewNotifications
+      case 'bg.getNotificationCapability':
+        return {
+          available: previewParams.get('notifications') !== 'unavailable',
+          authorization: previewParams.get('notifications') ?? 'authorized',
+        }
       case 'bg.setNotificationsConfig':
         previewNotifications = request.payload as NotificationsConfig
         return { ok: true }
@@ -142,11 +191,19 @@ const previewRuntime = {
         if (previewConnection !== 'connected') {
           return {
             state: previewConnection,
+            endpoint: previewEndpoint,
+            pairing: 'stored',
+            phase: previewConnection === 'connected' ? 'ready' : 'idle',
+            attemptIntent: 'background-probe',
             lastError: 'motrix-not-running',
           }
         }
         return {
           state: previewConnection,
+          endpoint: previewEndpoint,
+          pairing: 'stored',
+          phase: previewConnection === 'connected' ? 'ready' : 'idle',
+          attemptIntent: 'background-probe',
           server: {
             name: 'Motrix',
             version: '2.0.0',
@@ -156,6 +213,9 @@ const previewRuntime = {
                 : 'server',
           },
         }
+      case 'bg.getDownloadOperations':
+        return []
+      case 'bg.viewTasks':
       case 'bg.reconnect':
         previewConnection = 'connected'
         return { ok: true }
@@ -169,6 +229,25 @@ const previewRuntime = {
         }
         return { config: previewEndpoint }
       }
+      case 'bg.getDownloadDirectories':
+        if (previewParams.get('directories') === 'unsupported')
+          return { status: 'unsupported' }
+        if (previewConnection !== 'connected') return { status: 'unavailable' }
+        return {
+          status: 'ready',
+          binding: {
+            endpointId: previewEndpoint.activeEndpointId,
+            endpointRevision: 0,
+            instanceId: 'preview-instance',
+          },
+          directories: {
+            defaultSaveDir: '/Users/preview/Downloads',
+            favorites: [
+              '/Volumes/Archive/Very long directory name for testing popup width and horizontal overflow/Movies',
+            ],
+            recent: ['/Users/preview/Documents'],
+          },
+        }
       case 'bg.taskList':
         return { tasks: [], total: 0 }
       case 'bg.statsGet':
@@ -190,16 +269,25 @@ const previewRuntime = {
         }
         return {
           media: previewMedia,
-          selectionKinds: ['direct', 'hls', 'dash', 'mux'],
+          selectionKinds: previewFfmpegAvailable
+            ? ['direct', 'hls', 'dash', 'mux']
+            : ['direct'],
         }
       case 'bg.submitMedia':
       case 'bg.resolvePageDownload':
-        return { taskId: 'preview-task' }
+        return previewFfmpegAvailable
+          ? { taskId: 'preview-task' }
+          : { error: 'download.unsupported' }
       default:
         return { ok: true }
     }
   },
-  getManifest: () => ({ version: '0.1.0' }),
+  getManifest: () => ({
+    version: '0.1.0',
+    permissions:
+      previewParams.get('native') === 'off' ? [] : ['nativeMessaging'],
+  }),
+  sendNativeMessage: async () => undefined,
 }
 
 const storageChanged = {
@@ -207,7 +295,13 @@ const storageChanged = {
   removeListener: () => undefined,
 }
 const previewBrowser = {
+  windows: { getCurrent: async () => ({ id: 1 }) },
+  action: { openPopup: async () => undefined },
+  permissions: { contains: async () => true },
   runtime: previewRuntime,
+  tabs: {
+    query: async () => [{ id: 1, url: previewPageUrl, title: 'Launch film' }],
+  },
   i18n: { getUILanguage: () => previewLocale },
   storage: {
     local: {
@@ -221,23 +315,28 @@ const previewBrowser = {
 const previewChrome = {
   ...previewBrowser,
   tabs: {
-    query: async () => [
-      { id: 1, url: 'https://example.com/watch', title: 'Launch film' },
-    ],
+    query: async () => [{ id: 1, url: previewPageUrl, title: 'Launch film' }],
   },
 }
 
 ;(globalThis as unknown as { browser: unknown }).browser = previewBrowser
 ;(globalThis as unknown as { chrome: unknown }).chrome = previewChrome
 
-const [{ App }, { initI18n }, { initTheme }] = await Promise.all([
-  import('@/popup/App'),
-  import('@/shared/i18n'),
-  import('@/shared/theme'),
-])
+const [{ App }, { initI18n }, { initTheme }, { LocaleProvider }] =
+  await Promise.all([
+    import('@/popup/App'),
+    import('@/shared/i18n'),
+    import('@/shared/theme'),
+    import('@/shared/LocaleProvider'),
+  ])
 
 initTheme()
 await initI18n()
 
 const root = document.getElementById('root')
-if (root) createRoot(root).render(<App />)
+if (root)
+  createRoot(root).render(
+    <LocaleProvider>
+      <App />
+    </LocaleProvider>
+  )

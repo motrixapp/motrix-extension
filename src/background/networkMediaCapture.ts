@@ -3,6 +3,7 @@ import type {
   NetworkMediaCredentialObservation,
 } from '@/background/capture/MediaCredentialStore'
 import type { MediaStore } from '@/background/MediaStore'
+import { extensionBrowser } from '@/shared/browser'
 import { isWebStoreBuild } from '@/shared/buildFlags'
 import {
   sanitizeFilename,
@@ -759,30 +760,20 @@ export async function captureNetworkMediaResponse(
   await context.store.addForPage(details.tabId, media.pageUrl, [media])
 }
 
-function resolveGlobalApis(): {
+function resolveBrowserApis(): {
   webRequest: WebRequestLike | undefined
   webNavigation: WebNavigationLike | undefined
   tabs: TabsLike | undefined
 } {
-  const globals = globalThis as unknown as {
-    chrome?: {
-      webRequest?: WebRequestLike
-      webNavigation?: WebNavigationLike
-      tabs?: TabsLike
-    }
-    browser?: {
-      webRequest?: WebRequestLike
-      webNavigation?: WebNavigationLike
-      tabs?: TabsLike
-    }
+  const api = extensionBrowser as unknown as {
+    webRequest?: WebRequestLike
+    webNavigation?: WebNavigationLike
+    tabs?: TabsLike
   }
-  // Firefox exposes both namespaces, but only `browser.tabs.get` is Promise
-  // based. Prefer the polyfilled browser API on every platform.
   return {
-    webRequest: globals.browser?.webRequest ?? globals.chrome?.webRequest,
-    webNavigation:
-      globals.browser?.webNavigation ?? globals.chrome?.webNavigation,
-    tabs: globals.browser?.tabs ?? globals.chrome?.tabs,
+    webRequest: api.webRequest,
+    webNavigation: api.webNavigation,
+    tabs: api.tabs,
   }
 }
 
@@ -790,7 +781,7 @@ function resolveGlobalApis(): {
 export function registerNetworkMediaCapture(
   options: NetworkMediaCaptureOptions
 ): () => void {
-  const globals = resolveGlobalApis()
+  const globals = resolveBrowserApis()
   const webRequest = options.webRequest ?? globals.webRequest
   const webNavigation = options.webNavigation ?? globals.webNavigation
   const tabs = options.tabs ?? globals.tabs

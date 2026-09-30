@@ -1,4 +1,5 @@
 export type TakeoverAction = 'motrix' | 'chrome' | 'ask'
+export type DownloadMode = 'confirm' | 'direct'
 
 export interface TakeoverRule {
   id: string
@@ -7,12 +8,19 @@ export interface TakeoverRule {
 }
 
 export interface TakeoverConfig {
+  downloadMode: DownloadMode
+  /** Applies to every accepted submission, independently of automatic takeover. */
+  openTaskPanelAfterSubmit: boolean
   enabled: boolean
   /** Bumped acknowledgement of the cookie-consent dialog; 0 = never consented. */
   consentAckVersion: number
   defaultAction: 'motrix' | 'chrome'
+  /** Automatic downloads whose size remains unknown after probing. */
+  unknownSizeAction: 'motrix' | 'chrome'
   rules: TakeoverRule[]
 }
+
+export type TakeoverSettings = Omit<TakeoverConfig, 'openTaskPanelAfterSubmit'>
 
 /** Normalized download under consideration (browser-agnostic). */
 export interface TakeoverTarget {
@@ -20,6 +28,8 @@ export interface TakeoverTarget {
   pageUrl: string
   pageTitle: string
   suggestedFilename: string
+  /** URL-derived display name; leave remote filename discovery to Motrix. */
+  filenameFromUrl?: boolean
   mime: string
   sizeBytes: number | null
   siteHint: string
@@ -39,9 +49,12 @@ export interface RawTarget {
 }
 
 export const TAKEOVER_DEFAULT: TakeoverConfig = {
+  downloadMode: 'direct',
+  openTaskPanelAfterSubmit: false,
   enabled: false,
   consentAckVersion: 0,
   defaultAction: 'motrix',
+  unknownSizeAction: 'chrome',
   rules: [],
 }
 

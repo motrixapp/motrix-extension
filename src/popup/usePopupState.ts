@@ -7,6 +7,11 @@ import {
 } from '@/background/EndpointConfigStore'
 import { send } from '@/background/MessageBus'
 import { snapshotEqual } from '@/popup/snapshotEqual'
+import type {
+  ConnectionIntent,
+  ConnectionPhase,
+  PairingState,
+} from '@/shared/integration'
 import { isErrorResponse } from '@/shared/messages'
 
 export { LOCAL_ENDPOINT_ID }
@@ -14,8 +19,12 @@ export type PopupServerEndpoint = MotrixServerEndpoint
 export type PopupEndpoint = EndpointConfig
 
 export interface PopupState {
+  rpc?: import('@/shared/integration').RpcStatus
   loading: boolean
   connection: ConnectionState | null
+  pairing: PairingState
+  phase: ConnectionPhase
+  attemptIntent: ConnectionIntent | null
   lastError: string | null
   /** Stable failure code from bg.getState. The UI renders locale copy keyed
    *  by this (`errorCopy.ts`); `lastError` stays developer-facing. */
@@ -25,6 +34,7 @@ export interface PopupState {
     name: string
     version: string
     runtime: 'electron' | 'server'
+    instanceId?: string
   } | null
   /** §7.3 first-pair backoff, straight from bg.getState — `retryAtMs` is
    *  always the client's own `FirstPairBackoff` value, never anything the
@@ -42,6 +52,7 @@ export interface PopupState {
   degraded: boolean
   capabilities: {
     taskReveal: boolean
+    downloadDirectories?: boolean
   }
   /** Present exactly while a first-pair `PairingCodeProvider` call is
    *  outstanding, straight from `bg.getState` — see that message's own doc.
@@ -66,6 +77,9 @@ export function usePopupState(): {
   const [state, setState] = useState<PopupState>({
     loading: true,
     connection: null,
+    pairing: 'loading',
+    phase: 'idle',
+    attemptIntent: null,
     lastError: null,
     lastErrorReason: null,
     endpoint: null,
@@ -84,27 +98,34 @@ export function usePopupState(): {
 
   useEffect(() => {
     let cancelled = false
+    let requested = 0
+    let applied = 0
     void send('bg.clearBadgeError', undefined)
     const tick = async (): Promise<void> => {
       if (switchingRef.current) return
       const requestVersion = stateVersionRef.current
+      const sequence = ++requested
       try {
-        const [connection, endpoint] = await Promise.all([
-          send('bg.getState', undefined),
-          send('bg.getEndpointConfig', undefined),
-        ])
+        const connection = await send('bg.getState', undefined)
+        const endpoint = connection.endpoint
         if (isErrorResponse(connection)) throw new Error(connection.error)
-        if (isErrorResponse(endpoint)) throw new Error(endpoint.error)
+        if (!endpoint) throw new Error('integration snapshot unavailable')
         if (
           cancelled ||
           switchingRef.current ||
+          sequence < applied ||
           requestVersion !== stateVersionRef.current
         ) {
           return
         }
+        applied = sequence
         const nextState: PopupState = {
           loading: false,
+          ...(connection.rpc ? { rpc: connection.rpc } : {}),
           connection: connection.state,
+          pairing: connection.pairing ?? 'unavailable',
+          phase: connection.phase ?? 'idle',
+          attemptIntent: connection.attemptIntent ?? null,
           lastError: connection.lastError ?? null,
           lastErrorReason: connection.lastErrorReason ?? null,
           endpoint,
@@ -115,6 +136,8 @@ export function usePopupState(): {
           degraded: connection.degraded ?? false,
           capabilities: {
             taskReveal: connection.capabilities?.taskReveal === true,
+            downloadDirectories:
+              connection.capabilities?.downloadDirectories === true,
           },
           pairingCode: connection.pairingCode ?? null,
         }
@@ -125,15 +148,20 @@ export function usePopupState(): {
         if (
           cancelled ||
           switchingRef.current ||
+          sequence < applied ||
           requestVersion !== stateVersionRef.current
         ) {
           return
         }
+        applied = sequence
         setState((current) => {
           const nextState: PopupState = {
             ...current,
             loading: false,
             connection: 'disconnected',
+            pairing: 'unavailable',
+            phase: 'idle',
+            attemptIntent: 'retry-connection',
             lastError: (error as Error).message,
             // A round-trip failure carries no reason code; clearing the stale
             // one keeps the alert on generic copy instead of the previous
@@ -146,6 +174,7 @@ export function usePopupState(): {
             // reported.
             recoveryExhaustedUnattended: false,
           }
+          delete nextState.rpc
           return snapshotEqual(current, nextState) ? current : nextState
         })
       }
@@ -159,8 +188,29 @@ export function usePopupState(): {
   }, [])
 
   const reconnect = useCallback(async (): Promise<void> => {
-    const response = await send('bg.reconnect', undefined)
-    if (isErrorResponse(response)) throw new Error(response.error)
+    const snapshot = stateRef.current
+    try {
+      await send(
+        snapshot.pairing === 'stored' &&
+          snapshot.connection === 'disconnected' &&
+          (snapshot.lastError === null ||
+            snapshot.attemptIntent === 'background-probe')
+          ? 'bg.viewTasks'
+          : 'bg.reconnect',
+        undefined
+      )
+    } catch {
+      // The manager publishes typed connection failures in the next snapshot.
+      // If the message itself failed, show local copy without an unhandled UI rejection.
+      if (stateRef.current.endpoint === snapshot.endpoint) {
+        setState((current) => ({
+          ...current,
+          lastError: 'connection unavailable',
+          lastErrorReason: null,
+          attemptIntent: 'retry-connection',
+        }))
+      }
+    }
   }, [])
 
   const submitPairingCode = useCallback(async (code: string): Promise<void> => {
@@ -190,9 +240,12 @@ export function usePopupState(): {
       try {
         const activated = await send('bg.activateEndpoint', { endpointId })
         if (isErrorResponse(activated)) throw new Error(activated.error)
-        setState((current) => ({
+        setState(({ rpc: _rpc, ...current }) => ({
           ...current,
-          connection: 'connecting',
+          connection: 'disconnected',
+          pairing: 'loading',
+          phase: 'idle',
+          attemptIntent: null,
           endpoint: activated.config,
           lastError: null,
           lastErrorReason: null,

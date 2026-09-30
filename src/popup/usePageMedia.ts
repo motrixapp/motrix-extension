@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { send } from '@/background/MessageBus'
 import { isWebStoreBuild } from '@/shared/buildFlags'
+import { newDownloadOperationId } from '@/shared/integration'
 import type { DetectedMedia } from '@/shared/media'
 import {
   isResolvableVideoPage,
@@ -204,7 +205,10 @@ function popupExtensionApis(): {
   }
 }
 
-export function usePageMedia(submissionKey = 'default'): {
+export function usePageMedia(
+  submissionKey = 'default',
+  pairIfNeeded = false
+): {
   media: DetectedMedia[]
   selectionKinds: string[]
   scanning: boolean
@@ -345,7 +349,7 @@ export function usePageMedia(submissionKey = 'default'): {
       await hydratePendingKeys(scope)
       const mediaKey = mediaStorageKey(m)
       const idempotencyKey =
-        idempotencyKeys.current.get(mediaKey) ?? crypto.randomUUID()
+        idempotencyKeys.current.get(mediaKey) ?? newDownloadOperationId()
       idempotencyKeys.current.set(mediaKey, idempotencyKey)
       // Commit the logical operation before crossing the Popup → background
       // boundary. If the Popup closes after Motrix accepts the task but before
@@ -354,6 +358,7 @@ export function usePageMedia(submissionKey = 'default'): {
       const r = await send('bg.submitMedia', {
         mediaKey,
         idempotencyKey,
+        ...(pairIfNeeded ? { pairIfNeeded: true } : {}),
       })
       if (isErrorResponse(r)) throw new Error(r.error)
       if (
@@ -364,7 +369,7 @@ export function usePageMedia(submissionKey = 'default'): {
       }
       await clearResourceSubmission(scope, mediaKey, idempotencyKey)
     },
-    [hydratePendingKeys, syncSubmissionKey]
+    [hydratePendingKeys, syncSubmissionKey, pairIfNeeded]
   )
 
   const getThumbnail = useCallback(
@@ -384,10 +389,14 @@ export function usePageMedia(submissionKey = 'default'): {
     syncSubmissionKey()
     const scope = submissionKeyRef.current
     await hydratePendingKeys(scope)
-    const idempotencyKey = pageIdempotencyKey.current ?? crypto.randomUUID()
+    const idempotencyKey =
+      pageIdempotencyKey.current ?? newDownloadOperationId()
     pageIdempotencyKey.current = idempotencyKey
     await rememberPageSubmission(scope, idempotencyKey)
-    const r = await send('bg.resolvePageDownload', { idempotencyKey })
+    const r = await send('bg.resolvePageDownload', {
+      idempotencyKey,
+      ...(pairIfNeeded ? { pairIfNeeded: true } : {}),
+    })
     if (isErrorResponse(r)) throw new Error(r.error)
     if (
       submissionKeyRef.current === scope &&
@@ -397,7 +406,7 @@ export function usePageMedia(submissionKey = 'default'): {
     }
     await clearPageSubmission(scope, idempotencyKey)
     return r
-  }, [hydratePendingKeys, syncSubmissionKey])
+  }, [hydratePendingKeys, syncSubmissionKey, pairIfNeeded])
 
   return {
     media,

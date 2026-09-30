@@ -1,6 +1,10 @@
-import { z } from 'zod'
+import { ResourceSchema } from '@motrix/mdxp'
+import type { TaskOptions } from '@/shared/taskOptions'
 
 export interface CreateManualTaskRequest {
+  options?: TaskOptions
+  pairIfNeeded?: boolean
+
   input: string
   idempotencyKey: string
 }
@@ -28,7 +32,7 @@ export const MAX_MANUAL_TASK_FILENAME_LENGTH = 255
 
 const FALLBACK_HTTP_FILENAME = 'download'
 const FALLBACK_MAGNET_FILENAME = 'magnet-download'
-const ManualTaskHttpUrl = z.httpUrl()
+const ManualTaskHttpUrl = ResourceSchema.shape.url
 
 /**
  * Parse user-pasted input without consulting tabs, cookies, or browser state.
@@ -49,8 +53,7 @@ export function parseManualTaskInput(raw: unknown): ManualTaskParseResult {
   }
 
   if (url.protocol === 'http:' || url.protocol === 'https:') {
-    // MDXP's ResourceSchema uses the same z.httpUrl contract. Rejecting here
-    // keeps popup validation aligned with the final background boundary.
+    // Share MDXP's resource contract so popup and receiver validation agree.
     if (!ManualTaskHttpUrl.safeParse(url.href).success) {
       return { ok: false, reason: 'invalid' }
     }

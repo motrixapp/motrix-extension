@@ -5,16 +5,20 @@ import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 describe('takeoverForm', () => {
   it('derives empty form from the default config', () => {
     expect(configToForm(TAKEOVER_DEFAULT)).toEqual({
+      downloadMode: 'direct',
       enabled: false,
       thresholdMB: '',
+      unknownSizeAction: 'chrome',
       denylist: '',
     })
   })
 
   it('round-trips threshold + denylist through rules', () => {
     const form = {
+      downloadMode: 'direct',
       enabled: true,
       thresholdMB: '10',
+      unknownSizeAction: 'motrix' as const,
       denylist: 'ads.example.com\ntracker.test',
     }
     const cfg = formToConfig(form, TAKEOVER_DEFAULT.consentAckVersion)
@@ -32,7 +36,13 @@ describe('takeoverForm', () => {
 
   it('drops the threshold rule when thresholdMB is empty or 0', () => {
     const cfg = formToConfig(
-      { enabled: true, thresholdMB: '0', denylist: '' },
+      {
+        downloadMode: 'direct',
+        enabled: true,
+        thresholdMB: '0',
+        unknownSizeAction: 'chrome',
+        denylist: '',
+      },
       1
     )
     expect(cfg.rules.some((r) => typeof r.match.minSizeMB === 'number')).toBe(

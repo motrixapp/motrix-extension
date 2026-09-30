@@ -7,16 +7,24 @@ import {
   type TakeoverTarget,
 } from '@/shared/takeover'
 
-function ruleMatches(
-  match: TakeoverRule['match'],
-  target: TakeoverTarget
-): boolean {
+function ruleMatches(rule: TakeoverRule, target: TakeoverTarget): boolean {
+  const { match } = rule
   if (match.domains && match.domains.length > 0) {
     const host = hostOf(target.url)
-    if (!match.domains.some((d) => hostSuffixMatch(host, d))) return false
+    const pageHost = hostOf(target.pageUrl)
+    // Site exclusions follow the originating page even when its files are
+    // served by a different CDN. Allow rules still match the download host.
+    if (
+      !match.domains.some(
+        (d) =>
+          hostSuffixMatch(host, d) ||
+          (rule.action === 'chrome' && hostSuffixMatch(pageHost, d))
+      )
+    )
+      return false
   }
   if (typeof match.minSizeMB === 'number') {
-    // Criterion matches downloads whose KNOWN size is BELOW the threshold; unknown never matches.
+    // Unknown sizes use unknownSizeAction after the other rules are checked.
     if (target.sizeBytes === null) return false
     if (target.sizeBytes >= match.minSizeMB * MIB) return false
   }
@@ -38,9 +46,11 @@ export function decideTakeover(
   if (target.origin === 'context-menu') return 'motrix'
   if (!config.enabled) return 'chrome'
   for (const rule of config.rules) {
-    if (ruleMatches(rule.match, target)) {
+    if (ruleMatches(rule, target)) {
       return rule.action === 'motrix' ? 'motrix' : 'chrome' // 'ask' reserved for Plan 2 -> chrome
     }
   }
-  return config.defaultAction
+  return target.sizeBytes === null
+    ? (config.unknownSizeAction ?? 'chrome')
+    : config.defaultAction
 }

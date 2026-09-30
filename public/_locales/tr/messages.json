@@ -4,7 +4,7 @@
     "description": "Extension name shown in the browser and in store listings."
   },
   "appDescription": {
-    "message": "İndirmeleri Motrix'e gönderin",
+    "message": "Resmî Motrix Tarayıcı Uzantısı. İndirmeleri Motrix'e gönderin.",
     "description": "Short summary shown under the name in the browser and in store listings."
   }
 }

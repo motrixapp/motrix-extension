@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { NotificationsConfigStore } from '@/background/NotificationsConfigStore'
 import { NOTIFICATIONS_DEFAULT } from '@/shared/notifications'
 
@@ -23,6 +23,20 @@ beforeEach(() => {
 })
 
 describe('NotificationsConfigStore', () => {
+  afterEach(() => vi.unstubAllGlobals())
+  it('requires an explicit Safari preference before enabling existing default notifications', async () => {
+    vi.stubGlobal('__BROWSER__', 'safari')
+    const store = new NotificationsConfigStore()
+    expect((await store.get()).master).toBe(false)
+    await browser.storage.local.set({
+      'motrix.notificationsConfig': NOTIFICATIONS_DEFAULT,
+    })
+    expect((await store.get()).master).toBe(false)
+    await store.set(NOTIFICATIONS_DEFAULT)
+    expect((await store.get()).master).toBe(true)
+    await store.set({ ...NOTIFICATIONS_DEFAULT, master: false })
+    expect((await store.get()).master).toBe(false)
+  })
   it('returns the default when nothing is stored', async () => {
     expect(await new NotificationsConfigStore().get()).toEqual(
       NOTIFICATIONS_DEFAULT

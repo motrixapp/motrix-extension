@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 export type LogLevel = 'silent' | 'error' | 'warn' | 'info' | 'debug'
 
 export const LOG_LEVEL_KEY = 'motrix.logLevel'

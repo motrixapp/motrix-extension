@@ -51,8 +51,10 @@ describe('takeoverFormSchema', () => {
   it('accepts empty thresholdMB', () => {
     expect(
       takeoverFormSchema.safeParse({
+        downloadMode: 'direct',
         enabled: false,
         thresholdMB: '',
+        unknownSizeAction: 'chrome',
         denylist: '',
       }).success
     ).toBe(true)
@@ -60,8 +62,10 @@ describe('takeoverFormSchema', () => {
   it('rejects negative thresholdMB', () => {
     expect(
       takeoverFormSchema.safeParse({
+        downloadMode: 'direct',
         enabled: true,
         thresholdMB: '-3',
+        unknownSizeAction: 'chrome',
         denylist: '',
       }).success
     ).toBe(false)

@@ -7,9 +7,8 @@ import youtubeSnifferScriptPath from 'virtual:motrix-youtube-sniffer-script'
 // "No runtime abstraction layer installed". The `/browser` entry re-exports the
 // full public API, so this also provides `Methods`.
 import { Methods } from '@motrix/mdxp/browser'
-// Install `browser.*` before any shared dependency evaluates in Chromium.
-import '@/shared/browser'
 import { BgAdapterRegistry } from '@/background/AdapterRegistry'
+import { createAutoPopup } from '@/background/autoPopup'
 import { BackendOperationCoordinator } from '@/background/BackendOperationCoordinator'
 import {
   BadgeController,
@@ -20,20 +19,22 @@ import { createConnectionDiagnosticsHandler } from '@/background/ConnectionDiagn
 import { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { ConnectionManager } from '@/background/ConnectionManager'
-import { buildMediaSubmitParams } from '@/background/capture/buildMediaSubmitParams'
 import { MediaCredentialStore } from '@/background/capture/MediaCredentialStore'
-import { buildResourceCredentials } from '@/background/capture/mediaCredentials'
-import { capturePageCookies } from '@/background/capture/pageCookies'
 import {
-  downloadHttpInBrowser,
+  createConfirmedDownloadActions,
+  requestConfirmedDownload,
+} from '@/background/confirmedDownload'
+import { createContextMenuDownloadRunner } from '@/background/contextMenu/download'
+import {
   registerContextMenu,
   updateContextMenuTitle,
 } from '@/background/contextMenu/register'
+import { DownloadSubmissionService } from '@/background/DownloadSubmissionService'
+import { createDownloadConfirmation } from '@/background/downloadConfirmation'
+import { createDownloadDirectoriesHandler } from '@/background/downloadDirectories'
 import { EndpointCatalogService } from '@/background/EndpointCatalogService'
 import { EndpointConfigStore } from '@/background/EndpointConfigStore'
 import { HandoffEndpointTracker } from '@/background/handoff/guard'
-import { makeOps } from '@/background/handoff/makeOps'
-import { runHandoff } from '@/background/handoff/runHandoff'
 import { registerChromiumInterception } from '@/background/interception/chromium'
 import { registerFirefoxInterception } from '@/background/interception/firefox'
 import { makeLocaleChangeHandler } from '@/background/localeSync'
@@ -43,26 +44,24 @@ import { MediaReportLimiter } from '@/background/MediaReportLimiter'
 import { MediaStore } from '@/background/MediaStore'
 import { MediaThumbnailBroker } from '@/background/MediaThumbnailBroker'
 import { MessageBus } from '@/background/MessageBus'
-import { createManualTaskHandler } from '@/background/manualTask'
+import {
+  createManualTaskHandler,
+  isExtensionPageSender,
+} from '@/background/manualTask'
 import { CredentialStore } from '@/background/mbp1/credential-store'
 import { MAX_RUNS_PER_SESSION } from '@/background/mbp1/pairing-flow'
 import { PinStore } from '@/background/mbp1/pin-store'
-import {
-  applyCallerIdempotencyKey,
-  toSafeMediaSubmitError,
-} from '@/background/mediaSubmission'
-import {
-  normalizeMediaReport,
-  resolveStoredMedia,
-} from '@/background/mediaTrust'
+import { normalizeMediaReport } from '@/background/mediaTrust'
 import { NotificationsConfigStore } from '@/background/NotificationsConfigStore'
 import { registerNetworkMediaCapture } from '@/background/networkMediaCapture'
+import { createNotificationSettingsHandlers } from '@/background/notificationSettings'
 import { createNotify } from '@/background/notify'
 import { PairingEndpointService } from '@/background/PairingEndpointService'
 import { createPairingCodeSource } from '@/background/pairing-code-source'
 import { PairNudge } from '@/background/pairNudge'
-import { decideTakeover } from '@/background/policy/decideTakeover'
+import { createPopupDownloadHandlers } from '@/background/popupDownloads'
 import { clearRemoteBackendPoliciesForAuthority } from '@/background/RemoteBackendPolicyStore'
+import { SafariNotificationTransport } from '@/background/SafariNotificationTransport'
 import { recoverStorageBeforeEndpointAutostart } from '@/background/storage-migrations'
 import { TakeoverConfigStore } from '@/background/TakeoverConfigStore'
 import { requestTaskReveal } from '@/background/taskReveal'
@@ -76,17 +75,18 @@ import snifferScriptPath from '@/content/sniffer-entry?script&iife'
 // forwards results to the background via chrome.runtime.sendMessage.
 // @ts-expect-error TS2307 — query-string import not in tsconfig types
 import relayScriptPath from '@/content/sniffer-relay?script&iife'
+import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import { isWebStoreBuild } from '@/shared/buildFlags'
 import {
   CONTROL_PANEL_ACTIVITY_EVENT,
   type ControlPanelActivityEvent,
 } from '@/shared/controlPanelEvents'
 import { initI18n } from '@/shared/i18n'
-import { isResolvableVideoPage, shouldExcludeHost } from '@/shared/media'
-import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
+import { newDownloadOperationId } from '@/shared/integration'
+import { shouldExcludeHost } from '@/shared/media'
+import { SAFARI_EXTENSION_ID } from '@/shared/safariNative'
 
 // Build-time constant injected by vite (see vite.config.ts `define`).
-declare const __BROWSER__: 'chromium' | 'firefox'
 
 const manifest = browser.runtime.getManifest()
 const extensionId = browser.runtime.id
@@ -122,6 +122,20 @@ const handoffEndpoints = new HandoffEndpointTracker(
   backendOperationCoordinator
 )
 const takeoverConfigStore = new TakeoverConfigStore()
+const autoPopup = createAutoPopup(takeoverConfigStore)
+const downloadConfirmation = createDownloadConfirmation(
+  async (target, binding) => {
+    await endpointLifecycleReady
+    const guard = await handoffEndpoints.capture(target.origin)
+    if (
+      !guard ||
+      guard.endpointId !== binding.endpointId ||
+      (guard.endpointRevision ?? 0) !== binding.endpointRevision
+    )
+      return null
+    return createConfirmedDownloadActions(confirmedDownloadDeps, target, guard)
+  }
+)
 const notificationsConfigStore = new NotificationsConfigStore()
 const badgeErrorStore = new BadgeErrorStore()
 const gate = new ConnectionGate()
@@ -147,13 +161,14 @@ const endpointCatalogService = new EndpointCatalogService(
   {
     coordinator: backendOperationCoordinator,
     beforeConnectionChange: () => {
+      downloadConfirmation.cancelAll()
       handoffEndpoints.invalidate()
       manager.stopForEndpointChange()
     },
     afterConnectionChange: () => {
       // The lifecycle queue is still held here. Schedule the connection after
       // this callback returns so it cannot wait on its own lease operation.
-      void manager.clearGateAndStart().catch(() => {
+      void manager.autostart().catch(() => {
         log.warn('backend connection restart failed after endpoint change')
       })
     },
@@ -167,7 +182,10 @@ const badge = new BadgeController({
   hasActiveTasks: () => manager.hasActiveTasks(),
   errorStore: badgeErrorStore,
 })
-const notify = makeBadgeNotify(createNotify(notificationsConfigStore), badge)
+const platformNotify = createNotify(notificationsConfigStore, (source) =>
+  manager.isNotificationSourceCurrent(source)
+)
+const notify = makeBadgeNotify(platformNotify, badge)
 
 // See pairing-code-source.ts for why this deadline has to live here rather
 // than only in the popup: `PairingFlow` cannot cancel a pending provider
@@ -189,7 +207,9 @@ manager = new ConnectionManager({
     kind: 'extension',
     name: 'motrix-extension',
     version: manifest.version,
-    extensionId,
+    // Keep runtime.id for local message-sender checks; the wire claim must
+    // match the bundle ID independently attested by the native service.
+    extensionId: __BROWSER__ === 'safari' ? SAFARI_EXTENSION_ID : extensionId,
     browser: __BROWSER__,
     // userAgent is the closest "browser version" string available in a
     // service-worker context; Plan 03b refines this into a parsed
@@ -204,11 +224,20 @@ const pairingEndpointService = new PairingEndpointService(
   {
     coordinator: backendOperationCoordinator,
     onActiveUnpair: async (authority) => {
-      manager.stop()
+      handoffEndpoints.invalidate()
+      manager.stopForEndpointChange()
       await ConnectionGate.forAuthority(authority).clear()
     },
   }
 )
+
+const submissions = new DownloadSubmissionService({
+  popup: autoPopup,
+  manager,
+  isPaired: () => pairingEndpointService.isActivePaired(),
+  captureGuard: () => handoffEndpoints.capture('context-menu'),
+  storage: browser.storage.session,
+})
 
 // Start recovery immediately, while keeping every MV3 listener registration
 // synchronous below. Message dispatch and non-message handoff entry points
@@ -217,18 +246,27 @@ const pairingEndpointService = new PairingEndpointService(
 const endpointLifecycleReady = recoverStorageBeforeEndpointAutostart({
   recoverPendingEndpointCleanup: () =>
     endpointCatalogService.recoverPendingCleanup(),
-  autostart: () => manager.autostart(),
 }).catch(() => {
   log.warn('pre-autostart storage recovery failed; autostart suppressed')
   throw new Error('background startup unavailable')
 })
-// The original promise intentionally stays rejected so every later entry point
-// fails closed. This observer prevents an unhandled-rejection report when no UI
-// message happens to arrive during a failed service-worker wake.
-void endpointLifecycleReady.catch(() => undefined)
+// A recovered catalogue is ready for dispatch even while Motrix is offline or
+// its handshake is pending. Awaiting autostart in the shared barrier held ALL
+// popup/content messages until the network attempt completed (#28).
+// Observe recovery rejection without starting a connection; the original
+// promise remains rejected so every later entry point still fails closed.
+void endpointLifecycleReady
+  .then(
+    () => manager.autostart(),
+    () => undefined
+  )
+  .catch(() => {
+    log.warn('backend autostart failed after storage recovery')
+  })
 
 manager.onStateChange((s) => {
   log.info('connection state →', s)
+  if (s === 'connected') void platformNotify.flush()
 })
 manager.onStateChange(() => void badge.refresh())
 manager.onActivityChange(() => {
@@ -253,59 +291,83 @@ bus.on(
       pairingEndpointService.getStatus(endpointId),
   })
 )
-bus.on('bg.getState', async () => {
-  const lastError = manager.getLastError()
-  const server = manager.getServerIdentity()
-  const errorReason = manager.getLastErrorReason()
-  const retryAtMs = manager.getLastErrorRetryAtMs()
-  // State-machine invariant 1: the prompt payload exists iff the manager is
-  // in `awaiting-code` — a dead attempt's prompt never reaches a surface.
-  const pending = manager.getPendingPairingCode()
-  const capabilities = manager.getServerCapabilities()
-  // `recoveryExhaustedUnattended` gets its own presentable copy in the
-  // popup (see ConnectionStatusPanel) — omit the raw developer-facing
-  // `lastError` sentence in that case rather than showing both.
-  const recoveryExhaustedUnattended =
-    errorReason === 'recoveryExhaustedUnattended'
-  return {
-    state: manager.getState(),
-    // One branch for both fields: message and reason are companion facts
-    // (set together in ConnectionManager), so they ship together or not at
-    // all — a second predicate here is where they could drift apart.
-    ...(lastError === null || recoveryExhaustedUnattended
-      ? {}
-      : {
-          lastError,
-          ...(errorReason === null ? {} : { lastErrorReason: errorReason }),
-        }),
-    ...(server === null ? {} : { server }),
-    ...(pending === null
-      ? {}
-      : {
-          pairingCode: {
-            run: pending.request.run,
-            maxRuns: MAX_RUNS_PER_SESSION,
-            attemptsRemaining: pending.request.attemptsRemaining,
-            deadlineMs: pending.deadlineMs,
-          },
-        }),
-    ...(errorReason === 'backoffLocked' && retryAtMs !== null
-      ? { backoff: { retryAtMs } }
-      : {}),
-    ...(manager.getDegraded() === true ? { degraded: true } : {}),
-    capabilities: {
-      taskReveal: capabilities?.taskReveal === true,
-    },
-    ...(recoveryExhaustedUnattended
-      ? { recoveryExhaustedUnattended: true }
-      : {}),
-  }
-})
+bus.on(
+  'bg.getDownloadDirectories',
+  createDownloadDirectoriesHandler({
+    extensionId,
+    extensionBaseUrl: browser.runtime.getURL(''),
+    captureGuard: () => handoffEndpoints.capture('context-menu'),
+    manager,
+  })
+)
+bus.on('bg.getState', () =>
+  pairingEndpointService.readActiveSnapshot(() => {
+    const lastError = manager.getLastError()
+    const server = manager.getServerIdentity()
+    const errorReason = manager.getLastErrorReason()
+    const retryAtMs = manager.getLastErrorRetryAtMs()
+    // State-machine invariant 1: the prompt payload exists iff the manager is
+    // in `awaiting-code` — a dead attempt's prompt never reaches a surface.
+    const pending = manager.getPendingPairingCode()
+    const capabilities = manager.getServerCapabilities()
+    // `recoveryExhaustedUnattended` gets its own presentable copy in the
+    // popup (see ConnectionStatusPanel) — omit the raw developer-facing
+    // `lastError` sentence in that case rather than showing both.
+    const recoveryExhaustedUnattended =
+      errorReason === 'recoveryExhaustedUnattended'
+    return {
+      rpc: manager.getRpcStatus(),
+      state: manager.getState(),
+      phase: manager.getConnectionPhase(),
+      attemptIntent: manager.getLastAttemptIntent(),
+      // One branch for both fields: message and reason are companion facts
+      // (set together in ConnectionManager), so they ship together or not at
+      // all — a second predicate here is where they could drift apart.
+      ...(lastError === null || recoveryExhaustedUnattended
+        ? {}
+        : {
+            lastError,
+            ...(errorReason === null ? {} : { lastErrorReason: errorReason }),
+          }),
+      ...(server === null ? {} : { server }),
+      ...(pending === null
+        ? {}
+        : {
+            pairingCode: {
+              run: pending.request.run,
+              maxRuns: MAX_RUNS_PER_SESSION,
+              attemptsRemaining: pending.request.attemptsRemaining,
+              deadlineMs: pending.deadlineMs,
+            },
+          }),
+      ...(errorReason === 'backoffLocked' && retryAtMs !== null
+        ? { backoff: { retryAtMs } }
+        : {}),
+      ...(manager.getDegraded() === true ? { degraded: true } : {}),
+      capabilities: {
+        taskReveal: capabilities?.taskReveal === true,
+        downloadDirectories: capabilities?.downloadDirectories === true,
+      },
+      ...(recoveryExhaustedUnattended
+        ? { recoveryExhaustedUnattended: true }
+        : {}),
+    }
+  })
+)
+bus.on('bg.getDownloadOperations', ({ endpointId, endpointRevision }) =>
+  submissions.list(endpointId, endpointRevision)
+)
 bus.on('bg.reconnect', async () => {
   await manager.clearGateAndStart()
   return { ok: true } as const
 })
+bus.on('bg.viewTasks', async () => {
+  await manager.ensureReady({ intent: 'view-tasks' })
+  return { ok: true } as const
+})
 bus.on('bg.clearBadgeError', async () => {
+  // The popup sends this once when opened: resume due summaries without a timer.
+  void platformNotify.flush()
   await badge.clearError()
   return { ok: true } as const
 })
@@ -337,16 +399,47 @@ bus.on('bg.getRemoteBackendPolicy', async () => ({
 bus.on('bg.replaceRemoteBackendPolicy', async (replacement) => ({
   policy: await manager.replaceRemoteBackendPolicy(replacement),
 }))
+bus.on('bg.patchTakeoverEnabled', ({ enabled, consentAckVersion }) =>
+  takeoverConfigStore.patchEnabled(enabled, consentAckVersion)
+)
+bus.on('bg.patchDownloadMode', ({ downloadMode }) =>
+  takeoverConfigStore.patchDownloadMode(downloadMode)
+)
+bus.on('bg.patchTaskPanelPreference', ({ openTaskPanelAfterSubmit }) =>
+  takeoverConfigStore.patchTaskPanelPreference(openTaskPanelAfterSubmit)
+)
+bus.on('bg.patchSiteExclusion', ({ domain, excluded }) =>
+  takeoverConfigStore.patchSiteExclusion(domain, excluded)
+)
+bus.on('bg.getPopupReceipt', async ({ windowId }, sender) => {
+  if (
+    sender.id !== browser.runtime.id ||
+    sender.url !== browser.runtime.getURL('popup.html')
+  )
+    return null
+  return autoPopup.receipt(windowId)
+})
 bus.on('bg.getTakeoverConfig', async () => takeoverConfigStore.get())
 bus.on('bg.setTakeoverConfig', async (payload) => {
-  await takeoverConfigStore.set(payload)
+  await takeoverConfigStore.patchTakeoverSettings(payload)
   return { ok: true } as const
 })
-bus.on('bg.getNotificationsConfig', async () => notificationsConfigStore.get())
-bus.on('bg.setNotificationsConfig', async (payload) => {
-  await notificationsConfigStore.set(payload)
-  return { ok: true } as const
+const notificationSettings = createNotificationSettingsHandlers({
+  extensionId: browser.runtime.id,
+  pageURLs: ['options.html', 'popup.html'].map((path) =>
+    browser.runtime.getURL(path)
+  ),
+  native: new SafariNotificationTransport(),
+  isSafari: () => __BROWSER__ === 'safari',
+  browserNotificationsSupported: () =>
+    typeof browser.notifications?.create === 'function',
+  store: notificationsConfigStore,
 })
+bus.on('bg.getNotificationsConfig', notificationSettings.get)
+bus.on('bg.setNotificationsConfig', notificationSettings.set)
+bus.on('bg.getNotificationCapability', notificationSettings.capability)
+bus.on('bg.testNotification', notificationSettings.test)
+bus.on('bg.openNotificationSettings', notificationSettings.openSettings)
 bus.on('bg.unpair', async ({ endpointId }) => {
   const { active } = await pairingEndpointService.unpair(endpointId)
   if (active) void refreshMenuTitle()
@@ -410,13 +503,42 @@ bus.on('bg.statsGet', async (params) =>
 bus.on('bg.engineStatus', async (params) =>
   manager.request(Methods.EngineStatus, params)
 )
-bus.on('bg.submitDownload', async (params) => manager.submitDownload(params))
+bus.on('bg.submitDownload', async (params, sender) => {
+  if (!isExtensionPageSender(sender, extensionId, browser.runtime.getURL('')))
+    throw new Error('download.rejected')
+  return submissions.run(
+    {
+      idempotencyKey: params.idempotencyKey ?? newDownloadOperationId(),
+      source: 'direct',
+      resourceKey: JSON.stringify([
+        params.selection,
+        params.meta,
+        params.saveDir,
+      ]),
+    },
+    async () => params
+  )
+})
 bus.on(
   'bg.createManualTask',
   createManualTaskHandler({
     extensionId,
     extensionBaseUrl: browser.runtime.getURL(''),
-    submitDownload: (params) => manager.submitDownload(params),
+    submitDownload: (params, options) =>
+      submissions.run(
+        {
+          pairIfNeeded: options.pairIfNeeded,
+          directory: options.directory,
+          idempotencyKey: params.idempotencyKey ?? newDownloadOperationId(),
+          source: 'manual',
+          resourceKey: JSON.stringify([
+            params.selection,
+            params.meta,
+            params.saveDir,
+          ]),
+        },
+        async () => params
+      ),
   })
 )
 bus.on('bg.cancelDownload', async (params) => {
@@ -438,7 +560,7 @@ function senderDocumentKey(value: string | undefined): string | null {
 
 // content sniffer → background: store reported media items for the sender's tab
 bus.on('bg.mediaDetected', async (payload, sender) => {
-  const messageSender = sender as browser.runtime.MessageSender
+  const messageSender = sender as Browser.runtime.MessageSender
   const senderTab = messageSender.tab
   const tabId = senderTab?.id
   const senderTopUrl = senderTab?.url
@@ -446,7 +568,7 @@ bus.on('bg.mediaDetected', async (payload, sender) => {
     if (!mediaReportLimiter.allow(tabId, payload)) {
       return { ok: true } as const
     }
-    let currentTab: browser.tabs.Tab
+    let currentTab: Browser.tabs.Tab
     try {
       currentTab = await browser.tabs.get(tabId)
       if (
@@ -466,7 +588,7 @@ bus.on('bg.mediaDetected', async (payload, sender) => {
     let frameUrl = messageSender.url ?? senderTopUrl
     const frameId = messageSender.frameId ?? 0
     const senderDocumentId = (
-      messageSender as browser.runtime.MessageSender & { documentId?: string }
+      messageSender as Browser.runtime.MessageSender & { documentId?: string }
     ).documentId
     try {
       const currentFrame = await browser.webNavigation.getFrame({
@@ -512,7 +634,7 @@ bus.on('bg.mediaDetected', async (payload, sender) => {
         ...(frameUrl !== currentTab.url ? { frameUrl } : {}),
       }))
     if (currentItems.length === 0) return { ok: true } as const
-    let latestTab: browser.tabs.Tab
+    let latestTab: Browser.tabs.Tab
     try {
       latestTab = await browser.tabs.get(tabId)
     } catch {
@@ -532,7 +654,7 @@ bus.on('bg.mediaDetected', async (payload, sender) => {
 })
 
 /** Returns true when the tab URL belongs to a YouTube domain. */
-function isYouTubeTab(tab: browser.tabs.Tab | undefined): boolean {
+function isYouTubeTab(tab: Browser.tabs.Tab | undefined): boolean {
   if (!tab?.url) return false
   try {
     const host = new URL(tab.url).hostname
@@ -551,12 +673,16 @@ function isYouTubeTab(tab: browser.tabs.Tab | undefined): boolean {
 // Toolbar action → background: retain same-page findings, inject the idempotent
 // relay, and ask the page-world sniffer to explicitly re-harvest the current
 // route. Network hooks remain installed once per document.
-bus.on('bg.scanActiveTab', async () => {
+bus.on('bg.scanActiveTab', async (_request, sender) => {
+  if (!isExtensionPageSender(sender, extensionId, browser.runtime.getURL(''))) {
+    throw new Error('invalid media scan sender')
+  }
   const [tab] = await browser.tabs.query({ active: true, currentWindow: true })
   const tabId = tab?.id
-  const selectionKinds = manager.getServerCapabilities()?.selectionKinds ?? [
-    'direct',
-  ]
+  // Scanning is also the explicit capability refresh action. A live session
+  // can discover FFmpeg configured after Motrix started, without reconnecting.
+  const selectionKinds = (await manager.refreshServerCapabilities())
+    ?.selectionKinds ?? ['direct']
   if (typeof tabId !== 'number') return { media: [], selectionKinds }
   if (tab?.url) {
     await mediaStore.retainPage(tabId, tab.url)
@@ -611,136 +737,24 @@ bus.on('bg.getMediaThumbnail', async (request) =>
   )
 )
 
-// bg.submitMedia: forward a detected media item to Motrix via MDXP.
-// Gates on selectionKinds capability reported by the server at initialize time;
-// hls/dash require ffmpeg on the desktop side.
-bus.on('bg.submitMedia', async (request) => {
-  if (
-    typeof request !== 'object' ||
-    request === null ||
-    typeof request.mediaKey !== 'string'
-  ) {
-    throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
-  }
-  try {
-    const [activeTab] = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    })
-    const media = await resolveStoredMedia(
-      request.mediaKey,
-      async () => activeTab,
-      mediaStore
-    )
-    const caps = manager.getServerCapabilities()
-    const kinds = caps?.selectionKinds ?? ['direct']
-    if (!kinds.includes(media.kind)) {
-      throw new Error('unsupported media selection')
-    }
-    if (typeof activeTab?.id !== 'number') throw new Error('no active tab')
-    const primaryObservation = mediaCredentialStore.get(
-      activeTab.id,
-      media.pageUrl,
-      media.url
-    )
-    const primaryCredentials = await buildResourceCredentials({
-      url: media.url,
-      ...(primaryObservation ? { observation: primaryObservation } : {}),
-      userAgent: navigator.userAgent,
-    })
-    const audioObservation = media.audioUrl
-      ? mediaCredentialStore.get(activeTab.id, media.pageUrl, media.audioUrl)
-      : undefined
-    const audioCredentials = media.audioUrl
-      ? await buildResourceCredentials({
-          url: media.audioUrl,
-          ...(audioObservation ? { observation: audioObservation } : {}),
-          userAgent: navigator.userAgent,
-        })
-      : { cookies: [], headers: {} }
-    const [currentTab] = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    })
-    if (
-      currentTab?.id !== activeTab.id ||
-      !currentTab.url ||
-      new URL(currentTab.url).toString() !== media.pageUrl
-    ) {
-      throw new Error('active tab changed')
-    }
-    const params = applyCallerIdempotencyKey(
-      buildMediaSubmitParams(
-        media,
-        primaryCredentials.cookies,
-        primaryCredentials.headers,
-        audioCredentials
-      ),
-      request
-    )
-    return await manager.submitDownload(params)
-  } catch (error) {
-    // Stored media, cookie, transport and native errors can contain private
-    // URLs or paths. Only expose a stable reason to the popup.
-    throw toSafeMediaSubmitError(error)
-  }
+const popupDownloads = createPopupDownloadHandlers({
+  manager,
+  submissions,
+  mediaStore,
+  mediaCredentialStore,
+  extensionId,
+  extensionBaseUrl: browser.runtime.getURL(''),
+  getActiveTabs: () =>
+    browser.tabs.query({ active: true, currentWindow: true }),
+  cookieApi: browser.cookies as unknown as Parameters<
+    typeof createPopupDownloadHandlers
+  >[0]['cookieApi'],
+  browserKind: __BROWSER__,
+  userAgent: navigator.userAgent,
+  webStore: isWebStoreBuild(),
 })
-
-// bg.resolvePageDownload: submit the active tab's watch-page URL for resolution.
-// Used for bilibili/youtube pages where the generic sniffer finds nothing.
-// Motrix's resolveToMux seam resolves the actual stream URLs server-side.
-// Does NOT gate on selectionKinds — 'direct' is always supported and turbo
-// upgrades the submit via resolveToMux on its side.
-bus.on('bg.resolvePageDownload', async (request) => {
-  try {
-    const [tab] = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    })
-    if (!tab?.url) throw new Error('no active tab')
-    const check = isResolvableVideoPage(tab.url, isWebStoreBuild())
-    if (!check.resolvable) throw new Error('page not resolvable')
-    const cookies = await capturePageCookies({
-      url: tab.url,
-      ...(tab.cookieStoreId ? { storeId: tab.cookieStoreId } : {}),
-      browser: __BROWSER__,
-      api: browser.cookies as unknown as Parameters<
-        typeof capturePageCookies
-      >[0]['api'],
-    })
-    const [currentTab] = await browser.tabs.query({
-      active: true,
-      currentWindow: true,
-    })
-    if (
-      !currentTab ||
-      currentTab.id !== tab.id ||
-      !currentTab.url ||
-      new URL(currentTab.url).toString() !== new URL(tab.url).toString()
-    ) {
-      throw new Error('active tab changed')
-    }
-    const headers: Record<string, string> = {
-      Referer: `${new URL(tab.url).origin}/`,
-      'User-Agent': navigator.userAgent,
-    }
-    const media = {
-      kind: 'direct' as const,
-      url: tab.url,
-      pageUrl: tab.url,
-      pageTitle: tab.title ?? tab.url,
-      detectedAt: Date.now(),
-    }
-    const params = applyCallerIdempotencyKey(
-      buildMediaSubmitParams(media, cookies, headers),
-      request
-    )
-    return await manager.submitDownload(params)
-  } catch (error) {
-    // Do not surface the active URL, cookie details or native errors.
-    throw toSafeMediaSubmitError(error)
-  }
-})
+bus.on('bg.submitMedia', popupDownloads.submitMedia)
+bus.on('bg.resolvePageDownload', popupDownloads.resolvePageDownload)
 
 bus.attach()
 
@@ -757,31 +771,34 @@ const refreshMenuTitle = async (): Promise<void> => {
   updateContextMenuTitle(await pairingEndpointService.isActivePaired())
 }
 
+const confirmedDownloadDeps = {
+  confirmation: downloadConfirmation,
+  submissions,
+  manager,
+  isPaired: () => pairingEndpointService.isActivePaired(),
+  gate,
+  nudge: pairNudge,
+  notify,
+}
+
 registerContextMenu({
   getConfig: async () => {
     await endpointLifecycleReady
     return takeoverConfigStore.get()
   },
-  run: async (target) => {
-    await endpointLifecycleReady
-    const cfg = await takeoverConfigStore.get()
-    if (decideTakeover(cfg, target) !== 'motrix') return
-    const guard = await handoffEndpoints.capture(target.origin)
-    if (guard === null) return
-    const ops = makeOps({
-      manager,
-      guard,
-      isPaired: () => pairingEndpointService.isActivePaired(),
-      gate,
-      nudge: pairNudge,
-      cancelNative: async () => {},
-      fallbackToBrowser: () => downloadHttpInBrowser(target.url),
-      // MVP: no blocking confirm UI in the SW, so sensitive domains auto-decline (leaves the native download intact). Real per-download confirm UI is deferred to Plan 2/3.
-      confirmSensitive: async () => false,
-      notify,
-    })
-    await runHandoff(target, ops)
-  },
+  run: createContextMenuDownloadRunner({
+    confirmation: downloadConfirmation,
+    submissions,
+    getConfig: () => takeoverConfigStore.get(),
+    popup: autoPopup,
+    ready: () => endpointLifecycleReady,
+    captureGuard: () => handoffEndpoints.capture('context-menu'),
+    manager,
+    isPaired: () => pairingEndpointService.isActivePaired(),
+    gate,
+    nudge: pairNudge,
+    notify,
+  }),
 })
 
 void refreshMenuTitle()
@@ -812,6 +829,12 @@ void initI18n().then(() => {
 void initLogLevel()
 
 const interceptionDeps = {
+  confirm: (
+    target: import('@/shared/takeover').TakeoverTarget,
+    windowId: number | undefined,
+    guard: import('@/background/handoff/guard').HandoffGuard
+  ) => requestConfirmedDownload(confirmedDownloadDeps, target, windowId, guard),
+  popup: autoPopup,
   captureGuard: () => handoffEndpoints.capture('auto'),
   getConfig: async () => {
     await endpointLifecycleReady
@@ -826,7 +849,7 @@ const interceptionDeps = {
 }
 if (__BROWSER__ === 'firefox') {
   registerFirefoxInterception(interceptionDeps)
-} else {
+} else if (__BROWSER__ === 'chromium') {
   registerChromiumInterception(interceptionDeps)
 }
 

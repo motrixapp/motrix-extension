@@ -43,6 +43,13 @@ const LOCAL_ENDPOINT = {
   cleanupTombstones: [],
 }
 
+const SNAPSHOT = {
+  endpoint: LOCAL_ENDPOINT,
+  pairing: 'stored',
+  phase: 'ready',
+  attemptIntent: null,
+}
+
 describe('usePopupState', () => {
   beforeEach(() => {
     vi.useRealTimers()
@@ -50,6 +57,7 @@ describe('usePopupState', () => {
       const env = raw as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'connected',
           server: {
             name: 'Motrix',
@@ -119,6 +127,27 @@ describe('usePopupState', () => {
     expect(commands.map(({ kind }) => kind)).not.toContain('bg.reconnect')
   })
 
+  it('exposes the authenticated instance and directory capability to directory fields', async () => {
+    browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
+      if ((raw as Envelope).kind !== 'bg.getState') return { ok: true }
+      return {
+        ...SNAPSHOT,
+        state: 'connected',
+        server: {
+          name: 'Motrix',
+          version: '2',
+          runtime: 'electron',
+          instanceId: 'instance-a',
+        },
+        capabilities: { taskReveal: true, downloadDirectories: true },
+      }
+    })
+    const { result } = renderHook(() => usePopupState())
+    await waitFor(() => expect(result.current.state.loading).toBe(false))
+    expect(result.current.state.server?.instanceId).toBe('instance-a')
+    expect(result.current.state.capabilities.downloadDirectories).toBe(true)
+  })
+
   it('reuses an unchanged polling snapshot instead of redrawing the popup', async () => {
     vi.useFakeTimers()
     const { result } = renderHook(() => usePopupState())
@@ -133,11 +162,52 @@ describe('usePopupState', () => {
     expect(result.current.state).toBe(firstSnapshot)
   })
 
+  it.each(['success', 'failure'])(
+    'ignores a stale polling %s after a newer RPC health snapshot',
+    async (outcome) => {
+      vi.useFakeTimers()
+      const stale = deferred<unknown>()
+      let reads = 0
+      browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
+        if ((raw as Envelope).kind !== 'bg.getState') return { ok: true }
+        if (++reads === 1) return stale.promise
+        return {
+          ...SNAPSHOT,
+          state: 'connected',
+          rpc: { health: 'unresponsive', lastError: null, lastSuccessAt: null },
+        }
+      })
+      const { result } = renderHook(() => usePopupState())
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      expect(result.current.state.rpc?.health).toBe('unresponsive')
+      const latest = result.current.state
+      await act(async () => {
+        stale.resolve(
+          outcome === 'failure'
+            ? { error: 'old polling error' }
+            : {
+                ...SNAPSHOT,
+                state: 'connected',
+                rpc: {
+                  health: 'healthy',
+                  lastError: null,
+                  lastSuccessAt: null,
+                },
+              }
+        )
+      })
+      expect(result.current.state).toBe(latest)
+    }
+  )
+
   it('reads taskReveal capability and clears it while switching backends', async () => {
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'connected',
           capabilities: { taskReveal: true },
         }
@@ -171,10 +241,11 @@ describe('usePopupState', () => {
     let endpointReads = 0
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
-      if (env.kind === 'bg.getState') return { state: 'connected' }
-      if (env.kind === 'bg.getEndpointConfig') {
+      if (env.kind === 'bg.getState') {
         endpointReads += 1
-        return endpointReads === 1 ? LOCAL_ENDPOINT : staleEndpoint.promise
+        const endpoint =
+          endpointReads === 1 ? LOCAL_ENDPOINT : await staleEndpoint.promise
+        return { ...SNAPSHOT, endpoint, state: 'connected' }
       }
       if (env.kind === 'bg.activateEndpoint') {
         return {
@@ -234,7 +305,7 @@ describe('usePopupState', () => {
   it('rejects a failed endpoint activation without changing local state', async () => {
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
-      if (env.kind === 'bg.getState') return { state: 'connected' }
+      if (env.kind === 'bg.getState') return { ...SNAPSHOT, state: 'connected' }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       if (env.kind === 'bg.activateEndpoint') {
         return { error: 'Endpoint activation failed' }
@@ -270,7 +341,7 @@ describe('usePopupState', () => {
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
       if (env.kind === 'bg.getState') {
-        return { state: 'handshaking', pairingCode }
+        return { ...SNAPSHOT, state: 'handshaking', pairingCode }
       }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       return { ok: true }
@@ -289,6 +360,7 @@ describe('usePopupState', () => {
       const env = raw as Envelope
       if (env.kind === 'bg.getState') {
         return {
+          ...SNAPSHOT,
           state: 'disconnected',
           ...(recoveryExhausted ? { recoveryExhaustedUnattended: true } : {}),
         }
@@ -315,7 +387,7 @@ describe('usePopupState', () => {
     const seen: unknown[] = []
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
-      if (env.kind === 'bg.getState') return { state: 'connected' }
+      if (env.kind === 'bg.getState') return { ...SNAPSHOT, state: 'connected' }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       if (env.kind === 'bg.submitPairingCode') {
         seen.push(env.payload)
@@ -337,7 +409,7 @@ describe('usePopupState', () => {
   it('submitPairingCode rejects when no code request is pending', async () => {
     browser.runtime.sendMessage = vi.fn(async (raw: unknown) => {
       const env = raw as Envelope
-      if (env.kind === 'bg.getState') return { state: 'connected' }
+      if (env.kind === 'bg.getState') return { ...SNAPSHOT, state: 'connected' }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       if (env.kind === 'bg.submitPairingCode') {
         return { ok: false, error: 'no pairing code request is pending' }

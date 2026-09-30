@@ -4,15 +4,18 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { send } from '@/background/MessageBus'
 import { Separator } from '@/components/ui/separator'
+import { useNotificationCapability } from '@/components/useNotificationCapability'
 import { SettingsTabForm } from '@/options/components/SettingsTabForm'
 import { SettingPanel } from '@/options/SettingPanel'
 import { AppearanceSection } from '@/options/sections/AppearanceSection'
 import { NotificationsSection } from '@/options/sections/NotificationsSection'
+import { TaskPanelSection } from '@/options/sections/TaskPanelSection'
 import {
   type GeneralFormValues,
   generalFormSchema,
 } from '@/options/tabs/schemas'
 import { zodFormResolver } from '@/options/zodFormResolver'
+import { supportsBackendConnections } from '@/shared/browserKind'
 import { i18n, resolveDefaultLocale } from '@/shared/i18n'
 import { getLocaleOverride, setLocaleOverride } from '@/shared/localeStore'
 import { NOTIFICATIONS_DEFAULT } from '@/shared/notifications'
@@ -21,9 +24,11 @@ import { getThemeOverride, setThemeOverride } from '@/shared/themeStore'
 export function GeneralTab(): React.ReactElement {
   const { t } = useTranslation()
   const [loadFailed, setLoadFailed] = useState(false)
+  const notificationCapability = useNotificationCapability()
   const form = useForm<GeneralFormValues>({
     resolver: zodFormResolver(generalFormSchema),
     defaultValues: {
+      openTaskPanelAfterSubmit: false,
       theme: 'system',
       language: 'system',
       notifyMaster: NOTIFICATIONS_DEFAULT.master,
@@ -37,14 +42,16 @@ export function GeneralTab(): React.ReactElement {
     let cancelled = false
     void (async () => {
       try {
-        const [theme, locale, notif] = await Promise.all([
+        const [theme, locale, notif, takeover] = await Promise.all([
           getThemeOverride(),
           getLocaleOverride(),
           send('bg.getNotificationsConfig', undefined),
+          send('bg.getTakeoverConfig', undefined),
         ])
         if (cancelled) return
         const n = notif ?? NOTIFICATIONS_DEFAULT
         form.reset({
+          openTaskPanelAfterSubmit: takeover.openTaskPanelAfterSubmit,
           theme: theme ?? 'system',
           language: locale ?? 'system',
           notifyMaster: n.master,
@@ -63,6 +70,11 @@ export function GeneralTab(): React.ReactElement {
   }, [form])
 
   const onSubmit = async (values: GeneralFormValues): Promise<void> => {
+    if (form.getFieldState('openTaskPanelAfterSubmit').isDirty) {
+      await send('bg.patchTaskPanelPreference', {
+        openTaskPanelAfterSubmit: values.openTaskPanelAfterSubmit,
+      })
+    }
     await send('bg.setNotificationsConfig', {
       master: values.notifyMaster,
       confirm: values.notifyConfirm,
@@ -92,9 +104,22 @@ export function GeneralTab(): React.ReactElement {
         <SettingsTabForm form={form} onSubmit={onSubmit}>
           <AppearanceSection form={form} />
 
-          <Separator className="my-5" />
+          {supportsBackendConnections() && (
+            <>
+              <Separator className="my-5" />
+              <TaskPanelSection form={form} />
+            </>
+          )}
 
-          <NotificationsSection form={form} />
+          {notificationCapability.capability.available && (
+            <>
+              <Separator className="my-5" />
+              <NotificationsSection
+                form={form}
+                notificationCapability={notificationCapability}
+              />
+            </>
+          )}
         </SettingsTabForm>
       )}
     </SettingPanel>

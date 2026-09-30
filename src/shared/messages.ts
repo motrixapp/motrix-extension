@@ -34,6 +34,8 @@ import type {
 import type { CreateManualTaskRequest } from '@/shared/manualTask'
 
 export interface CallerIdempotencyRequest {
+  pairIfNeeded?: boolean
+
   idempotencyKey: string
 }
 
@@ -50,6 +52,10 @@ export const MEDIA_SUBMIT_ERROR = {
  * JSON-serializable.
  */
 export interface MessageMap {
+  'bg.getDownloadDirectories': {
+    request: undefined
+    response: import('@/shared/downloadDirectories').DownloadDirectoriesResponse
+  }
   // popup / options → background
   'bg.runConnectionDiagnostics': {
     request: { endpointId: string | null }
@@ -58,7 +64,12 @@ export interface MessageMap {
   'bg.getState': {
     request: undefined
     response: {
+      rpc?: import('@/shared/integration').RpcStatus
       state: ConnectionState
+      endpoint: EndpointConfig
+      pairing: import('@/shared/integration').PairingState
+      phase: import('@/shared/integration').ConnectionPhase
+      attemptIntent: import('@/shared/integration').ConnectionIntent | null
       lastError?: string
       /** The failed attempt's stable reason code
        *  (`PairingFailureReason`/`ReconnectFailureReason`), when the error
@@ -109,8 +120,13 @@ export interface MessageMap {
        *  background normalizes to false. */
       capabilities?: {
         taskReveal: boolean
+        downloadDirectories?: boolean
       }
     }
+  }
+  'bg.getDownloadOperations': {
+    request: { endpointId: string; endpointRevision?: number }
+    response: import('@/shared/integration').DownloadOperation[]
   }
   'bg.getRecentActivity': {
     request: undefined
@@ -118,6 +134,7 @@ export interface MessageMap {
       events: Array<{ at: number; kind: string; detail: string }>
     }
   }
+  'bg.viewTasks': { request: undefined; response: { ok: true } }
   'bg.reconnect': { request: undefined; response: { ok: true } }
   'bg.clearBadgeError': { request: undefined; response: { ok: true } }
   'bg.getEndpointConfig': {
@@ -170,17 +187,51 @@ export interface MessageMap {
       policy: import('@/background/RemoteBackendPolicyStore').RemoteBackendPolicyV1
     }
   }
+  'bg.patchTakeoverEnabled': {
+    request: { enabled: boolean; consentAckVersion?: number }
+    response: import('@/shared/takeover').TakeoverConfig
+  }
+  'bg.patchDownloadMode': {
+    request: { downloadMode: import('@/shared/takeover').DownloadMode }
+    response: import('@/shared/takeover').TakeoverConfig
+  }
+  'bg.getPopupReceipt': {
+    request: { windowId: number }
+    response: import('@/shared/autoPopup').PopupReceipt | null
+  }
+  'bg.patchTaskPanelPreference': {
+    request: { openTaskPanelAfterSubmit: boolean }
+    response: import('@/shared/takeover').TakeoverConfig
+  }
+  'bg.patchSiteExclusion': {
+    request: { domain: string; excluded: boolean }
+    response: import('@/shared/takeover').TakeoverConfig
+  }
   'bg.getTakeoverConfig': {
     request: undefined
     response: import('@/shared/takeover').TakeoverConfig
   }
   'bg.setTakeoverConfig': {
-    request: import('@/shared/takeover').TakeoverConfig
+    request: import('@/shared/takeover').TakeoverSettings
     response: { ok: true }
   }
   'bg.getNotificationsConfig': {
     request: undefined
     response: import('@/shared/notifications').NotificationsConfig
+  }
+  'bg.getNotificationCapability': {
+    request: undefined
+    response: import('@/shared/notifications').NotificationCapability
+  }
+  'bg.testNotification': {
+    request: undefined
+    response: {
+      status: import('@/shared/notifications').NotificationTestResult
+    }
+  }
+  'bg.openNotificationSettings': {
+    request: undefined
+    response: { opened: boolean }
   }
   'bg.setNotificationsConfig': {
     request: import('@/shared/notifications').NotificationsConfig

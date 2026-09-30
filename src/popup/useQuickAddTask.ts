@@ -1,14 +1,28 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { send } from '@/background/MessageBus'
+import { DOWNLOAD_ERROR, newDownloadOperationId } from '@/shared/integration'
 import { parseManualTaskInput } from '@/shared/manualTask'
+import {
+  defaultTaskOptions,
+  type TaskOptions,
+  taskOptionsSchema,
+} from '@/shared/taskOptions'
 
 export type QuickAddTaskErrorKind =
+  | 'invalidOptions'
+  | 'directoryUnavailable'
   | 'empty'
   | 'unsupported'
   | 'invalid'
   | 'submitFailed'
+  | 'resultUnknown'
+  | 'pairingRequired'
+  | 'connectionFailed'
+  | 'contextChanged'
 
 export interface QuickAddTaskController {
+  options: TaskOptions
+  setOptions: (options: TaskOptions) => void
   input: string
   error: QuickAddTaskErrorKind | null
   submitting: boolean
@@ -18,12 +32,14 @@ export interface QuickAddTaskController {
 }
 
 export interface UseQuickAddTaskOptions {
+  pairIfNeeded?: boolean
   onCreated: (taskId: string) => void | Promise<void>
 }
 
 export const QUICK_ADD_TASK_SESSION_KEY = 'motrix.quickAddTask.pending.v1'
 
 interface PersistedQuickAddTask {
+  options?: TaskOptions
   normalizedInput: string
   idempotencyKey: string
 }
@@ -78,13 +94,21 @@ function normalizePersistedDraft(value: unknown): PersistedQuickAddTask | null {
     return null
   }
 
+  const options = taskOptionsSchema.safeParse(
+    draft.options ?? defaultTaskOptions(navigator.userAgent)
+  )
+  if (!options.success) return null
   const parsed = parseManualTaskInput(draft.normalizedInput)
   if (!parsed.ok) return null
 
   const normalizedInput =
     parsed.value.kind === 'direct' ? parsed.value.url : parsed.value.uri
   return normalizedInput === draft.normalizedInput
-    ? { normalizedInput, idempotencyKey: draft.idempotencyKey }
+    ? {
+        normalizedInput,
+        idempotencyKey: draft.idempotencyKey,
+        options: options.data,
+      }
     : null
 }
 
@@ -142,8 +166,13 @@ function clearPersistedDraft(): Promise<void> {
  */
 export function useQuickAddTask({
   onCreated,
+  pairIfNeeded = false,
 }: UseQuickAddTaskOptions): QuickAddTaskController {
   const [input, setInputState] = useState('')
+  const [options, setOptionsState] = useState(() =>
+    defaultTaskOptions(navigator.userAgent)
+  )
+  const optionsRef = useRef(options)
   const [error, setError] = useState<QuickAddTaskErrorKind | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -152,6 +181,8 @@ export function useQuickAddTask({
   const submittingRef = useRef(false)
   const mountedRef = useRef(true)
   const onCreatedRef = useRef(onCreated)
+  const pairIfNeededRef = useRef(pairIfNeeded)
+  pairIfNeededRef.current = pairIfNeeded
   const inputRevisionRef = useRef(0)
 
   useEffect(() => {
@@ -182,6 +213,9 @@ export function useQuickAddTask({
         return
       }
 
+      optionsRef.current =
+        draft.options ?? defaultTaskOptions(navigator.userAgent)
+      setOptionsState(optionsRef.current)
       inputRef.current = draft.normalizedInput
       idempotencyKeyRef.current = draft.idempotencyKey
       setInputState(draft.normalizedInput)
@@ -207,8 +241,19 @@ export function useQuickAddTask({
     }
   }, [])
 
+  const setOptions = useCallback((next: TaskOptions): void => {
+    inputRevisionRef.current += 1
+    optionsRef.current = next
+    idempotencyKeyRef.current = null
+    void clearPersistedDraft()
+    setOptionsState(next)
+    setError(null)
+  }, [])
+
   const reset = useCallback((): void => {
     inputRevisionRef.current += 1
+    optionsRef.current = defaultTaskOptions(navigator.userAgent)
+    if (mountedRef.current) setOptionsState(optionsRef.current)
     inputRef.current = ''
     idempotencyKeyRef.current = null
     void clearPersistedDraft()
@@ -227,7 +272,12 @@ export function useQuickAddTask({
       return null
     }
 
-    const idempotencyKey = idempotencyKeyRef.current ?? crypto.randomUUID()
+    const parsedOptions = taskOptionsSchema.safeParse(optionsRef.current)
+    if (!parsedOptions.success) {
+      if (mountedRef.current) setError('invalidOptions')
+      return null
+    }
+    const idempotencyKey = idempotencyKeyRef.current ?? newDownloadOperationId()
     idempotencyKeyRef.current = idempotencyKey
     const normalizedInput =
       parsed.value.kind === 'direct' ? parsed.value.url : parsed.value.uri
@@ -243,20 +293,47 @@ export function useQuickAddTask({
       // Commit the logical submission before crossing the message boundary.
       // If the popup disappears after Motrix accepts the task but before the
       // response arrives, reopening it can retry with this exact same key.
-      await persistDraft({ normalizedInput, idempotencyKey })
+      await persistDraft({
+        normalizedInput,
+        idempotencyKey,
+        options: parsedOptions.data,
+      })
       const response = await send('bg.createManualTask', {
         input: normalizedInput,
+        options: parsedOptions.data,
         idempotencyKey,
+        ...(pairIfNeededRef.current ? { pairIfNeeded: true } : {}),
       })
       taskId = response.taskId
-    } catch {
-      if (mountedRef.current) setError('submitFailed')
+    } catch (error) {
+      if (mountedRef.current)
+        setError(
+          (error as Error)?.message === DOWNLOAD_ERROR.directoryUnavailable
+            ? 'directoryUnavailable'
+            : (error as Error)?.message === DOWNLOAD_ERROR.resultUnknown
+              ? 'resultUnknown'
+              : (error as Error)?.message === DOWNLOAD_ERROR.pairingRequired
+                ? 'pairingRequired'
+                : [
+                      DOWNLOAD_ERROR.connectionFailed,
+                      DOWNLOAD_ERROR.preparationTimeout,
+                    ].includes((error as Error)?.message as never)
+                  ? 'connectionFailed'
+                  : [
+                        DOWNLOAD_ERROR.endpointChanged,
+                        DOWNLOAD_ERROR.contextChanged,
+                      ].includes((error as Error)?.message as never)
+                    ? 'contextChanged'
+                    : 'submitFailed'
+        )
       return null
     } finally {
       submittingRef.current = false
       if (mountedRef.current) setSubmitting(false)
     }
 
+    optionsRef.current = defaultTaskOptions(navigator.userAgent)
+    if (mountedRef.current) setOptionsState(optionsRef.current)
     inputRef.current = ''
     idempotencyKeyRef.current = null
     await clearPersistedDraft()
@@ -276,5 +353,14 @@ export function useQuickAddTask({
     return taskId
   }, [])
 
-  return { input, error, submitting, setInput, submit, reset }
+  return {
+    input,
+    options,
+    setOptions,
+    error,
+    submitting,
+    setInput,
+    submit,
+    reset,
+  }
 }

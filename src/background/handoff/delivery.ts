@@ -1,6 +1,10 @@
 import type { DownloadSubmitParams } from '@motrix/mdxp'
+import {
+  DownloadOutcomeUnknownError,
+  DownloadPreparationError,
+} from '@/background/download-errors'
 import { HandoffEndpointChangedError } from '@/background/handoff/guard'
-import type { HandoffOps } from '@/background/handoff/runHandoff'
+import type { HandoffOps, HandoffResult } from '@/background/handoff/runHandoff'
 import {
   RemoteAutomaticTakeoverConsentRequiredError,
   RemoteDataBoundaryConsentRequiredError,
@@ -11,7 +15,7 @@ import type { Notify } from '@/shared/notifications'
 export const CONNECT_DEADLINE_MS = 8000
 
 export function notifySafely(
-  ops: HandoffOps,
+  ops: Pick<HandoffOps, 'notify'>,
   input: Parameters<Notify>[0]
 ): void {
   try {
@@ -25,10 +29,19 @@ export function notifySafely(
 async function submitOrFallback(
   params: DownloadSubmitParams,
   ops: HandoffOps
-): Promise<void> {
+): Promise<HandoffResult> {
+  let accepted: { taskId: string }
   try {
-    await submitWithRetry(params, ops)
-  } catch {
+    accepted = await submitWithRetry(params, ops)
+  } catch (error) {
+    if (error instanceof DownloadOutcomeUnknownError) {
+      notifySafely(ops, {
+        title: i18n.t('notify.submitUnknownTitle'),
+        message: i18n.t('notify.submitUnknownBody'),
+        severity: 'reminder',
+      })
+      return { kind: 'unknown', operationId: params.idempotencyKey ?? '' }
+    }
     let fellBack = false
     try {
       // Magnet links cannot be restored through the browser downloads API.
@@ -45,7 +58,7 @@ async function submitOrFallback(
         severity: 'error',
       })
     }
-    return
+    return { kind: fellBack ? 'browser' : 'failed' }
   }
 
   notifySafely(ops, {
@@ -53,18 +66,25 @@ async function submitOrFallback(
     message: params.meta.suggestedFilename,
     severity: 'confirm',
   })
+  return {
+    kind: 'accepted',
+    taskId: accepted.taskId,
+    operationId: params.idempotencyKey ?? '',
+  }
 }
 
 async function submitWithRetry(
   params: DownloadSubmitParams,
   ops: HandoffOps
-): Promise<void> {
+): Promise<{ taskId: string }> {
   try {
-    await ops.submit(params)
+    return await ops.submit(params)
   } catch (error) {
     // Consent and endpoint changes cannot be repaired by resending the same
     // request. Other failures retain the existing idempotent retry.
     if (
+      error instanceof DownloadOutcomeUnknownError ||
+      error instanceof DownloadPreparationError ||
       error instanceof HandoffEndpointChangedError ||
       error instanceof RemoteDataBoundaryConsentRequiredError ||
       error instanceof RemoteAutomaticTakeoverConsentRequiredError
@@ -77,7 +97,7 @@ async function submitWithRetry(
         // The retry remains authoritative if reconnect failed.
       }
     }
-    await ops.submit(params)
+    return await ops.submit(params)
   }
 }
 
@@ -92,8 +112,8 @@ function withIdempotencyKey(
 export async function commitHandoff(
   params: DownloadSubmitParams,
   ops: HandoffOps
-): Promise<void> {
+): Promise<HandoffResult> {
   const keyedParams = withIdempotencyKey(params)
   await ops.cancelNative()
-  await submitOrFallback(keyedParams, ops)
+  return await submitOrFallback(keyedParams, ops)
 }

@@ -14,8 +14,14 @@ function fixture(origin: HandoffGuard['origin']) {
   const manager = {
     getState: () => 'connected' as const,
     getLastError: () => null,
+    ensureReady: vi.fn(async () => {}),
     clearGateAndStart: vi.fn(async () => {}),
-    submitDownload: vi.fn(async () => ({ taskId: 'remote-task' })),
+    submitDownload: vi.fn(
+      async (_params: unknown, options: { assertCurrent?: () => void }) => {
+        options.assertCurrent?.()
+        return { taskId: 'remote-task' }
+      }
+    ),
   }
   const cancelNative = vi.fn(async () => {})
   const ops = makeOps({
@@ -54,9 +60,10 @@ describe('handoff submission origin', () => {
       await expect(ops.submit(params)).resolves.toEqual({
         taskId: 'remote-task',
       })
+      expect(guard.assertCurrent).toHaveBeenCalled()
       expect(manager.submitDownload).toHaveBeenCalledWith(params, {
         automaticTakeover: origin === 'auto',
-        assertCurrent: guard.assertCurrent,
+        assertCurrent: expect.any(Function),
       })
     }
   )

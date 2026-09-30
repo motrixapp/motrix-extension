@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 /**
  * Loopback host-permission gate for MBP1 candidate probing
  * (bridge-pairing-protocol.md §4.1): before the extension fetches

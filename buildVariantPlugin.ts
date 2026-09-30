@@ -1,9 +1,30 @@
 import { readdir, unlink } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import type { CrxPlugin } from '@crxjs/vite-plugin'
 import type { Plugin } from 'vite'
 
 const ADAPTER_REGISTRY_ID = 'virtual:motrix-adapter-registry'
 const YOUTUBE_SNIFFER_SCRIPT_ID = 'virtual:motrix-youtube-sniffer-script'
+
+/** CRXJS adds this Chromium-only field after reading manifest.config.ts. */
+export function safariManifestPlugin(): CrxPlugin {
+  return {
+    name: 'motrix-safari-manifest',
+    enforce: 'post',
+    renderCrxManifest(manifest) {
+      return {
+        ...manifest,
+        web_accessible_resources: manifest.web_accessible_resources?.map(
+          (resource) => {
+            const safariResource = { ...resource }
+            delete safariResource.use_dynamic_url
+            return safariResource
+          }
+        ),
+      }
+    },
+  }
+}
 
 export function buildVariantPlugin(excludeYouTube: boolean): Plugin {
   const resolvedAdapterRegistryId = `\0${ADAPTER_REGISTRY_ID}`

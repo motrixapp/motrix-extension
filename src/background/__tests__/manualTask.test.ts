@@ -82,6 +82,25 @@ describe('manual task background adapter', () => {
     ).toBe(true)
   })
 
+  it.each([
+    'http://172.16.50.14/My%20File.zip?token=a%2Bb',
+    'http://[::1]:8080/file.zip',
+    'http://nas/file.zip',
+    'https://例子.测试/file.zip',
+  ])('builds protocol-valid params for a local or IDN URL: %s', (input) => {
+    const parsed = parseManualTaskInput(input)
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) return
+    const params = buildManualTaskSubmitParams(
+      parsed.value,
+      'manual-key-123',
+      0
+    )
+    expect(DownloadSubmitParamsSchema.parse(params)).toMatchObject({
+      selection: { kind: 'direct', primary: { url: new URL(input).href } },
+    })
+  })
+
   it('builds a magnet selection without HTTP resource fields', () => {
     const parsed = parseManualTaskInput('magnet:?xt=urn:btih:abcdef&dn=Example')
     expect(parsed.ok).toBe(true)
@@ -121,7 +140,8 @@ describe('manual task background adapter', () => {
       expect.objectContaining({
         idempotencyKey: 'caller-key-12345678',
         source: expect.objectContaining({ detectedAt: 5678 }),
-      })
+      }),
+      { pairIfNeeded: false }
     )
   })
 
@@ -184,7 +204,8 @@ describe('manual task background adapter', () => {
         popupSender
       )
       expect(submitDownload).toHaveBeenCalledWith(
-        expect.objectContaining({ idempotencyKey })
+        expect.objectContaining({ idempotencyKey }),
+        { pairIfNeeded: false }
       )
     }
   )
@@ -231,4 +252,46 @@ describe('manual task background adapter', () => {
       )
     ).rejects.toThrow(MANUAL_TASK_ERROR.submitFailed)
   })
+})
+
+it('uses the current browser UA for manual downloads and validates edited headers', async () => {
+  const submitDownload = vi.fn(async () => ({ taskId: 'ua-task' }))
+  const handler = createManualTaskHandler({
+    extensionId,
+    extensionBaseUrl,
+    submitDownload,
+  })
+  const request = {
+    input: 'https://example.com/download',
+    idempotencyKey: 'manual-ua-key',
+  }
+  await handler(request, popupSender)
+  expect(submitDownload).toHaveBeenCalledWith(
+    expect.objectContaining({
+      selection: expect.objectContaining({
+        primary: expect.objectContaining({
+          headers: { 'User-Agent': navigator.userAgent },
+        }),
+      }),
+    }),
+    { pairIfNeeded: false }
+  )
+  await expect(
+    handler(
+      {
+        ...request,
+        options: {
+          filename: '',
+          userAgent: 'UA\r\nX-Test: injected',
+          referer: '',
+          cookie: '',
+          authorization: '',
+          extraHeaders: '',
+          useBrowserCookies: false,
+        },
+      },
+      popupSender
+    )
+  ).rejects.toThrow(MANUAL_TASK_ERROR.invalidRequest)
+  expect(submitDownload).toHaveBeenCalledOnce()
 })

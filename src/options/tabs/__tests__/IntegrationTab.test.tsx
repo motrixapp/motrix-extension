@@ -876,7 +876,8 @@ describe('IntegrationTab', () => {
       expect(messagesOfKind('bg.getEndpointConfig')).toHaveLength(2)
     )
 
-    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    // The icon-only dismiss button also has a localized Cancel label.
+    await user.click(within(dialog).getByText('Cancel', { selector: 'button' }))
     expect(await screen.findByText('Studio from another tab')).toBeTruthy()
     expect(config.servers[0]?.name).toBe('Studio from another tab')
   })

@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 /**
  * Durable, authority-scoped consent for a remote Motrix Server.
  *

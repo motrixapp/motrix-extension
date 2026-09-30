@@ -464,3 +464,35 @@ describe('endpoint-safe pairing message operations', () => {
     ])
   })
 })
+
+describe('atomic popup pairing snapshot', () => {
+  it('reports saved pairing separately from a disconnected transport', async () => {
+    const { service, credentialStore } = await setup()
+    await pairLocal(credentialStore)
+    await expect(
+      service.readActiveSnapshot(() => ({ state: 'disconnected' }))
+    ).resolves.toMatchObject({
+      state: 'disconnected',
+      pairing: 'stored',
+      endpoint: { activeEndpointId: 'local' },
+    })
+  })
+  it('does not guess unpaired when the credential store is unavailable', async () => {
+    const { service, credentialStore } = await setup()
+    vi.spyOn(
+      credentialStore,
+      'hasCommittedCredentialForAuthority'
+    ).mockRejectedValue(new Error('unavailable'))
+    await expect(
+      service.readActiveSnapshot(() => ({ state: 'disconnected' }))
+    ).resolves.toMatchObject({ pairing: 'unavailable' })
+  })
+  it('clears the pairing predicate after an explicit unpair', async () => {
+    const { service, credentialStore } = await setup()
+    await pairLocal(credentialStore)
+    await service.unpair('local')
+    await expect(
+      service.readActiveSnapshot(() => ({ state: 'disconnected' }))
+    ).resolves.toMatchObject({ pairing: 'none' })
+  })
+})

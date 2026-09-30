@@ -39,6 +39,7 @@
  * caller and never touch `storage.local` here.
  */
 import type { Pin } from '@/background/mbp1/pin-store'
+import { extensionBrowser } from '@/shared/browser'
 
 /**
  * Where the next handshake should be attempted, and what the transport already
@@ -329,9 +330,9 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-/** Structural lookup, so an environment without `browser.tabs` simply has none. */
-function resolveAmbientTabs(): TabsPort | null {
-  const ambient = (globalThis as { browser?: { tabs?: unknown } }).browser?.tabs
+/** Feature detection also supports hosts without the tabs API. */
+function resolveBrowserTabs(): TabsPort | null {
+  const ambient = extensionBrowser.tabs
   if (!ambient || typeof ambient !== 'object') return null
   const tabs = ambient as Partial<TabsPort>
   if (typeof tabs.create !== 'function') return null
@@ -678,7 +679,7 @@ export class DiscoveryService {
   }
 
   private async openWakeTab(): Promise<number | null> {
-    const tabs = this.tabs ?? resolveAmbientTabs()
+    const tabs = this.tabs ?? resolveBrowserTabs()
     if (tabs === null) return null
     try {
       const tab = await tabs.create({ url: WAKE_URL })
@@ -691,7 +692,7 @@ export class DiscoveryService {
   /** Tolerates an already-closed tab, and a `tabs` port without `remove`. */
   private async closeWakeTab(tabId: number | null): Promise<void> {
     if (tabId === null) return
-    const tabs = this.tabs ?? resolveAmbientTabs()
+    const tabs = this.tabs ?? resolveBrowserTabs()
     if (tabs === null || typeof tabs.remove !== 'function') return
     try {
       await tabs.remove(tabId)

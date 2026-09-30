@@ -1,3 +1,4 @@
+import { extensionBrowser as browser } from '@/shared/browser'
 /**
  * MBP1 client pin store (bridge-pairing-protocol.md §12, §4.1).
  *

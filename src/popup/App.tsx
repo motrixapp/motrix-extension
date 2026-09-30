@@ -12,10 +12,16 @@ import {
 import { ConnectionPanel } from '@/popup/ConnectionPanel'
 import { ControlPanel } from '@/popup/ControlPanel'
 import { DashboardTile } from '@/popup/DashboardTile'
+import { DownloadActivity } from '@/popup/DownloadActivity'
+import { DownloadConfirmationDialog } from '@/popup/DownloadConfirmationDialog'
+import { DownloadDirectoryConnectionProvider } from '@/popup/DownloadDirectoryConnection'
 import { MediaPanel } from '@/popup/MediaPanel'
 import { PairingPromptDialog } from '@/popup/PairingPromptDialog'
+import { QuickAddTaskDialog } from '@/popup/QuickAddTaskDialog'
 import { QuickSettingsPanel } from '@/popup/QuickSettingsPanel'
+import { RpcNotice } from '@/popup/RpcNotice'
 import { SpeedTile } from '@/popup/SpeedTile'
+import { useAutoPopupReceipt } from '@/popup/useAutoPopupReceipt'
 import { type TaskControlPanel, useControlPanel } from '@/popup/useControlPanel'
 import {
   type PopupEndpoint,
@@ -26,7 +32,10 @@ import {
   type QuickSettingsController,
   useQuickSettings,
 } from '@/popup/useQuickSettings'
+import { extensionBrowser as browser } from '@/shared/browser'
+import { supportsBackendConnections } from '@/shared/browserKind'
 import { connectionErrorKey } from '@/shared/errorCopy'
+import type { PairingState } from '@/shared/integration'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 import { CONSENT_VERSION } from '@/shared/takeover'
 import { supportsAutomaticTakeover } from '@/shared/takeoverAvailability'
@@ -52,6 +61,9 @@ function CompactConnectionNotice({
 
 const PopupHeaderSection = memo(function PopupHeaderSection({
   connection,
+  pairing,
+  attention,
+  checking,
   endpoint,
   switching,
   takeoverChecked,
@@ -62,6 +74,9 @@ const PopupHeaderSection = memo(function PopupHeaderSection({
   onOpenSettings,
 }: {
   connection: ConnectionState | null
+  pairing: PairingState
+  attention: boolean
+  checking: boolean
   endpoint: PopupEndpoint | null
   switching: boolean
   takeoverChecked: boolean
@@ -74,13 +89,20 @@ const PopupHeaderSection = memo(function PopupHeaderSection({
   return (
     <CompactPopupHeader
       backend={
-        <BackendSelector
-          connection={connection}
-          endpoint={endpoint}
-          busy={switching}
-          onEndpointChange={onEndpointChange}
-          onConfigureServer={onOpenSettings}
-        />
+        supportsBackendConnections() ? (
+          <BackendSelector
+            connection={connection}
+            pairing={pairing}
+            attention={attention}
+            checking={checking}
+            endpoint={endpoint}
+            busy={switching}
+            onEndpointChange={onEndpointChange}
+            onConfigureServer={onOpenSettings}
+          />
+        ) : (
+          <span className="text-sm font-semibold">Motrix Extension</span>
+        )
       }
       takeoverChecked={takeoverChecked}
       takeoverDisabled={takeoverDisabled}
@@ -99,9 +121,9 @@ const PopupDashboard = memo(function PopupDashboard({
   onShowTasks,
   onShowResources,
 }: {
-  uploadSpeed: number
-  downloadSpeed: number
-  activeTaskCount: number
+  uploadSpeed: number | null
+  downloadSpeed: number | null
+  activeTaskCount: number | null
   resourceCount: number
   onShowTasks: () => void
   onShowResources: () => void
@@ -126,7 +148,7 @@ const PopupDashboard = memo(function PopupDashboard({
       <DashboardTile
         testId="tile-activity"
         label={t('popup.dashboard.activity')}
-        value={activeTaskCount}
+        value={activeTaskCount ?? '—'}
         icon={Activity}
         iconClassName="text-connection-online"
         ariaLabel={t('popup.dashboard.showTasks')}
@@ -177,59 +199,92 @@ const PopupContent = memo(function PopupContent({
   quickSettings: QuickSettingsController
 }): React.ReactElement {
   const { t } = useTranslation()
+  const [quickAddOpen, setQuickAddOpen] = useState(false)
   return (
-    <Tabs
-      value={tab}
-      onValueChange={(value) => onTabChange(value as PopupTab)}
-      className="mt-4 min-h-0 flex-1 gap-0"
-    >
-      <TabsContent
-        value="tasks"
-        className={`min-h-0 min-w-0 overflow-x-hidden ${connected && !state.loading ? 'overflow-y-auto' : 'overflow-y-hidden'}`}
+    <>
+      <Tabs
+        value={tab}
+        onValueChange={(value) => onTabChange(value as PopupTab)}
+        className="mt-4 min-h-0 flex-1 gap-0"
       >
-        {connected && !state.loading ? (
-          <ControlPanel
-            connection={state.connection}
-            controller={taskController}
-            canRevealTask={state.capabilities.taskReveal}
-            onReconnect={onReconnect}
-            notice={notice}
+        <TabsContent
+          value="tasks"
+          className={`min-h-0 min-w-0 overflow-x-hidden ${(connected || state.rpc?.health === 'checking' || state.rpc?.health === 'unresponsive') && !state.loading ? 'overflow-y-auto' : 'overflow-y-hidden'}`}
+        >
+          {!supportsBackendConnections() ? null : (connected ||
+              state.rpc?.health === 'checking' ||
+              state.rpc?.health === 'unresponsive') &&
+            !state.loading ? (
+            <ControlPanel
+              connection="connected"
+              readOnly={
+                state.rpc?.health === 'checking' ||
+                state.rpc?.health === 'unresponsive'
+              }
+              controller={taskController}
+              canRevealTask={state.capabilities.taskReveal}
+              canOpenApp={state.endpoint?.activeEndpointId === 'local'}
+              onReconnect={onReconnect}
+              notice={notice}
+              onNewTask={() => setQuickAddOpen(true)}
+            />
+          ) : (
+            <ConnectionPanel
+              title={t('popup.tasks.title')}
+              state={statusState}
+              {...(!needsServer &&
+              (state.pairing === 'stored' || state.pairing === 'none')
+                ? { onNewTask: () => setQuickAddOpen(true) }
+                : {})}
+              onReconnect={needsServer ? onOpenOptions : onReconnect}
+              {...(needsServer
+                ? { actionLabel: t('popup.backend.configureServer') }
+                : { onShowPairing })}
+            />
+          )}
+        </TabsContent>
+        <TabsContent
+          value="sniffer"
+          keepMounted
+          className="min-h-0 min-w-0 overflow-x-hidden overflow-y-auto"
+        >
+          <MediaPanel
+            active={tab === 'sniffer'}
+            connected={
+              connected &&
+              !state.loading &&
+              state.rpc?.health !== 'checking' &&
+              state.rpc?.health !== 'unresponsive'
+            }
+            pairing={
+              supportsBackendConnections() ? state.pairing : 'unavailable'
+            }
+            submissionKey={backendKey}
+            onMediaCountChange={onMediaCountChange}
           />
-        ) : (
-          <ConnectionPanel
-            title={t('popup.tasks.title')}
-            state={statusState}
-            onReconnect={needsServer ? onOpenOptions : onReconnect}
-            {...(needsServer
-              ? { actionLabel: t('popup.backend.configureServer') }
-              : { onShowPairing })}
+        </TabsContent>
+        <TabsContent
+          value="settings"
+          className="min-h-0 min-w-0 overflow-x-hidden overflow-y-auto"
+        >
+          <QuickSettingsPanel
+            controller={quickSettings}
+            onOpenFullSettings={onOpenOptions}
+            className="mt-0"
           />
-        )}
-      </TabsContent>
-      <TabsContent
-        value="sniffer"
-        keepMounted
-        className="min-h-0 min-w-0 overflow-x-hidden overflow-y-auto"
-      >
-        <MediaPanel
-          active={tab === 'sniffer'}
-          connected={connected && !state.loading}
-          submissionKey={backendKey}
-          onMediaCountChange={onMediaCountChange}
-        />
-      </TabsContent>
-      <TabsContent
-        value="settings"
-        className="min-h-0 min-w-0 overflow-x-hidden overflow-y-auto"
-      >
-        <QuickSettingsPanel
-          controller={quickSettings}
-          onOpenFullSettings={onOpenOptions}
-          className="mt-0"
-        />
-      </TabsContent>
-      <PopupBottomNavigation />
-    </Tabs>
+        </TabsContent>
+        {supportsBackendConnections() && <PopupBottomNavigation />}
+      </Tabs>
+      <QuickAddTaskDialog
+        open={quickAddOpen}
+        onOpenChange={setQuickAddOpen}
+        pairIfNeeded={state.pairing === 'none'}
+        onCreated={async () => {
+          onTabChange('tasks')
+          await taskController.refresh()
+        }}
+      />
+    </>
   )
 })
 
@@ -240,7 +295,9 @@ export function App(): React.ReactElement {
   const quickSettings = useQuickSettings(
     !switching && supportsAutomaticTakeover(state.endpoint)
   )
-  const [tab, setTab] = useState<PopupTab>('tasks')
+  const [tab, setTab] = useState<PopupTab>(
+    supportsBackendConnections() ? 'tasks' : 'sniffer'
+  )
   const [resourceCount, setResourceCount] = useState(0)
   const [endpointError, setEndpointError] = useState<string | null>(null)
   const [pairingCodeError, setPairingCodeError] = useState<string | null>(null)
@@ -248,7 +305,10 @@ export function App(): React.ReactElement {
   const [dismissedPairingDeadlineMs, setDismissedPairingDeadlineMs] = useState<
     number | null
   >(null)
-  const connected = state.connection === 'connected'
+  const connected =
+    supportsBackendConnections() && state.connection === 'connected'
+  const rpcPaused =
+    state.rpc?.health === 'checking' || state.rpc?.health === 'unresponsive'
   const needsServer =
     !hasNativeMessagingSupport() &&
     (state.endpoint?.activeEndpointId ?? 'local') === 'local'
@@ -259,8 +319,21 @@ export function App(): React.ReactElement {
         : { ...state, lastError: endpointError, lastErrorReason: null },
     [endpointError, state]
   )
-  const backendKey = state.endpoint?.activeEndpointId ?? 'unresolved'
-  const controller = useControlPanel(connected, backendKey)
+  const backendId = state.endpoint?.activeEndpointId ?? 'unresolved'
+  const backendRevision =
+    state.endpoint?.servers.find((server) => server.id === backendId)
+      ?.revision ?? 0
+  const backendKey = `${backendId}:${backendRevision}`
+  const controller = useControlPanel(
+    connected || rpcPaused,
+    backendKey,
+    rpcPaused
+  )
+  const autoReceipt = useAutoPopupReceipt(
+    backendId,
+    backendRevision,
+    controller.refresh
+  )
   const taskController = useMemo<TaskControlPanel>(
     () => ({
       tasks: controller.tasks,
@@ -284,11 +357,9 @@ export function App(): React.ReactElement {
     ]
   )
   const activeTaskCount =
-    controller.stats === null
-      ? controller.tasks.filter(
-          (task) => task.status !== 'completed' && task.status !== 'error'
-        ).length
-      : controller.stats.activeTasks + controller.stats.waitingTasks
+    (connected || rpcPaused) && controller.stats !== null
+      ? controller.stats.activeTasks + controller.stats.waitingTasks
+      : null
 
   const openOptions = useCallback((): void => {
     void browser.runtime.openOptionsPage()
@@ -354,73 +425,117 @@ export function App(): React.ReactElement {
   const showResources = useCallback(() => setTab('sniffer'), [])
   const changeTab = useCallback((nextTab: PopupTab) => setTab(nextTab), [])
   const pairingPrompt =
-    tab === 'tasks' &&
     state.pairingCode !== null &&
     dismissedPairingDeadlineMs !== state.pairingCode.deadlineMs
       ? state.pairingCode
       : null
 
   return (
-    <main
-      data-testid="compact-popup"
-      className="box-border flex h-[600px] w-[400px] flex-col overflow-hidden bg-background p-4 font-sans text-foreground"
-    >
-      <PopupHeaderSection
-        connection={state.loading ? 'connecting' : state.connection}
-        endpoint={state.endpoint}
-        switching={switching}
-        takeoverChecked={
-          quickSettings.takeoverSupported &&
-          (quickSettings.takeover?.enabled ?? false)
-        }
-        takeoverDisabled={
-          quickSettings.loading ||
-          quickSettings.saving ||
-          !quickSettings.takeoverSupported
-        }
-        takeoverSupported={quickSettings.takeoverSupported}
-        onEndpointChange={changeEndpoint}
-        onTakeoverChange={handleTakeoverChange}
-        onOpenSettings={openOptions}
-      />
-
-      <PopupDashboard
-        uploadSpeed={controller.stats?.totalUploadSpeed ?? 0}
-        downloadSpeed={controller.stats?.totalDownloadSpeed ?? 0}
-        activeTaskCount={activeTaskCount}
-        resourceCount={resourceCount}
-        onShowTasks={showTasks}
-        onShowResources={showResources}
-      />
-
-      <PopupContent
-        tab={tab}
-        onTabChange={changeTab}
-        connected={connected}
-        state={state}
-        statusState={statusState}
-        taskController={taskController}
-        notice={connectedNotice}
-        needsServer={needsServer}
-        onReconnect={reconnectPopup}
-        onOpenOptions={openOptions}
-        onShowPairing={showPairing}
-        backendKey={backendKey}
-        onMediaCountChange={setResourceCount}
-        quickSettings={quickSettings}
-      />
-
-      {pairingPrompt && (
-        <PairingPromptDialog
-          prompt={pairingPrompt}
-          error={pairingCodeError}
-          submitting={submittingCode}
-          onSubmit={(code) => void handleSubmitCode(code)}
-          onDismiss={() =>
-            setDismissedPairingDeadlineMs(pairingPrompt.deadlineMs)
+    <DownloadDirectoryConnectionProvider state={state}>
+      <main
+        data-testid="compact-popup"
+        className="box-border flex h-[600px] w-[400px] max-w-[100dvw] flex-col overflow-hidden bg-background p-4 font-sans text-foreground"
+      >
+        <PopupHeaderSection
+          connection={state.loading ? 'connecting' : state.connection}
+          pairing={state.pairing}
+          attention={
+            !!state.rpc?.lastError ||
+            state.rpc?.health === 'unresponsive' ||
+            (state.lastError !== null &&
+              state.attemptIntent !== 'background-probe')
           }
+          checking={state.rpc?.health === 'checking'}
+          endpoint={state.endpoint}
+          switching={switching || !supportsBackendConnections()}
+          takeoverChecked={
+            quickSettings.takeoverSupported &&
+            (quickSettings.takeover?.enabled ?? false)
+          }
+          takeoverDisabled={
+            quickSettings.loading ||
+            quickSettings.saving ||
+            !quickSettings.takeoverSupported
+          }
+          takeoverSupported={quickSettings.takeoverSupported}
+          onEndpointChange={changeEndpoint}
+          onTakeoverChange={handleTakeoverChange}
+          onOpenSettings={openOptions}
         />
-      )}
-    </main>
+
+        {supportsBackendConnections() && (
+          <PopupDashboard
+            uploadSpeed={
+              connected || rpcPaused
+                ? (controller.stats?.totalUploadSpeed ?? null)
+                : null
+            }
+            downloadSpeed={
+              connected || rpcPaused
+                ? (controller.stats?.totalDownloadSpeed ?? null)
+                : null
+            }
+            activeTaskCount={activeTaskCount}
+            resourceCount={resourceCount}
+            onShowTasks={showTasks}
+            onShowResources={showResources}
+          />
+        )}
+
+        {supportsBackendConnections() && state.endpoint && (
+          <DownloadActivity
+            key={backendKey}
+            endpointId={backendId}
+            endpointRevision={backendRevision}
+            phase={state.phase}
+            onViewTasks={() => {
+              setTab('tasks')
+              if (!connected) reconnectPopup()
+            }}
+          />
+        )}
+
+        {supportsBackendConnections() && autoReceipt && (
+          <p
+            role="status"
+            className="mt-2 shrink-0 text-xs text-muted-foreground"
+          >
+            {t('popup.rpc.added', { count: autoReceipt.count })}
+          </p>
+        )}
+        {supportsBackendConnections() && (
+          <RpcNotice state={state} onReconnect={reconnectPopup} />
+        )}
+        <PopupContent
+          tab={tab}
+          onTabChange={changeTab}
+          connected={connected}
+          state={state}
+          statusState={statusState}
+          taskController={taskController}
+          notice={connectedNotice}
+          needsServer={needsServer}
+          onReconnect={reconnectPopup}
+          onOpenOptions={openOptions}
+          onShowPairing={showPairing}
+          backendKey={backendKey}
+          onMediaCountChange={setResourceCount}
+          quickSettings={quickSettings}
+        />
+
+        {supportsBackendConnections() && <DownloadConfirmationDialog />}
+        {supportsBackendConnections() && pairingPrompt && (
+          <PairingPromptDialog
+            prompt={pairingPrompt}
+            error={pairingCodeError}
+            submitting={submittingCode}
+            onSubmit={(code) => void handleSubmitCode(code)}
+            onDismiss={() =>
+              setDismissedPairingDeadlineMs(pairingPrompt.deadlineMs)
+            }
+          />
+        )}
+      </main>
+    </DownloadDirectoryConnectionProvider>
   )
 }
