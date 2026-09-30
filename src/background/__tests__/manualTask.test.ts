@@ -82,6 +82,25 @@ describe('manual task background adapter', () => {
     ).toBe(true)
   })
 
+  it.each([
+    'http://172.16.50.14/My%20File.zip?token=a%2Bb',
+    'http://[::1]:8080/file.zip',
+    'http://nas/file.zip',
+    'https://例子.测试/file.zip',
+  ])('builds protocol-valid params for a local or IDN URL: %s', (input) => {
+    const parsed = parseManualTaskInput(input)
+    expect(parsed.ok).toBe(true)
+    if (!parsed.ok) return
+    const params = buildManualTaskSubmitParams(
+      parsed.value,
+      'manual-key-123',
+      0
+    )
+    expect(DownloadSubmitParamsSchema.parse(params)).toMatchObject({
+      selection: { kind: 'direct', primary: { url: new URL(input).href } },
+    })
+  })
+
   it('builds a magnet selection without HTTP resource fields', () => {
     const parsed = parseManualTaskInput('magnet:?xt=urn:btih:abcdef&dn=Example')
     expect(parsed.ok).toBe(true)

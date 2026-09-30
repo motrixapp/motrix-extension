@@ -23,6 +23,9 @@ minimumReleaseAgeExclude:
   - tailwind-merge@3.7.0
   - zod@4.6.4
 patchedDependencies:
+  # Allow IP/local download URLs until the MDXP resource schema fix is published.
+  # https://github.com/agalwood/Motrix/issues/2278
+  '@motrix/mdxp@0.8.0': patches/@motrix__mdxp@0.8.0.patch
   # Vite 8/Rolldown IIFE option migration; re-review with any CRXJS upgrade.
   '@crxjs/vite-plugin@2.7.1': patches/@crxjs__vite-plugin@2.7.1.patch
   '@wxt-dev/browser@0.3.0': patches/@wxt-dev__browser@0.3.0.patch
