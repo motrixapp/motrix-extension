@@ -1,12 +1,12 @@
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import type { ConfirmationResult } from '@/background/DownloadConfirmationService'
-import { makeOps } from '@/background/handoff/makeOps'
 import type { HandoffGuard } from '@/background/handoff/guard'
+import { makeOps } from '@/background/handoff/makeOps'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
 import { describeUrlForLog, log } from '@/background/log'
-import type { TakeoverTarget } from '@/shared/takeover'
 import { extensionBrowser as browser } from '@/shared/browser'
+import type { TakeoverTarget } from '@/shared/takeover'
 
 /** Opens the upstream confirmation form and resolves with the user's
  * decision. Provided by service-worker.ts, which owns the confirmation
@@ -122,7 +122,10 @@ function isEarlyTakeoverCandidate(details: EarlyRequestDetails): boolean {
   if (seenAt !== undefined && Date.now() - seenAt < HANDLED_URL_TTL_MS) {
     return false
   }
-  const disposition = headerValue(details.responseHeaders, 'content-disposition')
+  const disposition = headerValue(
+    details.responseHeaders,
+    'content-disposition'
+  )
   if (disposition && /attachment/i.test(disposition)) return true
   if (details.type !== 'main_frame' && details.type !== 'object') return false
   const contentType = headerValue(details.responseHeaders, 'content-type')
