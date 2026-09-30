@@ -34,7 +34,7 @@ export async function probeTarget(
   const now = deps.now ?? Date.now
   // Firefox's background is a Window, whose fetch checks its receiver. Calling
   // deps.fetch(...) supplies ProbeDeps as `this` and rejects before networking.
-  // Chromium's worker global does not expose this failure in the same way.
+  // Bind to the actual global instead of the dependency container.
   const fetchImpl = deps.fetch.bind(globalThis)
   // One deadline for both requests: the takeover hold budgets the probe at
   // 3 s in total, so the fallback only gets what the HEAD left over.

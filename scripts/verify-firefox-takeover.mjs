@@ -37,9 +37,19 @@ const server = createServer((request, response) => {
   const list = requests.get(name) ?? []
   list.push({ method: request.method, range: request.headers.range ?? null })
   requests.set(name, list)
+  const size = name === 'small' ? 2 * 1024 * 1024 : 8 * 1024 * 1024
   // The browser's original response works, while HEAD fails and ranged GET
   // is forbidden. Size discovery must come from Firefox's live metadata.
   if (request.method === 'HEAD') {
+    if (name === 'probe-only') {
+      response
+        .writeHead(200, {
+          'Content-Type': 'application/zip',
+          'Content-Length': size,
+        })
+        .end()
+      return
+    }
     request.socket.destroy()
     return
   }
@@ -47,11 +57,12 @@ const server = createServer((request, response) => {
     response.writeHead(403).end()
     return
   }
-  const size = name === 'small' ? 2 * 1024 * 1024 : 8 * 1024 * 1024
   response.writeHead(200, {
     'Content-Type': 'application/zip',
     'Content-Disposition': `attachment; filename="${name}.zip"`,
-    ...(!name.startsWith('unknown-') ? { 'Content-Length': size } : {}),
+    ...(!name.startsWith('unknown-') && name !== 'probe-only'
+      ? { 'Content-Length': size }
+      : {}),
   })
   response.flushHeaders()
   let sent = 0
@@ -253,6 +264,7 @@ try {
   assert.equal(receiver.boundStatus, 404)
   for (const name of [
     'known',
+    'probe-only',
     'confirm',
     'small',
     'unknown-chrome',
@@ -274,7 +286,7 @@ try {
     )
     assert.equal(
       result.submits,
-      ['known', 'unknown-motrix'].includes(name) ? 1 : 0,
+      ['known', 'probe-only', 'unknown-motrix'].includes(name) ? 1 : 0,
       `${name}: submits`
     )
     assert.equal(
@@ -297,12 +309,19 @@ try {
       )
     if (name === 'unknown-chrome')
       assert.equal(result.native[0].state, 'in_progress')
-    if (['known', 'unknown-motrix'].includes(name))
+    if (['known', 'probe-only', 'unknown-motrix'].includes(name))
       assert.deepEqual(result.native, [], 'cancelled history must be erased')
     if (name === 'known') {
       assert.ok(result.requests.some((request) => request.method === 'HEAD'))
       assert.ok(
         result.requests.some((request) => request.range === 'bytes=0-0')
+      )
+    }
+    if (name === 'probe-only') {
+      assert.ok(
+        result.observations.some(
+          (item) => item.event === 'probe' && item.outcome === 'head-length'
+        )
       )
     }
   }
