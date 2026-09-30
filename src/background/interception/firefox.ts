@@ -6,7 +6,7 @@ import { runHandoff } from '@/background/handoff/runHandoff'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
 import { confirmInterceptedDownload } from '@/background/interception/confirmDownload'
 import { isEligibleDownload } from '@/background/interception/eligibility'
-import { log } from '@/background/log'
+import { describeUrlForLog, log } from '@/background/log'
 import { decideTakeover } from '@/background/policy/decideTakeover'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 
@@ -99,7 +99,20 @@ async function handle(
     origin: 'auto',
   })
 
-  if (decideTakeover(cfg, target) !== 'motrix') return
+  const decision = decideTakeover(cfg, target)
+  log.debug(
+    '[takeover] onCreated url=',
+    describeUrlForLog(url),
+    'mime=',
+    item.mime,
+    'totalBytes=',
+    item.totalBytes,
+    'sizeBytes=',
+    sizeBytes,
+    'decision=',
+    decision
+  )
+  if (decision !== 'motrix') return
   const { contentType } = await runProbe()
   if (
     !isFaithfulReplay({
