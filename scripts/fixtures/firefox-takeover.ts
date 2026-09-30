@@ -48,6 +48,20 @@ registerFirefoxInterception({
 } as Parameters<typeof registerFirefoxInterception>[0])
 
 Object.assign(window, {
+  async checkFetchReceiver(baseUrl: string) {
+    const injected = { fetch: globalThis.fetch }
+    let unboundError = ''
+    try {
+      await injected.fetch(`${baseUrl}/receiver-probe`)
+    } catch (error) {
+      unboundError = String(error)
+    }
+    const bound = await injected.fetch.call(
+      globalThis,
+      `${baseUrl}/receiver-probe`
+    )
+    return { unboundError, boundStatus: bound.status }
+  },
   async runCase(input: { baseUrl: string; name: string }) {
     observations.length = 0
     submits = 0

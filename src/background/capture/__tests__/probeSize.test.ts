@@ -105,6 +105,23 @@ describe('probeTarget size', () => {
 })
 
 describe('probeTarget', () => {
+  it('calls native Window fetch with the global receiver for both requests', async () => {
+    const receivers: unknown[] = []
+    const fetchImpl = vi.fn(function (this: unknown) {
+      receivers.push(this)
+      if (this !== globalThis) throw new TypeError('invalid Window receiver')
+      return Promise.resolve(
+        receivers.length === 1
+          ? res(false, {})
+          : res(true, { 'content-length': '4096' })
+      )
+    })
+    expect(
+      (await probeTarget('https://h/f', { fetch: fetchImpl })).sizeBytes
+    ).toBe(4096)
+    expect(receivers).toEqual([globalThis, globalThis])
+  })
+
   it('falls back after a fast HEAD transport failure using only the remaining budget', async () => {
     let clock = 0
     const fetchImpl = vi

@@ -32,6 +32,10 @@ export async function probeTarget(
 ): Promise<ProbeResult> {
   const timeout = deps.timeoutMs ?? 3000
   const now = deps.now ?? Date.now
+  // Firefox's background is a Window, whose fetch checks its receiver. Calling
+  // deps.fetch(...) supplies ProbeDeps as `this` and rejects before networking.
+  // Chromium's worker global does not expose this failure in the same way.
+  const fetchImpl = deps.fetch.bind(globalThis)
   // One deadline for both requests: the takeover hold budgets the probe at
   // 3 s in total, so the fallback only gets what the HEAD left over.
   const deadline = now() + timeout
@@ -53,7 +57,7 @@ export async function probeTarget(
     return { sizeBytes, contentType }
   }
   try {
-    const head = await deps.fetch(url, {
+    const head = await fetchImpl(url, {
       method: 'HEAD',
       credentials: 'include',
       signal: AbortSignal.timeout(timeout),
@@ -77,7 +81,7 @@ export async function probeTarget(
   const remaining = deadline - now()
   if (remaining <= 0) return finish(null, 'budget-exhausted')
   try {
-    const ranged = await deps.fetch(url, {
+    const ranged = await fetchImpl(url, {
       method: 'GET',
       credentials: 'include',
       headers: { Range: 'bytes=0-0' },

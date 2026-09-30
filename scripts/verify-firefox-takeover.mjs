@@ -236,6 +236,21 @@ try {
     if (!context) await delay(100)
   }
   assert.ok(context, `Firefox did not open the fixture: ${diagnostics}`)
+  const receiverResponse = await command('script.evaluate', {
+    expression: `checkFetchReceiver(${JSON.stringify(baseUrl)}).then(JSON.stringify)`,
+    target: { context },
+    awaitPromise: true,
+    resultOwnership: 'none',
+  })
+  assert.equal(
+    receiverResponse.type,
+    'success',
+    JSON.stringify(receiverResponse)
+  )
+  const receiver = JSON.parse(receiverResponse.result.value)
+  console.log(JSON.stringify({ fetchReceiver: receiver }))
+  assert.match(receiver.unboundError, /Window|Illegal invocation|incompatible/)
+  assert.equal(receiver.boundStatus, 404)
   for (const name of [
     'known',
     'confirm',
@@ -284,6 +299,12 @@ try {
       assert.equal(result.native[0].state, 'in_progress')
     if (['known', 'unknown-motrix'].includes(name))
       assert.deepEqual(result.native, [], 'cancelled history must be erased')
+    if (name === 'known') {
+      assert.ok(result.requests.some((request) => request.method === 'HEAD'))
+      assert.ok(
+        result.requests.some((request) => request.range === 'bytes=0-0')
+      )
+    }
   }
   console.log('Firefox native takeover regression: PASS')
 } finally {
