@@ -1,5 +1,11 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { probeTarget } from '@/background/capture/probeSize'
+import { log } from '@/background/log'
+
+afterEach(() => {
+  log.setLevel('info')
+  vi.restoreAllMocks()
+})
 
 function res(
   ok: boolean,
@@ -99,6 +105,56 @@ describe('probeTarget size', () => {
 })
 
 describe('probeTarget', () => {
+  it('falls back after a fast HEAD transport failure using only the remaining budget', async () => {
+    let clock = 0
+    const fetchImpl = vi
+      .fn()
+      .mockImplementationOnce(async () => {
+        clock = 200
+        throw new TypeError('HEAD unavailable')
+      })
+      .mockResolvedValueOnce(
+        res(
+          true,
+          {
+            'content-range': 'bytes 0-0/4096',
+            'content-length': '1',
+            'content-type': 'application/zip',
+          },
+          206
+        )
+      )
+    const timeout = vi.spyOn(AbortSignal, 'timeout')
+    expect(
+      await probeTarget('https://h/f', { fetch: fetchImpl, now: () => clock })
+    ).toEqual({ sizeBytes: 4096, contentType: 'application/zip' })
+    expect(timeout.mock.calls.map(([ms]) => ms)).toEqual([3000, 2800])
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not retry a HEAD timeout past the shared deadline or expose its error', async () => {
+    log.setLevel('debug')
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {})
+    let clock = 0
+    const fetchImpl = vi.fn(async () => {
+      clock = 3000
+      throw new Error('https://user:password@h/private?token=secret')
+    })
+    expect(
+      await probeTarget('https://user:password@h/private?token=secret', {
+        fetch: fetchImpl,
+        now: () => clock,
+      })
+    ).toEqual({ sizeBytes: null, contentType: null })
+    expect(fetchImpl).toHaveBeenCalledOnce()
+    const output = JSON.stringify(debug.mock.calls)
+    expect(output).toContain('budget-exhausted')
+    expect(output).toContain('elapsedMs=')
+    expect(output).not.toContain('password')
+    expect(output).not.toContain('private')
+    expect(output).not.toContain('secret')
+  })
+
   it('reports the Content-Type alongside the size', async () => {
     const fetchImpl = vi.fn(async () =>
       res(true, { 'content-length': '4096', 'content-type': 'application/zip' })

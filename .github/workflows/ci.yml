@@ -37,6 +37,33 @@ jobs:
       - run: pnpm run build:safari
       - run: pnpm run build:webstore
 
+  firefox-takeover:
+    name: Firefox takeover (${{ matrix.firefox }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        firefox: ['143.0', 'latest']
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@84cb39b217b10273981911c288cd62326dc7c6d2
+        with:
+          runtime: node@24.18.0
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - uses: browser-actions/setup-firefox@0bc507ddf224827e3b1af68e014d5e42ab93e795 # v1
+        id: firefox
+        with:
+          firefox-version: ${{ matrix.firefox }}
+      - name: Exercise native download takeover
+        run: node scripts/verify-firefox-takeover.mjs
+        env:
+          FIREFOX_BINARY: ${{ steps.firefox.outputs.firefox-path }}
+
   safari-native-core:
     name: Safari native protocol and IPC
     runs-on: macos-15

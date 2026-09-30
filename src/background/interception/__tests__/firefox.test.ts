@@ -1,10 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { probeTarget } from '@/background/capture/probeSize'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
 import {
   cancelFirefoxDownload,
-  handleFirefoxDownloadSafely,
+  handleFirefoxDownloadSafely as handleFirefoxDownload,
 } from '@/background/interception/firefox'
 import { formToConfig } from '@/options/takeoverForm'
 import type { Browser } from '@/shared/browser'
@@ -22,11 +22,14 @@ vi.mock('@/background/capture/probeSize', () => ({
 interface DownloadsStub {
   cancel: ReturnType<typeof vi.fn>
   erase: ReturnType<typeof vi.fn>
+  search: ReturnType<typeof vi.fn>
+  current?: Browser.downloads.DownloadItem
 }
 
 let downloads: DownloadsStub
 
 beforeEach(() => {
+  vi.useFakeTimers()
   vi.mocked(probeTarget).mockReset().mockResolvedValue({
     sizeBytes: null,
     contentType: 'application/octet-stream',
@@ -34,11 +37,27 @@ beforeEach(() => {
   downloads = {
     cancel: vi.fn(async () => {}),
     erase: vi.fn(async () => {}),
+    search: vi.fn(async () => [downloads.current]),
   }
   ;(
     globalThis as Record<string, unknown> & { browser: Record<string, unknown> }
   ).browser.downloads = downloads
 })
+
+afterEach(() => vi.useRealTimers())
+
+async function handleFirefoxDownloadSafely(
+  item: Browser.downloads.DownloadItem,
+  deps: ChromiumInterceptionDeps
+): Promise<void> {
+  downloads.current = { ...item, state: 'in_progress', paused: false }
+  const operation = handleFirefoxDownload(item, {
+    ...deps,
+    selfExtensionId: deps.selfExtensionId ?? 'test-extension-id',
+  })
+  await vi.advanceTimersByTimeAsync(3500)
+  await operation
+}
 
 describe('cancelFirefoxDownload', () => {
   it('cancels before erasing the history item', async () => {

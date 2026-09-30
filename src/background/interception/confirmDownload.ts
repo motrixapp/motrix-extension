@@ -1,6 +1,8 @@
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
+import type { HandoffGuard } from '@/background/handoff/guard'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
 import { pickDownloadUrl } from '@/background/interception/eligibility'
+import { describeUrlForLog, log } from '@/background/log'
 import { decideTakeover } from '@/background/policy/decideTakeover'
 import type { TakeoverConfig } from '@/shared/takeover'
 
@@ -17,7 +19,8 @@ export async function confirmInterceptedDownload(
   },
   config: TakeoverConfig,
   capturedWindow: Promise<number | null> | undefined,
-  deps: ChromiumInterceptionDeps
+  deps: ChromiumInterceptionDeps,
+  capturedGuard?: HandoffGuard
 ): Promise<void> {
   if (!deps.confirm) return
   const target = normalizeTarget({
@@ -31,8 +34,17 @@ export async function confirmInterceptedDownload(
         : null,
     origin: 'auto',
   })
-  if (decideTakeover(config, target) !== 'motrix') return
-  const guard = await deps.captureGuard()
+  const decision = decideTakeover(config, target)
+  log.debug(
+    '[takeover] confirm-path decision=',
+    decision,
+    'sizeBytes=',
+    target.sizeBytes,
+    'url=',
+    describeUrlForLog(target.url)
+  )
+  if (decision !== 'motrix') return
+  const guard = capturedGuard ?? (await deps.captureGuard())
   if (!guard) return
   const windowId = await capturedWindow
   guard.assertCurrent()

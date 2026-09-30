@@ -1,3 +1,5 @@
+import { describeUrlForLog, log } from '@/background/log'
+
 export interface ProbeDeps {
   fetch: typeof fetch
   /** Budget for the whole probe, HEAD and fallback together. */
@@ -11,8 +13,6 @@ export interface ProbeResult {
   /** Raw Content-Type header of the probed response, or null when unknown. */
   contentType: string | null
 }
-
-const EMPTY: ProbeResult = { sizeBytes: null, contentType: null }
 
 function parseLen(value: string | null): number | null {
   if (value === null) return null
@@ -36,6 +36,22 @@ export async function probeTarget(
   // 3 s in total, so the fallback only gets what the HEAD left over.
   const deadline = now() + timeout
   let contentType: string | null = null
+  let headOutcome = 'no-length'
+  const finish = (sizeBytes: number | null, outcome: string): ProbeResult => {
+    log.debug(
+      '[takeover] probe outcome=',
+      outcome,
+      'head=',
+      headOutcome,
+      'elapsedMs=',
+      Math.max(0, timeout - (deadline - now())),
+      'sizeBytes=',
+      sizeBytes,
+      'url=',
+      describeUrlForLog(url)
+    )
+    return { sizeBytes, contentType }
+  }
   try {
     const head = await deps.fetch(url, {
       method: 'HEAD',
@@ -45,14 +61,21 @@ export async function probeTarget(
     if (head.ok) {
       contentType = head.headers.get('content-type')
       const len = parseLen(head.headers.get('content-length'))
-      if (len !== null) return { sizeBytes: len, contentType }
+      if (len !== null) {
+        headOutcome = 'length'
+        return finish(len, 'head-length')
+      }
+    } else {
+      headOutcome = `http-${head.status}`
     }
   } catch {
-    return EMPTY
+    // A transport failure before the deadline need not mean GET is broken.
+    // Keep the original shared budget; a timed-out HEAD gets no extra time.
+    headOutcome = 'request-failed'
   }
-  // HEAD unsupported or no length: try a 1-byte ranged GET.
+  // HEAD unavailable or no length: try a 1-byte ranged GET.
   const remaining = deadline - now()
-  if (remaining <= 0) return { sizeBytes: null, contentType }
+  if (remaining <= 0) return finish(null, 'budget-exhausted')
   try {
     const ranged = await deps.fetch(url, {
       method: 'GET',
@@ -61,7 +84,7 @@ export async function probeTarget(
       signal: AbortSignal.timeout(remaining),
     })
     try {
-      if (!ranged.ok) return { sizeBytes: null, contentType }
+      if (!ranged.ok) return finish(null, `range-http-${ranged.status}`)
       contentType = ranged.headers.get('content-type') ?? contentType
       // A 206 Content-Length describes just the requested slice. A server
       // that ignores Range returns 200, whose Content-Length is the full size.
@@ -69,13 +92,20 @@ export async function probeTarget(
         ranged.status === 206
           ? (ranged.headers.get('content-range')?.split('/')[1] ?? null)
           : ranged.headers.get('content-length')
-      return { sizeBytes: parseLen(length), contentType }
+      const sizeBytes = parseLen(length)
+      return finish(
+        sizeBytes,
+        sizeBytes === null ? 'range-no-length' : 'range-length'
+      )
     } finally {
       // Only the headers are needed, especially if Range was ignored and
       // the server started sending the whole file.
       await ranged.body?.cancel().catch(() => {})
     }
   } catch {
-    return { sizeBytes: null, contentType }
+    return finish(
+      null,
+      now() >= deadline ? 'budget-exhausted' : 'range-request-failed'
+    )
   }
 }
