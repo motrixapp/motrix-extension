@@ -169,7 +169,6 @@ overrides:
 
 patchedDependencies:
   '@crxjs/vite-plugin@2.7.1': 2d74e32430c2eedc21acd828a56bc4d5e01babdb8eeb58ae41b606e41eb543f9
-  '@motrix/mdxp@0.8.0': 3d84e0f7ef0d9afea0dc1983c4bf5c47195505f79e901574edee29ac3d142eb4
   '@wxt-dev/browser@0.3.0': 78e34d52ff2c9c213822faf3f628d614e88a849124bb577cad82345ea12bb555
 
 importers:
@@ -186,8 +185,8 @@ importers:
         specifier: ^5.9.1
         version: 5.9.1(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.88.0(react@19.3.0))(zod@4.6.5)
       '@motrix/mdxp':
-        specifier: ^0.8.0
-        version: 0.8.0(patch_hash=3d84e0f7ef0d9afea0dc1983c4bf5c47195505f79e901574edee29ac3d142eb4)
+        specifier: ^0.8.1
+        version: 0.8.1
       '@noble/curves':
         specifier: 2.4.0
         version: 2.4.0
@@ -723,8 +722,8 @@ packages:
       '@cfworker/json-schema':
         optional: true
 
-  '@motrix/mdxp@0.8.0':
-    resolution: {integrity: sha512-eZ1zexvJxpVP/xosaO4Bio3pOIlukO+jsaDSSJX6Ong0eohP7MTXuUfwDfrNBX3cZ/sOEKy8zJurZ551ryQLog==}
+  '@motrix/mdxp@0.8.1':
+    resolution: {integrity: sha512-wafsE7NNhftWufJ6cDNtJ79125lmtd1liUkIKfTanDAW9ywqkmhFDKIyekyd1UPaS2P6H+RmK+DXTYY8i3ijcA==}
 
   '@noble/curves@2.4.0':
     resolution: {integrity: sha512-P4/62zrgfH33CneE3Dn4WhJVA22YUU0eR51wKIan4NVRvwsA0YnPTwWGpNbpuacSujmSFLvyzpyuR30+fbq2Ew==}
@@ -3288,7 +3287,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@motrix/mdxp@0.8.0(patch_hash=3d84e0f7ef0d9afea0dc1983c4bf5c47195505f79e901574edee29ac3d142eb4)':
+  '@motrix/mdxp@0.8.1':
     dependencies:
       vscode-jsonrpc: 9.0.3
       zod: 4.6.5

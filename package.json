@@ -39,7 +39,7 @@
     "@base-ui/react": "1.8.0",
     "@fontsource-variable/inter": "^5.3.0",
     "@hookform/resolvers": "^5.9.1",
-    "@motrix/mdxp": "^0.8.0",
+    "@motrix/mdxp": "^0.8.1",
     "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0",
     "@wxt-dev/browser": "^0.3.0",
