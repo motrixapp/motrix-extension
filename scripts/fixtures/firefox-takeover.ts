@@ -11,6 +11,12 @@ let submits = 0
 let confirmations = 0
 let nativeId: number | undefined
 log.setLevel('debug')
+const debug = console.debug.bind(console)
+console.debug = (...args: unknown[]) => {
+  if (args[1] === '[takeover] probe outcome=')
+    observations.push({ event: 'probe', outcome: args[2], head: args[4] })
+  debug(...args)
+}
 browser.downloads.onCreated.addListener((item) => {
   nativeId = item.id
   observations.push({

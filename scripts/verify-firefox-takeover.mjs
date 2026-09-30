@@ -275,7 +275,12 @@ try {
       )
       assert.equal(result.native[0].state, 'in_progress')
     }
-    if (['small', 'unknown-chrome'].includes(name))
+    if (name === 'small')
+      assert.ok(
+        ['in_progress', 'complete'].includes(result.native[0].state),
+        'small download must remain native, even if it finishes before inspection'
+      )
+    if (name === 'unknown-chrome')
       assert.equal(result.native[0].state, 'in_progress')
     if (['known', 'unknown-motrix'].includes(name))
       assert.deepEqual(result.native, [], 'cancelled history must be erased')
