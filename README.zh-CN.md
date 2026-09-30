@@ -19,7 +19,7 @@
 
 你需要：
 
-- Chrome 120 或更高版本、当前版本的 Microsoft Edge，或者 Firefox 142 或更高版本；
+- Chrome 120 或更高版本、当前版本的 Microsoft Edge，Firefox 142 或更高版本，或 macOS 13 及以上系统中的 Safari；
 - 支持当前 MDXP / MBP1 协议的 Motrix App 或 Motrix Server；
 - 首次配对本机 Motrix App 时，请先启动 Motrix，并确保它的浏览器连接组件已经正确安装。
 
@@ -28,13 +28,16 @@ Firefox Android 通过 Motrix Server 连接。Android 不支持 Native Messaging
 
 ## 安装
 
-先安装 [Motrix 2](https://motrix.app/zh/download?channel=beta)，再从浏览器商店安装扩展：
+先安装 [Motrix 2](https://motrix.app/zh/download?channel=beta)，再安装对应浏览器的扩展：
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
 - [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)
 - [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/motrix-extension/)
+- [Safari macOS 版](https://github.com/motrixapp/motrix-extension/releases?q=safari&expanded=true)
 
 商店版无需开启开发者模式，也无需手动添加受信任的扩展 ID。按下方[第一次连接](#第一次连接)完成配对，或参阅[浏览器扩展指南](https://motrix.app/zh/manual/browser-extension/)。
+
+Safari 用户请下载并解压 macOS ZIP，将 `Motrix Extension for Safari.app` 移入 Applications，打开后在 Safari“设置 → 扩展”中启用 **Motrix Extension**，按需授予网站访问权限并配对。该应用已完成签名和公证，与 Motrix 配套发布，已正式可用；无需启用开发者模式或允许未签名扩展。Safari 支持连接 App/Server、配对、重连和提交下载，但不支持自动拦截下载。
 
 Motrix AppImage 安装包目前不支持本机浏览器集成。在 Linux 上需要本机配对时，请使用 DEB 或 RPM 安装包。
 
@@ -68,9 +71,9 @@ Firefox：打开 `about:debugging#/runtime/this-firefox`，点击“临时载入
 
 macOS 上的 Safari 18.4+：运行 `pnpm build:safari`，然后在 Safari“设置 → 开发者 → 添加临时扩展”中选择 `dist/safari/`。需要启用网页开发者功能，并按 Safari 提示允许未签名扩展。临时扩展会在退出 Safari 或 24 小时后移除。
 
-**Safari 临时扩展为离线预览版。** 连接 App/Server 需要包含原生消息组件的 `Motrix Extension for Safari.app`。本地开发验收已覆盖 App 冷启动、配对、重连、Server 下载和下载确认弹窗。Safari 不支持自动拦截下载；原生通知投递仍在验证中。
+直接加载 `dist/safari/` 仅适合测试网页界面，其中没有连接 Motrix 所需的原生消息组件。正常使用及连接 App/Server，请安装[打包的 Safari 应用](#安装)。
 
-安装完整 Xcode 后，按 [Safari 构建与分发说明](./native/safari/README.md)操作。桌面集成需要兼容的同 Team Motrix bootstrap 服务；扩展已使用正式发布的 MDXP 包。Developer ID 签名与公证由独立 GitHub Actions 工作流完成，公开分发前仍需完成云端构建和安装验收。
+开发原生集成时，请安装完整 Xcode 并按 [Safari 构建与分发说明](./native/safari/README.md)操作。桌面集成需要兼容的同 Team Motrix bootstrap 服务；独立 GitHub Actions 工作流负责 Safari 发布包的 Developer ID 签名和公证。
 
 </details>
 

@@ -7,7 +7,7 @@ The official browser extension for [Motrix](https://motrix.app). Send downloads 
 I think of it as a bridge between the browser and Motrix. The browser is good at finding resources; Motrix is good at downloading them reliably. That division of labor is simple, and it feels right in daily use.
 
 > [!IMPORTANT]
-> Motrix Extension is available from the Chrome Web Store, Microsoft Edge Add-ons, and Firefox Add-ons. YouTube downloads are not supported; store-facing Chrome/Edge and Firefox builds remove the placeholder YouTube adapter entirely.
+> Motrix Extension is available from the Chrome Web Store, Microsoft Edge Add-ons, and Firefox Add-ons. Safari is available as the packaged `Motrix Extension for Safari.app`, released alongside Motrix. YouTube downloads are not supported; store-facing Chrome/Edge and Firefox builds remove the placeholder YouTube adapter entirely.
 
 ## What you can do
 
@@ -24,7 +24,7 @@ This is useful, but websites are messy. Login state, expiring URLs, hotlink prot
 
 You will need:
 
-- Chrome 120 or later, a current Microsoft Edge release, or Firefox 142 or later;
+- Chrome 120 or later, a current Microsoft Edge release, Firefox 142 or later, or Safari on macOS 13 or later;
 - a Motrix App or Motrix Server compatible with the current MDXP / MBP1 protocol;
 - for initial local pairing, start the Motrix App and make sure its browser integration component is installed correctly.
 
@@ -33,13 +33,16 @@ available there, so the local Motrix App backend is shown only on desktop.
 
 ## Install
 
-Install [Motrix 2](https://motrix.app/download?channel=beta), then add the extension from your browser's store:
+Install [Motrix 2](https://motrix.app/download?channel=beta), then install the extension for your browser:
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
 - [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)
 - [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/motrix-extension/)
+- [Safari for macOS](https://github.com/motrixapp/motrix-extension/releases?q=safari&expanded=true)
 
 Store installations do not require Developer mode or a manually added trusted extension ID. Follow [Connect for the first time](#connect-for-the-first-time) below to pair with Motrix, or read the [browser extension guide](https://motrix.app/manual/browser-extension/).
+
+For Safari, download and extract the macOS ZIP, move `Motrix Extension for Safari.app` to Applications, then open it and enable **Motrix Extension** in **Safari Settings → Extensions**. Grant website access as needed and pair with Motrix. The signed and notarized app is ready to use with the accompanying Motrix release; no developer mode or unsigned-extension setting is needed. Safari supports App/Server connections, pairing, reconnect, and download submission. Automatic download interception is unavailable in Safari.
 
 Local browser integration is not currently available in the Motrix AppImage package. On Linux, use the DEB or RPM package for local pairing.
 
@@ -72,9 +75,9 @@ Firefox: open `about:debugging#/runtime/this-firefox`, choose **Load Temporary A
 
 Safari 18.4+ on macOS: run `pnpm build:safari`, then choose **Settings → Developer → Add Temporary Extension** and select `dist/safari/`. Enable web developer features and allow unsigned extensions when Safari prompts. Safari removes temporary extensions when it quits or after 24 hours.
 
-**The temporary Safari extension is an offline preview.** For App/Server connections, use the packaged `Motrix Extension for Safari.app`, which includes the native messaging component. Local development acceptance covers App cold start, pairing, reconnect, Server downloads, and the download confirmation popup. Automatic download interception is unavailable; native notification delivery remains under validation.
+Loading `dist/safari/` directly is only for testing the web UI: it lacks the native messaging component needed to connect to Motrix. Use the [packaged Safari app](#install) for normal use, including App/Server connections.
 
-Install full Xcode and follow the [Safari build and distribution instructions](./native/safari/README.md). Desktop integration requires a compatible same-Team Motrix bootstrap service; the extension uses the published MDXP package. Developer ID signing and notarization are provided by a separate GitHub Actions workflow and still require hosted acceptance before public distribution.
+To develop the native integration, install full Xcode and follow the [Safari build and distribution instructions](./native/safari/README.md). Desktop integration requires a compatible same-Team Motrix bootstrap service. The dedicated GitHub Actions workflow handles Developer ID signing and notarization for Safari releases.
 
 </details>
 

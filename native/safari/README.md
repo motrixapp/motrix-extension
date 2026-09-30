@@ -2,7 +2,7 @@
 
 This directory provides Safari native transport, a reusable signed XPC bootstrap library, and a Rust-backed desktop bootstrap executable. The default ad-hoc harness supports a validated `ping`/`pong` exchange and returns `bootstrap-unavailable` for bootstrap. The signed client and desktop deployment have completed real Safari cold start, first pairing, credential reconnect after desktop exit, and a verified download. Use the client-only Safari app with the desktop-hosted service for this integration.
 
-The local acceptance build is `Motrix Extension 0.1.14.10`, installed on 2026-09-27. The app and extension remain sandboxed, with Apple Development signatures and App Group peer validation. This is a local development result, not a notarized distribution or a published MDXP release.
+The signed and notarized `Motrix Extension for Safari.app` is [available for download](https://github.com/motrixapp/motrix-extension/releases?q=safari&expanded=true) and ready to use with the accompanying Motrix release. See the [installation instructions](../../README.md#install). The build 10 results below record development acceptance on 2026-09-27; they do not describe the current distribution status.
 
 ## Build
 
@@ -216,7 +216,7 @@ The extension-side `BootstrapProvider` contract separates transport from connect
 
 Platform references: [XPC peer code-signing requirements](https://developer.apple.com/documentation/foundation/nsxpcconnection/setcodesigningrequirement(_:)), [code-signing requirement language](https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/RequirementLang/RequirementLang.html), and [App Groups IPC](https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.application-groups).
 
-The harness uses Apple's generated containing-app UI for development. Developer ID distribution and notarization remain subsequent milestones. The local Motrix backend and MDXP source now accept Safari, with strict Origin, ticket, credential, pairing, and reconnect tests. These protocol changes have not been published as a released dependency.
+The harness uses Apple's generated containing-app UI for development. Public Safari packages use Developer ID signing and notarization. Released Motrix and MDXP packages include Safari support, with strict Origin, ticket, credential, pairing, and reconnect tests.
 
 ### End-to-end acceptance
 
