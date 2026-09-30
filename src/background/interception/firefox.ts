@@ -134,6 +134,10 @@ async function handle(
     log.debug(
       '[takeover] Firefox decision=',
       decideTakeover(cfg, target),
+      'mime=',
+      item.mime,
+      'totalBytes=',
+      item.totalBytes,
       'sizeBytes=',
       target.sizeBytes,
       'sizeSource=',
