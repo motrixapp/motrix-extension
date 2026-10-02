@@ -269,6 +269,38 @@ describe('confirmation before the first request', () => {
     }
   )
 
+  it.each(['submit', 'browser', 'cancel'])(
+    'replays a cancelled native response only for explicit browser choice: %s',
+    async (action) => {
+      const f = confirmedFixture()
+      const target = {
+        ...f.target,
+        origin: 'auto' as const,
+        nativeDownloadCancelled: true,
+      }
+      const run = requestConfirmedDownload(
+        {
+          ...f.deps,
+          confirmation: f.confirmation,
+          submissions: f.submissions,
+        } as never,
+        target,
+        4,
+        f.guard
+      )
+      await vi.waitFor(() => expect(f.confirmation.get(4)).not.toBeNull())
+      const draft = f.confirmation.get(4)!
+      f.confirmation.decide(4, draft.id, { action, options: draft.options })
+      await run
+      expect(f.deps.manager.submitDownload).toHaveBeenCalledTimes(
+        action === 'submit' ? 1 : 0
+      )
+      expect(extensionBrowser.downloads.download).toHaveBeenCalledTimes(
+        action === 'browser' ? 1 : 0
+      )
+    }
+  )
+
   it('does not open confirmation after an endpoint changed during setup', async () => {
     const f = confirmedFixture()
     f.guard.assertCurrent.mockImplementation(() => {

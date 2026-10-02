@@ -515,6 +515,7 @@
       "unavailable": "No s’ha pogut obrir la confirmació. Acaba qualsevol formulari de baixada obert i torna-ho a provar. No s’ha iniciat cap baixada.",
       "close": "Tanca",
       "interceptedDescription": "El navegador ja ha iniciat aquesta baixada. Motrix tornarà a sol·licitar l’enllaç, cosa que pot fallar amb enllaços d’un sol ús. La baixada original continua i pot crear un duplicat.",
+      "earlyInterceptedDescription": "La sol·licitud original del navegador s’ha cancel·lat. Continuar amb Motrix o el navegador torna a sol·licitar l’enllaç; els enllaços d’un sol ús poden fallar.",
       "keepBrowser": "Mantén la baixada del navegador"
     }
   },

@@ -515,6 +515,7 @@
       "unavailable": "Tidak dapat membuka konfirmasi. Selesaikan formulir yang terbuka, lalu coba lagi. Unduhan belum dimulai.",
       "close": "Tutup",
       "interceptedDescription": "Browser sudah memulai unduhan ini. Motrix akan meminta tautan lagi, yang mungkin gagal untuk tautan sekali pakai. Unduhan asli tetap berjalan dan dapat menghasilkan file duplikat.",
+      "earlyInterceptedDescription": "Permintaan awal browser dibatalkan. Melanjutkan dengan Motrix atau browser akan meminta tautan lagi; tautan sekali pakai mungkin gagal.",
       "keepBrowser": "Pertahankan unduhan browser"
     }
   },

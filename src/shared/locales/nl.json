@@ -515,6 +515,7 @@
       "unavailable": "Kan de bevestiging niet openen. Rond een eventueel geopend downloadformulier af en probeer opnieuw. Er is geen download gestart.",
       "close": "Sluiten",
       "interceptedDescription": "De browser heeft deze download al gestart. Motrix vraagt de link opnieuw op; bij eenmalige links kan dit mislukken. De oorspronkelijke download gaat door en kan een duplicaat opleveren.",
+      "earlyInterceptedDescription": "Het oorspronkelijke browserverzoek is geannuleerd. Doorgaan met Motrix of de browser vraagt de link opnieuw op; eenmalige links kunnen mislukken.",
       "keepBrowser": "Browserdownload behouden"
     }
   },

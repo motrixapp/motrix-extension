@@ -64,8 +64,9 @@ export function createConfirmedDownloadActions(
     browser:
       target.origin === 'auto' || supportsBrowserDownload()
         ? async () => {
-            // An intercepted download already owns its browser response.
-            if (target.origin === 'auto') return
+            // The native adapter keeps its response; early interception cancels it.
+            if (target.origin === 'auto' && !target.nativeDownloadCancelled)
+              return
             guard.assertCurrent()
             await downloadHttpInBrowser(target.url)
           }

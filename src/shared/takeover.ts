@@ -33,6 +33,8 @@ export interface TakeoverTarget {
   mime: string
   sizeBytes: number | null
   siteHint: string
+  /** Early interception cancelled the response; browser choice must replay it. */
+  nativeDownloadCancelled?: boolean | undefined
   origin: 'auto' | 'context-menu'
 }
 

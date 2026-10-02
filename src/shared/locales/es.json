@@ -515,6 +515,7 @@
       "unavailable": "No se pudo abrir la confirmación. Termina el formulario abierto e inténtalo de nuevo. No se inició ninguna descarga.",
       "close": "Cerrar",
       "interceptedDescription": "El navegador ya inició esta descarga. Motrix volverá a solicitar el enlace, lo que puede fallar con enlaces de un solo uso. La descarga original continúa y puede crear un duplicado.",
+      "earlyInterceptedDescription": "Se canceló la solicitud original del navegador. Continuar con Motrix o el navegador vuelve a solicitar el enlace; los enlaces de un solo uso pueden fallar.",
       "keepBrowser": "Mantener la descarga del navegador"
     }
   },

@@ -515,6 +515,7 @@
       "unavailable": "Nie można otworzyć potwierdzenia. Dokończ otwarty formularz pobierania i spróbuj ponownie. Nie rozpoczęto pobierania.",
       "close": "Zamknij",
       "interceptedDescription": "Przeglądarka rozpoczęła już pobieranie. Motrix ponownie zażąda linku, co może się nie udać w przypadku linków jednorazowych. Pierwotne pobieranie będzie kontynuowane i może utworzyć duplikat.",
+      "earlyInterceptedDescription": "Pierwotne żądanie przeglądarki zostało anulowane. Kontynuowanie w Motrix lub przeglądarce ponowi żądanie; linki jednorazowe mogą nie zadziałać.",
       "keepBrowser": "Zachowaj pobieranie w przeglądarce"
     }
   },

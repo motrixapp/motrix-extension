@@ -515,6 +515,7 @@
       "unavailable": "無法開啟確認表單。請先處理已開啟的下載表單，再重試。尚未發起下載。",
       "close": "關閉",
       "interceptedDescription": "瀏覽器已開始下載。Motrix 會重新請求連結，一次性連結可能失敗。原下載將繼續，可能產生重複檔案。",
+      "earlyInterceptedDescription": "原瀏覽器請求已取消。選擇 Motrix 或瀏覽器下載都會重新請求連結，一次性連結可能失效。",
       "keepBrowser": "保留瀏覽器下載"
     }
   },

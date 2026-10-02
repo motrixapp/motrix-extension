@@ -103,6 +103,8 @@ function ConfirmationForm({
   }, [draft.expiresAt])
   const sending = submittedDraft === draft || draft.phase === 'submitting'
   const disabled = sending || draft.phase === 'unknown' || remaining <= 0
+  const browserDownloadContinues =
+    draft.target.origin === 'auto' && !draft.target.nativeDownloadCancelled
   const browserAllowed =
     !isMagnetUrl(draft.target.url) &&
     (draft.target.origin === 'auto' || supportsBrowserDownload())
@@ -133,7 +135,9 @@ function ConfirmationForm({
             <DialogDescription className="text-xs/5">
               {t(
                 draft.target.origin === 'auto'
-                  ? 'popup.confirmDownload.interceptedDescription'
+                  ? draft.target.nativeDownloadCancelled
+                    ? 'popup.confirmDownload.earlyInterceptedDescription'
+                    : 'popup.confirmDownload.interceptedDescription'
                   : 'popup.confirmDownload.description'
               )}
             </DialogDescription>
@@ -174,7 +178,7 @@ function ConfirmationForm({
               {t(confirmationErrorKey(draft.error))}
             </p>
           )}
-          {browserAllowed && draft.target.origin !== 'auto' && (
+          {browserAllowed && !browserDownloadContinues && (
             <p
               id="confirmation-browser-hint"
               className="shrink-0 text-xs text-muted-foreground"
@@ -207,7 +211,7 @@ function ConfirmationForm({
                 size="sm"
                 disabled={disabled}
                 aria-describedby={
-                  draft.target.origin === 'auto'
+                  browserDownloadContinues
                     ? undefined
                     : 'confirmation-browser-hint'
                 }
@@ -217,7 +221,7 @@ function ConfirmationForm({
                 }}
               >
                 {t(
-                  draft.target.origin === 'auto'
+                  browserDownloadContinues
                     ? 'popup.confirmDownload.keepBrowser'
                     : 'popup.confirmDownload.browser'
                 )}

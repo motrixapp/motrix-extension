@@ -515,6 +515,7 @@
       "unavailable": "Impossible d’ouvrir la confirmation. Terminez le formulaire ouvert, puis réessayez. Aucun téléchargement n’a été lancé.",
       "close": "Fermer",
       "interceptedDescription": "Le navigateur a déjà démarré ce téléchargement. Motrix demandera à nouveau le lien, ce qui peut échouer avec un lien à usage unique. Le téléchargement initial continue et peut créer un doublon.",
+      "earlyInterceptedDescription": "La requête initiale du navigateur a été annulée. Continuer avec Motrix ou le navigateur relance la requête ; les liens à usage unique peuvent échouer.",
       "keepBrowser": "Conserver le téléchargement du navigateur"
     }
   },

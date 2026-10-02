@@ -9,7 +9,7 @@ files does not apply the settings; GitHub does not load them automatically.
 
 | File | Effect |
 | --- | --- |
-| `main.ruleset.json` | PRs, the GitHub Actions `Extension checks` check, up-to-date branches, and resolved conversations. Only owner account `agalwood` (user ID 1032175) can bypass these requirements for a direct push. |
+| `main.ruleset.json` | PRs, the GitHub Actions `Extension checks` aggregate (static checks plus both Firefox takeover jobs), up-to-date branches, and resolved conversations. Only owner account `agalwood` (user ID 1032175) can bypass these requirements for a direct push. |
 | `main-integrity.ruleset.json` | Linear history; no force pushes or deletion, with no bypass actors, including the owner. |
 | `release-tag-creation.ruleset.json` | Only the repository Admin role (ID 5) can create `v*` tags. |
 | `release-tag-integrity.ruleset.json` | Nobody can update or delete existing `v*` tags while the rule is active, including tag creators. |

@@ -515,6 +515,7 @@
       "unavailable": "Không mở được xác nhận. Hoàn tất biểu mẫu đang mở rồi thử lại. Chưa bắt đầu tải xuống.",
       "close": "Đóng",
       "interceptedDescription": "Trình duyệt đã bắt đầu tải xuống. Motrix sẽ yêu cầu lại liên kết, điều này có thể thất bại với liên kết dùng một lần. Lượt tải ban đầu vẫn tiếp tục và có thể tạo tệp trùng lặp.",
+      "earlyInterceptedDescription": "Yêu cầu ban đầu của trình duyệt đã bị hủy. Tiếp tục bằng Motrix hoặc trình duyệt sẽ yêu cầu lại liên kết; liên kết dùng một lần có thể không hoạt động.",
       "keepBrowser": "Giữ lượt tải của trình duyệt"
     }
   },
