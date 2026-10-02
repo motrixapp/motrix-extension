@@ -515,6 +515,7 @@
       "unavailable": "Confirmarea nu a putut fi deschisă. Finalizează formularul de descărcare deschis și încearcă din nou. Nu a început nicio descărcare.",
       "close": "Închide",
       "interceptedDescription": "Browserul a început deja descărcarea. Motrix va solicita din nou linkul, ceea ce poate eșua pentru linkurile de unică folosință. Descărcarea inițială continuă și poate crea un duplicat.",
+      "earlyInterceptedDescription": "Cererea inițială a browserului a fost anulată. Continuarea cu Motrix sau browserul solicită din nou linkul; linkurile de unică folosință pot eșua.",
       "keepBrowser": "Păstrează descărcarea în browser"
     }
   },

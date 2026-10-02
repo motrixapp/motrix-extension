@@ -515,6 +515,7 @@
       "unavailable": "Could not open confirmation. Finish any open download form, then try again. No download was started.",
       "close": "Close",
       "interceptedDescription": "The browser has already started this download. Motrix will request the link again, which may fail for one-use links. The original download continues and may produce a duplicate.",
+      "earlyInterceptedDescription": "The original browser request was cancelled. Continuing with Motrix or the browser requests the link again; one-use links may fail.",
       "keepBrowser": "Keep browser download"
     }
   },

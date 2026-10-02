@@ -76,6 +76,7 @@ const savedConfirmationSchema = z.object({
       sizeBytes: z.number().nullable(),
       siteHint: z.string(),
       origin: z.enum(['auto', 'context-menu']),
+      nativeDownloadCancelled: z.boolean().optional(),
     }),
     options: taskOptionsDraftSchema,
     phase: z.enum(['editing', 'submitting', 'failed', 'unknown']),
@@ -163,8 +164,13 @@ export class DownloadConfirmationService {
         .open(windowId, () => this.pending.get(windowId) === pending)
         .catch(() => {
           // Opening is advisory once a user has already confirmed in a live view.
-          if (pending.draft.phase === 'editing')
-            resolve({ action: 'unavailable' })
+          if (pending.draft.phase === 'editing') {
+            // Early takeover will replay in the browser after this result.
+            // Retaining its draft would allow a second, late submission.
+            if (target.nativeDownloadCancelled)
+              pending.settle({ action: 'unavailable' })
+            else resolve({ action: 'unavailable' })
+          }
         })
     })
   }

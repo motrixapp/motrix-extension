@@ -21,7 +21,11 @@ export function createPreviewConfirmationPort(scenario: string | null) {
           mime: 'application/zip',
           sizeBytes: null,
           siteHint: 'example.com',
-          origin: scenario === 'auto' ? 'auto' : 'context-menu',
+          origin:
+            scenario === 'auto' || scenario === 'early'
+              ? 'auto'
+              : 'context-menu',
+          ...(scenario === 'early' ? { nativeDownloadCancelled: true } : {}),
         },
         options: {
           ...defaultTaskOptions(navigator.userAgent),

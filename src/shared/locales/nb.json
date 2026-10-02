@@ -515,6 +515,7 @@
       "unavailable": "Kunne ikke åpne bekreftelsen. Fullfør et eventuelt åpent nedlastingsskjema og prøv igjen. Ingen nedlasting ble startet.",
       "close": "Lukk",
       "interceptedDescription": "Nettleseren har allerede startet nedlastingen. Motrix ber om lenken på nytt, noe som kan mislykkes med engangslenker. Den opprinnelige nedlastingen fortsetter og kan lage en kopi.",
+      "earlyInterceptedDescription": "Den opprinnelige nettleserforespørselen ble avbrutt. Hvis du fortsetter med Motrix eller nettleseren, hentes lenken på nytt; engangslenker kan mislykkes.",
       "keepBrowser": "Behold nettlesernedlasting"
     }
   },

@@ -27,13 +27,15 @@
     "safari:native": "pnpm run build:safari && node scripts/safari-native.mjs --build",
     "safari:native:signed": "pnpm run build:safari && node scripts/safari-native.mjs --build --signed",
     "build:webstore": "pnpm run typecheck && vite build --mode webstore && node scripts/verify-webstore-build.mjs",
-    "typecheck": "tsc --noEmit -p tsconfig.json && pnpm run check:browser-api",
+    "typecheck": "tsc --noEmit -p tsconfig.json && pnpm run check:browser-api && pnpm run check:browser-fixtures",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "biome check . && pnpm check:imports",
     "lint:fix": "biome check --fix .",
     "format": "biome format --write .",
-    "check:browser-api": "tsc --noEmit -p tsconfig.browser-api.json"
+    "check:browser-api": "tsc --noEmit -p tsconfig.browser-api.json",
+    "check:browser-fixtures": "tsc --noEmit -p tsconfig.browser-fixtures.json",
+    "test:firefox-takeover": "node scripts/verify-firefox-takeover.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",

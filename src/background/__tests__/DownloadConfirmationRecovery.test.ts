@@ -91,6 +91,22 @@ describe('confirmation session recovery', () => {
     restored.decide(4, draft.id, { action: 'cancel' })
     await vi.waitFor(() => expect(f.saved()).toEqual([]))
   })
+  it('preserves cancelled native response ownership across background restart', async () => {
+    const f = fixture()
+    await f.service.ready
+    const earlyTarget = {
+      ...target,
+      origin: 'auto' as const,
+      nativeDownloadCancelled: true,
+    }
+    void f.service.request(earlyTarget, 4, f.actions, binding)
+    await vi.waitFor(() => expect(f.saved()).toHaveLength(1))
+    vi.clearAllTimers()
+    const restored = new DownloadConfirmationService(f.io)
+    await restored.ready
+    expect(f.io.recover).toHaveBeenCalledWith(earlyTarget, binding)
+    restored.close(4)
+  })
   it('uses the same operation identity after recovery and submits only once', async () => {
     const f = fixture()
     await f.service.ready

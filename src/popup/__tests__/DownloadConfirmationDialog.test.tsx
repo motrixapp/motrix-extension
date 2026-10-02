@@ -11,6 +11,64 @@ import { defaultTaskOptions } from '@/shared/taskOptions'
 
 afterEach(() => vi.unstubAllGlobals())
 
+it.each([false, true])(
+  'describes the actual browser ownership for an automatic draft (cancelled=%s)',
+  async (nativeDownloadCancelled) => {
+    vi.stubGlobal('__BROWSER__', 'firefox')
+    await i18n.changeLanguage('en-US')
+    let receive!: (message: { draft: DownloadConfirmation }) => void
+    const port = {
+      onMessage: { addListener: vi.fn((callback) => (receive = callback)) },
+      onDisconnect: { addListener: vi.fn() },
+      postMessage: vi.fn(),
+      disconnect: vi.fn(),
+    }
+    Object.assign(browser, { windows: { getCurrent: async () => ({ id: 4 }) } })
+    Object.assign(browser.runtime, { connect: vi.fn(() => port) })
+    const { unmount } = render(<DownloadConfirmationDialog />)
+    await waitFor(() =>
+      expect(port.postMessage).toHaveBeenCalledWith({ windowId: 4 })
+    )
+    act(() =>
+      receive({
+        draft: {
+          id: 'automatic-draft',
+          phase: 'editing',
+          windowId: 4,
+          expiresAt: Date.now() + 120_000,
+          target: {
+            ...normalizeTarget({
+              url: 'https://example.com/file.zip',
+              origin: 'auto',
+            }),
+            nativeDownloadCancelled,
+          },
+          options: defaultTaskOptions('Browser UA'),
+        },
+      })
+    )
+    expect(
+      screen.getByText(
+        i18n.t(
+          nativeDownloadCancelled
+            ? 'popup.confirmDownload.earlyInterceptedDescription'
+            : 'popup.confirmDownload.interceptedDescription'
+        )
+      )
+    ).toBeTruthy()
+    const action = screen.getByRole('button', {
+      name: nativeDownloadCancelled ? 'Use browser' : 'Keep browser download',
+      exact: true,
+    })
+    await userEvent.setup().click(action)
+    expect(port.postMessage).toHaveBeenLastCalledWith({
+      id: 'automatic-draft',
+      decision: { action: 'browser' },
+    })
+    unmount()
+  }
+)
+
 it.each(['chromium', 'safari'])(
   'shows and submits the %s draft with only available actions',
   async (platform) => {

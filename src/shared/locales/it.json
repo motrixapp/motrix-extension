@@ -515,6 +515,7 @@
       "unavailable": "Impossibile aprire la conferma. Completa il modulo aperto e riprova. Nessun download è stato avviato.",
       "close": "Chiudi",
       "interceptedDescription": "Il browser ha già avviato il download. Motrix richiederà nuovamente il link, che potrebbe non funzionare se monouso. Il download originale continua e potrebbe creare un duplicato.",
+      "earlyInterceptedDescription": "La richiesta originale del browser è stata annullata. Continuando con Motrix o il browser, il link verrà richiesto di nuovo; i link monouso potrebbero non funzionare.",
       "keepBrowser": "Mantieni il download del browser"
     }
   },

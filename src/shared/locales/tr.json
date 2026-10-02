@@ -515,6 +515,7 @@
       "unavailable": "Onay açılamadı. Açık indirme formunu tamamlayıp yeniden deneyin. İndirme başlatılmadı.",
       "close": "Kapat",
       "interceptedDescription": "Tarayıcı bu indirmeyi zaten başlattı. Motrix bağlantıyı tekrar isteyecek; bu işlem tek kullanımlık bağlantılarda başarısız olabilir. Asıl indirme devam eder ve yinelenen bir dosya oluşturabilir.",
+      "earlyInterceptedDescription": "Tarayıcının ilk isteği iptal edildi. Motrix veya tarayıcıyla devam etmek bağlantıyı yeniden ister; tek kullanımlık bağlantılar başarısız olabilir.",
       "keepBrowser": "Tarayıcı indirmesini koru"
     }
   },

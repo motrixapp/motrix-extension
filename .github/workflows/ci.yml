@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   check:
-    name: Extension checks
+    name: Extension static checks
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -59,10 +59,40 @@ jobs:
         id: firefox
         with:
           firefox-version: ${{ matrix.firefox }}
-      - name: Exercise native download takeover
+      - name: Exercise real Firefox APIs over simulated MDXP
         run: node scripts/verify-firefox-takeover.mjs
         env:
           FIREFOX_BINARY: ${{ steps.firefox.outputs.firefox-path }}
+          EXPECTED_FIREFOX_VERSION: ${{ matrix.firefox }}
+      - name: Verify complete browser evidence
+        run: node scripts/verify-takeover-report.mjs .cache/firefox-takeover-report/report.json
+        env:
+          EXPECTED_FIREFOX_VERSION: ${{ matrix.firefox }}
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: firefox-takeover-${{ matrix.firefox }}-${{ github.run_attempt }}
+          path: .cache/firefox-takeover-report/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
+  acceptance:
+    # Preserve the required status context while including browser regressions.
+    name: Extension checks
+    if: always()
+    needs: [check, firefox-takeover]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require all acceptance dependencies to succeed
+        env:
+          CHECK_RESULT: ${{ needs.check.result }}
+          FIREFOX_RESULT: ${{ needs.firefox-takeover.result }}
+        run: |
+          test "$CHECK_RESULT" = success
+          test "$FIREFOX_RESULT" = success
 
   safari-native-core:
     name: Safari native protocol and IPC

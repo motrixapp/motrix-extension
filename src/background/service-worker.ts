@@ -851,7 +851,6 @@ const interceptionDeps = {
 if (__BROWSER__ === 'firefox') {
   registerFirefoxInterception(interceptionDeps)
   registerWebRequestEarlyTakeover(interceptionDeps, {
-    captureAuto: () => handoffEndpoints.capture('auto'),
     confirmRequest: (
       target: import('@/shared/takeover').TakeoverTarget,
       windowId: number | undefined,

@@ -515,6 +515,7 @@
       "unavailable": "Nem sikerült megnyitni a megerősítést. Fejezze be a nyitott letöltési űrlapot, majd próbálja újra. Nem indult letöltés.",
       "close": "Bezárás",
       "interceptedDescription": "A böngésző már megkezdte a letöltést. A Motrix újra lekéri a hivatkozást, ami egyszer használatos hivatkozásoknál sikertelen lehet. Az eredeti letöltés folytatódik, és másolatot hozhat létre.",
+      "earlyInterceptedDescription": "A böngésző eredeti kérése megszakadt. A Motrix vagy a böngésző újból lekéri a hivatkozást; az egyszer használatos hivatkozások nem feltétlenül működnek.",
       "keepBrowser": "Böngésző letöltésének megtartása"
     }
   },
