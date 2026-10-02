@@ -51,6 +51,10 @@ export default defineManifest((env) => {
       ...(!safari ? ['downloads'] : []),
       'cookies',
       'webRequest',
+      // Firefox-only: blocking webRequest lets the PoC cancel a download
+      // response before the download manager starts it (IDM-style early
+      // takeover). Chrome MV3 forbids this permission, hence the gate.
+      ...(firefox ? ['webRequestBlocking'] : []),
       'webNavigation',
     ],
     host_permissions: ['<all_urls>'],

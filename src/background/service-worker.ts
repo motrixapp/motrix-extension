@@ -37,6 +37,7 @@ import { EndpointConfigStore } from '@/background/EndpointConfigStore'
 import { HandoffEndpointTracker } from '@/background/handoff/guard'
 import { registerChromiumInterception } from '@/background/interception/chromium'
 import { registerFirefoxInterception } from '@/background/interception/firefox'
+import { registerWebRequestEarlyTakeover } from '@/background/interception/webRequestEarly'
 import { makeLocaleChangeHandler } from '@/background/localeSync'
 import { initLogLevel, log } from '@/background/log'
 import { makeLogLevelChangeHandler } from '@/background/logLevelSync'
@@ -849,6 +850,25 @@ const interceptionDeps = {
 }
 if (__BROWSER__ === 'firefox') {
   registerFirefoxInterception(interceptionDeps)
+  registerWebRequestEarlyTakeover(interceptionDeps, {
+    captureAuto: () => handoffEndpoints.capture('auto'),
+    confirmRequest: (
+      target: import('@/shared/takeover').TakeoverTarget,
+      windowId: number | undefined,
+      guard: import('@/background/handoff/guard').HandoffGuard
+    ) =>
+      downloadConfirmation.request(
+        target,
+        windowId,
+        createConfirmedDownloadActions(confirmedDownloadDeps, target, guard),
+        guard.endpointId
+          ? {
+              endpointId: guard.endpointId,
+              endpointRevision: guard.endpointRevision ?? 0,
+            }
+          : undefined
+      ),
+  })
 } else if (__BROWSER__ === 'chromium') {
   registerChromiumInterception(interceptionDeps)
 }
