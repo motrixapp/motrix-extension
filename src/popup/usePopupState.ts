@@ -53,6 +53,8 @@ export interface PopupState {
   capabilities: {
     taskReveal: boolean
     downloadDirectories?: boolean
+    /** Optional, forward-compatible `task/open` advertisement. */
+    taskOpen?: boolean
   }
   /** Present exactly while a first-pair `PairingCodeProvider` call is
    *  outstanding, straight from `bg.getState` — see that message's own doc.
@@ -138,6 +140,7 @@ export function usePopupState(): {
             taskReveal: connection.capabilities?.taskReveal === true,
             downloadDirectories:
               connection.capabilities?.downloadDirectories === true,
+            taskOpen: connection.capabilities?.taskOpen === true,
           },
           pairingCode: connection.pairingCode ?? null,
         }

@@ -37,6 +37,10 @@ import { EndpointConfigStore } from '@/background/EndpointConfigStore'
 import { HandoffEndpointTracker } from '@/background/handoff/guard'
 import { registerChromiumInterception } from '@/background/interception/chromium'
 import { registerFirefoxInterception } from '@/background/interception/firefox'
+import {
+  clearTakeoverDeclines,
+  listTakeoverDeclines,
+} from '@/background/interception/takeoverDeclines'
 import { registerWebRequestEarlyTakeover } from '@/background/interception/webRequestEarly'
 import { makeLocaleChangeHandler } from '@/background/localeSync'
 import { initLogLevel, log } from '@/background/log'
@@ -65,6 +69,8 @@ import { clearRemoteBackendPoliciesForAuthority } from '@/background/RemoteBacke
 import { SafariNotificationTransport } from '@/background/SafariNotificationTransport'
 import { recoverStorageBeforeEndpointAutostart } from '@/background/storage-migrations'
 import { TakeoverConfigStore } from '@/background/TakeoverConfigStore'
+import { requestTaskOpen, supportsTaskOpen } from '@/background/taskOpen'
+import { requestTaskPieces } from '@/background/taskPieces'
 import { requestTaskReveal } from '@/background/taskReveal'
 import { UrlResolutionDispatcher } from '@/background/UrlResolutionDispatcher'
 // crxjs ?script&iife is a build-time virtual import; TypeScript does not understand
@@ -348,6 +354,9 @@ bus.on('bg.getState', () =>
       capabilities: {
         taskReveal: capabilities?.taskReveal === true,
         downloadDirectories: capabilities?.downloadDirectories === true,
+        // Optional, forward-compatible: only a host that advertises it answers
+        // `task/open`. Absent means the popup's open control stays disabled.
+        taskOpen: supportsTaskOpen(capabilities),
       },
       ...(recoveryExhaustedUnattended
         ? { recoveryExhaustedUnattended: true }
@@ -364,6 +373,11 @@ bus.on('bg.reconnect', async () => {
 })
 bus.on('bg.viewTasks', async () => {
   await manager.ensureReady({ intent: 'view-tasks' })
+  return { ok: true } as const
+})
+bus.on('bg.getTakeoverDeclines', async () => listTakeoverDeclines())
+bus.on('bg.clearTakeoverDeclines', async () => {
+  clearTakeoverDeclines()
   return { ok: true } as const
 })
 bus.on('bg.clearBadgeError', async () => {
@@ -494,7 +508,21 @@ bus.on('bg.taskPause', async (params) =>
 bus.on('bg.taskResume', async (params) =>
   manager.request(Methods.TaskResume, params)
 )
+/**
+ * Bridges the manager to `task/open`, a proposed method outside MDXP 0.8.x's
+ * request map. The transport still validates and routes it; the cast only
+ * steps over the compile-time key union.
+ */
+const taskOpenBridge = {
+  getServerCapabilities: () => manager.getServerCapabilities(),
+  request: (method: string, params: unknown) =>
+    manager.request(method as never, params as never),
+}
 bus.on('bg.taskReveal', async (params) => requestTaskReveal(manager, params))
+bus.on('bg.taskOpen', async (params) => requestTaskOpen(taskOpenBridge, params))
+bus.on('bg.taskPieces', async ({ taskId }) =>
+  requestTaskPieces(manager, taskId)
+)
 bus.on('bg.taskRemove', async (params) =>
   manager.request(Methods.TaskRemove, params)
 )

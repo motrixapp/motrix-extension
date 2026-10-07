@@ -250,13 +250,114 @@ it('leaves a response intact when preflight times out; late results never submit
       resolve = r
     })
   await register()
+  const { EARLY_PREFLIGHT_MS } = await import(
+    '@/background/interception/webRequestEarly'
+  )
   const response = listener(request())
-  await vi.advanceTimersByTimeAsync(1501)
+  // Just past the budget: the response must be released, and the late result
+  // must have no side effects at all.
+  await vi.advanceTimersByTimeAsync(EARLY_PREFLIGHT_MS + 1)
   expect(await response).toEqual({})
   resolve(cfg)
   await deliver()
   expect(submit).not.toHaveBeenCalled()
   expect(download).not.toHaveBeenCalled()
+})
+
+it('completes the preflight inside the budget when storage reads are slow', async () => {
+  // Regression: the three preflight reads used to be chained, so their latencies
+  // summed. Under load a whole batch of downloads missed the deadline and was
+  // silently released to the browser.
+  const { EARLY_PREFLIGHT_MS } = await import(
+    '@/background/interception/webRequestEarly'
+  )
+  const slow = <T>(value: T, ms: number) =>
+    new Promise<T>((r) => {
+      setTimeout(() => r(value), ms)
+    })
+  const budget = EARLY_PREFLIGHT_MS - 200
+  deps.getConfig = () => slow(cfg, budget / 2)
+  deps.captureGuard = () =>
+    slow(
+      { origin: 'auto', endpointId: 'local', assertCurrent() {} },
+      budget / 2
+    )
+  vi.mocked(browser.tabs.get).mockImplementation(
+    () =>
+      new Promise((r) => {
+        setTimeout(
+          () => r({ url: 'https://example.com/', windowId: 1 }),
+          budget / 2
+        )
+      }) as never
+  )
+  await register()
+  const response = listener(request())
+  // Chained, these three latencies summed to 1.5× the budget; fanned out they
+  // complete together with headroom to spare.
+  await vi.advanceTimersByTimeAsync(budget)
+  expect(await response).toEqual({ cancel: true })
+  await deliver()
+  expect(submit).toHaveBeenCalledOnce()
+})
+
+it('still takes over when the tab lookup is unavailable', async () => {
+  // The tab is only a fallback referrer and popup anchor; losing it must not
+  // cost the user their download.
+  vi.mocked(browser.tabs.get).mockImplementation(
+    () => Promise.reject(new Error('no such tab')) as never
+  )
+  await register()
+  expect(await listener(request())).toEqual({ cancel: true })
+})
+
+it('takes over vendor and package types the old binary allowlist omitted', async () => {
+  await register()
+  for (const type of [
+    'application/vnd.debian.binary-package',
+    'application/x-redhat-package-manager',
+    'application/vnd.ms-excel',
+    'application/x-ms-dos-executable',
+    'application/octet-stream; charset=binary',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ]) {
+    expect(
+      await listener(
+        request({
+          responseHeaders: [
+            { name: 'Content-Type', value: type },
+            { name: 'Content-Length', value: '2048' },
+          ],
+        })
+      ),
+      type
+    ).toEqual({ cancel: true })
+  }
+})
+
+it('leaves browser-rendered documents alone regardless of type', async () => {
+  await register()
+  for (const type of [
+    'text/html',
+    'application/xhtml+xml',
+    'text/plain',
+    'application/json',
+    'image/png',
+    'video/mp4',
+    'text/html; charset=utf-8',
+  ]) {
+    expect(
+      await listener(
+        request({
+          responseHeaders: [
+            { name: 'Content-Type', value: type },
+            { name: 'Content-Length', value: '2048' },
+          ],
+        })
+      ),
+      type
+    ).toEqual({})
+  }
 })
 it('honors live switches and does not overwrite a newer storage event at startup', async () => {
   let resolve!: (stored: Record<string, unknown>) => void

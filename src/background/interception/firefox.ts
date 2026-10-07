@@ -14,9 +14,14 @@ import {
   readActiveFirefoxDownload,
   waitForFirefoxMetadata,
 } from '@/background/interception/firefoxMetadata'
+import {
+  recordTakeoverDecline,
+  TAKEOVER_DECLINE,
+} from '@/background/interception/takeoverDeclines'
 import { describeUrlForLog, log } from '@/background/log'
 import { decideTakeover } from '@/background/policy/decideTakeover'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
+import { hostOf } from '@/shared/takeover'
 
 const pendingDownloads = new Set<number>()
 
@@ -62,6 +67,14 @@ export async function handleFirefoxDownloadSafely(
   try {
     await handle(item, deps)
   } catch {
+    // This path runs alongside the early webRequest adapter, so a throw here
+    // is not the end of the story — but if the early leg also declined, the
+    // download silently stayed in the browser. Record it so the reason is
+    // visible instead of inferred.
+    recordTakeoverDecline(
+      TAKEOVER_DECLINE.preflightUnavailable,
+      hostOf(item.finalUrl ?? item.url)
+    )
     log.debug('[takeover] Firefox handoff unavailable')
   } finally {
     pendingDownloads.delete(item.id)
@@ -75,11 +88,19 @@ async function handle(
   const popupWindow = deps.popup?.captureWindow()
   let cfg = await deps.getConfig()
   if (!cfg.enabled) {
+    recordTakeoverDecline(
+      TAKEOVER_DECLINE.takeoverDisabled,
+      hostOf(pickDownloadUrl(item))
+    )
     log.debug('[takeover] Firefox automatic takeover disabled')
     return
   }
   const guard = await deps.captureGuard()
   if (guard === null) {
+    recordTakeoverDecline(
+      TAKEOVER_DECLINE.endpointUnsupported,
+      hostOf(pickDownloadUrl(item))
+    )
     log.debug('[takeover] Firefox automatic takeover unavailable for backend')
     return
   }
@@ -151,7 +172,16 @@ async function handle(
     )
   item = latest
   logDecision()
-  if (decideTakeover(cfg, target) !== 'motrix') return
+  if (decideTakeover(cfg, target) !== 'motrix') {
+    recordTakeoverDecline(
+      target.sizeBytes === null
+        ? TAKEOVER_DECLINE.unknownSize
+        : TAKEOVER_DECLINE.policyDeclined,
+      hostOf(target.url),
+      true
+    )
+    return
+  }
 
   const { contentType } = await runProbe()
   const current = await readActiveFirefoxDownload(item.id)
@@ -164,8 +194,14 @@ async function handle(
     cfg.downloadMode === 'confirm' ||
     decideTakeover(cfg, target) !== 'motrix' ||
     !isEligibleDownload(current, deps.selfExtensionId)
-  )
+  ) {
+    recordTakeoverDecline(
+      TAKEOVER_DECLINE.policyDeclined,
+      hostOf(target.url),
+      true
+    )
     return
+  }
   if (
     !isFaithfulReplay({
       itemMime: item.mime ?? '',
@@ -175,6 +211,11 @@ async function handle(
   ) {
     // Firefox has not cancelled the native download yet; leaving it alone
     // lets the browser finish the file it actually negotiated.
+    recordTakeoverDecline(
+      TAKEOVER_DECLINE.unfaithfulReplay,
+      hostOf(target.url),
+      true
+    )
     log.debug(
       '[takeover] declined: GET replay would not be faithful; contentType=',
       contentType

@@ -388,8 +388,25 @@
       "tasks": "Tareas"
     },
     "takeover": {
-      "aria": "Alternar gestión de descargas",
-      "label": "Gestión de descargas"
+      "declineTitle_one": "1 download stayed in the browser",
+      "declineTitle_other": "{{count}} downloads stayed in the browser",
+      "declineMore_one": "and {{count}} more",
+      "declineMore_other": "and {{count}} more",
+      "declines": {
+        "not-a-download": "rendered in the browser instead of downloading",
+        "self-initiated": "started by the extension itself",
+        "takeover-disabled": "takeover is off",
+        "endpoint-unsupported": "the selected Motrix cannot take it over",
+        "sensitive-host": "excluded as a sensitive site",
+        "policy-declined": "a site or size rule sent it to the browser",
+        "unknown-size": "its size was unknown",
+        "preflight-timeout": "the takeover check timed out",
+        "preflight-unavailable": "the takeover check could not run",
+        "unfaithful-replay": "replaying the request would not match the download",
+        "native-gone": "the browser finished it first",
+        "handoff-failed": "Motrix could not accept it"
+      },
+      "label": "Takeover"
     },
     "tasks": {
       "actions": "Acciones para {{name}}",
@@ -398,6 +415,14 @@
       "openFolderError": "No se pudo abrir la carpeta de la tarea. Reinténtalo.",
       "openFolderMetadataPending": "Espera los metadatos de la tarea antes de abrir la carpeta",
       "openFolderTask": "Abrir la carpeta que contiene {{name}}",
+      "openFileTask": "Open {{name}}",
+      "openFileUnsupported": "Upgrade Motrix to open files directly",
+      "openFileError": "Could not open the file. Please try again.",
+      "copyPathTask": "Copy the path of {{path}}",
+      "copyNameTask": "Copy the name of {{name}}",
+      "copyOutputError": "Could not copy to the clipboard.",
+      "copiedToClipboard": "Copied to the clipboard.",
+      "segmentedProgress": "Download progress",
       "openFolderUnsupported": "Actualiza Motrix para abrir carpetas",
       "pauseTask": "Pausar {{name}}",
       "removeTask": "Quitar {{name}}",

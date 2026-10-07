@@ -1,7 +1,10 @@
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import { isSensitiveDomain } from '@/background/capture/sensitiveDomains'
 import type { ConfirmationResult } from '@/background/DownloadConfirmationService'
-import { beforeDeadline } from '@/background/download-errors'
+import {
+  beforeDeadline,
+  DownloadPreparationError,
+} from '@/background/download-errors'
 import {
   HandoffEndpointChangedError,
   type HandoffGuard,
@@ -9,9 +12,14 @@ import {
 import { makeOps } from '@/background/handoff/makeOps'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
+import {
+  recordTakeoverDecline,
+  TAKEOVER_DECLINE,
+} from '@/background/interception/takeoverDeclines'
 import { log } from '@/background/log'
 import { decideTakeover } from '@/background/policy/decideTakeover'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
+import { DOWNLOAD_ERROR } from '@/shared/integration'
 import {
   hostOf,
   type TakeoverConfig,
@@ -28,7 +36,18 @@ export interface WebRequestEarlyConfirmDeps {
 
 const EARLY_KEY = 'motrix.earlyTakeover'
 const CONFIG_KEY = 'motrix.takeoverConfig'
-export const EARLY_PREFLIGHT_MS = 1500
+/**
+ * Budget for the read-only preflight that runs inside the blocking listener.
+ *
+ * The listener must answer before the browser starts the download, so this
+ * covers configuration reads, the endpoint guard, and one tab lookup — nothing
+ * that touches the network. It was 1.5s, which the storage-backed reads could
+ * exceed on a cold worker or while the endpoint catalogue was being recovered;
+ * every response that missed the budget was released to the browser with no
+ * explanation. 4s still bounds the browser's visible stall while leaving room
+ * for a busy IndexedDB-backed storage read.
+ */
+export const EARLY_PREFLIGHT_MS = 4000
 
 interface EarlyRequestDetails {
   url: string
@@ -41,26 +60,54 @@ interface EarlyRequestDetails {
   responseHeaders?: { name: string; value?: string }[]
 }
 
-const BINARY_DOCUMENT_TYPES = new Set([
-  'application/octet-stream',
-  'application/x-gzip',
-  'application/gzip',
-  'application/zip',
-  'application/x-zip-compressed',
-  'application/x-tar',
-  'application/x-7z-compressed',
-  'application/x-rar-compressed',
-  'application/x-msdownload',
-  'application/vnd.android.package-archive',
-  'application/iso-image',
-  'application/x-iso9660-image',
-])
-
 function header(details: EarlyRequestDetails, name: string): string {
   return (
     details.responseHeaders?.find((h) => h.name.toLowerCase() === name)
       ?.value ?? ''
   )
+}
+
+/**
+ * Content types a browser will *render* rather than download. Anything else on
+ * a top-level GET is treated as a file the user meant to save.
+ *
+ * The previous list enumerated a handful of binary types (zip, 7z, exe, iso…).
+ * Every real download outside that list — .deb, .rpm, .apk, .msi, .cab, .dmg,
+ * .img, Office documents, `application/octet-stream` with vendor parameters —
+ * fell through to the browser, which is what users saw as "some files are not
+ * taken over". A render-allowlist is both smaller and safer: it names the
+ * types we must protect, and lets everything else through.
+ */
+const INLINE_RENDERABLE = new Set([
+  'text/html',
+  'application/xhtml+xml',
+  'text/plain',
+  'text/markdown',
+  'text/css',
+  'text/csv',
+  'text/calendar',
+  'text/vtt',
+  'application/json',
+  'application/ld+json',
+  'application/xml',
+  'text/xml',
+  'application/rss+xml',
+  'application/atom+xml',
+  'application/pdf',
+  'image/svg+xml',
+])
+
+const MEDIA_PREFIXES = ['image/', 'video/', 'audio/']
+
+function essence(contentType: string): string {
+  return contentType.split(';')[0]?.trim().toLowerCase() ?? ''
+}
+
+function isRenderableDocument(contentType: string): boolean {
+  const value = essence(contentType)
+  if (value === '') return true // no type at all: assume it renders
+  if (INLINE_RENDERABLE.has(value)) return true
+  return MEDIA_PREFIXES.some((prefix) => value.startsWith(prefix))
 }
 
 function isCandidate(details: EarlyRequestDetails): boolean {
@@ -82,15 +129,17 @@ function isCandidate(details: EarlyRequestDetails): boolean {
     )
   )
     return false
+  const contentType = header(details, 'content-type')
   const disposition = header(details, 'content-disposition')
     .split(';')[0]
     ?.trim()
     .toLowerCase()
+  // An explicit attachment is a download whatever the type says.
   if (disposition === 'attachment') return true
-  if (disposition === 'inline' || details.type === 'sub_frame') return false
-  return BINARY_DOCUMENT_TYPES.has(
-    header(details, 'content-type').split(';')[0]?.trim().toLowerCase() ?? ''
-  )
+  if (disposition === 'inline') return false
+  if (details.type === 'sub_frame') return false
+  // No attachment header: take anything the browser would not render inline.
+  return !isRenderableDocument(contentType)
 }
 
 /** Extracts the real filename from a Content-Disposition header (RFC 5987
@@ -184,10 +233,20 @@ async function submitCancelled(
         return
       case 'skipped':
       case 'failed':
+        recordTakeoverDecline(
+          TAKEOVER_DECLINE.handoffFailed,
+          hostOf(target.url),
+          true
+        )
         await fallbackToBrowser()
     }
   } catch {
     if (owned) return
+    recordTakeoverDecline(
+      TAKEOVER_DECLINE.handoffFailed,
+      hostOf(target.url),
+      true
+    )
     // Do not log exceptions containing signed URLs or response credentials.
     log.debug('[early-takeover] handoff unavailable')
     try {
@@ -239,35 +298,74 @@ export function registerWebRequestEarlyTakeover(
     await ready
     if (!earlyEnabled) return null
     const captured = generation
-    const cfg = await deps.getConfig()
-    if (!cfg.enabled) return null
-    const guard = await deps.captureGuard()
-    if (!guard) return null
-    const tab =
+    // Fan the three storage/runtime reads out concurrently. Chained, they
+    // summed to the preflight budget under load and pushed whole batches of
+    // concurrent downloads past the deadline.
+    const [cfg, guard, tab] = await Promise.all([
+      deps.getConfig(),
+      deps.captureGuard(),
+      // The tab is only a fallback referrer and a popup anchor. A slow or
+      // missing tab must never fail an otherwise valid takeover.
       details.tabId >= 0
-        ? await browser.tabs.get(details.tabId).catch(() => undefined)
-        : undefined
+        ? browser.tabs.get(details.tabId).catch(() => undefined)
+        : Promise.resolve(undefined),
+    ])
+    if (!cfg.enabled) {
+      recordTakeoverDecline(
+        TAKEOVER_DECLINE.takeoverDisabled,
+        hostOf(details.url)
+      )
+      return null
+    }
+    if (!guard) {
+      recordTakeoverDecline(
+        TAKEOVER_DECLINE.endpointUnsupported,
+        hostOf(details.url)
+      )
+      return null
+    }
     const length = Number(header(details, 'content-length'))
     const referrer = details.originUrl ?? details.documentUrl ?? tab?.url
     const suggested = filenameFromDisposition(
       header(details, 'content-disposition')
     )
+    const sizeBytes = Number.isFinite(length) && length > 0 ? length : null
     const target = normalizeTarget({
       url: details.url,
       ...(referrer ? { referrer } : {}),
       ...(suggested ? { suggestedFilename: suggested } : {}),
       mime: header(details, 'content-type'),
-      sizeBytes: Number.isFinite(length) && length > 0 ? length : null,
+      sizeBytes,
       origin: 'auto',
     })
-    if (decideTakeover(cfg, target) !== 'motrix') return null
+    const decision = decideTakeover(cfg, target)
+    if (decision !== 'motrix') {
+      recordTakeoverDecline(
+        sizeBytes === null
+          ? TAKEOVER_DECLINE.unknownSize
+          : TAKEOVER_DECLINE.policyDeclined,
+        hostOf(target.url)
+      )
+      return null
+    }
     if (cfg.downloadMode !== 'confirm') {
-      if (isSensitiveDomain(hostOf(target.url))) return null
+      if (isSensitiveDomain(hostOf(target.url))) {
+        recordTakeoverDecline(
+          TAKEOVER_DECLINE.sensitiveHost,
+          hostOf(target.url)
+        )
+        return null
+      }
       if (
         deps.manager.getState() !== 'connected' &&
         (!(await deps.isPaired()) || !(await deps.gate.shouldAutoConnect()))
-      )
+      ) {
+        recordTakeoverDecline(
+          TAKEOVER_DECLINE.endpointUnsupported,
+          hostOf(target.url)
+        )
         return null
+      }
     }
     const current: HandoffGuard = {
       ...guard,
@@ -289,7 +387,21 @@ export function registerWebRequestEarlyTakeover(
   const listener = async (
     details: EarlyRequestDetails
   ): Promise<Browser.webRequest.BlockingResponse> => {
-    if (!isCandidate(details)) return {}
+    if (!isCandidate(details)) {
+      // Only meaningful for a top-level GET: subresources and self-issued
+      // requests are excluded by design and would drown the real reasons.
+      if (
+        details.tabId >= 0 &&
+        details.method === 'GET' &&
+        ['main_frame', 'object'].includes(details.type)
+      ) {
+        recordTakeoverDecline(
+          TAKEOVER_DECLINE.notADownload,
+          hostOf(details.url)
+        )
+      }
+      return {}
+    }
     try {
       const prepared = await beforeDeadline(
         prepare(details),
@@ -303,9 +415,21 @@ export function registerWebRequestEarlyTakeover(
         void submitCancelled(prepared, deps, confirmation)
       }, 0)
       return { cancel: true }
-    } catch {
+    } catch (error) {
+      // A deadline miss and a real failure look identical to the caller, but
+      // they mean different things: one is load, the other is a broken read.
+      const timedOut =
+        error instanceof DownloadPreparationError &&
+        error.reason === DOWNLOAD_ERROR.preparationTimeout
+      recordTakeoverDecline(
+        timedOut
+          ? TAKEOVER_DECLINE.preflightTimeout
+          : TAKEOVER_DECLINE.preflightUnavailable,
+        hostOf(details.url)
+      )
       log.debug(
-        '[early-takeover] preflight unavailable; leaving response intact'
+        '[early-takeover] preflight unavailable; leaving response intact',
+        timedOut ? 'timeout' : 'error'
       )
       return {}
     }

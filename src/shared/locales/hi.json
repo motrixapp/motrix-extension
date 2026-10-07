@@ -388,8 +388,25 @@
       "tasks": "कार्य"
     },
     "takeover": {
-      "aria": "डाउनलोड टेकओवर चालू/बंद करें",
-      "label": "टेकओवर"
+      "declineTitle_one": "1 download stayed in the browser",
+      "declineTitle_other": "{{count}} downloads stayed in the browser",
+      "declineMore_one": "and {{count}} more",
+      "declineMore_other": "and {{count}} more",
+      "declines": {
+        "not-a-download": "rendered in the browser instead of downloading",
+        "self-initiated": "started by the extension itself",
+        "takeover-disabled": "takeover is off",
+        "endpoint-unsupported": "the selected Motrix cannot take it over",
+        "sensitive-host": "excluded as a sensitive site",
+        "policy-declined": "a site or size rule sent it to the browser",
+        "unknown-size": "its size was unknown",
+        "preflight-timeout": "the takeover check timed out",
+        "preflight-unavailable": "the takeover check could not run",
+        "unfaithful-replay": "replaying the request would not match the download",
+        "native-gone": "the browser finished it first",
+        "handoff-failed": "Motrix could not accept it"
+      },
+      "label": "Takeover"
     },
     "tasks": {
       "actions": "{{name}} के लिए कार्रवाइयाँ",
@@ -398,6 +415,14 @@
       "openFolderError": "कार्य का फ़ोल्डर खुल नहीं सका। फिर कोशिश करें।",
       "openFolderMetadataPending": "फ़ोल्डर खोलने से पहले कार्य के मेटाडेटा का इंतज़ार करें",
       "openFolderTask": "{{name}} वाला फ़ोल्डर खोलें",
+      "openFileTask": "Open {{name}}",
+      "openFileUnsupported": "Upgrade Motrix to open files directly",
+      "openFileError": "Could not open the file. Please try again.",
+      "copyPathTask": "Copy the path of {{path}}",
+      "copyNameTask": "Copy the name of {{name}}",
+      "copyOutputError": "Could not copy to the clipboard.",
+      "copiedToClipboard": "Copied to the clipboard.",
+      "segmentedProgress": "Download progress",
       "openFolderUnsupported": "फ़ोल्डर खोलने के लिए Motrix अपडेट करें",
       "pauseTask": "{{name}} रोकें",
       "removeTask": "{{name}} हटाएँ",
