@@ -117,10 +117,13 @@ export interface MessageMap {
       degraded?: boolean
       /** Desktop-shell capabilities from the authenticated initialize
        *  handshake. Older Motrix builds omit taskReveal, which the
-       *  background normalizes to false. */
+       *  background normalizes to false. `taskOpen` is a proposed optional
+       *  capability; hosts that omit it keep the popup's open control
+       *  disabled. */
       capabilities?: {
         taskReveal: boolean
         downloadDirectories?: boolean
+        taskOpen?: boolean
       }
     }
   }
@@ -134,6 +137,15 @@ export interface MessageMap {
       events: Array<{ at: number; kind: string; detail: string }>
     }
   }
+  /**
+   * Why recent browser downloads stayed browser-owned. Session-only and
+   * host-only: a persisted trail would outlive the tab and leak history.
+   */
+  'bg.getTakeoverDeclines': {
+    request: undefined
+    response: import('@/background/interception/takeoverDeclines').TakeoverDeclineRecord[]
+  }
+  'bg.clearTakeoverDeclines': { request: undefined; response: { ok: true } }
   'bg.viewTasks': { request: undefined; response: { ok: true } }
   'bg.reconnect': { request: undefined; response: { ok: true } }
   'bg.clearBadgeError': { request: undefined; response: { ok: true } }
@@ -283,6 +295,21 @@ export interface MessageMap {
   'bg.taskPause': { request: TaskPauseParams; response: TaskPauseResult }
   'bg.taskResume': { request: TaskResumeParams; response: TaskResumeResult }
   'bg.taskReveal': { request: TaskRevealParams; response: TaskRevealResult }
+  /**
+   * Hands a finished download to the App's default handler. Not part of MDXP
+   * 0.8.x: the background gates it on an optional `taskOpen` capability and
+   * the desktop App answers `task/open` over the same paired session.
+   */
+  'bg.taskOpen': { request: TaskRevealParams; response: TaskRevealResult }
+  /**
+   * The engine's real per-piece completion map. Not in MDXP 0.8.x: the desktop
+   * App registers it and advertises the optional `taskPieces` capability. An
+   * empty bitfield means "no map available", not an error.
+   */
+  'bg.taskPieces': {
+    request: { taskId: string }
+    response: import('@/background/taskPieces').TaskPiecesResult
+  }
   'bg.taskRemove': { request: TaskRemoveParams; response: TaskRemoveResult }
   'bg.statsGet': { request: StatsGetParams; response: StatsResult }
   'bg.engineStatus': {

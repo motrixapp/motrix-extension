@@ -1,6 +1,8 @@
 import type { EngineStatusResult, MdxpTask, StatsResult } from '@motrix/mdxp'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { send } from '@/background/MessageBus'
+import type { TaskPieces } from '@/popup/SegmentedProgress'
+import { isPiecesPayload } from '@/popup/SegmentedProgress'
 import { snapshotEqual } from '@/popup/snapshotEqual'
 import { extensionBrowser as browser } from '@/shared/browser'
 import { isControlPanelActivityEvent } from '@/shared/controlPanelEvents'
@@ -20,6 +22,12 @@ const ACTIVE_TASK_STATUSES = new Set<MdxpTask['status']>([
 
 export interface ControlPanelState {
   tasks: MdxpTask[]
+  /**
+   * Real per-piece maps keyed by task id, present only when the App advertises
+   * `taskPieces` and the engine reported a map. Optional so every existing
+   * caller keeps compiling — an absent map simply means aggregate rendering.
+   */
+  pieces?: Record<string, TaskPieces> | undefined
   stats: StatsResult | null
   engine: EngineStatusResult | null
   loading: boolean
@@ -31,18 +39,22 @@ export interface ControlPanel extends ControlPanelState {
   pause: (taskId: string) => Promise<void>
   resume: (taskId: string) => Promise<void>
   reveal: (taskId: string) => Promise<void>
+  /** Hand the finished file to the desktop App's default handler. */
+  open: (taskId: string) => Promise<void>
   remove: (taskId: string, deleteFiles?: boolean) => Promise<void>
 }
 
 export type TaskControlPanel = Pick<
   ControlPanel,
   | 'tasks'
+  | 'pieces'
   | 'loading'
   | 'error'
   | 'refresh'
   | 'pause'
   | 'resume'
   | 'reveal'
+  | 'open'
   | 'remove'
 >
 
@@ -58,6 +70,7 @@ function emptyState(
 ): ScopedControlPanelState {
   return {
     tasks: [],
+    pieces: {},
     stats: null,
     engine: null,
     loading: active,
@@ -103,6 +116,12 @@ export function useControlPanel(
   const activeRef = useRef(active)
   const scopeRef = useRef(scopeKey)
   const pausedRef = useRef(paused)
+  // Mirrors `state` so a callback can read the latest task list without
+  // becoming a dependency of the poll effect (which would re-arm the loop).
+  const latestStateRef = useRef<ScopedControlPanelState>(
+    emptyState(scopeKey, active)
+  )
+  latestStateRef.current = state
   const revisionRef = useRef({ active, paused, scopeKey, revision: 0 })
   if (
     revisionRef.current.active !== active ||
@@ -202,6 +221,51 @@ export function useControlPanel(
         }
       })
       return list ? hasActiveTasks(list.tasks) : null
+    },
+    []
+  )
+
+  /**
+   * Pulls the engine's real piece map for every unfinished task.
+   *
+   * Only tasks that can show progress are asked for, so a mostly-idle list
+   * costs nothing, and a host without `task/pieces` resolves to an empty map
+   * on the first attempt without retrying every poll.
+   */
+  const refreshPieces = useCallback(
+    async (requestScope: string): Promise<void> => {
+      if (!activeRef.current || pausedRef.current) return
+      const state = latestStateRef.current
+      if (state.scopeKey !== requestScope) return
+      const targets = state.tasks.filter(
+        (task) =>
+          task.status === 'downloading' ||
+          task.status === 'fetching_metadata' ||
+          task.status === 'seeding' ||
+          task.status === 'paused'
+      )
+      if (targets.length === 0) return
+      const entries = await Promise.all(
+        targets.map(async (task) => {
+          const response = await send('bg.taskPieces', { taskId: task.id })
+          const pieces =
+            !isErrorResponse(response) && isPiecesPayload(response)
+              ? response
+              : null
+          return [task.id, pieces] as const
+        })
+      )
+      const next: Record<string, TaskPieces> = {}
+      for (const [taskId, pieces] of entries) {
+        if (pieces) next[taskId] = pieces
+      }
+      if (!activeRef.current || pausedRef.current) return
+      if (scopeRef.current !== requestScope) return
+      setState((current) =>
+        snapshotEqual(current.pieces, next)
+          ? current
+          : { ...current, pieces: next }
+      )
     },
     []
   )
@@ -321,6 +385,11 @@ export function useControlPanel(
             if (nextFastPolling !== null) {
               fastPolling = nextFastPolling
             }
+            // Runs after the task list so it reads the freshest ids, and never
+            // blocks the poll: a missing piece map is an empty result.
+            if (nextFastPolling !== null || fastPolling) {
+              void refreshPieces(scopeKey)
+            }
           }
         })().finally(() => {
           activityRunner = null
@@ -359,7 +428,14 @@ export function useControlPanel(
         requestActivityRefreshRef.current = async () => undefined
       }
     }
-  }, [active, paused, refreshActivitySnapshot, refreshEngineSnapshot, scopeKey])
+  }, [
+    active,
+    paused,
+    refreshActivitySnapshot,
+    refreshEngineSnapshot,
+    refreshPieces,
+    scopeKey,
+  ])
 
   const action = useCallback(
     async (
@@ -397,6 +473,12 @@ export function useControlPanel(
       action('bg.taskRemove', taskId, deleteFiles),
     [action]
   )
+  const open = useCallback(async (taskId: string): Promise<void> => {
+    if (!activeRef.current || pausedRef.current)
+      throw new Error('Motrix connection needs retry')
+    const response = await send('bg.taskOpen', { taskId })
+    if (isErrorResponse(response)) throw new Error(response.error)
+  }, [])
   const inactiveState = useMemo(
     () => emptyState(scopeKey, active),
     [active, scopeKey]
@@ -411,8 +493,9 @@ export function useControlPanel(
       pause,
       resume,
       reveal,
+      open,
       remove,
     }),
-    [pause, refresh, remove, resume, reveal, visibleState]
+    [open, pause, refresh, remove, resume, reveal, visibleState]
   )
 }

@@ -3,8 +3,10 @@ import {
   ChevronRight,
   CircleAlert,
   CircleCheck,
+  Copy,
   FileArchive,
   FileDown,
+  FileUp,
   FolderOpen,
   Inbox,
   type LucideIcon,
@@ -43,7 +45,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
-import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -52,6 +53,8 @@ import {
   CompactSectionToolbar,
 } from '@/popup/CompactPopupLayout'
 import { QuickAddTaskDialog } from '@/popup/QuickAddTaskDialog'
+import type { TaskPieces } from '@/popup/SegmentedProgress'
+import { SegmentedProgress } from '@/popup/SegmentedProgress'
 import type { TaskControlPanel as ControlPanelController } from '@/popup/useControlPanel'
 
 type TaskView = 'active' | 'failed' | 'recent'
@@ -65,6 +68,15 @@ const PAUSABLE = new Set([
   'seeding',
   'queued',
 ])
+
+/** A completed task is the only one whose output can be opened or copied. */
+function canOpenOutput(task: MdxpTask): boolean {
+  return (
+    task.status === 'completed' &&
+    typeof task.finalPath === 'string' &&
+    task.finalPath.length > 0
+  )
+}
 
 function formatBytes(bytes: number | null): string {
   if (bytes === null || !Number.isFinite(bytes) || bytes <= 0) return '0 B'
@@ -130,7 +142,7 @@ const TaskIdentity = memo(function TaskIdentity({
         <Icon className="size-5" strokeWidth={1.8} aria-hidden="true" />
       </span>
       <span
-        className="absolute top-[9px] end-2 start-[72px] truncate text-[13px]/5 font-normal"
+        className="absolute top-[9px] end-0 start-[72px] truncate text-[13px]/5 font-normal"
         title={name}
       >
         {name}
@@ -148,6 +160,7 @@ const TaskLiveMetrics = memo(function TaskLiveMetrics({
   speedBps,
   error,
   secondaryId,
+  pieces,
 }: Pick<
   MdxpTask,
   | 'name'
@@ -157,7 +170,11 @@ const TaskLiveMetrics = memo(function TaskLiveMetrics({
   | 'bytesTotal'
   | 'speedBps'
   | 'error'
-> & { secondaryId: string }): React.ReactElement {
+> & {
+  secondaryId: string
+  /** Explicitly nullable: exactOptionalPropertyTypes forbids bare undefined. */
+  pieces?: TaskPieces | undefined
+}): React.ReactElement {
   const { t } = useTranslation()
   const progressPercent = Math.round(Math.min(1, Math.max(0, progress)) * 100)
   const statusLabel = t(`popup.tasks.status.${status}`)
@@ -177,20 +194,20 @@ const TaskLiveMetrics = memo(function TaskLiveMetrics({
     <>
       <span
         id={secondaryId}
-        className="absolute top-[31px] end-2 start-[72px] truncate text-[11px]/4 text-muted-foreground"
+        className="absolute top-[31px] end-0 start-[72px] truncate text-[11px]/4 text-muted-foreground"
         title={secondary}
       >
         {secondary}
       </span>
       {status !== 'error' && status !== 'completed' && (
-        <Progress
-          value={progressPercent}
+        <SegmentedProgress
+          value={progress}
+          pieces={pieces ?? null}
+          bytesDone={bytesDone}
+          bytesTotal={bytesTotal}
+          state={status === 'paused' ? 'paused' : 'downloading'}
           aria-label={`${name} ${progressPercent}%`}
-          className={`absolute top-[55px] end-2 start-[72px] h-1 gap-0 [&_[data-slot=progress-track]]:h-1 [&_[data-slot=progress-track]]:bg-muted ${
-            status === 'paused'
-              ? '[&_[data-slot=progress-indicator]]:bg-muted-foreground'
-              : '[&_[data-slot=progress-indicator]]:bg-speed-download'
-          }`}
+          className="absolute top-[55px] end-0 start-[72px]"
         />
       )}
     </>
@@ -307,15 +324,125 @@ const TaskActions = memo(function TaskActions({
   )
 })
 
+/**
+ * One-click destinations for a finished download.
+ *
+ * The row already owns the folder icon, so this strip sits to its left and
+ * carries the actions that need the output itself: opening it with the
+ * system handler, and copying the name or the absolute path. Everything here
+ * is a shortcut around an action the user would otherwise perform by hand in
+ * Explorer — nothing is destructive, so no confirmation is involved.
+ */
+const TaskOutputActions = memo(function TaskOutputActions({
+  taskId,
+  taskName,
+  finalPath,
+  canOpenFile,
+  opening,
+  readOnly,
+  onOpenFile,
+  onCopyPath,
+}: {
+  taskId: string
+  taskName: string
+  finalPath: string
+  canOpenFile: boolean
+  opening: boolean
+  readOnly: boolean
+  onOpenFile: (id: string) => void
+  onCopyPath: (path: string) => void
+}): React.ReactElement {
+  const { t } = useTranslation()
+  const openLabel = canOpenFile
+    ? t('popup.tasks.openFileTask', { name: taskName })
+    : t('popup.tasks.openFileUnsupported')
+  const copyNameLabel = t('popup.tasks.copyNameTask', { name: taskName })
+  const copyPathLabel = t('popup.tasks.copyPathTask', { path: finalPath })
+  const unavailable = readOnly
+
+  return (
+    <div
+      data-testid={`task-output-actions-${taskId}`}
+      className="absolute top-[23px] end-[96px] z-10 flex items-center gap-0.5"
+    >
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        data-testid={`task-open-file-${taskId}`}
+        data-task-id={taskId}
+        data-task-action="open-file"
+        disabled={unavailable}
+        aria-disabled={unavailable || !canOpenFile || opening || undefined}
+        className="size-7 text-muted-foreground aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+        aria-label={openLabel}
+        aria-busy={opening || undefined}
+        title={openLabel}
+        onClick={(event) => {
+          event.stopPropagation()
+          if (unavailable || !canOpenFile || opening) return
+          onOpenFile(taskId)
+        }}
+      >
+        <FileUp className="size-3.5" aria-hidden="true" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        data-testid={`task-copy-path-${taskId}`}
+        data-task-id={taskId}
+        data-task-action="copy-path"
+        disabled={unavailable}
+        className="size-7 text-muted-foreground"
+        aria-label={copyPathLabel}
+        title={copyPathLabel}
+        onClick={(event) => {
+          event.stopPropagation()
+          if (unavailable) return
+          onCopyPath(finalPath)
+        }}
+      >
+        <Copy className="size-3.5" aria-hidden="true" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        data-testid={`task-copy-name-${taskId}`}
+        data-task-id={taskId}
+        data-task-action="copy-name"
+        disabled={unavailable}
+        className="size-7 text-muted-foreground"
+        aria-label={copyNameLabel}
+        title={copyNameLabel}
+        onClick={(event) => {
+          event.stopPropagation()
+          if (unavailable) return
+          onCopyPath(taskName)
+        }}
+      >
+        <FileDown className="size-3.5" aria-hidden="true" />
+      </Button>
+    </div>
+  )
+})
+
 interface TaskRowProps {
   task: MdxpTask
+  /** The engine's real piece map for this task, when the host reports one. */
+  pieces?: TaskPieces | undefined
   onPause: (id: string) => void
   onResume: (id: string) => void
   onReveal: (id: string) => void
   onRemove: (id: string, deleteFiles: boolean) => void
+  onOpenFile: (id: string) => void
+  onCopyOutput: (value: string) => void
   canRevealTask: boolean
   canOpenApp: boolean
+  canOpenFileTask: boolean
   revealing: boolean
+  openingTaskIds: Set<string>
   readOnly: boolean
 }
 
@@ -325,15 +452,25 @@ function taskRowPropsEqual(
 ): boolean {
   const a = previous.task
   const b = next.task
+  // The piece map is a new object on every poll, so compare its contents:
+  // without this the row would never repaint its real progress.
+  const samePieces =
+    previous.pieces === next.pieces ||
+    (previous.pieces?.bitfield ?? null) === (next.pieces?.bitfield ?? null)
   return (
     previous.onPause === next.onPause &&
     previous.onResume === next.onResume &&
     previous.onReveal === next.onReveal &&
     previous.onRemove === next.onRemove &&
+    previous.onOpenFile === next.onOpenFile &&
+    previous.onCopyOutput === next.onCopyOutput &&
     previous.canRevealTask === next.canRevealTask &&
     previous.canOpenApp === next.canOpenApp &&
+    previous.canOpenFileTask === next.canOpenFileTask &&
     previous.revealing === next.revealing &&
+    previous.openingTaskIds === next.openingTaskIds &&
     previous.readOnly === next.readOnly &&
+    samePieces &&
     a.id === b.id &&
     a.name === b.name &&
     a.type === b.type &&
@@ -342,24 +479,35 @@ function taskRowPropsEqual(
     a.bytesDone === b.bytesDone &&
     a.bytesTotal === b.bytesTotal &&
     a.speedBps === b.speedBps &&
-    a.error === b.error
+    a.error === b.error &&
+    a.finalPath === b.finalPath
   )
 }
 
 const TaskRow = memo(function TaskRow({
   task,
+  pieces,
   onPause,
   onResume,
   onReveal,
   onRemove,
+  onOpenFile,
+  onCopyOutput,
   canRevealTask,
   canOpenApp,
+  canOpenFileTask,
   revealing,
+  openingTaskIds,
   readOnly,
 }: TaskRowProps): React.ReactElement {
   const { t } = useTranslation()
   const secondaryId = `task-secondary-${task.id}`
   const openAppLabel = `${t('popup.tasks.openTaskInApp')}: ${task.name}`
+  const finalPath = typeof task.finalPath === 'string' ? task.finalPath : ''
+  const showOutputActions = canOpenOutput(task)
+  // The action cluster owns the right edge; the text column yields room to
+  // the output strip only on rows that actually have one.
+  const textInset = showOutputActions ? 196 : 108
 
   return (
     <li
@@ -380,7 +528,10 @@ const TaskRow = memo(function TaskRow({
           <span className="sr-only">{openAppLabel}</span>
         </a>
       )}
-      <div className="pointer-events-none absolute inset-y-0 end-[108px] start-0">
+      <div
+        className="pointer-events-none absolute inset-y-0 start-0"
+        style={{ insetInlineEnd: `${textInset}px` }}
+      >
         <TaskIdentity name={task.name} type={task.type} status={task.status} />
         <TaskLiveMetrics
           name={task.name}
@@ -391,8 +542,21 @@ const TaskRow = memo(function TaskRow({
           speedBps={task.speedBps}
           error={task.error}
           secondaryId={secondaryId}
+          pieces={pieces}
         />
       </div>
+      {showOutputActions && (
+        <TaskOutputActions
+          taskId={task.id}
+          taskName={task.name}
+          finalPath={finalPath}
+          canOpenFile={canOpenFileTask}
+          opening={openingTaskIds.has(task.id)}
+          readOnly={readOnly}
+          onOpenFile={onOpenFile}
+          onCopyPath={onCopyOutput}
+        />
+      )}
       <TaskActions
         taskId={task.id}
         taskName={task.name}
@@ -434,6 +598,8 @@ interface ControlPanelProps {
   readOnly?: boolean
   canRevealTask?: boolean
   canOpenApp?: boolean
+  /** The paired App advertises `task/open` (MDXP has no such method yet). */
+  canOpenFileTask?: boolean
   onReconnect: () => void
   onNewTask?: () => void
   notice?: ReactNode
@@ -445,6 +611,7 @@ export const ControlPanel = memo(function ControlPanel({
   readOnly = false,
   canRevealTask = false,
   canOpenApp = false,
+  canOpenFileTask = false,
   onReconnect,
   onNewTask,
   notice,
@@ -453,6 +620,7 @@ export const ControlPanel = memo(function ControlPanel({
   const [view, setView] = useState<TaskView>('active')
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [copiedTaskId, setCopiedTaskId] = useState<string | null>(null)
   const [taskToRemove, setTaskToRemove] = useState<PendingTaskRemoval | null>(
     null
   )
@@ -461,6 +629,9 @@ export const ControlPanel = memo(function ControlPanel({
   const [deleteTaskFiles, setDeleteTaskFiles] = useState(false)
   const deleteTaskFilesId = useId()
   const [revealingTaskIds, setRevealingTaskIds] = useState<Set<string>>(
+    () => new Set()
+  )
+  const [openingTaskIds, setOpeningTaskIds] = useState<Set<string>>(
     () => new Set()
   )
   const tasksByView = useMemo(
@@ -519,6 +690,53 @@ export const ControlPanel = memo(function ControlPanel({
     },
     [controller.pause, runAction]
   )
+
+  const openTaskFile = useCallback(
+    async (taskId: string): Promise<void> => {
+      setActionError(null)
+      setOpeningTaskIds((current) => new Set(current).add(taskId))
+      try {
+        await controller.open(taskId)
+      } catch {
+        // The App answers with capability-level copy only; never surface an RPC
+        // message here because it can embed an absolute path.
+        setActionError(t('popup.tasks.openFileError'))
+      } finally {
+        setOpeningTaskIds((current) => {
+          const next = new Set(current)
+          next.delete(taskId)
+          return next
+        })
+      }
+    },
+    [controller.open, t]
+  )
+
+  // Clipboard writes happen in the popup: the value is already on screen and
+  // no path ever needs to travel through the background worker.
+  const copyOutput = useCallback(
+    (value: string) => {
+      const task = controller.tasks.find(
+        (candidate) => candidate.finalPath === value
+      )
+      void navigator.clipboard
+        .writeText(value)
+        .then(() => {
+          setActionError(null)
+          setCopiedTaskId(task?.id ?? null)
+          window.setTimeout(
+            () =>
+              setCopiedTaskId((current) =>
+                current === (task?.id ?? null) ? null : current
+              ),
+            1600
+          )
+        })
+        .catch(() => setActionError(t('popup.tasks.copyOutputError')))
+    },
+    [controller.tasks, t]
+  )
+
   const resumeTask = useCallback(
     (taskId: string) => {
       void runAction(() => controller.resume(taskId))
@@ -605,6 +823,15 @@ export const ControlPanel = memo(function ControlPanel({
               </AlertDescription>
             </Alert>
           )}
+          {copiedTaskId !== null && connection === 'connected' && (
+            <p
+              role="status"
+              data-testid="task-copy-confirmation"
+              className="mx-3 mt-3 shrink-0 text-[11px]/4 text-connection-online"
+            >
+              {t('popup.tasks.copiedToClipboard')}
+            </p>
+          )}
           <div className="min-h-0 flex-1">
             {connectionPending ||
             (connection === 'connected' && controller.loading) ? (
@@ -658,8 +885,13 @@ export const ControlPanel = memo(function ControlPanel({
                           <TaskRow
                             key={task.id}
                             task={task}
+                            pieces={controller.pieces?.[task.id]}
                             onPause={pauseTask}
                             onResume={resumeTask}
+                            onOpenFile={openTaskFile}
+                            onCopyOutput={copyOutput}
+                            canOpenFileTask={canOpenFileTask}
+                            openingTaskIds={openingTaskIds}
                             onReveal={revealTask}
                             onRemove={removeTask}
                             canRevealTask={canRevealTask}

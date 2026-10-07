@@ -388,8 +388,25 @@
       "tasks": "작업"
     },
     "takeover": {
-      "aria": "다운로드 인계 전환",
-      "label": "인계"
+      "declineTitle_one": "1 download stayed in the browser",
+      "declineTitle_other": "{{count}} downloads stayed in the browser",
+      "declineMore_one": "and {{count}} more",
+      "declineMore_other": "and {{count}} more",
+      "declines": {
+        "not-a-download": "rendered in the browser instead of downloading",
+        "self-initiated": "started by the extension itself",
+        "takeover-disabled": "takeover is off",
+        "endpoint-unsupported": "the selected Motrix cannot take it over",
+        "sensitive-host": "excluded as a sensitive site",
+        "policy-declined": "a site or size rule sent it to the browser",
+        "unknown-size": "its size was unknown",
+        "preflight-timeout": "the takeover check timed out",
+        "preflight-unavailable": "the takeover check could not run",
+        "unfaithful-replay": "replaying the request would not match the download",
+        "native-gone": "the browser finished it first",
+        "handoff-failed": "Motrix could not accept it"
+      },
+      "label": "Takeover"
     },
     "tasks": {
       "actions": "{{name}} 작업 메뉴",
@@ -398,6 +415,14 @@
       "openFolderError": "작업 폴더를 열지 못했습니다. 다시 시도하세요.",
       "openFolderMetadataPending": "작업 메타데이터를 받은 후 폴더를 여세요",
       "openFolderTask": "{{name}}이(가) 있는 폴더 열기",
+      "openFileTask": "Open {{name}}",
+      "openFileUnsupported": "Upgrade Motrix to open files directly",
+      "openFileError": "Could not open the file. Please try again.",
+      "copyPathTask": "Copy the path of {{path}}",
+      "copyNameTask": "Copy the name of {{name}}",
+      "copyOutputError": "Could not copy to the clipboard.",
+      "copiedToClipboard": "Copied to the clipboard.",
+      "segmentedProgress": "Download progress",
       "openFolderUnsupported": "폴더를 열려면 Motrix를 업데이트하세요",
       "pauseTask": "{{name}} 일시 정지",
       "removeTask": "{{name}} 제거",

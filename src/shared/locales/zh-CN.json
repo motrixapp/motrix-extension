@@ -388,8 +388,25 @@
       "tasks": "任务"
     },
     "takeover": {
-      "aria": "切换下载接管",
-      "label": "接管"
+      "declineTitle_one": "有 1 个下载留在浏览器",
+      "declineTitle_other": "有 {{count}} 个下载留在浏览器",
+      "declineMore_one": "另有 {{count}} 个",
+      "declineMore_other": "另有 {{count}} 个",
+      "declines": {
+        "not-a-download": "浏览器直接渲染，未作为文件下载",
+        "self-initiated": "由扩展自身发起",
+        "takeover-disabled": "接管开关已关闭",
+        "endpoint-unsupported": "当前 Motrix 无法接管",
+        "sensitive-host": "属于敏感站点，已排除",
+        "policy-declined": "命中站点或大小规则，交回浏览器",
+        "unknown-size": "无法确定文件大小",
+        "preflight-timeout": "接管预检超时",
+        "preflight-unavailable": "接管预检未能执行",
+        "unfaithful-replay": "重放请求无法复现该下载",
+        "native-gone": "浏览器已先完成下载",
+        "handoff-failed": "Motrix 未能接收"
+      },
+      "label": "接管开关"
     },
     "tasks": {
       "actions": "{{name}} 的操作",
@@ -398,6 +415,14 @@
       "openFolderError": "无法打开任务所在目录，请重试。",
       "openFolderMetadataPending": "获取任务元数据后可打开目录",
       "openFolderTask": "打开 {{name}} 所在目录",
+      "openFileTask": "打开 {{name}}",
+      "openFileUnsupported": "升级 Motrix 后可直接打开文件",
+      "openFileError": "无法打开该文件，请重试。",
+      "copyPathTask": "复制 {{path}} 的路径",
+      "copyNameTask": "复制 {{name}} 的文件名",
+      "copyOutputError": "无法复制到剪贴板。",
+      "copiedToClipboard": "已复制到剪贴板。",
+      "segmentedProgress": "下载进度",
       "openFolderUnsupported": "升级 Motrix 后可打开目录",
       "pauseTask": "暂停 {{name}}",
       "removeTask": "移除 {{name}}",

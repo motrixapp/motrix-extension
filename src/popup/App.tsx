@@ -21,6 +21,7 @@ import { QuickAddTaskDialog } from '@/popup/QuickAddTaskDialog'
 import { QuickSettingsPanel } from '@/popup/QuickSettingsPanel'
 import { RpcNotice } from '@/popup/RpcNotice'
 import { SpeedTile } from '@/popup/SpeedTile'
+import { TakeoverDeclineNotice } from '@/popup/TakeoverDeclineNotice'
 import { useAutoPopupReceipt } from '@/popup/useAutoPopupReceipt'
 import { type TaskControlPanel, useControlPanel } from '@/popup/useControlPanel'
 import {
@@ -224,6 +225,7 @@ const PopupContent = memo(function PopupContent({
               controller={taskController}
               canRevealTask={state.capabilities.taskReveal}
               canOpenApp={state.endpoint?.activeEndpointId === 'local'}
+              canOpenFileTask={state.capabilities.taskOpen === true}
               onReconnect={onReconnect}
               notice={notice}
               onNewTask={() => setQuickAddOpen(true)}
@@ -337,22 +339,26 @@ export function App(): React.ReactElement {
   const taskController = useMemo<TaskControlPanel>(
     () => ({
       tasks: controller.tasks,
+      pieces: controller.pieces,
       loading: controller.loading,
       error: controller.error,
       refresh: controller.refresh,
       pause: controller.pause,
       resume: controller.resume,
       reveal: controller.reveal,
+      open: controller.open,
       remove: controller.remove,
     }),
     [
       controller.error,
       controller.loading,
+      controller.open,
       controller.pause,
       controller.refresh,
       controller.remove,
       controller.resume,
       controller.reveal,
+      controller.pieces,
       controller.tasks,
     ]
   )
@@ -492,6 +498,15 @@ export function App(): React.ReactElement {
               setTab('tasks')
               if (!connected) reconnectPopup()
             }}
+          />
+        )}
+
+        {supportsBackendConnections() && (
+          <TakeoverDeclineNotice
+            enabled={
+              quickSettings.takeoverSupported &&
+              (quickSettings.takeover?.enabled ?? false)
+            }
           />
         )}
 
