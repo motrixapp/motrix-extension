@@ -95,6 +95,7 @@ function installConnectedBus(): ReturnType<typeof vi.fn> {
         },
       }
     }
+    if (env.kind === 'bg.hasPairedBackend') return { paired: true }
     if (env.kind === 'bg.getEndpointConfig') {
       return endpoint
     }
@@ -229,6 +230,7 @@ describe('Popup App', () => {
           lastErrorReason: 'backendUpgradeRequired',
         }
       }
+      if (env.kind === 'bg.hasPairedBackend') return { paired: true }
       if (env.kind === 'bg.getEndpointConfig') {
         return LOCAL_ENDPOINT
       }
@@ -264,6 +266,7 @@ describe('Popup App', () => {
           },
         }
       }
+      if (env.kind === 'bg.hasPairedBackend') return { paired: true }
       if (env.kind === 'bg.getEndpointConfig') {
         return LOCAL_ENDPOINT
       }
@@ -315,6 +318,7 @@ describe('Popup App', () => {
           },
         }
       }
+      if (env.kind === 'bg.hasPairedBackend') return { paired: true }
       if (env.kind === 'bg.getEndpointConfig') {
         return LOCAL_ENDPOINT
       }
@@ -426,6 +430,7 @@ describe('Popup App', () => {
       const env = msg as Envelope
       if (env.kind === 'bg.getState')
         return { ...SNAPSHOT, state: 'disconnected' }
+      if (env.kind === 'bg.hasPairedBackend') return { paired: true }
       if (env.kind === 'bg.getEndpointConfig') return LOCAL_ENDPOINT
       if (env.kind === 'bg.scanActiveTab') {
         return { media: [], selectionKinds: ['direct'] }
@@ -576,6 +581,7 @@ describe('Popup App', () => {
           attemptIntent: 'background-probe',
         }
       }
+      if (env.kind === 'bg.hasPairedBackend') return { paired: true }
       if (env.kind === 'bg.getEndpointConfig') {
         return LOCAL_ENDPOINT
       }
@@ -648,6 +654,7 @@ describe('Popup App', () => {
           },
         }
       }
+      if (env.kind === 'bg.hasPairedBackend') return { paired: true }
       if (env.kind === 'bg.getEndpointConfig') {
         return {
           ...LOCAL_ENDPOINT,
@@ -738,3 +745,65 @@ describe('Popup App', () => {
     })
   })
 })
+
+it.each(['header', 'quick settings'])(
+  'blocks the %s takeover switch before pairing',
+  async (entry) => {
+    const baseSend = installConnectedBus()
+    browser.runtime.sendMessage = vi.fn(async (message: unknown) => {
+      const env = message as Envelope
+      if (env.kind === 'bg.hasPairedBackend') return { paired: false }
+      if (env.kind === 'bg.getTakeoverConfig')
+        return {
+          enabled: false,
+          consentAckVersion: 1,
+          defaultAction: 'motrix',
+          rules: [],
+          openTaskPanelAfterSubmit: false,
+        }
+      return baseSend(message)
+    })
+    const user = userEvent.setup()
+    render(<App />)
+    await screen.findByText('ubuntu.iso')
+    if (entry === 'quick settings')
+      await user.click(
+        screen.getByRole('tab', { name: i18n.t('popup.tabs.settings') })
+      )
+    const toggle =
+      entry === 'header'
+        ? screen.getByTestId('takeover-switch')
+        : screen.getByRole('switch', {
+            name: i18n.t('options.takeover.enableLabel'),
+          })
+    await user.click(toggle)
+    const dialog = await screen.findByRole('alertdialog', {
+      name: i18n.t('options.takeover.pairingRequiredTitle'),
+    })
+    expect(within(dialog).getAllByRole('button')).toHaveLength(3)
+    expect(
+      within(dialog).getByRole('button', {
+        name: i18n.t('options.takeover.pairApp'),
+      })
+    ).toBeTruthy()
+    expect(
+      within(dialog).getByRole('button', {
+        name: i18n.t('options.takeover.addServerPair'),
+      })
+    ).toBeTruthy()
+    await user.click(
+      within(dialog).getByRole('button', {
+        name: i18n.t('options.common.cancel'),
+      })
+    )
+    expect(toggle.getAttribute('aria-checked')).toBe('false')
+    expect(
+      vi
+        .mocked(browser.runtime.sendMessage)
+        .mock.calls.some(
+          ([message]) =>
+            (message as Envelope).kind === 'bg.patchTakeoverEnabled'
+        )
+    ).toBe(false)
+  }
+)

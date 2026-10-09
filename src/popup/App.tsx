@@ -1,5 +1,12 @@
 import { Activity, AlertTriangle, ScanSearch } from 'lucide-react'
-import { memo, type ReactNode, useCallback, useMemo, useState } from 'react'
+import {
+  memo,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
@@ -37,7 +44,6 @@ import { supportsBackendConnections } from '@/shared/browserKind'
 import { connectionErrorKey } from '@/shared/errorCopy'
 import type { PairingState } from '@/shared/integration'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
-import { CONSENT_VERSION } from '@/shared/takeover'
 import { supportsAutomaticTakeover } from '@/shared/takeoverAvailability'
 
 function CompactConnectionNotice({
@@ -393,19 +399,24 @@ export function App(): React.ReactElement {
     [submitPairingCode, t]
   )
 
+  useEffect(() => {
+    if (
+      quickSettings.pairingRequired ||
+      quickSettings.consentRequired ||
+      quickSettings.error?.operation === 'save'
+    )
+      setTab('settings')
+  }, [
+    quickSettings.pairingRequired,
+    quickSettings.consentRequired,
+    quickSettings.error?.operation,
+  ])
+
   const handleTakeoverChange = useCallback(
     (checked: boolean): void => {
-      if (
-        checked &&
-        quickSettings.takeover !== null &&
-        quickSettings.takeover.consentAckVersion < CONSENT_VERSION
-      ) {
-        // Keep the real quick-settings consent surface mounted and visible.
-        setTab('settings')
-      }
       void quickSettings.requestTakeoverEnabled(checked)
     },
-    [quickSettings.requestTakeoverEnabled, quickSettings.takeover]
+    [quickSettings.requestTakeoverEnabled]
   )
 
   const connectedNotice = useMemo(

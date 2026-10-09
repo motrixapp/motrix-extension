@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import '@/shared/i18n'
 import { App } from '@/options/App'
+import { i18n } from '@/shared/i18n'
 import { LINKS } from '@/shared/links'
 
 afterEach(() => vi.unstubAllGlobals())
@@ -25,6 +26,7 @@ declare const browser: {
 }
 
 beforeEach(() => {
+  window.history.replaceState(null, '', '/options.html')
   browser.runtime.id = 'x'
   browser.runtime.getManifest = vi.fn(() => ({ version: '1.0.0' }))
   browser.runtime.sendMessage = vi.fn(async (env) => {
@@ -43,6 +45,7 @@ beforeEach(() => {
         servers: [],
         cleanupTombstones: [],
       }
+    if (env.kind === 'bg.hasPairedBackend') return { paired: false }
     if (env.kind === 'bg.getPairingStatus') return { paired: false }
     if (env.kind === 'bg.getState') return { state: 'disconnected' }
     if (env.kind === 'bg.listAdapters') return { adapters: [] }
@@ -140,4 +143,44 @@ describe('options App', () => {
       screen.getByRole('link', { name: 'GitHub' }).getAttribute('href')
     ).toBe(LINKS.repo)
   })
+})
+
+it('requires pairing in Downloads and opens the Server editor from the prompt', async () => {
+  const user = userEvent.setup()
+  render(<App />)
+  await user.click(screen.getByRole('tab', { name: /downloads|下载/i }))
+  const toggle = await screen.findByRole('switch', {
+    name: i18n.t('options.takeover.enableLabel'),
+  })
+  await waitFor(() => expect(toggle.hasAttribute('disabled')).toBe(false))
+  await user.click(toggle)
+  expect(
+    await screen.findByRole('alertdialog', {
+      name: i18n.t('options.takeover.pairingRequiredTitle'),
+    })
+  ).toBeTruthy()
+  expect(toggle.getAttribute('aria-checked')).toBe('false')
+  await user.click(
+    screen.getByRole('button', {
+      name: i18n.t('options.common.cancel'),
+      exact: true,
+    })
+  )
+  await user.click(toggle)
+  await user.click(
+    await screen.findByRole('button', {
+      name: i18n.t('options.takeover.addServerPair'),
+    })
+  )
+  expect(
+    await screen.findByRole('dialog', {
+      name: i18n.t('options.servers.addTitle'),
+    })
+  ).toBeTruthy()
+  expect(window.location.hash).toBe('#integration')
+  expect(
+    vi
+      .mocked(browser.runtime.sendMessage)
+      .mock.calls.some(([env]) => env.kind === 'bg.setTakeoverConfig')
+  ).toBe(false)
 })

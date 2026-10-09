@@ -179,7 +179,11 @@
       "title": "İndirmeleri devralma",
       "remoteUnavailable": "Otomatik devralma şu anda yerel Motrix App gerektirir. Uzak indirmeler ve üstbilgi veya çerez izinleri bu özelliği etkinleştirmez. Bu sunucuya elle veya sağ tık menüsünden indirme gönderebilirsiniz.",
       "availabilityUnknown": "Seçili arka uç kontrol edilene kadar devralma kullanılamaz.",
-      "remoteUnavailableShort": "Yalnızca yerel uygulama. Sağ tıkla gönderim sunucularla da çalışır."
+      "remoteUnavailableShort": "Yalnızca yerel uygulama. Sağ tıkla gönderim sunucularla da çalışır.",
+      "pairingRequiredTitle": "Önce bir uygulama veya sunucu eşleştirin",
+      "pairingRequiredBody": "İndirmeleri devralmayı açmadan önce en az bir Motrix uygulaması veya sunucusu eşleştirin.",
+      "pairApp": "Uygulamayı eşleştir",
+      "addServerPair": "Sunucu ekle ve eşleştir"
     },
     "tabs": {
       "general": "Genel",

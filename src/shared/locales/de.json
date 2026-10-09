@@ -179,7 +179,11 @@
       "title": "Download-Übernahme",
       "remoteUnavailable": "Die automatische Übernahme erfordert derzeit die lokale Motrix App. Remote-Downloads und Berechtigungen für Header oder Cookies aktivieren sie nicht. Sie können Downloads weiterhin manuell oder über das Kontextmenü an diesen Server senden.",
       "availabilityUnknown": "Die Übernahme ist nicht verfügbar, solange das ausgewählte Backend nicht geprüft werden kann.",
-      "remoteUnavailableShort": "Nur für die lokale App. Senden per Rechtsklick funktioniert auch mit Servern."
+      "remoteUnavailableShort": "Nur für die lokale App. Senden per Rechtsklick funktioniert auch mit Servern.",
+      "pairingRequiredTitle": "Zuerst ein Backend koppeln",
+      "pairingRequiredBody": "Kopple mindestens eine Motrix-App oder einen Server, bevor du die Download-Übernahme aktivierst.",
+      "pairApp": "App koppeln",
+      "addServerPair": "Server hinzufügen und koppeln"
     },
     "tabs": {
       "general": "Allgemein",

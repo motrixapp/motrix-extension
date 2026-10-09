@@ -1,5 +1,6 @@
 import { Globe2Icon } from 'lucide-react'
 import type * as React from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GitHubMark } from '@/components/github-mark'
 import { buttonVariants } from '@/components/ui/button'
@@ -11,9 +12,24 @@ import { HelpTab } from '@/options/tabs/HelpTab'
 import { IntegrationTab } from '@/options/tabs/IntegrationTab'
 import { supportsBackendConnections } from '@/shared/browserKind'
 import { LINKS } from '@/shared/links'
+import { pairingActionFromHash } from '@/shared/pairingNavigation'
 
 export function App(): React.ReactElement {
   const { t } = useTranslation()
+  const [tab, setTab] = useState(() =>
+    window.location.hash.startsWith('#integration') ? 'integration' : 'general'
+  )
+  const [pairingAction, setPairingAction] = useState(pairingActionFromHash)
+  useEffect(() => {
+    const navigate = (): void => {
+      if (window.location.hash.startsWith('#integration')) {
+        setTab('integration')
+        setPairingAction(pairingActionFromHash())
+      }
+    }
+    window.addEventListener('hashchange', navigate)
+    return () => window.removeEventListener('hashchange', navigate)
+  }, [])
   return (
     <TooltipProvider>
       <div className="min-h-screen w-full px-4 py-8">
@@ -64,7 +80,15 @@ export function App(): React.ReactElement {
               </nav>
             </header>
 
-            <Tabs defaultValue="general" className="">
+            <Tabs
+              value={tab}
+              onValueChange={(value) => {
+                setTab(value as string)
+                setPairingAction(null)
+                window.history.replaceState(null, '', `#${value}`)
+              }}
+              className=""
+            >
               <TabsList className="w-full bg-tab-background">
                 <TabsTrigger value="general">
                   {t('options.tabs.general')}
@@ -92,7 +116,13 @@ export function App(): React.ReactElement {
               )}
               {supportsBackendConnections() && (
                 <TabsContent value="integration" className="">
-                  <IntegrationTab />
+                  <IntegrationTab
+                    pairingAction={pairingAction}
+                    onPairingActionHandled={() => {
+                      setPairingAction(null)
+                      window.history.replaceState(null, '', '#integration')
+                    }}
+                  />
                 </TabsContent>
               )}
               <TabsContent value="help" className="">

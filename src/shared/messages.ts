@@ -173,6 +173,10 @@ export interface MessageMap {
     request: { endpointId: string }
     response: { paired: boolean }
   }
+  'bg.hasPairedBackend': {
+    request: undefined
+    response: { paired: boolean }
+  }
   'bg.getRemoteBackendPolicy': {
     request: undefined
     response: {

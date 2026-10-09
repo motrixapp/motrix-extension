@@ -1,8 +1,9 @@
 import type * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { TakeoverConsentDialog } from '@/components/takeover-consent-dialog'
+import { TakeoverPairingDialog } from '@/components/takeover-pairing-dialog'
 import {
   Field,
   FieldContent,
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { useTakeoverPairing } from '@/components/useTakeoverPairing'
 import { SettingSection } from '@/options/components/SettingSection'
 import type { TakeoverFormValues } from '@/options/tabs/schemas'
 import { useTakeoverAvailability } from '@/options/useTakeoverAvailability'
@@ -46,6 +48,9 @@ export function TakeoverSection({
     motrix: t('options.takeover.unknownSizeMotrix'),
   }
   const availability = useTakeoverAvailability()
+  const pairing = useTakeoverPairing()
+  const availabilityRef = useRef(availability)
+  availabilityRef.current = availability
   const confirmationSupported = supportsAutoOpenPopup()
   const [showConsent, setShowConsent] = useState(false)
   useEffect(() => {
@@ -122,15 +127,21 @@ export function TakeoverSection({
                     <Switch
                       id="download-enabled"
                       checked={availability === 'local' && field.value}
-                      disabled={availability !== 'local'}
+                      disabled={availability !== 'local' || pairing.checking}
                       aria-describedby={
                         availability !== 'local'
                           ? 'download-takeover-unavailable'
                           : undefined
                       }
                       aria-label={t('options.takeover.enableAria')}
-                      onCheckedChange={(checked) => {
+                      onCheckedChange={async (checked) => {
                         if (availability !== 'local') return
+                        if (
+                          checked &&
+                          (!(await pairing.check()) ||
+                            availabilityRef.current !== 'local')
+                        )
+                          return
                         if (checked && consentAck < CONSENT_VERSION) {
                           setShowConsent(true)
                           return
@@ -225,10 +236,24 @@ export function TakeoverSection({
         </FieldGroup>
       </SettingSection>
 
+      {pairing.error && (
+        <p role="alert" className="text-sm text-destructive">
+          {t('options.common.loadError')}
+        </p>
+      )}
+      <TakeoverPairingDialog
+        open={pairing.required && availability === 'local'}
+        onCancel={pairing.cancel}
+      />
       <TakeoverConsentDialog
         open={showConsent && availability === 'local'}
-        onConfirm={() => {
+        saving={pairing.checking}
+        onConfirm={async () => {
           if (availability !== 'local') return
+          if (!(await pairing.check()) || availabilityRef.current !== 'local') {
+            setShowConsent(false)
+            return
+          }
           setConsentAck(CONSENT_VERSION)
           form.setValue('enabled', true, { shouldDirty: true })
           setShowConsent(false)

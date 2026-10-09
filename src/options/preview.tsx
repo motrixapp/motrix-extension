@@ -31,7 +31,8 @@ type PreviewEndpoint = {
 
 let previewEndpoint: PreviewEndpoint = {
   version: 3,
-  activeEndpointId: 'studio',
+  activeEndpointId:
+    previewParams.get('pairing') === 'none' ? 'local' : 'studio',
   servers: [
     {
       id: 'studio',
@@ -51,10 +52,13 @@ let previewEndpoint: PreviewEndpoint = {
   cleanupTombstones: [],
 }
 
-const pairedEndpoints = new Set(['local', 'studio'])
+const pairedEndpoints = new Set(
+  previewParams.get('pairing') === 'none' ? [] : ['local', 'studio']
+)
 let nextServerId = 1
 let previewTakeover = { ...TAKEOVER_DEFAULT }
-let previewConnectionState: 'connected' | 'disconnected' = 'connected'
+let previewConnectionState: 'connected' | 'disconnected' =
+  previewParams.get('pairing') === 'none' ? 'disconnected' : 'connected'
 
 const previewRuntime = {
   id: 'motrix-options-preview',
@@ -68,6 +72,10 @@ const previewRuntime = {
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }
     switch (request.kind) {
+      case 'bg.listPairCandidates':
+        return { candidates: [] }
+      case 'bg.hasPairedBackend':
+        return { paired: pairedEndpoints.size > 0 }
       case 'bg.getEndpointConfig':
         return previewEndpoint
       case 'bg.activateEndpoint': {

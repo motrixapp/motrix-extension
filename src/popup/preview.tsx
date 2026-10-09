@@ -1,12 +1,20 @@
 import '@/styles/globals.css'
 import { createRoot } from 'react-dom/client'
 import { createPreviewConfirmationPort } from '@/popup/previewConfirmation'
+import {
+  createPreviewTasks,
+  PreviewTaskDataControl,
+  resolvePreviewTaskDataset,
+} from '@/popup/previewTasks'
 import type { NotificationsConfig } from '@/shared/notifications'
 import { withSiteExcluded } from '@/shared/siteExclusion'
 import { resolveLocale } from '@/shared/supportedLocales'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 const previewParams = new URLSearchParams(globalThis.location.search)
+const previewTaskDataset = resolvePreviewTaskDataset(previewParams.get('data'))
+let previewTasks = createPreviewTasks(previewTaskDataset)
+const previewMessageListeners = new Set<(message: unknown) => void>()
 const previewScan = previewParams.get('scan')
 const previewFfmpegAvailable = previewParams.get('ffmpeg') !== 'missing'
 const previewPageUrl =
@@ -15,7 +23,10 @@ const previewPageUrl =
     : 'https://example.com/watch'
 const previewLocale = resolveLocale(previewParams.get('lang') ?? 'en-US')
 let previewConnection =
-  previewParams.get('connection') === 'offline' ? 'disconnected' : 'connected'
+  previewParams.get('connection') === 'offline' ||
+  previewParams.get('pairing') === 'none'
+    ? 'disconnected'
+    : 'connected'
 
 const previewMedia = [
   {
@@ -78,7 +89,7 @@ let previewEndpoint: PreviewEndpoint = {
 let previewTakeover: TakeoverConfig = {
   downloadMode: 'direct',
   openTaskPanelAfterSubmit: false,
-  enabled: true,
+  enabled: previewParams.get('pairing') !== 'none',
   consentAckVersion: 1,
   defaultAction: 'motrix',
   unknownSizeAction: 'chrome',
@@ -93,15 +104,24 @@ let previewNotifications: NotificationsConfig = {
 
 const previewRuntime = {
   id: 'motrix-popup-preview',
-  onMessage: { addListener: () => undefined, removeListener: () => undefined },
+  onMessage: {
+    addListener: (listener: (message: unknown) => void) =>
+      previewMessageListeners.add(listener),
+    removeListener: (listener: (message: unknown) => void) =>
+      previewMessageListeners.delete(listener),
+  },
   connectNative: () => undefined,
   connect: () =>
     createPreviewConfirmationPort(previewParams.get('confirmation')),
   openOptionsPage: async () => undefined,
+  getURL: (path: string) =>
+    path.replace('options.html', 'options-preview.html'),
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }
     const kind = request.kind
     switch (kind) {
+      case 'bg.hasPairedBackend':
+        return { paired: previewParams.get('pairing') !== 'none' }
       case 'bg.runConnectionDiagnostics':
         await new Promise((resolve) => setTimeout(resolve, 800))
         return {
@@ -192,7 +212,8 @@ const previewRuntime = {
           return {
             state: previewConnection,
             endpoint: previewEndpoint,
-            pairing: 'stored',
+            pairing:
+              previewParams.get('pairing') === 'none' ? 'none' : 'stored',
             phase: previewConnection === 'connected' ? 'ready' : 'idle',
             attemptIntent: 'background-probe',
             lastError: 'motrix-not-running',
@@ -201,7 +222,7 @@ const previewRuntime = {
         return {
           state: previewConnection,
           endpoint: previewEndpoint,
-          pairing: 'stored',
+          pairing: previewParams.get('pairing') === 'none' ? 'none' : 'stored',
           phase: previewConnection === 'connected' ? 'ready' : 'idle',
           attemptIntent: 'background-probe',
           server: {
@@ -249,7 +270,25 @@ const previewRuntime = {
           },
         }
       case 'bg.taskList':
-        return { tasks: [], total: 0 }
+        return { tasks: previewTasks, total: previewTasks.length }
+      case 'bg.taskRemove': {
+        const { taskId } = request.payload as { taskId: string }
+        previewTasks = previewTasks.filter((task) => task.id !== taskId)
+        return { ok: true }
+      }
+      case 'bg.taskPause':
+      case 'bg.taskResume': {
+        const { taskId } = request.payload as { taskId: string }
+        previewTasks = previewTasks.map((task) =>
+          task.id === taskId
+            ? {
+                ...task,
+                status: kind === 'bg.taskPause' ? 'paused' : 'downloading',
+              }
+            : task
+        )
+        return { ok: true }
+      }
       case 'bg.statsGet':
         return {
           totalDownloadSpeed: 0,
@@ -300,6 +339,10 @@ const previewBrowser = {
   permissions: { contains: async () => true },
   runtime: previewRuntime,
   tabs: {
+    create: async ({ url }: { url: string }) => {
+      window.location.assign(url)
+      return {}
+    },
     query: async () => [{ id: 1, url: previewPageUrl, title: 'Launch film' }],
   },
   i18n: { getUILanguage: () => previewLocale },
@@ -338,5 +381,16 @@ if (root)
   createRoot(root).render(
     <LocaleProvider>
       <App />
+      {import.meta.env.DEV && previewTaskDataset && (
+        <PreviewTaskDataControl
+          initialDataset={previewTaskDataset}
+          onChange={(dataset) => {
+            previewTasks = createPreviewTasks(dataset)
+            for (const listener of previewMessageListeners) {
+              listener({ kind: 'event.controlPanelActivity' })
+            }
+          }}
+        />
+      )}
     </LocaleProvider>
   )

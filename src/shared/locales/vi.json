@@ -179,7 +179,11 @@
       "title": "Tiếp quản tải xuống",
       "remoteUnavailable": "Tiếp quản tự động hiện yêu cầu Motrix App cục bộ. Tải xuống từ xa và quyền tiêu đề hoặc cookie không bật tính năng này. Bạn vẫn có thể gửi lượt tải xuống tới máy chủ này theo cách thủ công hoặc qua menu chuột phải.",
       "availabilityUnknown": "Chưa thể tiếp quản cho đến khi kiểm tra được dịch vụ đã chọn.",
-      "remoteUnavailableShort": "Chỉ dành cho ứng dụng cục bộ. Vẫn có thể gửi đến máy chủ qua menu chuột phải."
+      "remoteUnavailableShort": "Chỉ dành cho ứng dụng cục bộ. Vẫn có thể gửi đến máy chủ qua menu chuột phải.",
+      "pairingRequiredTitle": "Ghép nối ứng dụng hoặc máy chủ trước",
+      "pairingRequiredBody": "Ghép nối ít nhất một ứng dụng Motrix hoặc máy chủ trước khi bật tiếp quản tải xuống.",
+      "pairApp": "Ghép nối ứng dụng",
+      "addServerPair": "Thêm và ghép nối máy chủ"
     },
     "tabs": {
       "general": "Chung",

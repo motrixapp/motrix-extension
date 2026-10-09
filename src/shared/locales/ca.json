@@ -179,7 +179,11 @@
       "title": "Gestió de baixades",
       "remoteUnavailable": "La gestió automàtica requereix actualment Motrix App local. Les baixades remotes i els permisos de capçaleres o galetes no l'activen. Pots continuar enviant baixades a aquest servidor manualment o des del menú contextual.",
       "availabilityUnknown": "La gestió de baixades no està disponible fins que es pugui comprovar el servei seleccionat.",
-      "remoteUnavailableShort": "Només per a l'app local. L'enviament des del menú contextual funciona amb servidors."
+      "remoteUnavailableShort": "Només per a l'app local. L'enviament des del menú contextual funciona amb servidors.",
+      "pairingRequiredTitle": "Vincula primer una aplicació o un servidor",
+      "pairingRequiredBody": "Vincula almenys una aplicació Motrix o un servidor abans d’activar la captura de baixades.",
+      "pairApp": "Vincula l’aplicació",
+      "addServerPair": "Afegeix i vincula un servidor"
     },
     "tabs": {
       "general": "General",

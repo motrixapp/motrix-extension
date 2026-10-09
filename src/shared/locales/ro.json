@@ -179,7 +179,11 @@
       "title": "Preluarea descărcărilor",
       "remoteUnavailable": "Preluarea automată necesită momentan aplicația locală Motrix App. Descărcările la distanță și permisiunile pentru antete sau cookie-uri nu o activează. Poți trimite în continuare descărcări acestui server manual sau din meniul contextual.",
       "availabilityUnknown": "Preluarea nu este disponibilă până când serviciul selectat poate fi verificat.",
-      "remoteUnavailableShort": "Doar aplicația locală. Trimiterea din meniul contextual funcționează cu servere."
+      "remoteUnavailableShort": "Doar aplicația locală. Trimiterea din meniul contextual funcționează cu servere.",
+      "pairingRequiredTitle": "Asociază mai întâi o aplicație sau un server",
+      "pairingRequiredBody": "Asociază cel puțin o aplicație Motrix sau un server înainte de a activa preluarea descărcărilor.",
+      "pairApp": "Asociază aplicația",
+      "addServerPair": "Adaugă și asociază un server"
     },
     "tabs": {
       "general": "General",

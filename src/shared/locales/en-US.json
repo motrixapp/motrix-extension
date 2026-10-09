@@ -179,7 +179,11 @@
       "title": "Download takeover",
       "remoteUnavailable": "Automatic takeover currently requires the local Motrix App. Remote downloads and header or cookie permissions do not enable it. You can still send downloads to this Server manually or from the right-click menu.",
       "availabilityUnknown": "Takeover is unavailable until the selected backend can be checked.",
-      "remoteUnavailableShort": "Local App only. Right-click sending works with Servers."
+      "remoteUnavailableShort": "Local App only. Right-click sending works with Servers.",
+      "pairingRequiredTitle": "Pair a backend first",
+      "pairingRequiredBody": "Pair at least one Motrix App or Server before enabling download takeover.",
+      "pairApp": "Pair App",
+      "addServerPair": "Add and pair Server"
     },
     "tabs": {
       "general": "General",

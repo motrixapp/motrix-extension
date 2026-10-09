@@ -21,10 +21,13 @@ declare const browser: {
 }
 
 let savedTakeover: TakeoverConfig | null
+let pairedBackend: boolean
 
 beforeEach(() => {
   savedTakeover = null
+  pairedBackend = true
   browser.runtime.sendMessage = vi.fn(async (env) => {
+    if (env.kind === 'bg.hasPairedBackend') return { paired: pairedBackend }
     if (env.kind === 'bg.getEndpointConfig')
       return { activeEndpointId: 'local' }
     if (env.kind === 'bg.getTakeoverConfig') {
@@ -78,19 +81,20 @@ describe('DownloadTab', () => {
   })
 
   it('gates first enable on consent, then Apply persists the takeover config', async () => {
+    const user = userEvent.setup()
     render(<DownloadTab />)
     await screen.findByRole('switch', {
       name: /send eligible downloads|将符合条件的下载发送到 Motrix/i,
     })
-    fireEvent.click(
+    await user.click(
       screen.getByRole('switch', {
         name: /send eligible downloads|将符合条件的下载发送到 Motrix/i,
       })
     )
-    fireEvent.click(
+    await user.click(
       await screen.findByRole('button', { name: /enable|开启|understand/i })
     )
-    fireEvent.click(screen.getByRole('button', { name: /apply|应用/i }))
+    await user.click(await screen.findByRole('button', { name: /apply|应用/i }))
     await waitFor(() => {
       expect(savedTakeover).not.toHaveProperty('openTaskPanelAfterSubmit')
       expect(savedTakeover?.enabled).toBe(true)
@@ -100,6 +104,31 @@ describe('DownloadTab', () => {
         payload: expect.anything(),
       })
     })
+  })
+
+  it('requires pairing before consent and permits enabling after pairing completes', async () => {
+    pairedBackend = false
+    const user = userEvent.setup()
+    render(<DownloadTab />)
+    const toggle = await screen.findByRole('switch', {
+      name: /send eligible downloads/i,
+    })
+    await user.click(toggle)
+    expect(
+      await screen.findByRole('heading', { name: 'Pair a backend first' })
+    ).toBeTruthy()
+    expect(toggle.getAttribute('aria-checked')).toBe('false')
+    expect(savedTakeover).toBeNull()
+    await user.click(
+      screen.getByRole('button', { name: 'Cancel', exact: true })
+    )
+    pairedBackend = true
+    await user.click(toggle)
+    await user.click(
+      await screen.findByRole('button', { name: /enable|understand/i })
+    )
+    await user.click(screen.getByRole('button', { name: /apply/i }))
+    await waitFor(() => expect(savedTakeover?.enabled).toBe(true))
   })
 
   it('disables remote takeover, retains the local preference on Apply, and reacts to selection changes', async () => {
