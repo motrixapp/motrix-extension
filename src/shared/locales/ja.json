@@ -179,7 +179,11 @@
       "title": "ダウンロードの引き継ぎ",
       "remoteUnavailable": "自動引き継ぎには現在、ローカルの Motrix App が必要です。リモートダウンロードやヘッダー・Cookie の権限では有効になりません。この サーバー には引き続き手動または右クリックメニューからダウンロードを送信できます。",
       "availabilityUnknown": "選択したバックエンドを確認できるまで、引き継ぎは利用できません。",
-      "remoteUnavailableShort": "ローカルアプリのみ対応。右クリックでの送信はサーバーでも利用できます。"
+      "remoteUnavailableShort": "ローカルアプリのみ対応。右クリックでの送信はサーバーでも利用できます。",
+      "pairingRequiredTitle": "先にバックエンドをペアリング",
+      "pairingRequiredBody": "ダウンロードの引き継ぎを有効にする前に、Motrix App または Server を少なくとも1つペアリングしてください。",
+      "pairApp": "App をペアリング",
+      "addServerPair": "Server を追加してペアリング"
     },
     "tabs": {
       "general": "一般",

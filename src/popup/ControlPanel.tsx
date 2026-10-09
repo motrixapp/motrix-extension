@@ -66,6 +66,10 @@ const PAUSABLE = new Set([
   'queued',
 ])
 
+function taskDisplayName(task: PendingTaskRemoval): string {
+  return task.name.trim() ? task.name : task.id
+}
+
 function formatBytes(bytes: number | null): string {
   if (bytes === null || !Number.isFinite(bytes) || bytes <= 0) return '0 B'
   const units = ['B', 'KB', 'MB', 'GB', 'TB']
@@ -359,7 +363,8 @@ const TaskRow = memo(function TaskRow({
 }: TaskRowProps): React.ReactElement {
   const { t } = useTranslation()
   const secondaryId = `task-secondary-${task.id}`
-  const openAppLabel = `${t('popup.tasks.openTaskInApp')}: ${task.name}`
+  const name = taskDisplayName(task)
+  const openAppLabel = `${t('popup.tasks.openTaskInApp')}: ${name}`
 
   return (
     <li
@@ -381,9 +386,9 @@ const TaskRow = memo(function TaskRow({
         </a>
       )}
       <div className="pointer-events-none absolute inset-y-0 end-[108px] start-0">
-        <TaskIdentity name={task.name} type={task.type} status={task.status} />
+        <TaskIdentity name={name} type={task.type} status={task.status} />
         <TaskLiveMetrics
-          name={task.name}
+          name={name}
           status={task.status}
           progress={task.progress}
           bytesDone={task.bytesDone}
@@ -395,7 +400,7 @@ const TaskRow = memo(function TaskRow({
       </div>
       <TaskActions
         taskId={task.id}
-        taskName={task.name}
+        taskName={name}
         status={task.status}
         onPause={onPause}
         onResume={onResume}
@@ -530,7 +535,7 @@ export const ControlPanel = memo(function ControlPanel({
       const task = controller.tasks.find((candidate) => candidate.id === taskId)
       if (task) {
         setDeleteTaskFiles(deleteFiles)
-        setTaskToRemove({ id: task.id, name: task.name })
+        setTaskToRemove({ id: task.id, name: taskDisplayName(task) })
         setRemoveDialogOpen(true)
       }
     },
@@ -711,12 +716,15 @@ export const ControlPanel = memo(function ControlPanel({
           }
         }}
       >
-        <AlertDialogContent size="sm" className="max-w-[360px]">
-          <AlertDialogHeader>
+        <AlertDialogContent
+          size="sm"
+          className="max-h-[calc(100dvh-2rem)] w-[min(360px,calc(100dvw-2rem))] grid-cols-1 grid-rows-[minmax(0,1fr)_auto_auto] gap-[min(1.5rem,24px)] p-[min(1.5rem,24px)]"
+        >
+          <AlertDialogHeader className="min-h-0 min-w-0 grid-cols-1 overflow-y-auto [overflow-wrap:anywhere]">
             <AlertDialogTitle>
               {t('popup.tasks.removeConfirmTitle')}
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="w-full min-w-0">
               {t('popup.tasks.removeConfirmDescription', {
                 name: taskToRemove?.name ?? '',
               })}
@@ -724,7 +732,7 @@ export const ControlPanel = memo(function ControlPanel({
           </AlertDialogHeader>
           <label
             htmlFor={deleteTaskFilesId}
-            className="flex cursor-pointer items-center gap-2 text-sm"
+            className="flex min-w-0 cursor-pointer items-center gap-2 text-sm"
           >
             <input
               id={deleteTaskFilesId}
@@ -732,18 +740,25 @@ export const ControlPanel = memo(function ControlPanel({
               checked={deleteTaskFiles}
               disabled={removingTask}
               onChange={(event) => setDeleteTaskFiles(event.target.checked)}
-              className="size-4 accent-primary"
+              className="size-4 shrink-0 accent-primary"
             />
-            <span>{t('popup.tasks.removeDeleteFilesLabel')}</span>
+            <span className="min-w-0 [overflow-wrap:anywhere]">
+              {t('popup.tasks.removeDeleteFilesLabel')}
+            </span>
           </label>
-          <AlertDialogFooter>
-            <AlertDialogCancel type="button" disabled={removingTask}>
+          <AlertDialogFooter className="group-data-[size=sm]/alert-dialog-content:grid-cols-[repeat(auto-fit,minmax(min(100%,8rem),1fr))]">
+            <AlertDialogCancel
+              type="button"
+              disabled={removingTask}
+              className="h-auto min-h-9 min-w-0 whitespace-normal [overflow-wrap:anywhere]"
+            >
               {t('options.common.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               type="button"
               variant="destructive"
               disabled={removingTask || readOnly}
+              className="h-auto min-h-9 min-w-0 whitespace-normal [overflow-wrap:anywhere]"
               onClick={() => void confirmRemoveTask()}
             >
               {removingTask && <Spinner data-icon="inline-start" />}

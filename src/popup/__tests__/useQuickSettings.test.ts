@@ -38,6 +38,7 @@ const NOTIFICATIONS: NotificationsConfig = {
 
 function mockSuccessfulBus(): void {
   send.mockImplementation(async (kind: string, payload) => {
+    if (kind === 'bg.hasPairedBackend') return { paired: true }
     if (kind === 'bg.getTakeoverConfig') return structuredClone(TAKEOVER)
     if (
       kind === 'bg.patchTakeoverEnabled' ||
@@ -201,6 +202,7 @@ describe('useQuickSettings', () => {
 
   it('rolls an optimistic update back and exposes save errors', async () => {
     send.mockImplementation(async (kind: string) => {
+      if (kind === 'bg.hasPairedBackend') return { paired: true }
       if (kind === 'bg.getTakeoverConfig') {
         return { ...TAKEOVER, consentAckVersion: CONSENT_VERSION }
       }
@@ -226,6 +228,7 @@ describe('useQuickSettings', () => {
     let fail = true
     send.mockImplementation(async (kind: string) => {
       if (fail) throw new Error('background unavailable')
+      if (kind === 'bg.hasPairedBackend') return { paired: true }
       if (kind === 'bg.getTakeoverConfig') return TAKEOVER
       if (kind === 'bg.getNotificationsConfig') return NOTIFICATIONS
       return { ok: true }
@@ -247,4 +250,38 @@ describe('useQuickSettings', () => {
     expect(result.current.notifications).toEqual(NOTIFICATIONS)
     expect(result.current.error).toBeNull()
   })
+})
+
+it('requires pairing before consent, then accepts pairing completed elsewhere', async () => {
+  mockSuccessfulBus()
+  const implementation = send.getMockImplementation()!
+  let paired = false
+  send.mockImplementation(async (kind, payload) =>
+    kind === 'bg.hasPairedBackend' ? { paired } : implementation(kind, payload)
+  )
+  const { result } = renderHook(() => useQuickSettings())
+  await waitFor(() => expect(result.current.loading).toBe(false))
+  await act(async () => {
+    await result.current.requestTakeoverEnabled(true)
+  })
+  expect(result.current.pairingRequired).toBe(true)
+  expect(result.current.consentRequired).toBe(false)
+  expect(result.current.takeover?.enabled).toBe(false)
+  expect(
+    send.mock.calls.some(([kind]) => kind === 'bg.patchTakeoverEnabled')
+  ).toBe(false)
+  act(() => result.current.cancelTakeoverPairing())
+  expect(result.current.pairingRequired).toBe(false)
+  paired = true
+  await act(async () => {
+    await result.current.requestTakeoverEnabled(true)
+  })
+  expect(result.current.consentRequired).toBe(true)
+  paired = false
+  await act(async () => {
+    await result.current.confirmTakeoverConsent()
+  })
+  expect(result.current.pairingRequired).toBe(true)
+  expect(result.current.consentRequired).toBe(false)
+  expect(result.current.takeover?.enabled).toBe(false)
 })

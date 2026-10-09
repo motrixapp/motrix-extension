@@ -10,6 +10,7 @@ import {
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ControlPanel } from '@/popup/ControlPanel'
+import { createPreviewTasks } from '@/popup/previewTasks'
 import type { ControlPanel as ControlPanelController } from '@/popup/useControlPanel'
 import { i18n } from '@/shared/i18n'
 
@@ -328,6 +329,80 @@ describe('ControlPanel task views', () => {
     expect(control.remove).not.toHaveBeenCalled()
   })
 
+  it.each(['en-US', 'zh-TW', 'ar'])(
+    'preserves the full magnet filename in the %s removal confirmation',
+    async (language) => {
+      await i18n.changeLanguage(language)
+      const control = controller()
+      const magnet = createPreviewTasks('worst')[0]!
+      control.tasks = [magnet]
+      const user = userEvent.setup()
+      render(
+        <ControlPanel
+          connection="connected"
+          controller={control}
+          onReconnect={vi.fn()}
+        />
+      )
+
+      await user.click(
+        screen.getByRole('button', {
+          name: i18n.t('popup.tasks.removeTask', { name: magnet.name }),
+        })
+      )
+      const dialog = screen.getByRole('alertdialog')
+      const description = document.getElementById(
+        dialog.getAttribute('aria-describedby') ?? ''
+      )
+      expect(description?.textContent).toBe(
+        i18n.t('popup.tasks.removeConfirmDescription', { name: magnet.name })
+      )
+      expect(control.remove).not.toHaveBeenCalled()
+
+      await user.click(
+        within(dialog).getByRole('checkbox', {
+          name: i18n.t('popup.tasks.removeDeleteFilesLabel'),
+        })
+      )
+      await user.click(
+        within(dialog).getByRole('button', {
+          name: i18n.t('popup.tasks.removeConfirmAction'),
+        })
+      )
+      await waitFor(() =>
+        expect(control.remove).toHaveBeenCalledExactlyOnceWith(magnet.id, true)
+      )
+    }
+  )
+
+  it.each(['', '   '])(
+    'identifies an unnamed task (%j) by ID before confirming removal',
+    async (name) => {
+      const control = controller()
+      control.tasks = [task('unnamed-task', name, 'downloading', 1)]
+      const user = userEvent.setup()
+      render(
+        <ControlPanel
+          connection="connected"
+          controller={control}
+          onReconnect={vi.fn()}
+        />
+      )
+      expect(screen.getByText('unnamed-task')).toBeTruthy()
+      await user.click(
+        screen.getByRole('button', { name: 'Remove unnamed-task' })
+      )
+      expect(
+        within(screen.getByRole('alertdialog')).getByText(
+          '“unnamed-task” will be removed from the download list.'
+        )
+      ).toBeTruthy()
+      await user.click(screen.getByRole('button', { name: 'Cancel' }))
+      await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+      expect(control.remove).not.toHaveBeenCalled()
+    }
+  )
+
   it('deletes downloaded files only after explicit opt-in', async () => {
     const control = controller()
     const user = userEvent.setup()
@@ -348,6 +423,74 @@ describe('ControlPanel task views', () => {
     await waitFor(() =>
       expect(control.remove).toHaveBeenCalledWith('active-1', true)
     )
+  })
+
+  it('keeps the removal confirmation open and controls disabled while saving', async () => {
+    const control = controller()
+    let finishRemoval!: () => void
+    vi.mocked(control.remove).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishRemoval = resolve
+        })
+    )
+    const user = userEvent.setup()
+    render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        onReconnect={vi.fn()}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: 'Remove active.iso' }))
+    await user.click(screen.getByRole('button', { name: 'Remove' }))
+    const dialog = screen.getByRole('alertdialog')
+    expect(
+      (
+        within(dialog).getByRole('button', {
+          name: 'Cancel',
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true)
+    expect(
+      (
+        within(dialog).getByRole('button', {
+          name: /Remove$/,
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true)
+    expect(
+      (within(dialog).getByRole('checkbox') as HTMLInputElement).disabled
+    ).toBe(true)
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('alertdialog')).toBe(dialog)
+    expect(control.remove).toHaveBeenCalledExactlyOnceWith('active-1', false)
+    await act(async () => {
+      finishRemoval()
+    })
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+  })
+
+  it('keeps the task visible and reports a rejected removal', async () => {
+    const control = controller()
+    vi.mocked(control.remove).mockRejectedValue(
+      new Error('Task removal failed')
+    )
+    const user = userEvent.setup()
+    render(
+      <ControlPanel
+        connection="connected"
+        controller={control}
+        onReconnect={vi.fn()}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: 'Remove active.iso' }))
+    await user.click(screen.getByRole('button', { name: 'Remove' }))
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull())
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Task removal failed'
+    )
+    expect(screen.getByText('active.iso')).toBeTruthy()
   })
 
   it('preselects file deletion when the remove action is shift-clicked', async () => {

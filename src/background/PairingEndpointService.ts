@@ -2,6 +2,7 @@ import { BackendOperationCoordinator } from '@/background/BackendOperationCoordi
 import type { ResolvedEndpointConfig } from '@/background/EndpointConfigStore'
 import {
   type EndpointConfigStore,
+  LOCAL_ENDPOINT_ID,
   resolveActiveEndpoint,
   resolveEndpointById,
 } from '@/background/EndpointConfigStore'
@@ -91,6 +92,24 @@ export class PairingEndpointService {
     return this.coordinator.run(async () => {
       const { endpoint } = await this.resolve(endpointId)
       return { paired: await this.paired(endpoint) }
+    })
+  }
+
+  /** Count committed credentials for the App or any configured, usable Server. */
+  async hasPairedBackend(): Promise<boolean> {
+    return this.coordinator.run(async () => {
+      const config = await this.endpointConfigStore.get()
+      const ids = [
+        LOCAL_ENDPOINT_ID,
+        ...config.servers
+          .filter((server) => server.state === 'ready')
+          .map((server) => server.id),
+      ]
+      for (const id of ids) {
+        const endpoint = resolveEndpointById(config, id)
+        if (endpoint && (await this.paired(endpoint))) return true
+      }
+      return false
     })
   }
 

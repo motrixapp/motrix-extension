@@ -179,7 +179,11 @@
       "title": "Przejmowanie pobierania",
       "remoteUnavailable": "Automatyczne przejmowanie wymaga obecnie lokalnej Motrix App. Zdalne pobieranie i uprawnienia do nagłówków lub ciasteczek go nie włączają. Nadal możesz wysyłać pobieranie do tego serwera ręcznie lub z menu kontekstowego.",
       "availabilityUnknown": "Przejmowanie jest niedostępne, dopóki nie będzie można sprawdzić wybranej usługi.",
-      "remoteUnavailableShort": "Tylko lokalna aplikacja. Wysyłanie z menu kontekstowego działa z serwerami."
+      "remoteUnavailableShort": "Tylko lokalna aplikacja. Wysyłanie z menu kontekstowego działa z serwerami.",
+      "pairingRequiredTitle": "Najpierw sparuj aplikację lub serwer",
+      "pairingRequiredBody": "Sparuj co najmniej jedną aplikację Motrix lub serwer przed włączeniem przejmowania pobrań.",
+      "pairApp": "Sparuj aplikację",
+      "addServerPair": "Dodaj i sparuj serwer"
     },
     "tabs": {
       "general": "Ogólne",

@@ -179,7 +179,11 @@
       "title": "Letöltések átvétele",
       "remoteUnavailable": "Az automatikus átvétel jelenleg a helyi Motrix Appot igényli. A távoli letöltések és a fejléc- vagy sütiengedélyek nem kapcsolják be. Kézzel vagy a jobb gombos menüből továbbra is küldhetsz letöltéseket erre a szerverre.",
       "availabilityUnknown": "Az átvétel nem érhető el, amíg a kiválasztott háttérszolgáltatás nem ellenőrizhető.",
-      "remoteUnavailableShort": "Csak helyi app. A jobb gombos küldés szerverekkel is működik."
+      "remoteUnavailableShort": "Csak helyi app. A jobb gombos küldés szerverekkel is működik.",
+      "pairingRequiredTitle": "Először párosítson egy alkalmazást vagy szervert",
+      "pairingRequiredBody": "A letöltések átvételének bekapcsolása előtt párosítson legalább egy Motrix alkalmazást vagy szervert.",
+      "pairApp": "Alkalmazás párosítása",
+      "addServerPair": "Szerver hozzáadása és párosítása"
     },
     "tabs": {
       "general": "Általános",

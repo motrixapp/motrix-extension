@@ -206,7 +206,10 @@ export function useIntegrationSettings() {
     }
   }
 
-  const handleEndpointChange = async (endpointId: string): Promise<void> => {
+  const handleEndpointChange = async (
+    endpointId: string,
+    rethrow = false
+  ): Promise<void> => {
     if (config === null || endpointId === config.activeEndpointId) return
     await runAction(async () => {
       const activated = await send('bg.activateEndpoint', { endpointId })
@@ -220,7 +223,7 @@ export function useIntegrationSettings() {
         refreshPairing(activated.config.activeEndpointId),
         refreshConnection(),
       ])
-    })
+    }, rethrow)
   }
 
   const handleReconnect = async (): Promise<void> => {
@@ -272,7 +275,10 @@ export function useIntegrationSettings() {
     setEditorOpen(true)
   }
 
-  const handleSaveServer = async (values: ServerFormValues): Promise<void> => {
+  const handleSaveServer = async (
+    values: ServerFormValues,
+    pairAfterSave = false
+  ): Promise<void> => {
     if (config === null) return
     await runAction(async () => {
       const normalizedUrl = normalizeRemoteEndpoint(values.url)
@@ -296,10 +302,18 @@ export function useIntegrationSettings() {
               changes: { name, url: normalizedUrl },
             })
       assertMessageSucceeded(result)
-      setConfig(result.config)
+      if (pairAfterSave) setEditingServer(result.server)
+      const nextConfig = pairAfterSave
+        ? (
+            await send('bg.activateEndpoint', {
+              endpointId: result.server.id,
+            })
+          ).config
+        : result.config
+      setConfig(nextConfig)
       setPairing(null)
       await Promise.all([
-        refreshPairing(result.config.activeEndpointId),
+        refreshPairing(nextConfig.activeEndpointId),
         refreshConnection(),
       ])
     }, true)

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { send } from '@/background/MessageBus'
+import { useTakeoverPairing } from '@/components/useTakeoverPairing'
 import { useCurrentSite } from '@/popup/useCurrentSite'
 import type { NotificationsConfig } from '@/shared/notifications'
 import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
@@ -25,6 +26,8 @@ export interface QuickSettingsController {
   loading: boolean
   saving: boolean
   error: QuickSettingsError | null
+  pairingRequired: boolean
+  cancelTakeoverPairing: () => void
   consentRequired: boolean
   reload: () => Promise<void>
   requestTakeoverEnabled: (enabled: boolean) => Promise<void>
@@ -50,6 +53,15 @@ function errorMessage(error: unknown): string {
 export function useQuickSettings(
   takeoverSupported = true
 ): QuickSettingsController {
+  const {
+    required: pairingRequired,
+    checking: checkingPairing,
+    error: pairingError,
+    check: checkPairing,
+    cancel: cancelTakeoverPairing,
+  } = useTakeoverPairing()
+  const supportedRef = useRef(takeoverSupported)
+  supportedRef.current = takeoverSupported
   const currentSite = useCurrentSite()
   const taskPanelSupported = supportsAutoOpenPopup()
   const [takeover, setTakeover] = useState<TakeoverConfig | null>(null)
@@ -191,6 +203,8 @@ export function useQuickSettings(
       if (!takeoverSupported) return
       if (current === null || current.enabled === enabled) return
 
+      if (enabled && (!(await checkPairing()) || !supportedRef.current)) return
+
       if (enabled && current.consentAckVersion < CONSENT_VERSION) {
         if (mountedRef.current) setConsentRequired(true)
         return
@@ -199,20 +213,24 @@ export function useQuickSettings(
       if (!enabled && mountedRef.current) setConsentRequired(false)
       await persistTakeover({ ...current, enabled })
     },
-    [persistTakeover, takeoverSupported]
+    [checkPairing, persistTakeover, takeoverSupported]
   )
 
   const confirmTakeoverConsent = useCallback(async (): Promise<void> => {
     const current = takeoverRef.current
     if (!takeoverSupported || current === null) return
 
+    if (!(await checkPairing()) || !supportedRef.current) {
+      if (mountedRef.current) setConsentRequired(false)
+      return
+    }
     const saved = await persistTakeover({
       ...current,
       enabled: true,
       consentAckVersion: Math.max(current.consentAckVersion, CONSENT_VERSION),
     })
     if (saved && mountedRef.current) setConsentRequired(false)
-  }, [persistTakeover, takeoverSupported])
+  }, [checkPairing, persistTakeover, takeoverSupported])
 
   const cancelTakeoverConsent = useCallback((): void => {
     if (mountedRef.current) setConsentRequired(false)
@@ -283,8 +301,12 @@ export function useQuickSettings(
       takeover,
       notifications,
       loading,
-      saving,
-      error,
+      saving: saving || checkingPairing,
+      error: pairingError
+        ? { operation: 'save' as const, message: 'Pairing status unavailable' }
+        : error,
+      pairingRequired,
+      cancelTakeoverPairing,
       consentRequired,
       reload,
       requestTakeoverEnabled,
@@ -297,6 +319,10 @@ export function useQuickSettings(
     }),
     [
       cancelTakeoverConsent,
+      cancelTakeoverPairing,
+      checkingPairing,
+      pairingError,
+      pairingRequired,
       confirmTakeoverConsent,
       consentRequired,
       currentSite,

@@ -179,7 +179,11 @@
       "title": "Prise en charge des téléchargements",
       "remoteUnavailable": "La prise en charge automatique nécessite actuellement Motrix App en local. Les téléchargements distants et les autorisations d’en-têtes ou de cookies ne l’activent pas. Vous pouvez toujours envoyer des téléchargements à ce serveur manuellement ou par le menu contextuel.",
       "availabilityUnknown": "La prise en charge reste indisponible tant que le service sélectionné ne peut pas être vérifié.",
-      "remoteUnavailableShort": "Application locale uniquement. L’envoi par clic droit fonctionne avec les serveurs."
+      "remoteUnavailableShort": "Application locale uniquement. L’envoi par clic droit fonctionne avec les serveurs.",
+      "pairingRequiredTitle": "Associez d’abord une application ou un serveur",
+      "pairingRequiredBody": "Associez au moins une application Motrix ou un serveur avant d’activer la prise en charge des téléchargements.",
+      "pairApp": "Associer l’application",
+      "addServerPair": "Ajouter et associer un serveur"
     },
     "tabs": {
       "general": "Général",

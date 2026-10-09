@@ -179,7 +179,11 @@
       "title": "Captura de downloads",
       "remoteUnavailable": "A captura automática exige atualmente o Motrix App local. Downloads remotos e permissões de cabeçalhos ou cookies não a ativam. Você ainda pode enviar downloads a este servidor manualmente ou pelo menu de contexto.",
       "availabilityUnknown": "A captura fica indisponível até que o serviço selecionado possa ser verificado.",
-      "remoteUnavailableShort": "Somente aplicativo local. O envio pelo botão direito funciona com servidores."
+      "remoteUnavailableShort": "Somente aplicativo local. O envio pelo botão direito funciona com servidores.",
+      "pairingRequiredTitle": "Primeiro, pareie um aplicativo ou servidor",
+      "pairingRequiredBody": "Pareie pelo menos um aplicativo Motrix ou servidor antes de ativar a captura de downloads.",
+      "pairApp": "Parear aplicativo",
+      "addServerPair": "Adicionar e parear servidor"
     },
     "tabs": {
       "general": "Geral",

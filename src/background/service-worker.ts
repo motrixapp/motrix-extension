@@ -65,6 +65,7 @@ import { clearRemoteBackendPoliciesForAuthority } from '@/background/RemoteBacke
 import { SafariNotificationTransport } from '@/background/SafariNotificationTransport'
 import { recoverStorageBeforeEndpointAutostart } from '@/background/storage-migrations'
 import { TakeoverConfigStore } from '@/background/TakeoverConfigStore'
+import { createTakeoverSettingsHandlers } from '@/background/takeoverSettings'
 import { requestTaskReveal } from '@/background/taskReveal'
 import { UrlResolutionDispatcher } from '@/background/UrlResolutionDispatcher'
 // crxjs ?script&iife is a build-time virtual import; TypeScript does not understand
@@ -394,15 +395,20 @@ bus.on('bg.removeServer', async ({ endpointId, expected }) => {
 bus.on('bg.getPairingStatus', async ({ endpointId }) => {
   return pairingEndpointService.getStatus(endpointId)
 })
+bus.on('bg.hasPairedBackend', async () => ({
+  paired: await pairingEndpointService.hasPairedBackend(),
+}))
 bus.on('bg.getRemoteBackendPolicy', async () => ({
   policy: await manager.getRemoteBackendPolicy(),
 }))
 bus.on('bg.replaceRemoteBackendPolicy', async (replacement) => ({
   policy: await manager.replaceRemoteBackendPolicy(replacement),
 }))
-bus.on('bg.patchTakeoverEnabled', ({ enabled, consentAckVersion }) =>
-  takeoverConfigStore.patchEnabled(enabled, consentAckVersion)
+const takeoverSettings = createTakeoverSettingsHandlers(
+  takeoverConfigStore,
+  () => pairingEndpointService.hasPairedBackend()
 )
+bus.on('bg.patchTakeoverEnabled', takeoverSettings.patchEnabled)
 bus.on('bg.patchDownloadMode', ({ downloadMode }) =>
   takeoverConfigStore.patchDownloadMode(downloadMode)
 )
@@ -421,10 +427,7 @@ bus.on('bg.getPopupReceipt', async ({ windowId }, sender) => {
   return autoPopup.receipt(windowId)
 })
 bus.on('bg.getTakeoverConfig', async () => takeoverConfigStore.get())
-bus.on('bg.setTakeoverConfig', async (payload) => {
-  await takeoverConfigStore.patchTakeoverSettings(payload)
-  return { ok: true } as const
-})
+bus.on('bg.setTakeoverConfig', takeoverSettings.set)
 const notificationSettings = createNotificationSettingsHandlers({
   extensionId: browser.runtime.id,
   pageURLs: ['options.html', 'popup.html'].map((path) =>

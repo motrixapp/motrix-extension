@@ -179,7 +179,11 @@
       "title": "下载接管",
       "remoteUnavailable": "自动接管目前仅支持本机 Motrix App。开启远程下载、请求头或 Cookie 权限不会启用自动接管。你仍可手动添加下载或通过右键菜单发送到此 Server。",
       "availabilityUnknown": "确认当前后端之前，自动接管暂不可用。",
-      "remoteUnavailableShort": "仅支持本机 App；远程 Server 可通过右键发送。"
+      "remoteUnavailableShort": "仅支持本机 App；远程 Server 可通过右键发送。",
+      "pairingRequiredTitle": "请先配对后端",
+      "pairingRequiredBody": "开启下载接管前，请至少配对一个 Motrix App 或 Server。",
+      "pairApp": "配对 App",
+      "addServerPair": "添加 Server 配对"
     },
     "tabs": {
       "general": "通用",

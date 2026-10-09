@@ -496,3 +496,42 @@ describe('atomic popup pairing snapshot', () => {
     ).resolves.toMatchObject({ pairing: 'none' })
   })
 })
+
+describe('any paired backend', () => {
+  it('requires committed credentials, not configured servers', async () => {
+    const { service, credentialStore } = await setup()
+    expect(await service.hasPairedBackend()).toBe(false)
+    const owner = await principal()
+    await credentialStore
+      .forAuthorityForTest(LOCAL_BACKEND_AUTHORITY)
+      .writeProvisionalUnacked(
+        owner,
+        { credentialId: 'pending', mutualKey: 'key' },
+        null
+      )
+    expect(await service.hasPairedBackend()).toBe(false)
+    await pairLocal(credentialStore)
+    expect(await service.hasPairedBackend()).toBe(true)
+    await service.unpair('local')
+    expect(await service.hasPairedBackend()).toBe(false)
+  })
+
+  it('counts an inactive paired Server and excludes removed profiles', async () => {
+    const { service, credentialStore, endpointStore } = await setup()
+    await pairRemote(
+      credentialStore,
+      'server-b',
+      'wss://b.example',
+      'remote-cred',
+      'instance-b'
+    )
+    expect(await service.isActivePaired()).toBe(false)
+    expect(await service.hasPairedBackend()).toBe(true)
+    const config = await endpointStore.get()
+    await endpointStore.setForTest({
+      ...config,
+      servers: config.servers.filter((server) => server.id !== 'server-b'),
+    })
+    expect(await service.hasPairedBackend()).toBe(false)
+  })
+})

@@ -179,7 +179,11 @@
       "title": "다운로드 인계",
       "remoteUnavailable": "자동 인계에는 현재 로컬 Motrix App이 필요합니다. 원격 다운로드 및 헤더나 쿠키 권한으로는 활성화되지 않습니다. 이 서버에는 수동으로 또는 마우스 오른쪽 버튼 메뉴에서 다운로드를 보낼 수 있습니다.",
       "availabilityUnknown": "선택한 백엔드를 확인할 수 있을 때까지 인계를 사용할 수 없습니다.",
-      "remoteUnavailableShort": "로컬 앱 전용. 오른쪽 클릭으로 보내기는 서버에서도 사용할 수 있습니다."
+      "remoteUnavailableShort": "로컬 앱 전용. 오른쪽 클릭으로 보내기는 서버에서도 사용할 수 있습니다.",
+      "pairingRequiredTitle": "먼저 백엔드를 페어링하세요",
+      "pairingRequiredBody": "다운로드 가로채기를 켜기 전에 Motrix 앱 또는 서버를 하나 이상 페어링하세요.",
+      "pairApp": "앱 페어링",
+      "addServerPair": "서버 추가 및 페어링"
     },
     "tabs": {
       "general": "일반",

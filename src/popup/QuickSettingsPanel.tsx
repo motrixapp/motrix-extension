@@ -2,6 +2,7 @@ import { ChevronRight, Settings } from 'lucide-react'
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { TakeoverConsentDialog } from '@/components/takeover-consent-dialog'
+import { TakeoverPairingDialog } from '@/components/takeover-pairing-dialog'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
@@ -286,6 +287,10 @@ export const QuickSettingsPanel = memo(function QuickSettingsPanel({
         </p>
       )}
 
+      <TakeoverPairingDialog
+        open={controller.pairingRequired && controller.takeoverSupported}
+        onCancel={controller.cancelTakeoverPairing}
+      />
       <TakeoverConsentDialog
         open={controller.consentRequired && controller.takeoverSupported}
         saving={controller.saving}

@@ -30,6 +30,8 @@ function controller(
     saving: false,
     error: null,
     consentRequired: false,
+    pairingRequired: false,
+    cancelTakeoverPairing: vi.fn(),
     reload: vi.fn(async () => undefined),
     requestTakeoverEnabled: vi.fn(async () => undefined),
     confirmTakeoverConsent: vi.fn(async () => undefined),

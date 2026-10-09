@@ -179,7 +179,11 @@
       "title": "Pengambilalihan unduhan",
       "remoteUnavailable": "Pengambilalihan otomatis saat ini memerlukan Motrix App lokal. Unduhan jarak jauh serta izin header atau cookie tidak mengaktifkannya. Anda tetap dapat mengirim unduhan ke server ini secara manual atau melalui menu klik kanan.",
       "availabilityUnknown": "Pengambilalihan tidak tersedia hingga backend yang dipilih dapat diperiksa.",
-      "remoteUnavailableShort": "Hanya untuk aplikasi lokal. Pengiriman melalui klik kanan juga berfungsi dengan server."
+      "remoteUnavailableShort": "Hanya untuk aplikasi lokal. Pengiriman melalui klik kanan juga berfungsi dengan server.",
+      "pairingRequiredTitle": "Pasangkan backend terlebih dahulu",
+      "pairingRequiredBody": "Pasangkan setidaknya satu aplikasi Motrix atau Server sebelum mengaktifkan pengambilalihan unduhan.",
+      "pairApp": "Pasangkan aplikasi",
+      "addServerPair": "Tambah dan pasangkan Server"
     },
     "tabs": {
       "general": "Umum",

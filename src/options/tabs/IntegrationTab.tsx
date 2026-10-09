@@ -1,6 +1,6 @@
 import { CircleAlertIcon } from 'lucide-react'
 import type * as React from 'react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LOCAL_ENDPOINT_ID } from '@/background/EndpointConfigStore'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -24,12 +24,21 @@ import { ServerEditorDialog } from '@/options/integration/ServerEditorDialog'
 import { useIntegrationSettings } from '@/options/integration/useIntegrationSettings'
 import { SettingPanel } from '@/options/SettingPanel'
 import { supportsBackendConnections } from '@/shared/browserKind'
+import type { PairingAction } from '@/shared/pairingNavigation'
 import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
 
-export function IntegrationTab(): React.ReactElement | null {
+export function IntegrationTab({
+  pairingAction = null,
+  onPairingActionHandled,
+}: {
+  pairingAction?: PairingAction | null
+  onPairingActionHandled?: () => void
+} = {}): React.ReactElement | null {
   const { t } = useTranslation()
   const localBackendAvailable = hasNativeMessagingSupport()
   const [pairDialogOpen, setPairDialogOpen] = useState(false)
+  const [pairAfterAdd, setPairAfterAdd] = useState(false)
+  const handledAction = useRef<PairingAction | null>(null)
   const {
     config,
     connectionState,
@@ -67,6 +76,33 @@ export function IntegrationTab(): React.ReactElement | null {
         ? 'options.endpoint.localName'
         : 'popup.backend.server'
     )
+
+  useEffect(() => {
+    if (pairingAction === null) {
+      handledAction.current = null
+      return
+    }
+    if (config === null || handledAction.current === pairingAction) return
+    handledAction.current = pairingAction
+    onPairingActionHandled?.()
+    if (pairingAction === 'add-server') {
+      setPairAfterAdd(true)
+      openAddServer()
+    } else if (localBackendAvailable) {
+      void handleEndpointChange(LOCAL_ENDPOINT_ID, true)
+        .then(() => setPairDialogOpen(true))
+        .catch(() => {
+          // The integration controller displays the activation error.
+        })
+    }
+  }, [
+    pairingAction,
+    config,
+    localBackendAvailable,
+    onPairingActionHandled,
+    openAddServer,
+    handleEndpointChange,
+  ])
 
   if (!supportsBackendConnections()) return null
 
@@ -125,8 +161,14 @@ export function IntegrationTab(): React.ReactElement | null {
       <ServerEditorDialog
         open={editorOpen}
         server={editingServer}
-        onOpenChange={setEditorOpen}
-        onSave={handleSaveServer}
+        onOpenChange={(open) => {
+          setEditorOpen(open)
+          if (!open) setPairAfterAdd(false)
+        }}
+        onSave={async (values) => {
+          await handleSaveServer(values, pairAfterAdd)
+          if (pairAfterAdd) setPairDialogOpen(true)
+        }}
       />
 
       <PairingDialog

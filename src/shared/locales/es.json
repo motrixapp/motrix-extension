@@ -179,7 +179,11 @@
       "title": "Gestión de descargas",
       "remoteUnavailable": "La gestión automática requiere actualmente Motrix App en este equipo. Las descargas remotas y los permisos de cabeceras o cookies no la activan. Puedes seguir enviando descargas a este servidor manualmente o desde el menú contextual.",
       "availabilityUnknown": "La gestión de descargas no está disponible hasta que se pueda comprobar el servicio seleccionado.",
-      "remoteUnavailableShort": "Solo la aplicación local. El envío con clic derecho funciona con servidores."
+      "remoteUnavailableShort": "Solo la aplicación local. El envío con clic derecho funciona con servidores.",
+      "pairingRequiredTitle": "Vincula primero una aplicación o un servidor",
+      "pairingRequiredBody": "Vincula al menos una aplicación Motrix o un servidor antes de activar la captura de descargas.",
+      "pairApp": "Vincular aplicación",
+      "addServerPair": "Añadir y vincular servidor"
     },
     "tabs": {
       "general": "General",

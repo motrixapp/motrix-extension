@@ -1023,3 +1023,36 @@ describe('IntegrationTab', () => {
     expect(screen.queryByText('no pairing code request is pending')).toBeNull()
   })
 })
+
+it('opens App pairing from a takeover action after activating the App', async () => {
+  config = { ...config, activeEndpointId: serverA.id }
+  const handled = vi.fn()
+  render(
+    <IntegrationTab pairingAction="pair-app" onPairingActionHandled={handled} />
+  )
+  await waitFor(() =>
+    expect(messagesOfKind('bg.listPairCandidates')).toHaveLength(1)
+  )
+  expect(config.activeEndpointId).toBe('local')
+  expect(handled).toHaveBeenCalledTimes(1)
+})
+
+it('adds, activates and pairs a Server from a takeover action', async () => {
+  const user = userEvent.setup()
+  render(<IntegrationTab pairingAction="add-server" />)
+  const dialog = await screen.findByRole('dialog')
+  await user.type(
+    within(dialog).getByRole('textbox', { name: 'Server name' }),
+    'New Server'
+  )
+  await user.type(
+    within(dialog).getByRole('textbox', { name: 'WebSocket URL' }),
+    'wss://new.example'
+  )
+  await user.click(within(dialog).getByRole('button', { name: 'Save server' }))
+  await waitFor(() => expect(messagesOfKind('bg.reconnect')).toHaveLength(1))
+  const added = config.servers.find((server) => server.name === 'New Server')
+  expect(added).toBeDefined()
+  expect(config.activeEndpointId).toBe(added?.id)
+  expect(messagesOfKind('bg.listPairCandidates')).toHaveLength(0)
+})

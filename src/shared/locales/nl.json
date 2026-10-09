@@ -179,7 +179,11 @@
       "title": "Downloadovername",
       "remoteUnavailable": "Automatische overname vereist momenteel de lokale Motrix App. Downloads op afstand en rechten voor headers of cookies schakelen dit niet in. Je kunt downloads nog steeds handmatig of via het rechtermuisknopmenu naar deze server verzenden.",
       "availabilityUnknown": "Overname is niet beschikbaar totdat de geselecteerde backend kan worden gecontroleerd.",
-      "remoteUnavailableShort": "Alleen lokale app. Verzenden via het rechtermuisknopmenu werkt met servers."
+      "remoteUnavailableShort": "Alleen lokale app. Verzenden via het rechtermuisknopmenu werkt met servers.",
+      "pairingRequiredTitle": "Koppel eerst een backend",
+      "pairingRequiredBody": "Koppel ten minste één Motrix-app of server voordat je het overnemen van downloads inschakelt.",
+      "pairApp": "App koppelen",
+      "addServerPair": "Server toevoegen en koppelen"
     },
     "tabs": {
       "general": "Algemeen",

@@ -179,7 +179,11 @@
       "title": "Gestione dei download",
       "remoteUnavailable": "La gestione automatica richiede attualmente Motrix App in locale. I download remoti e le autorizzazioni per intestazioni o cookie non la abilitano. Puoi comunque inviare download a questo server manualmente o dal menu contestuale.",
       "availabilityUnknown": "La gestione dei download non è disponibile finché non è possibile verificare il servizio selezionato.",
-      "remoteUnavailableShort": "Solo applicazione locale. L’invio con clic destro funziona anche con i server."
+      "remoteUnavailableShort": "Solo applicazione locale. L’invio con clic destro funziona anche con i server.",
+      "pairingRequiredTitle": "Associa prima un’app o un server",
+      "pairingRequiredBody": "Associa almeno un’app Motrix o un server prima di attivare la gestione dei download.",
+      "pairApp": "Associa app",
+      "addServerPair": "Aggiungi e associa server"
     },
     "tabs": {
       "general": "Generali",

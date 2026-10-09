@@ -179,7 +179,11 @@
       "title": "Overtakelse av nedlastinger",
       "remoteUnavailable": "Automatisk overtakelse krever foreløpig den lokale Motrix App. Eksterne nedlastinger og tillatelser for hoder eller informasjonskapsler aktiverer ikke dette. Du kan fortsatt sende nedlastinger til serveren manuelt eller fra høyreklikkmenyen.",
       "availabilityUnknown": "Overtakelse er utilgjengelig til den valgte tilkoblingen kan kontrolleres.",
-      "remoteUnavailableShort": "Bare lokal app. Høyreklikkmenyen kan sende til servere."
+      "remoteUnavailableShort": "Bare lokal app. Høyreklikkmenyen kan sende til servere.",
+      "pairingRequiredTitle": "Koble til en app eller server først",
+      "pairingRequiredBody": "Koble til minst én Motrix-app eller server før du slår på overtakelse av nedlastinger.",
+      "pairApp": "Koble til app",
+      "addServerPair": "Legg til og koble til server"
     },
     "tabs": {
       "general": "Generelt",
