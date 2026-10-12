@@ -563,5 +563,12 @@
     "unsupportedFeature": "Questa funzione non è disponibile in Safari.",
     "confirmDownloadDescription": "Apri un modulo di conferma per i download dal menu contestuale. Disattiva per inviare direttamente a Motrix.",
     "taskPanelDescription": "Apri il pannello delle attività dopo aver aggiunto un download."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Versione Microsoft Store, abbinata separatamente.",
+    "launch": "Apri la versione Store",
+    "pairingHelp": "Apri Motrix installato da Microsoft Store, seleziona la sua istanza e inserisci il codice mostrato in tale applicazione. Il browser potrebbe chiedere conferma prima di aprirla.",
+    "unavailable": "Questa destinazione richiede un browser desktop su Windows."
   }
 }

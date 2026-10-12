@@ -563,5 +563,12 @@
     "unsupportedFeature": "هذه الميزة غير متاحة في Safari.",
     "confirmDownloadDescription": "افتح نموذج تأكيد للتنزيلات من قائمة النقر بزر الفأرة الأيمن. عطّل الخيار للإرسال مباشرة إلى Motrix.",
     "taskPanelDescription": "افتح لوحة المهام بعد إضافة تنزيل."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "نسخة Microsoft Store، تُقرن بشكل منفصل.",
+    "launch": "فتح تطبيق Store",
+    "pairingHelp": "افتح Motrix المثبّت من Microsoft Store، واختر نسخته قيد التشغيل، ثم أدخل الرمز المعروض في ذلك التطبيق. قد يطلب المتصفح تأكيدًا قبل فتحه.",
+    "unavailable": "تتطلب هذه الوجهة متصفح سطح مكتب على Windows."
   }
 }

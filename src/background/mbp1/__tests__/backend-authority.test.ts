@@ -3,6 +3,7 @@ import {
   backendAuthorityKey,
   createRemoteBackendAuthority,
   LOCAL_BACKEND_AUTHORITY,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 
 function remote(endpointId: string, wsBase: string) {
@@ -10,6 +11,22 @@ function remote(endpointId: string, wsBase: string) {
 }
 
 describe('BackendAuthority', () => {
+  it('preserves the original local key while isolating the Windows Store target', () => {
+    const legacyKey =
+      'GQAAAAAAAABNQlAxL2JhY2tlbmQtYXV0aG9yaXR5L3YxBQAAAAAAAABsb2NhbA'
+    expect(backendAuthorityKey(LOCAL_BACKEND_AUTHORITY)).toBe(legacyKey)
+    expect(backendAuthorityKey(WINDOWS_STORE_BACKEND_AUTHORITY)).not.toBe(
+      legacyKey
+    )
+    expect(backendAuthorityKey(WINDOWS_STORE_BACKEND_AUTHORITY)).not.toBe(
+      backendAuthorityKey(remote('windows-store', 'ws://127.0.0.1:16802'))
+    )
+    expect(Object.isFrozen(WINDOWS_STORE_BACKEND_AUTHORITY)).toBe(true)
+    expect(() =>
+      backendAuthorityKey({ ...WINDOWS_STORE_BACKEND_AUTHORITY })
+    ).toThrow()
+  })
+
   it('canonicalizes equivalent WSS bases to one authority and key', () => {
     const a = remote('server-a', 'wss://MOTRIX.Example:443/bridge///')
     const b = remote('server-a', 'wss://motrix.example/bridge')

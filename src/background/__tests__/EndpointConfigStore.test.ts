@@ -6,6 +6,7 @@ import {
   resolveActiveEndpoint,
   resolveEndpointById,
   UnsupportedEndpointConfigVersionError,
+  WINDOWS_STORE_ENDPOINT_ID,
 } from '@/background/EndpointConfigStore'
 
 declare const browser: {
@@ -45,7 +46,7 @@ function config(
   servers: Array<ReturnType<typeof server>> = []
 ) {
   return {
-    version: 3 as const,
+    version: 4 as const,
     activeEndpointId,
     servers,
     cleanupTombstones: [],
@@ -67,7 +68,7 @@ beforeEach(() => {
 })
 
 describe('EndpointConfigStore', () => {
-  it('returns the empty v3 catalogue when nothing is stored', async () => {
+  it('returns the empty v4 catalogue when nothing is stored', async () => {
     const store = new EndpointConfigStore()
     expect(await store.get()).toEqual(config())
   })
@@ -75,7 +76,7 @@ describe('EndpointConfigStore', () => {
   it('round-trips multiple servers and canonicalizes their URLs', async () => {
     const store = new EndpointConfigStore()
     await store.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'office',
       servers: [
         server('office', ' Office ', 'wss://MOTRIX.Example:443/bridge/'),
@@ -85,7 +86,7 @@ describe('EndpointConfigStore', () => {
     })
 
     expect(await store.get()).toEqual({
-      version: 3,
+      version: 4,
       activeEndpointId: 'office',
       servers: [
         server('office', 'Office', 'wss://motrix.example/bridge'),
@@ -113,7 +114,7 @@ describe('EndpointConfigStore', () => {
     const store = new EndpointConfigStore()
     await expect(
       store.setForTest({
-        version: 3,
+        version: 4,
         activeEndpointId: 'bad',
         servers: [server('bad', 'Bad', url)],
         cleanupTombstones: [],
@@ -126,7 +127,7 @@ describe('EndpointConfigStore', () => {
     async (id) => {
       await expect(
         new EndpointConfigStore().setForTest({
-          version: 3,
+          version: 4,
           activeEndpointId: id,
           servers: [server(id, 'Bad', 'wss://motrix.example')],
           cleanupTombstones: [],
@@ -155,7 +156,7 @@ describe('EndpointConfigStore', () => {
 
   it('shows local read fallback but rejects lifecycle capture when a stored active id is unknown', async () => {
     const corrupt = {
-      version: 3,
+      version: 4,
       activeEndpointId: 'missing',
       servers: [server('nas', 'NAS', 'wss://nas.example:8443')],
       cleanupTombstones: [],
@@ -174,7 +175,7 @@ describe('EndpointConfigStore', () => {
   it('rejects a caller write whose active server id is unknown', async () => {
     await expect(
       new EndpointConfigStore().setForTest({
-        version: 3,
+        version: 4,
         activeEndpointId: 'missing',
         servers: [server('nas', 'NAS', 'wss://nas.example:8443')],
         cleanupTombstones: [],
@@ -187,7 +188,7 @@ describe('EndpointConfigStore', () => {
     const store = new EndpointConfigStore()
     await expect(
       store.setForTest({
-        version: 3,
+        version: 4,
         activeEndpointId: 'duplicate',
         servers: [
           server('primary', 'Primary', 'wss://motrix.example/bridge'),
@@ -283,7 +284,7 @@ describe('EndpointConfigStore', () => {
     [
       'missing server revision',
       {
-        version: 3,
+        version: 4,
         activeEndpointId: 'a',
         servers: [
           { id: 'a', name: 'A', url: 'wss://a.example', state: 'ready' },
@@ -294,7 +295,7 @@ describe('EndpointConfigStore', () => {
     [
       'missing server state',
       {
-        version: 3,
+        version: 4,
         activeEndpointId: 'a',
         servers: [{ id: 'a', name: 'A', url: 'wss://a.example', revision: 0 }],
         cleanupTombstones: [],
@@ -303,7 +304,7 @@ describe('EndpointConfigStore', () => {
     [
       'extra server field',
       {
-        version: 3,
+        version: 4,
         activeEndpointId: 'a',
         servers: [
           {
@@ -318,7 +319,7 @@ describe('EndpointConfigStore', () => {
     [
       'extra tombstone field',
       {
-        version: 3,
+        version: 4,
         activeEndpointId: 'local',
         servers: [],
         cleanupTombstones: [
@@ -345,7 +346,7 @@ describe('EndpointConfigStore', () => {
       { id: 'a', name: 'A', url: 'wss://a.example' }
     )
     const corrupt = {
-      version: 3,
+      version: 4,
       activeEndpointId: 'a',
       servers: [inheritedServer],
       cleanupTombstones: [],
@@ -358,7 +359,7 @@ describe('EndpointConfigStore', () => {
 
   it('rejects every mutation while preserving a corrupt v3 tombstone', async () => {
     const corrupt = {
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [],
       cleanupTombstones: [
@@ -382,7 +383,7 @@ describe('EndpointConfigStore', () => {
     await browser.storage.local.set({ [STORAGE_KEY]: config() })
     const store = new EndpointConfigStore()
     const next = {
-      version: 3 as const,
+      version: 4 as const,
       activeEndpointId: 'new',
       servers: [server('new', 'New', 'wss://new.example')],
       cleanupTombstones: [],
@@ -417,7 +418,7 @@ describe('endpoint resolution', () => {
 
   it('resolves a validated WS endpoint without rewriting its scheme', () => {
     const wsConfig = {
-      version: 3,
+      version: 4,
       activeEndpointId: 'nas',
       servers: [server('nas', 'NAS', 'ws://nas.local:8888')],
       cleanupTombstones: [],
@@ -435,5 +436,117 @@ describe('endpoint resolution', () => {
       endpointId: 'nas',
       revision: 0,
     })
+  })
+})
+
+describe('v3 catalogue migration and Store target', () => {
+  it('preserves the active server, revisions, pending cleanup and unrelated pairing bytes', async () => {
+    const legacy = {
+      version: 3,
+      activeEndpointId: 'nas',
+      servers: [
+        server('nas', 'NAS', 'wss://nas.example', { revision: 7 }),
+        server('pending', 'Pending', 'wss://new.example', {
+          revision: 5,
+          state: 'cleanup-pending',
+        }),
+      ],
+      cleanupTombstones: [
+        {
+          endpointId: 'pending',
+          canonicalWsBase: 'wss://old.example',
+          invalidatedRevision: 4,
+        },
+      ],
+    }
+    const credentials = { opaque: 'pairing bytes' }
+    backing[STORAGE_KEY] = legacy
+    backing['motrix.mbp1.credentials'] = credentials
+    const store = new EndpointConfigStore()
+    const expected = { ...legacy, version: 4 }
+    expect(await store.getForLifecycleMutation()).toEqual(expected)
+    expect(backing[STORAGE_KEY]).toEqual(expected)
+    expect(backing['motrix.mbp1.credentials']).toBe(credentials)
+    expect(await new EndpointConfigStore().get()).toEqual(expected)
+    expect(browser.storage.local.set).toHaveBeenCalledTimes(1)
+    expect(browser.storage.local.remove).not.toHaveBeenCalled()
+  })
+
+  it('preserves default selection and serializes migration ahead of Store activation', async () => {
+    backing[STORAGE_KEY] = { ...config(), version: 3 }
+    const store = new EndpointConfigStore()
+    const next = config(WINDOWS_STORE_ENDPOINT_ID)
+    const [migrated] = await Promise.all([store.get(), store.setForTest(next)])
+    expect(migrated.activeEndpointId).toBe(LOCAL_ENDPOINT_ID)
+    expect(await new EndpointConfigStore().getForLifecycleMutation()).toEqual(
+      next
+    )
+    expect(resolveActiveEndpoint(next)).toEqual({
+      mode: 'local',
+      target: 'windows-store',
+    })
+    expect(resolveEndpointById(next, LOCAL_ENDPOINT_ID)).toEqual({
+      mode: 'local',
+    })
+  })
+
+  it.each(['active', 'inactive', 'tombstone', 'unknown-selection'])(
+    'preserves a v3 reserved-id conflict (%s) and rejects routing/mutation',
+    async (kind) => {
+      const conflict = {
+        ...config(),
+        version: 3,
+        activeEndpointId:
+          kind === 'active' || kind === 'unknown-selection'
+            ? WINDOWS_STORE_ENDPOINT_ID
+            : LOCAL_ENDPOINT_ID,
+        servers:
+          kind === 'active' || kind === 'inactive'
+            ? [
+                server(
+                  WINDOWS_STORE_ENDPOINT_ID,
+                  'Old server',
+                  'wss://old.example'
+                ),
+              ]
+            : [],
+        cleanupTombstones:
+          kind === 'tombstone'
+            ? [
+                {
+                  endpointId: WINDOWS_STORE_ENDPOINT_ID,
+                  canonicalWsBase: 'wss://old.example',
+                  invalidatedRevision: 2,
+                },
+              ]
+            : [],
+      }
+      backing[STORAGE_KEY] = conflict
+      const store = new EndpointConfigStore()
+      await expect(store.getForLifecycleMutation()).rejects.toBeInstanceOf(
+        CorruptEndpointConfigStoreError
+      )
+      await expect(store.setForTest(config())).rejects.toBeInstanceOf(
+        CorruptEndpointConfigStoreError
+      )
+      expect(backing[STORAGE_KEY]).toBe(conflict)
+      expect(browser.storage.local.set).not.toHaveBeenCalled()
+      expect(browser.storage.local.remove).not.toHaveBeenCalled()
+    }
+  )
+
+  it('retains v3 bytes when persisting the migration fails', async () => {
+    const legacy = { ...config(), version: 3 }
+    backing[STORAGE_KEY] = legacy
+    vi.mocked(browser.storage.local.set).mockRejectedValueOnce(
+      new Error('storage unavailable')
+    )
+    await expect(
+      new EndpointConfigStore().getForLifecycleMutation()
+    ).rejects.toThrow('storage unavailable')
+    expect(backing[STORAGE_KEY]).toBe(legacy)
+    expect(await new EndpointConfigStore().getForLifecycleMutation()).toEqual(
+      config()
+    )
   })
 })

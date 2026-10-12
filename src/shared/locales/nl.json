@@ -563,5 +563,12 @@
     "unsupportedFeature": "Deze functie is niet beschikbaar in Safari.",
     "confirmDownloadDescription": "Open een bevestigingsformulier bij downloads via rechtsklikken. Schakel uit om direct naar Motrix te sturen.",
     "taskPanelDescription": "Open het takenpaneel nadat een download is toegevoegd."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store-versie, afzonderlijk gekoppeld.",
+    "launch": "Store-app openen",
+    "pairingHelp": "Open Motrix uit de Microsoft Store, selecteer de bijbehorende instantie en voer de code uit die app in. De browser kan om toestemming vragen om de app te openen.",
+    "unavailable": "Dit doel vereist een desktopbrowser op Windows."
   }
 }

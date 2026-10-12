@@ -1,6 +1,6 @@
 import {
   type EndpointConfig,
-  LOCAL_ENDPOINT_ID,
+  isLocalEndpointId,
 } from '@/background/EndpointConfigStore'
 import { supportsDownloadTakeover } from '@/shared/platformCapabilities'
 
@@ -9,6 +9,8 @@ export function supportsAutomaticTakeover(
   config: Pick<EndpointConfig, 'activeEndpointId'> | null
 ): boolean {
   return (
-    supportsDownloadTakeover() && config?.activeEndpointId === LOCAL_ENDPOINT_ID
+    supportsDownloadTakeover() &&
+    config !== null &&
+    isLocalEndpointId(config.activeEndpointId)
   )
 }

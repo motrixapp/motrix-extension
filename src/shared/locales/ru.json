@@ -563,5 +563,12 @@
     "unsupportedFeature": "Эта функция недоступна в Safari.",
     "confirmDownloadDescription": "Показывать форму подтверждения при загрузке через контекстное меню. Отключите, чтобы отправлять сразу в Motrix.",
     "taskPanelDescription": "Открывать панель задач после добавления загрузки."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Версия из Microsoft Store с отдельным сопряжением.",
+    "launch": "Открыть версию из Store",
+    "pairingHelp": "Откройте Motrix, установленный из Microsoft Store, выберите его экземпляр и введите код, показанный в этом приложении. Браузер может запросить подтверждение открытия.",
+    "unavailable": "Для этой цели нужен настольный браузер в Windows."
   }
 }

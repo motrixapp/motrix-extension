@@ -1,6 +1,7 @@
 import { ChevronDown, Laptop, Server, Settings2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { ConnectionState } from '@/background/ConnectionManager'
+import { WINDOWS_STORE_ENDPOINT_ID } from '@/background/EndpointConfigStore'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -16,7 +17,10 @@ import {
 import { cn } from '@/lib/utils'
 import { LOCAL_ENDPOINT_ID, type PopupEndpoint } from '@/popup/usePopupState'
 import type { PairingState } from '@/shared/integration'
-import { hasNativeMessagingSupport } from '@/shared/platformCapabilities'
+import {
+  hasNativeMessagingSupport,
+  supportsWindowsStoreTarget,
+} from '@/shared/platformCapabilities'
 
 interface BackendSelectorProps {
   connection: ConnectionState | null
@@ -72,8 +76,10 @@ export function BackendSelector({
     (candidate) => candidate.id === activeEndpointId
   )
   const backendName =
-    activeServer?.name ??
-    t(localBackendAvailable ? 'popup.backend.app' : 'popup.backend.server')
+    activeEndpointId === WINDOWS_STORE_ENDPOINT_ID
+      ? t('storeTarget.name')
+      : (activeServer?.name ??
+        t(localBackendAvailable ? 'popup.backend.app' : 'popup.backend.server'))
   const statusLabel = t(
     checking
       ? 'popup.rpc.checking'
@@ -134,6 +140,16 @@ export function BackendSelector({
                   {t('popup.backend.appDescription')}
                 </span>
               </span>
+            </DropdownMenuRadioItem>
+          )}
+          {(supportsWindowsStoreTarget() ||
+            activeEndpointId === WINDOWS_STORE_ENDPOINT_ID) && (
+            <DropdownMenuRadioItem
+              value={WINDOWS_STORE_ENDPOINT_ID}
+              disabled={!supportsWindowsStoreTarget()}
+            >
+              <Laptop aria-hidden="true" />
+              <span>{t('storeTarget.name')}</span>
             </DropdownMenuRadioItem>
           )}
           {endpoint?.servers.map((configuredServer) => (

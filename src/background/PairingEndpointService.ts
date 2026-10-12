@@ -5,18 +5,20 @@ import {
   LOCAL_ENDPOINT_ID,
   resolveActiveEndpoint,
   resolveEndpointById,
+  WINDOWS_STORE_ENDPOINT_ID,
 } from '@/background/EndpointConfigStore'
 import {
   type BackendAuthority,
   createRemoteBackendAuthority,
   LOCAL_BACKEND_AUTHORITY,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 import { getClientInstallationId } from '@/background/mbp1/client-installation-id'
 import type {
   CredentialStore,
   Principal,
 } from '@/background/mbp1/credential-store'
-import type { PinStore } from '@/background/mbp1/pin-store'
+import { PinStore } from '@/background/mbp1/pin-store'
 import { computeVerifiedOrigin } from '@/background/mbp1/verified-origin'
 import {
   type BrowserKind,
@@ -33,6 +35,7 @@ import type { PairingState } from '@/shared/integration'
 export interface LocalPairingDeps {
   credentialStore: CredentialStore
   pinStore: PinStore
+  windowsStorePinStore?: PinStore
   browser: BrowserKind
 }
 
@@ -48,7 +51,11 @@ export interface PairingEndpointServiceOptions {
 export function pairingAuthorityForEndpoint(
   endpoint: ResolvedEndpointConfig
 ): BackendAuthority {
-  if (endpoint.mode === 'local') return LOCAL_BACKEND_AUTHORITY
+  if (endpoint.mode === 'local') {
+    return endpoint.target === 'windows-store'
+      ? WINDOWS_STORE_BACKEND_AUTHORITY
+      : LOCAL_BACKEND_AUTHORITY
+  }
   if (
     typeof endpoint.endpointId !== 'string' ||
     endpoint.endpointId.length === 0
@@ -68,6 +75,7 @@ export function pairingAuthorityForEndpoint(
  * operation to another backend while an Options request is in flight.
  */
 export class PairingEndpointService {
+  private readonly windowsStorePinStore: PinStore
   private readonly coordinator: BackendOperationCoordinator
   private readonly onActiveUnpair: (
     authority: BackendAuthority,
@@ -79,6 +87,9 @@ export class PairingEndpointService {
     private readonly local: LocalPairingDeps,
     options: PairingEndpointServiceOptions = {}
   ) {
+    this.windowsStorePinStore =
+      local.windowsStorePinStore ??
+      new PinStore(WINDOWS_STORE_BACKEND_AUTHORITY)
     this.coordinator = options.coordinator ?? new BackendOperationCoordinator()
     this.onActiveUnpair = options.onActiveUnpair ?? (() => undefined)
   }
@@ -101,6 +112,7 @@ export class PairingEndpointService {
       const config = await this.endpointConfigStore.get()
       const ids = [
         LOCAL_ENDPOINT_ID,
+        WINDOWS_STORE_ENDPOINT_ID,
         ...config.servers
           .filter((server) => server.state === 'ready')
           .map((server) => server.id),
@@ -172,7 +184,10 @@ export class PairingEndpointService {
           async (ids) => {
             for (const id of ids) {
               try {
-                await this.local.pinStore.clear(id)
+                await (endpoint.target === 'windows-store'
+                  ? this.windowsStorePinStore
+                  : this.local.pinStore
+                ).clear(id)
               } catch {
                 // Pins are routing hints, never authentication authority.
               }

@@ -563,5 +563,12 @@
     "unsupportedFeature": "यह सुविधा Safari में उपलब्ध नहीं है।",
     "confirmDownloadDescription": "राइट-क्लिक से डाउनलोड करने पर पुष्टि फ़ॉर्म खोलें। सीधे Motrix को भेजने के लिए इसे बंद करें।",
     "taskPanelDescription": "डाउनलोड जोड़ने के बाद कार्य पैनल खोलें।"
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store संस्करण, अलग से पेयर किया जाता है।",
+    "launch": "Store ऐप खोलें",
+    "pairingHelp": "Microsoft Store से इंस्टॉल किया गया Motrix खोलें, उसका इंस्टेंस चुनें, फिर उसी ऐप में दिखाया गया कोड दर्ज करें। ब्राउज़र ऐप खोलने से पहले पुष्टि माँग सकता है।",
+    "unavailable": "इस लक्ष्य के लिए Windows डेस्कटॉप ब्राउज़र चाहिए।"
   }
 }

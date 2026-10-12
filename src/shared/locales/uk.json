@@ -563,5 +563,12 @@
     "unsupportedFeature": "Ця функція недоступна в Safari.",
     "confirmDownloadDescription": "Показувати форму підтвердження під час завантаження через контекстне меню. Вимкніть, щоб надсилати одразу до Motrix.",
     "taskPanelDescription": "Відкривати панель завдань після додавання завантаження."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Версія з Microsoft Store з окремим сполученням.",
+    "launch": "Відкрити версію зі Store",
+    "pairingHelp": "Відкрийте Motrix, установлений із Microsoft Store, виберіть його екземпляр і введіть код, показаний у цій програмі. Браузер може запитати підтвердження відкриття.",
+    "unavailable": "Для цієї цілі потрібен настільний браузер у Windows."
   }
 }

@@ -563,5 +563,12 @@
     "unsupportedFeature": "Safari ยังไม่รองรับฟีเจอร์นี้",
     "confirmDownloadDescription": "เปิดแบบฟอร์มยืนยันเมื่อดาวน์โหลดผ่านการคลิกขวา ปิดเพื่อส่งไปยัง Motrix โดยตรง",
     "taskPanelDescription": "เปิดแผงงานหลังจากเพิ่มการดาวน์โหลด"
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "รุ่นที่ติดตั้งจาก Microsoft Store จับคู่แยกต่างหาก",
+    "launch": "เปิดแอปจาก Store",
+    "pairingHelp": "เปิด Motrix ที่ติดตั้งจาก Microsoft Store เลือกอินสแตนซ์ของแอป แล้วป้อนรหัสที่แสดงในแอปนั้น เบราว์เซอร์อาจขอให้ยืนยันก่อนเปิดแอป",
+    "unavailable": "เป้าหมายนี้ต้องใช้เบราว์เซอร์เดสก์ท็อปบน Windows"
   }
 }

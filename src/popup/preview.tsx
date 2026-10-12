@@ -48,7 +48,7 @@ const previewMedia = [
 ]
 
 type PreviewEndpoint = {
-  version: 3
+  version: 4
   activeEndpointId: string
   servers: Array<{
     id: string
@@ -65,7 +65,7 @@ type PreviewEndpoint = {
 }
 
 let previewEndpoint: PreviewEndpoint = {
-  version: 3,
+  version: 4,
   activeEndpointId: 'local',
   servers: [
     {
@@ -207,13 +207,30 @@ const previewRuntime = {
       case 'bg.setNotificationsConfig':
         previewNotifications = request.payload as NotificationsConfig
         return { ok: true }
+      case 'bg.listPairCandidates':
+        return {
+          candidates: [
+            {
+              selectionId: 'preview-choice',
+              port: 16803,
+              instanceId: 'preview-store-instance',
+              appVersion: '2.0.0',
+            },
+          ],
+        }
+      case 'bg.launchStore':
+      case 'bg.chooseCandidate':
+        return { ok: true }
       case 'bg.getState':
         if (previewConnection !== 'connected') {
           return {
             state: previewConnection,
             endpoint: previewEndpoint,
             pairing:
-              previewParams.get('pairing') === 'none' ? 'none' : 'stored',
+              previewParams.get('pairing') === 'none' ||
+              previewEndpoint.activeEndpointId === 'local-windows-store'
+                ? 'none'
+                : 'stored',
             phase: previewConnection === 'connected' ? 'ready' : 'idle',
             attemptIntent: 'background-probe',
             lastError: 'motrix-not-running',
@@ -222,7 +239,11 @@ const previewRuntime = {
         return {
           state: previewConnection,
           endpoint: previewEndpoint,
-          pairing: previewParams.get('pairing') === 'none' ? 'none' : 'stored',
+          pairing:
+            previewParams.get('pairing') === 'none' ||
+            previewEndpoint.activeEndpointId === 'local-windows-store'
+              ? 'none'
+              : 'stored',
           phase: previewConnection === 'connected' ? 'ready' : 'idle',
           attemptIntent: 'background-probe',
           server: {
@@ -248,6 +269,8 @@ const previewRuntime = {
           ...previewEndpoint,
           activeEndpointId: endpointId,
         }
+        if (endpointId === 'local-windows-store')
+          previewConnection = 'disconnected'
         return { config: previewEndpoint }
       }
       case 'bg.getDownloadDirectories':
@@ -358,6 +381,7 @@ const previewBrowser = {
 const previewChrome = {
   ...previewBrowser,
   tabs: {
+    create: async () => ({ id: 1 }),
     query: async () => [{ id: 1, url: previewPageUrl, title: 'Launch film' }],
   },
 }

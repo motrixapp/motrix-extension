@@ -22,6 +22,8 @@
 *.tsbuildinfo
 
 # Test output
+/output/playwright/
+/.playwright-cli/
 /coverage/
 /.nyc_output/
 /.vitest/

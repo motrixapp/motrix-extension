@@ -38,7 +38,7 @@ const connectedState: PopupState = {
   lastError: null,
   lastErrorReason: null,
   endpoint: {
-    version: 3,
+    version: 4,
     activeEndpointId: 'local',
     servers: [],
     cleanupTombstones: [],

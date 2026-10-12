@@ -64,7 +64,7 @@ const SERVERS = [
 ]
 
 const LOCAL_ENDPOINT = {
-  version: 3 as const,
+  version: 4 as const,
   activeEndpointId: 'local',
   servers: SERVERS,
   cleanupTombstones: [],

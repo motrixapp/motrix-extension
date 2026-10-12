@@ -13,6 +13,7 @@ import {
   backendAuthorityKey,
   createRemoteBackendAuthority,
   LOCAL_BACKEND_AUTHORITY,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 import {
   type AuthorityCredentialStore,
@@ -832,6 +833,70 @@ describe('CredentialStore (§6.7/§12)', () => {
     )
   })
 
+  it('keeps Store recovery and revocation separate when a credential id is reused locally', async () => {
+    const root = new CredentialStore()
+    const local = root.forAuthorityForTest(LOCAL_BACKEND_AUTHORITY)
+    const store = root.forAuthorityForTest(WINDOWS_STORE_BACKEND_AUTHORITY)
+    await local.writeProvisionalUnacked(
+      P,
+      { credentialId: 'same-id', mutualKey: 'default-key' },
+      null
+    )
+    await local.commitAndActivate('same-id', P, null)
+    expect(await store.recoverOrder(P)).toEqual([])
+    await store.writeProvisionalUnacked(
+      P,
+      { credentialId: 'same-id', mutualKey: 'store-key' },
+      INSTANCE_A
+    )
+    await store.commitAndActivate('same-id', P, INSTANCE_A)
+    const resumedStore = new CredentialStore().forAuthorityForTest(
+      WINDOWS_STORE_BACKEND_AUTHORITY
+    )
+    expect(await resumedStore.recoverOrder(P)).toMatchObject([
+      { credentialId: 'same-id', mutualKey: 'store-key' },
+    ])
+    expect(await local.recoverOrder(P)).toMatchObject([
+      { credentialId: 'same-id', mutualKey: 'default-key' },
+    ])
+    await resumedStore.revokeAll(P)
+    expect(await resumedStore.recoverOrder(P)).toEqual([])
+    expect(await local.recoverOrder(P)).toMatchObject([
+      { credentialId: 'same-id', mutualKey: 'default-key' },
+    ])
+  })
+
+  it('requires a bound instance for Store credentials and rejects a different instance', async () => {
+    const store = new CredentialStore().forAuthorityForTest(
+      WINDOWS_STORE_BACKEND_AUTHORITY
+    )
+    await expect(
+      store.writeProvisionalUnacked(
+        P,
+        { credentialId: 'store', mutualKey: 'key' },
+        null
+      )
+    ).rejects.toThrow(/instance/)
+    expect(backing[STORAGE_KEY]).toBeUndefined()
+    await store.writeProvisionalUnacked(
+      P,
+      { credentialId: 'store', mutualKey: 'key' },
+      INSTANCE_A
+    )
+    await store.commitAndActivate('store', P, INSTANCE_A)
+    await expect(
+      store.writeProvisionalUnacked(
+        Q,
+        { credentialId: 'other', mutualKey: 'other-key' },
+        INSTANCE_B
+      )
+    ).rejects.toThrow(CredentialInstanceMismatchError)
+    expect(await store.recoverOrder(Q)).toEqual([])
+    expect(await store.recoverOrder(P)).toMatchObject([
+      { credentialId: 'store', authenticatedInstanceId: INSTANCE_A },
+    ])
+  })
+
   it('requires a remote authenticated instance and detects same-authority id collisions without leaking values', async () => {
     const a = new CredentialStore().forAuthorityForTest(SERVER_A)
     await expect(
@@ -1391,6 +1456,9 @@ describe('CredentialStore (§6.7/§12)', () => {
     expect(await ids(root, P)).toEqual(['p'])
     expect(await ids(root, Q)).toEqual(['q'])
     expect(await ids(root.forAuthorityForTest(SERVER_A), P)).toEqual([])
+    expect(
+      await ids(root.forAuthorityForTest(WINDOWS_STORE_BACKEND_AUTHORITY), P)
+    ).toEqual([])
     expect(setSpy).toHaveBeenCalledTimes(1)
 
     const stored = persisted()
@@ -1566,7 +1634,7 @@ describe('lease-bound credential lifecycle facade', () => {
     const failure = new Error('stale endpoint lease')
     const endpointStore = new EndpointConfigStore()
     await endpointStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         {

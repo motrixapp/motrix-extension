@@ -48,7 +48,7 @@ describe('connection diagnostics', () => {
           'Failed wss://alice:private-password@nas.example/pair?nonce=private-nonce&token=private-token#private-fragment',
         lastErrorReason: 'channelUnavailable',
         endpoint: {
-          version: 3,
+          version: 4,
           activeEndpointId: 'private-endpoint-id',
           servers: [
             {
