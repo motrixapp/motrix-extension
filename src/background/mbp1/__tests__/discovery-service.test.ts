@@ -583,6 +583,95 @@ describe('DiscoveryService', () => {
   })
 
   describe('discoverForFirstPair', () => {
+    it('probes only the explicit choice when the default host belongs to another installation', async () => {
+      const nm = bootstrapPort({
+        port: 16802,
+        nonce: 'other-nonce',
+        nmTicket: { purpose: 'other' },
+      })
+      const d = make({
+        nativeBootstrap: nm as never,
+        fetchImpl: discoveryFetch(() => liveBody('selected-instance')),
+      })
+      const results = await d.discoverForFirstPair({
+        allowLaunch: true,
+        preferredCandidatePort: 16803,
+      })
+      expect(nm.bootstrap).toHaveBeenCalledWith({ allowLaunch: false })
+      expect(results).toEqual([
+        expect.objectContaining({
+          transport: 'probe',
+          wsPort: 16803,
+          instanceId: 'selected-instance',
+        }),
+      ])
+      expect(results[0]).not.toHaveProperty('nonce')
+      expect(results[0]).not.toHaveProperty('nmTicket')
+      expect(requests.map(({ url }) => url)).toEqual([
+        'http://127.0.0.1:16803/discovery',
+      ])
+    })
+
+    it('retains a matching host ticket without launching or probing another candidate', async () => {
+      const ticket = { purpose: 'selected' }
+      const nm = bootstrapPort({
+        port: 16803,
+        nonce: 'selected-nonce',
+        nmTicket: ticket,
+      })
+      const d = make({ nativeBootstrap: nm as never })
+      expect(
+        await d.discoverForFirstPair({
+          allowLaunch: true,
+          preferredCandidatePort: 16803,
+        })
+      ).toEqual([
+        {
+          transport: 'nm',
+          wsPort: 16803,
+          nonce: 'selected-nonce',
+          nmTicket: ticket,
+        },
+      ])
+      expect(nm.bootstrap).toHaveBeenCalledWith({ allowLaunch: false })
+      expect(requests).toHaveLength(0)
+    })
+
+    it('returns no candidate when the chosen port disappears even if another installation is live', async () => {
+      const nm = bootstrapPort({ port: 16802 })
+      const d = make({
+        nativeBootstrap: nm as never,
+        fetchImpl: discoveryFetch((port) =>
+          port === 16803 ? deadBody() : liveBody('other')
+        ),
+      })
+      expect(
+        await d.discoverForFirstPair({
+          allowLaunch: true,
+          preferredCandidatePort: 16803,
+        })
+      ).toEqual([])
+      expect(requests.map(({ url }) => url)).toEqual([
+        'http://127.0.0.1:16803/discovery',
+      ])
+    })
+
+    it.each([0, 65536, Number.NaN])(
+      'rejects invalid selected port %s before any discovery or launch',
+      async (preferredCandidatePort) => {
+        const nm = bootstrapPort({ port: 16802 })
+        const d = make({ nativeBootstrap: nm as never })
+        expect(
+          await d.discoverForFirstPair({
+            allowLaunch: true,
+            preferredCandidatePort,
+          })
+        ).toEqual([])
+        expect(nm.bootstrap).not.toHaveBeenCalled()
+        expect(requests).toHaveLength(0)
+      }
+    )
+
     it('prefers the NM bootstrap and issues no HTTP request', async () => {
       const nm = bootstrapPort({
         port: 16803,

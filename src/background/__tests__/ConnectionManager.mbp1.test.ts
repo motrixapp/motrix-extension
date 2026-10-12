@@ -137,6 +137,7 @@ function makeFakeDiscoveryService(overrides: {
   discoverForFirstPair?: (opts: {
     allowLaunch: boolean
     bindingPub?: Uint8Array
+    preferredCandidatePort?: number
   }) => Promise<DiscoveryResult[]>
   preflightCompatibility?: (result: DiscoveryResult) => Promise<DiscoveryResult>
   ensureNonce?: (result: DiscoveryResult) => Promise<DiscoveryResult | null>
@@ -1260,6 +1261,25 @@ describe('ConnectionManager MBP1 — candidate choice ownership', () => {
     await mgr.clearGateAndStart()
 
     expect(selectedPort).toBe(16803)
+  })
+
+  it('never replaces a missing explicit candidate with another live installation', async () => {
+    const ensureNonce = vi.fn(async (result: DiscoveryResult) => result)
+    const onPairingRun = vi.fn()
+    const discoverForFirstPair = vi.fn(async () => [candidates[0]!])
+    const mgr = makeManager({
+      discovery: { discoverForFirstPair, ensureNonce },
+      onPairingRun,
+    })
+    mgr.choosePairCandidate(16803)
+    await mgr.clearGateAndStart()
+
+    expect(discoverForFirstPair).toHaveBeenCalledWith(
+      expect.objectContaining({ preferredCandidatePort: 16803 })
+    )
+    expect(ensureNonce).not.toHaveBeenCalled()
+    expect(onPairingRun).not.toHaveBeenCalled()
+    expect(mgr.getState()).toBe('disconnected')
   })
 
   it('drops an unclaimed candidate choice when stop invalidates the lifecycle', async () => {
