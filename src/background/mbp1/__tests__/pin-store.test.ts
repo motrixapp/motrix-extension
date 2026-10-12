@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   createRemoteBackendAuthority,
   LOCAL_BACKEND_AUTHORITY,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 import { CredentialStore } from '@/background/mbp1/credential-store'
 import {
@@ -59,6 +60,49 @@ const P1: Pin = { port: 16803, instanceId: 'inst-x' }
 const P2: Pin = { port: 16805, instanceId: 'inst-y' }
 
 describe('PinStore', () => {
+  it('isolates equal credential ids across default and Windows Store installations', async () => {
+    const local = new PinStore()
+    const store = new PinStore(WINDOWS_STORE_BACKEND_AUTHORITY)
+    await Promise.all([local.commit('shared', P1), store.commit('shared', P2)])
+    expect(await new PinStore().get('shared')).toEqual(P1)
+    expect(
+      await new PinStore(WINDOWS_STORE_BACKEND_AUTHORITY).get('shared')
+    ).toEqual(P2)
+    await store.clear('shared')
+    expect(await local.get('shared')).toEqual(P1)
+    expect(await store.get('shared')).toBeNull()
+    await store.commit('shared', P2)
+    await local.clear('shared')
+    expect(await store.get('shared')).toEqual(P2)
+  })
+
+  it('never treats legacy local pins as Store pins or rewrites them on a Store read', async () => {
+    const legacy = { version: 1, pins: { existing: P1 } }
+    backing[STORAGE_KEY] = legacy
+    expect(
+      await new PinStore(WINDOWS_STORE_BACKEND_AUTHORITY).get('existing')
+    ).toBeNull()
+    expect(backing[STORAGE_KEY]).toEqual(legacy)
+    expect(browser.storage.local.set).not.toHaveBeenCalled()
+    expect(browser.storage.local.remove).not.toHaveBeenCalled()
+  })
+
+  it('preserves future Store pin data while allowing independent default-pin changes', async () => {
+    const future = { version: 99, pins: { existing: P2 } }
+    backing['motrix.mbp1.pins.windows-store'] = future
+    const store = new PinStore(WINDOWS_STORE_BACKEND_AUTHORITY)
+    expect(await store.get('existing')).toBeNull()
+    await expect(store.clear('existing')).rejects.toThrow(
+      UnsupportedPinStoreVersionError
+    )
+    await expect(store.commit('new', P1)).rejects.toThrow(
+      UnsupportedPinStoreVersionError
+    )
+    await new PinStore().commit('default', P1)
+    expect(await new PinStore().get('default')).toEqual(P1)
+    expect(backing['motrix.mbp1.pins.windows-store']).toEqual(future)
+  })
+
   it('is explicitly local-authority-only', async () => {
     const local = new PinStore(LOCAL_BACKEND_AUTHORITY)
     await local.commit('c1', P1)
