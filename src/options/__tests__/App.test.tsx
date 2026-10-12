@@ -40,7 +40,7 @@ beforeEach(() => {
       }
     if (env.kind === 'bg.getEndpointConfig')
       return {
-        version: 3,
+        version: 4,
         activeEndpointId: 'local',
         servers: [],
         cleanupTombstones: [],

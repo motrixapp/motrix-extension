@@ -12,10 +12,12 @@ import {
   CorruptEndpointConfigStoreError,
   EndpointConfigStore,
   LOCAL_ENDPOINT_ID,
+  WINDOWS_STORE_ENDPOINT_ID,
 } from '@/background/EndpointConfigStore'
 import {
   createRemoteBackendAuthority,
   LOCAL_BACKEND_AUTHORITY,
+  WINDOWS_STORE_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
 import {
   CredentialAuthorityRevokedError,
@@ -147,7 +149,7 @@ async function setup(): Promise<{
   const configStore = new EndpointConfigStore()
   const credentialStore = new CredentialStore()
   await configStore.setForTest({
-    version: 3,
+    version: 4,
     activeEndpointId: 'local',
     servers: [
       server('server-a', 'A', 'wss://a.example'),
@@ -170,7 +172,7 @@ describe('EndpointCatalogService', () => {
   it('keeps local, Server A, and Server B isolated through switch, offline, revoke, URL edit, and delete', async () => {
     const configStore = new EndpointConfigStore()
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: LOCAL_ENDPOINT_ID,
       servers: [
         server('server-a', 'A', 'wss://a.example'),
@@ -395,7 +397,7 @@ describe('EndpointCatalogService', () => {
   it('stops before removing the active Server without reconnecting or allowing App launch', async () => {
     const configStore = new EndpointConfigStore()
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         server('server-a', 'A', 'wss://a.example'),
@@ -428,7 +430,7 @@ describe('EndpointCatalogService', () => {
   it('removes a non-active Server without stopping or reconnecting', async () => {
     const configStore = new EndpointConfigStore()
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         server('server-a', 'A', 'wss://a.example'),
@@ -474,7 +476,7 @@ describe('EndpointCatalogService', () => {
       authority: { kind: 'local' },
     })
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [
         server('server-a', 'A', 'wss://new-a.example', {
@@ -592,7 +594,7 @@ describe('EndpointCatalogService', () => {
   it('serializes a bounded leased write ahead of authority retirement', async () => {
     const configStore = new EndpointConfigStore()
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [server('server-a', 'A', 'wss://a.example')],
       cleanupTombstones: [],
@@ -628,7 +630,7 @@ describe('EndpointCatalogService', () => {
 
   it('blocks every lifecycle operation while preserving a corrupt catalogue', async () => {
     const corrupt = {
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [],
       cleanupTombstones: [
@@ -715,7 +717,7 @@ describe('EndpointCatalogService', () => {
   it('persists the tombstone before retiring an active URL change and finalizes after', async () => {
     const { configStore } = await setup()
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         server('server-a', 'A', 'wss://a.example'),
@@ -896,7 +898,7 @@ describe('EndpointCatalogService', () => {
   it('recovers an interrupted URL change before making the profile ready', async () => {
     const configStore = new EndpointConfigStore()
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         server('server-a', 'A', 'wss://new-a.example', {
@@ -921,7 +923,7 @@ describe('EndpointCatalogService', () => {
       remoteAuthority('server-a', 'wss://a.example')
     )
     expect(await configStore.get()).toEqual({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         server('server-a', 'A', 'wss://new-a.example', {
@@ -936,7 +938,7 @@ describe('EndpointCatalogService', () => {
   it('leaves an interrupted cleanup closed when retirement still fails', async () => {
     const configStore = new EndpointConfigStore()
     const pending = {
-      version: 3 as const,
+      version: 4 as const,
       activeEndpointId: 'local',
       servers: [],
       cleanupTombstones: [
@@ -963,7 +965,7 @@ describe('EndpointCatalogService', () => {
   it('rejects revision overflow before stopping or writing an active profile', async () => {
     const configStore = new EndpointConfigStore()
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         server('server-a', 'A', 'wss://a.example', {
@@ -1000,7 +1002,7 @@ describe('EndpointCatalogService', () => {
   it('allows deleting a profile at the maximum revision', async () => {
     const configStore = new EndpointConfigStore()
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [
         server('server-a', 'A', 'wss://a.example', {
@@ -1026,7 +1028,7 @@ describe('EndpointCatalogService', () => {
   it('stops the old connection before committing an active change', async () => {
     const configStore = new EndpointConfigStore()
     await configStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'local',
       servers: [server('server-a', 'A', 'wss://a.example')],
       cleanupTombstones: [],
@@ -1050,5 +1052,58 @@ describe('EndpointCatalogService', () => {
     await service.activate('server-a')
 
     expect(events).toEqual(['stop', 'set'])
+  })
+})
+
+describe('Windows Store catalogue lifecycle', () => {
+  it('issues distinct local leases and never redirects a captured lease on activation', async () => {
+    const store = new EndpointConfigStore()
+    const before = vi.fn()
+    const after = vi.fn()
+    const retire = vi.fn()
+    const service = new EndpointCatalogService(
+      store,
+      { retire },
+      { beforeConnectionChange: before, afterConnectionChange: after }
+    )
+    const original = await service.issueBackendAttemptLease()
+    const activated = await service.activate(WINDOWS_STORE_ENDPOINT_ID)
+    expect(activated.activeChanged).toBe(true)
+    expect(activated.config.activeEndpointId).toBe(WINDOWS_STORE_ENDPOINT_ID)
+    const storeLease = await service.issueBackendAttemptLease()
+    expect(
+      await service.runWithBackendAttemptLease(
+        original,
+        async (attempt) => attempt.authority
+      )
+    ).toBe(LOCAL_BACKEND_AUTHORITY)
+    expect(
+      await service.runWithBackendAttemptLease(
+        storeLease,
+        async (attempt) => attempt
+      )
+    ).toEqual({
+      authority: WINDOWS_STORE_BACKEND_AUTHORITY,
+      endpointId: WINDOWS_STORE_ENDPOINT_ID,
+      revision: 0,
+      canonicalWsBase: null,
+    })
+    await service.activate(LOCAL_ENDPOINT_ID)
+    expect(
+      await service.runWithBackendAttemptLease(
+        storeLease,
+        async (attempt) => attempt.authority
+      )
+    ).toBe(WINDOWS_STORE_BACKEND_AUTHORITY)
+    expect(before).toHaveBeenCalledTimes(2)
+    expect(after).toHaveBeenCalledTimes(2)
+    expect(retire).not.toHaveBeenCalled()
+    await expect(
+      service.removeServer(WINDOWS_STORE_ENDPOINT_ID, {
+        name: '',
+        url: '',
+        revision: 0,
+      })
+    ).rejects.toThrow('cannot be removed')
   })
 })

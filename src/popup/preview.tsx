@@ -48,7 +48,7 @@ const previewMedia = [
 ]
 
 type PreviewEndpoint = {
-  version: 3
+  version: 4
   activeEndpointId: string
   servers: Array<{
     id: string
@@ -65,7 +65,7 @@ type PreviewEndpoint = {
 }
 
 let previewEndpoint: PreviewEndpoint = {
-  version: 3,
+  version: 4,
   activeEndpointId: 'local',
   servers: [
     {

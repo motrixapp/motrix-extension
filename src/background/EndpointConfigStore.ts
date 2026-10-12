@@ -4,7 +4,7 @@ import { extensionBrowser as browser } from '@/shared/browser'
  *
  * The local App has a stable, reserved id (`local`). Every Server entry has
  * its own id for selection and a canonical WS/WSS URL for authority construction.
- * The Extension is unreleased, so only the final schema is accepted; obsolete
+ * v3 catalogues migrate without changing endpoint identities. Older obsolete
  * development data is never migrated into a routing or credential authority.
  */
 
@@ -14,7 +14,12 @@ import { createOperationQueue } from '@/background/mbp1/operation-queue'
 const STORAGE_KEY = 'motrix.endpointConfig'
 
 export const LOCAL_ENDPOINT_ID = 'local'
-export const ENDPOINT_CONFIG_VERSION = 3 as const
+export const WINDOWS_STORE_ENDPOINT_ID = 'local-windows-store'
+export const ENDPOINT_CONFIG_VERSION = 4 as const
+
+export function isLocalEndpointId(id: string): boolean {
+  return id === LOCAL_ENDPOINT_ID || id === WINDOWS_STORE_ENDPOINT_ID
+}
 
 export type EndpointProfileState = 'ready' | 'cleanup-pending'
 
@@ -41,11 +46,12 @@ export interface EndpointConfig {
 
 /** Connection- and credential-safe snapshot of one selected backend. */
 export type ResolvedEndpointConfig =
-  | { mode: 'local' }
+  | { mode: 'local'; target?: 'windows-store' }
   | { mode: 'remote'; remoteUrl: string; endpointId: string; revision: number }
 
 type StoredConfigRead =
   | { kind: 'known'; config: EndpointConfig }
+  | { kind: 'migrate'; config: EndpointConfig }
   | { kind: 'obsolete' }
   | { kind: 'future' }
   | { kind: 'corrupt' }
@@ -131,8 +137,8 @@ function normalizeServer(
   // An endpoint id is an authority ingredient. Never trim or otherwise
   // rewrite it into a different security scope.
   const id = typeof raw.id === 'string' ? raw.id : ''
-  if (id === '' || id === LOCAL_ENDPOINT_ID) {
-    if (strict) throw new Error('server id must be non-empty and not "local"')
+  if (id === '' || isLocalEndpointId(id)) {
+    if (strict) throw new Error('server id must be non-empty and not reserved')
     return null
   }
   if (typeof raw.url !== 'string') {
@@ -191,7 +197,7 @@ function normalizeTombstone(
   }
   const raw = value as Record<string, unknown>
   const endpointId = typeof raw.endpointId === 'string' ? raw.endpointId : ''
-  if (endpointId === '' || endpointId === LOCAL_ENDPOINT_ID) {
+  if (endpointId === '' || isLocalEndpointId(endpointId)) {
     if (strict) throw new Error('cleanup tombstone endpoint id is invalid')
     return null
   }
@@ -236,6 +242,20 @@ function readStoredConfig(value: unknown): StoredConfigRead {
     return { kind: 'obsolete' }
   }
   const version = (value as { version?: unknown }).version
+  if (version === 3) {
+    try {
+      // A former remote id must never silently become the new local target.
+      // Reserved-id collisions (including cleanup tombstones) remain intact
+      // and fail closed rather than renaming an existing credential authority.
+      const config = normalizeCurrent(value, true)
+      if (config.activeEndpointId === WINDOWS_STORE_ENDPOINT_ID) {
+        return { kind: 'corrupt' }
+      }
+      return { kind: 'migrate', config }
+    } catch {
+      return { kind: 'corrupt' }
+    }
+  }
   if (
     typeof version === 'number' &&
     Number.isSafeInteger(version) &&
@@ -364,17 +384,16 @@ function normalizeCurrent(value: unknown, strict: boolean): EndpointConfig {
   const requestedActiveId = raw.activeEndpointId
   if (
     strict &&
-    requestedActiveId !== LOCAL_ENDPOINT_ID &&
+    !isLocalEndpointId(requestedActiveId) &&
     !ids.has(requestedActiveId)
   ) {
     throw new Error('active endpoint id is unknown')
   }
-  const activeEndpointId =
-    requestedActiveId === LOCAL_ENDPOINT_ID
-      ? LOCAL_ENDPOINT_ID
-      : ids.has(requestedActiveId)
-        ? requestedActiveId
-        : LOCAL_ENDPOINT_ID
+  const activeEndpointId = isLocalEndpointId(requestedActiveId)
+    ? requestedActiveId
+    : ids.has(requestedActiveId)
+      ? requestedActiveId
+      : LOCAL_ENDPOINT_ID
 
   return {
     version: ENDPOINT_CONFIG_VERSION,
@@ -399,6 +418,9 @@ export function resolveEndpointById(
   endpointId: string
 ): ResolvedEndpointConfig | null {
   if (endpointId === LOCAL_ENDPOINT_ID) return { mode: 'local' }
+  if (endpointId === WINDOWS_STORE_ENDPOINT_ID) {
+    return { mode: 'local', target: 'windows-store' }
+  }
   const server = config.servers.find(({ id }) => id === endpointId)
   if (!server || (server.state ?? 'ready') !== 'ready') return null
   let remoteUrl: string
@@ -508,6 +530,9 @@ export class EndpointConfigStore {
       if (stored.kind === 'obsolete') {
         await browser.storage.local.remove(STORAGE_KEY)
         return cloneDefault()
+      }
+      if (stored.kind === 'migrate') {
+        await browser.storage.local.set({ [STORAGE_KEY]: stored.config })
       }
       return cloneConfig(stored.config)
     })

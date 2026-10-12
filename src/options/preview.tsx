@@ -13,7 +13,7 @@ let previewNotifications: NotificationsConfig = {
 }
 
 type PreviewEndpoint = {
-  version: 3
+  version: 4
   activeEndpointId: string
   servers: Array<{
     id: string
@@ -30,7 +30,7 @@ type PreviewEndpoint = {
 }
 
 let previewEndpoint: PreviewEndpoint = {
-  version: 3,
+  version: 4,
   activeEndpointId:
     previewParams.get('pairing') === 'none' ? 'local' : 'studio',
   servers: [

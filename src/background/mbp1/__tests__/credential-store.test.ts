@@ -1634,7 +1634,7 @@ describe('lease-bound credential lifecycle facade', () => {
     const failure = new Error('stale endpoint lease')
     const endpointStore = new EndpointConfigStore()
     await endpointStore.setForTest({
-      version: 3,
+      version: 4,
       activeEndpointId: 'server-a',
       servers: [
         {
