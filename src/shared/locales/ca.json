@@ -563,5 +563,12 @@
     "unsupportedFeature": "Aquesta funció no està disponible al Safari.",
     "confirmDownloadDescription": "Obre un formulari de confirmació per a les baixades amb el botó dret. Desactiva-ho per enviar directament a Motrix.",
     "taskPanelDescription": "Obre el tauler de tasques després d’afegir una baixada."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Versió de Microsoft Store, vinculada per separat.",
+    "launch": "Obre l’aplicació de Store",
+    "pairingHelp": "Obre el Motrix instal·lat des de Microsoft Store, selecciona’n la instància i introdueix el codi mostrat en aquesta aplicació. El navegador pot demanar confirmació per obrir-la.",
+    "unavailable": "Aquesta destinació requereix un navegador d’escriptori al Windows."
   }
 }

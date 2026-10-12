@@ -563,5 +563,12 @@
     "unsupportedFeature": "This feature is not available in Safari.",
     "confirmDownloadDescription": "Open a confirmation form for right-click downloads. Turn off to send directly to Motrix.",
     "taskPanelDescription": "Open the task panel after a download is added."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store installation; paired separately.",
+    "launch": "Open Store app",
+    "pairingHelp": "Open Motrix from Microsoft Store, select its instance, then enter the code shown in that app. Your browser may ask before opening it.",
+    "unavailable": "This target requires a Windows desktop browser."
   }
 }

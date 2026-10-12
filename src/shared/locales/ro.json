@@ -563,5 +563,12 @@
     "unsupportedFeature": "Această funcție nu este disponibilă în Safari.",
     "confirmDownloadDescription": "Deschide un formular de confirmare pentru descărcările din meniul contextual. Dezactivează pentru a trimite direct la Motrix.",
     "taskPanelDescription": "Deschide panoul de sarcini după adăugarea unei descărcări."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Versiune Microsoft Store, asociată separat.",
+    "launch": "Deschide aplicația Store",
+    "pairingHelp": "Deschide Motrix instalat din Microsoft Store, selectează instanța sa și introdu codul afișat în acea aplicație. Browserul poate cere confirmarea deschiderii.",
+    "unavailable": "Această destinație necesită un browser desktop pe Windows."
   }
 }

@@ -563,5 +563,12 @@
     "unsupportedFeature": "Tính năng này không có trên Safari.",
     "confirmDownloadDescription": "Mở biểu mẫu xác nhận khi tải xuống bằng chuột phải. Tắt để gửi trực tiếp đến Motrix.",
     "taskPanelDescription": "Mở bảng tác vụ sau khi thêm lượt tải xuống."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Bản cài từ Microsoft Store, ghép nối riêng.",
+    "launch": "Mở ứng dụng Store",
+    "pairingHelp": "Mở Motrix đã cài từ Microsoft Store, chọn phiên tương ứng rồi nhập mã hiển thị trong ứng dụng đó. Trình duyệt có thể hỏi xác nhận trước khi mở.",
+    "unavailable": "Đích này cần trình duyệt máy tính trên Windows."
   }
 }

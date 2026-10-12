@@ -9,7 +9,9 @@ import {
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ConnectionState } from '@/background/ConnectionManager'
+import { WINDOWS_STORE_ENDPOINT_ID } from '@/background/EndpointConfigStore'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
+import { PairingDialog } from '@/options/integration/PairingDialog'
 import { BackendSelector } from '@/popup/BackendSelector'
 import {
   CompactPopupHeader,
@@ -301,6 +303,7 @@ export function App(): React.ReactElement {
   const quickSettings = useQuickSettings(
     !switching && supportsAutomaticTakeover(state.endpoint)
   )
+  const [storePairingOpen, setStorePairingOpen] = useState(false)
   const [tab, setTab] = useState<PopupTab>(
     supportsBackendConnections() ? 'tasks' : 'sniffer'
   )
@@ -326,6 +329,9 @@ export function App(): React.ReactElement {
     [endpointError, state]
   )
   const backendId = state.endpoint?.activeEndpointId ?? 'unresolved'
+  // A dialog belongs to the selected installation only.
+  // biome-ignore lint/correctness/useExhaustiveDependencies(backendId): a backend switch closes the old pairing surface.
+  useEffect(() => setStorePairingOpen(false), [backendId])
   const backendRevision =
     state.endpoint?.servers.find((server) => server.id === backendId)
       ?.revision ?? 0
@@ -430,7 +436,11 @@ export function App(): React.ReactElement {
       ) : undefined,
     [state.degraded, statusState.lastError, statusState.lastErrorReason, t]
   )
-  const reconnectPopup = useCallback(() => void reconnect(), [reconnect])
+  const reconnectPopup = useCallback(() => {
+    if (backendId === WINDOWS_STORE_ENDPOINT_ID && state.pairing === 'none')
+      setStorePairingOpen(true)
+    else void reconnect()
+  }, [backendId, state.pairing, reconnect])
   const showPairing = useCallback(() => setDismissedPairingDeadlineMs(null), [])
   const showTasks = useCallback(() => setTab('tasks'), [])
   const showResources = useCallback(() => setTab('sniffer'), [])
@@ -535,7 +545,17 @@ export function App(): React.ReactElement {
         />
 
         {supportsBackendConnections() && <DownloadConfirmationDialog />}
-        {supportsBackendConnections() && pairingPrompt && (
+        {backendId === WINDOWS_STORE_ENDPOINT_ID && (
+          <PairingDialog
+            key={backendId}
+            endpointId={backendId}
+            remote={false}
+            open={storePairingOpen}
+            onOpenChange={setStorePairingOpen}
+            onPaired={() => setStorePairingOpen(false)}
+          />
+        )}
+        {supportsBackendConnections() && pairingPrompt && !storePairingOpen && (
           <PairingPromptDialog
             prompt={pairingPrompt}
             error={pairingCodeError}

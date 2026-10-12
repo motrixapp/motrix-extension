@@ -563,5 +563,12 @@
     "unsupportedFeature": "Safari에서는 이 기능을 사용할 수 없습니다.",
     "confirmDownloadDescription": "마우스 오른쪽 버튼으로 다운로드할 때 확인 양식을 엽니다. 끄면 Motrix로 바로 전송합니다.",
     "taskPanelDescription": "다운로드를 추가한 후 작업 패널을 엽니다."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store 설치 버전. 별도로 페어링합니다.",
+    "launch": "Store 앱 열기",
+    "pairingHelp": "Microsoft Store에서 설치한 Motrix를 열고 해당 인스턴스를 선택한 다음 앱에 표시된 코드를 입력하세요. 브라우저에서 앱 실행을 확인할 수 있습니다.",
+    "unavailable": "이 대상에는 Windows 데스크톱 브라우저가 필요합니다."
   }
 }

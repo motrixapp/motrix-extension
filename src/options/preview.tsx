@@ -72,8 +72,6 @@ const previewRuntime = {
   sendMessage: async (message: unknown): Promise<unknown> => {
     const request = message as { kind?: string; payload?: unknown }
     switch (request.kind) {
-      case 'bg.listPairCandidates':
-        return { candidates: [] }
       case 'bg.hasPairedBackend':
         return { paired: pairedEndpoints.size > 0 }
       case 'bg.getEndpointConfig':
@@ -254,8 +252,22 @@ const previewRuntime = {
           ? 'connected'
           : 'disconnected'
         return { ok: true }
+      case 'bg.listPairCandidates':
+        return {
+          candidates: [
+            {
+              selectionId: 'preview-choice',
+              port: 16803,
+              instanceId: 'preview-store-instance',
+              appVersion: '2.0.0',
+            },
+          ],
+        }
+      case 'bg.launchStore':
+      case 'bg.chooseCandidate':
+        return { ok: true }
       case 'bg.getState':
-        return { state: previewConnectionState }
+        return { state: previewConnectionState, endpoint: previewEndpoint }
       case 'bg.getTakeoverConfig':
         return previewTakeover
       case 'bg.patchDownloadMode':
@@ -305,6 +317,7 @@ const storageChanged = {
 const previewBrowser = {
   action: { openPopup: async () => undefined },
   runtime: previewRuntime,
+  tabs: { create: async () => ({ id: 1 }) },
   i18n: {
     getUILanguage: () =>
       resolveLocale(

@@ -5,7 +5,12 @@ import { InstancePicker } from '@/popup/InstancePicker'
 import { i18n } from '@/shared/i18n'
 
 function candidate(port: number): PairCandidate {
-  return { port, instanceId: `instance-${port}`, appVersion: '2.0.0' }
+  return {
+    selectionId: `selection-${port}`,
+    port,
+    instanceId: `instance-${port}`,
+    appVersion: '2.0.0',
+  }
 }
 
 function renderPicker(candidates: PairCandidate[]) {

@@ -563,5 +563,12 @@
     "unsupportedFeature": "Ez a funkció nem érhető el a Safariban.",
     "confirmDownloadDescription": "Megerősítő űrlap megnyitása a helyi menüből indított letöltéseknél. Kikapcsolva közvetlenül a Motrixnak küldi.",
     "taskPanelDescription": "A feladatpanel megnyitása letöltés hozzáadása után."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store-verzió, külön párosítással.",
+    "launch": "Store-alkalmazás megnyitása",
+    "pairingHelp": "Nyissa meg a Microsoft Store-ból telepített Motrixot, válassza ki a példányát, majd írja be az abban megjelenő kódot. A böngésző megerősítést kérhet a megnyitáshoz.",
+    "unavailable": "Ehhez a célhoz Windows asztali böngésző szükséges."
   }
 }

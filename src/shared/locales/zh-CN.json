@@ -563,5 +563,12 @@
     "unsupportedFeature": "Safari 暂不支持此功能。",
     "confirmDownloadDescription": "右键下载时先打开确认表单；关闭后直接发送到 Motrix。",
     "taskPanelDescription": "添加下载成功后自动展开任务面板。"
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store 安装版，单独配对。",
+    "launch": "打开商店版应用",
+    "pairingHelp": "打开 Microsoft Store 安装的 Motrix，选择对应实例，再输入该应用中显示的配对码。浏览器可能询问是否允许打开应用。",
+    "unavailable": "此目标需要 Windows 桌面浏览器。"
   }
 }

@@ -563,5 +563,12 @@
     "unsupportedFeature": "Bu özellik Safari’de kullanılamaz.",
     "confirmDownloadDescription": "Sağ tıklamayla başlatılan indirmeler için onay formu aç. Doğrudan Motrix’e göndermek için kapat.",
     "taskPanelDescription": "İndirme eklendikten sonra görev panelini aç."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Microsoft Store sürümü, ayrı eşleştirilir.",
+    "launch": "Store uygulamasını aç",
+    "pairingHelp": "Microsoft Store’dan yüklenen Motrix’i açın, ilgili örneği seçin ve o uygulamada gösterilen kodu girin. Tarayıcı uygulamayı açmadan önce onay isteyebilir.",
+    "unavailable": "Bu hedef için Windows masaüstü tarayıcısı gerekir."
   }
 }

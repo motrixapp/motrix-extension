@@ -563,5 +563,12 @@
     "unsupportedFeature": "این قابلیت در Safari در دسترس نیست.",
     "confirmDownloadDescription": "برای دانلود از منوی راست‌کلیک، فرم تأیید باز شود. برای ارسال مستقیم به Motrix، این گزینه را خاموش کنید.",
     "taskPanelDescription": "پس از افزودن دانلود، پنل کارها را باز کن."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "نسخهٔ Microsoft Store با جفت‌سازی جداگانه.",
+    "launch": "باز کردن برنامهٔ Store",
+    "pairingHelp": "Motrix نصب‌شده از Microsoft Store را باز کنید، نمونهٔ مربوط به آن را انتخاب کنید و سپس کد نمایش‌داده‌شده در همان برنامه را وارد کنید. مرورگر ممکن است پیش از باز کردن برنامه تأیید بخواهد.",
+    "unavailable": "این مقصد به مرورگر دسکتاپ Windows نیاز دارد."
   }
 }

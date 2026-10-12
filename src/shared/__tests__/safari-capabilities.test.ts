@@ -79,7 +79,14 @@ describe('Safari preview capability boundaries', () => {
     })
     await expect(
       manager.listPairCandidates({ allowLaunch: false })
-    ).resolves.toEqual([{ port: 16803, instanceId: null, appVersion: null }])
+    ).resolves.toEqual([
+      {
+        port: 16803,
+        instanceId: null,
+        appVersion: null,
+        selectionId: expect.any(String),
+      },
+    ])
     expect(message).toHaveBeenCalledExactlyOnceWith('app.motrix.bridge', {
       action: 'bootstrap',
       protocolVersion: 1,

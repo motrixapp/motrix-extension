@@ -563,5 +563,12 @@
     "unsupportedFeature": "Cette fonctionnalité n’est pas disponible dans Safari.",
     "confirmDownloadDescription": "Afficher un formulaire de confirmation pour les téléchargements par clic droit. Désactiver pour envoyer directement à Motrix.",
     "taskPanelDescription": "Ouvrir le panneau des tâches après l’ajout d’un téléchargement."
+  },
+  "storeTarget": {
+    "name": "Motrix · Microsoft Store",
+    "description": "Version Microsoft Store, associée séparément.",
+    "launch": "Ouvrir la version Store",
+    "pairingHelp": "Ouvrez Motrix installé depuis le Microsoft Store, choisissez son instance, puis saisissez le code affiché dans cette application. Le navigateur peut demander de confirmer son ouverture.",
+    "unavailable": "Cette cible nécessite un navigateur de bureau sous Windows."
   }
 }
