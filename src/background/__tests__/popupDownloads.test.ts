@@ -200,4 +200,40 @@ describe('production popup download handlers', () => {
     expect(f.manager.ensureReady).not.toHaveBeenCalled()
     expect(f.manager.clearGateAndStart).not.toHaveBeenCalled()
   })
+
+  it('grabberResolvePageDownload accepts content-script sender and derives target from sender.tab', async () => {
+    const f = await fixture()
+    const contentSender = {
+      id: sender.id,
+      tab: { id: 4, url: media.pageUrl, title: 'Watch' } as Browser.tabs.Tab,
+    }
+    const operation = f.handlers.grabberResolvePageDownload(
+      { idempotencyKey: newDownloadOperationId() },
+      contentSender
+    )
+    await vi.waitFor(() => expect(f.manager.ensureReady).toHaveBeenCalledOnce())
+    f.ready.resolve()
+    await expect(operation).resolves.toEqual({ taskId: 'task-1' })
+    expect(f.cookieApi.getAll).toHaveBeenCalledWith({ url: media.pageUrl })
+    expect(f.manager.submitDownload).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: expect.objectContaining({ pageUrl: media.pageUrl }),
+      }),
+      expect.anything()
+    )
+  })
+
+  it('grabberResolvePageDownload rejects sender with invalid or missing tab url', async () => {
+    const f = await fixture()
+    const badSender = {
+      id: sender.id,
+      tab: { id: 4, url: 'chrome://settings' } as Browser.tabs.Tab,
+    }
+    await expect(
+      f.handlers.grabberResolvePageDownload(
+        { idempotencyKey: newDownloadOperationId() },
+        badSender
+      )
+    ).rejects.toThrow('media-submit.invalid-request')
+  })
 })

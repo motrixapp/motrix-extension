@@ -16,11 +16,23 @@ import { resolveStoredMedia } from '@/background/mediaTrust'
 import type { Browser } from '@/shared/browser'
 import type { BrowserKind } from '@/shared/browserKind'
 import { DOWNLOAD_ERROR } from '@/shared/integration'
-import { isResolvableVideoPage } from '@/shared/media'
+import {
+  type DetectedMedia,
+  isResolvableVideoPage,
+  mediaStorageKey,
+} from '@/shared/media'
+import {
+  isPickerQualityHint,
+  type MediaFormatsResult,
+  normalizeQualityLabel,
+} from '@/shared/mediaFormats'
 import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
 
+/** The overlay offers a short list; the popup remains the full browser. */
+const MAX_GRAB_ITEMS = 6
+
 interface PopupDownloadDeps {
-  manager: Pick<ConnectionManager, 'getServerCapabilities'>
+  manager: Pick<ConnectionManager, 'getServerCapabilities' | 'request'>
   submissions: Pick<DownloadSubmissionService, 'run'>
   mediaStore: MediaStore
   mediaCredentialStore: MediaCredentialStore
@@ -51,14 +63,41 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     if (!isExtensionPageSender(sender, deps.extensionId, deps.extensionBaseUrl))
       throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
   }
-  // bg.submitMedia: forward a detected media item to Motrix via MDXP.
-  // Gates on selectionKinds capability reported by the server at initialize time;
-  // hls/dash require ffmpeg on the desktop side.
-  const submitMedia: MessageBusHandler<'bg.submitMedia'> = async (
-    request,
-    sender
-  ) => {
-    assertSender(sender)
+  /**
+   * A grab overlay content script is trusted for its own tab only: the
+   * browser authenticates `sender.tab`, so a page cannot claim another
+   * tab's media. The URL must still be an http(s) document — an extension
+   * or browser-internal page has no sniffed media worth submitting.
+   */
+  const assertGrabberSender = (
+    sender: Browser.runtime.MessageSender
+  ): Browser.tabs.Tab & { id: number; url: string } => {
+    const tab = sender.tab
+    if (typeof tab?.id !== 'number' || !tab.url) {
+      throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
+    }
+    if (!/^https?:/i.test(tab.url)) {
+      throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
+    }
+    return tab as Browser.tabs.Tab & { id: number; url: string }
+  }
+  /**
+   * Submit one stored media item of `queryTab`'s tab.
+   *
+   * Shared by the popup (active tab) and the in-page grab overlay (the
+   * sender tab). `queryTab` is called twice — once to resolve the stored
+   * media and again inside the preparation callback — so a tab that navigates
+   * between the two reads fails with `contextChanged` instead of submitting
+   * a URL that no longer belongs to that document.
+   */
+  const submitMediaForTab = async (
+    queryTab: () => Promise<Browser.tabs.Tab | undefined>,
+    request: {
+      mediaKey: string
+      idempotencyKey: string
+      pairIfNeeded?: boolean
+    }
+  ): Promise<Awaited<ReturnType<DownloadSubmissionService['run']>>> => {
     if (
       typeof request !== 'object' ||
       request === null ||
@@ -67,10 +106,10 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
       throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
     }
     try {
-      const [activeTab] = await getActiveTabs()
+      const tab = await queryTab()
       const media = await resolveStoredMedia(
         request.mediaKey,
-        async () => activeTab,
+        async () => tab,
         mediaStore
       )
       return await submissions.run(
@@ -79,7 +118,7 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
           pairIfNeeded: request.pairIfNeeded === true,
           source: 'media',
           resourceKey: JSON.stringify([
-            activeTab?.id,
+            tab?.id,
             media.pageUrl,
             request.mediaKey,
           ]),
@@ -91,10 +130,9 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
           if (!kinds.includes(media.kind)) {
             throw new DownloadPreparationError(DOWNLOAD_ERROR.unsupported)
           }
-          if (typeof activeTab?.id !== 'number')
-            throw new Error('no active tab')
+          if (typeof tab?.id !== 'number') throw new Error('no active tab')
           const primaryObservation = mediaCredentialStore.get(
-            activeTab.id,
+            tab.id,
             media.pageUrl,
             media.url
           )
@@ -104,11 +142,7 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
             userAgent: userAgent,
           })
           const audioObservation = media.audioUrl
-            ? mediaCredentialStore.get(
-                activeTab.id,
-                media.pageUrl,
-                media.audioUrl
-              )
+            ? mediaCredentialStore.get(tab.id, media.pageUrl, media.audioUrl)
             : undefined
           const audioCredentials = media.audioUrl
             ? await buildResourceCredentials({
@@ -117,9 +151,9 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
                 userAgent: userAgent,
               })
             : { cookies: [], headers: {} }
-          const [currentTab] = await getActiveTabs()
+          const currentTab = await queryTab()
           if (
-            currentTab?.id !== activeTab.id ||
+            currentTab?.id !== tab.id ||
             !currentTab.url ||
             new URL(currentTab.url).toString() !== media.pageUrl
           ) {
@@ -144,6 +178,16 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
       throw toSafeMediaSubmitError(error)
     }
   }
+  // bg.submitMedia: forward a detected media item to Motrix via MDXP.
+  // Gates on selectionKinds capability reported by the server at initialize time;
+  // hls/dash require ffmpeg on the desktop side.
+  const submitMedia: MessageBusHandler<'bg.submitMedia'> = async (
+    request,
+    sender
+  ) => {
+    assertSender(sender)
+    return submitMediaForTab(async () => (await getActiveTabs())[0], request)
+  }
 
   // bg.resolvePageDownload: submit the active tab's watch-page URL for resolution.
   // Used for bilibili/youtube pages where the generic sniffer finds nothing.
@@ -158,14 +202,22 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
       const [tab] = await getActiveTabs()
       if (!tab?.url) throw new Error('no active tab')
       const pageUrl = tab.url
+      const qualityLabel = normalizeQualityLabel(request.qualityLabel)
       const check = isResolvableVideoPage(pageUrl, webStore)
-      if (!check.resolvable) throw new Error('page not resolvable')
+      // A REAL picker choice ('1080p' / 'mp3') only exists for pages the
+      // desktop's yt-dlp has already listed formats for, so it also unlocks
+      // the page submit on sites outside the resolveToMux allowlist. 'auto'
+      // never relaxes the gate.
+      if (!check.resolvable && !isPickerQualityHint(qualityLabel)) {
+        throw new Error('page not resolvable')
+      }
       return await submissions.run(
         {
           idempotencyKey: request.idempotencyKey,
           pairIfNeeded: request.pairIfNeeded === true,
           source: 'page',
-          resourceKey: JSON.stringify([tab.id, pageUrl]),
+          // Distinct qualities are distinct submissions.
+          resourceKey: JSON.stringify([tab.id, pageUrl, qualityLabel]),
         },
         async ({ assertCurrent }) => {
           assertCurrent()
@@ -199,6 +251,7 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
             buildMediaSubmitParams(media, cookies, headers),
             request
           )
+          params.meta.qualityLabel = qualityLabel
           assertCurrent()
           return params
         }
@@ -209,5 +262,210 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     }
   }
 
-  return { submitMedia, resolvePageDownload }
+  /**
+   * bg.grabberSnapshot: what the in-page grab overlay should offer for the
+   * tab it lives in. Returns a deliberately thin projection — key, kind and
+   * a label — so page code never sees the stored stream URL or credentials.
+   */
+  const grabberSnapshot: MessageBusHandler<'bg.grabberSnapshot'> = async (
+    _request,
+    sender
+  ) => {
+    const tab = assertGrabberSender(sender)
+    const all = await mediaStore.get(tab.id)
+    const wanted = all
+      .filter(isGrabTarget)
+      .sort(compareGrabTargets)
+      .slice(0, MAX_GRAB_ITEMS)
+    return {
+      connected: manager.getServerCapabilities() !== null,
+      media: wanted.map((item) => ({
+        key: mediaStorageKey(item),
+        kind: item.kind,
+        label: grabLabel(item),
+        ...(item.height ? { height: item.height } : {}),
+        ...(item.sizeBytes ? { sizeBytes: item.sizeBytes } : {}),
+        ...(item.mimeType ? { mimeType: item.mimeType } : {}),
+      })),
+    }
+  }
+  /**
+   * bg.grabberSubmit: send one detected item of the sender's tab to Motrix.
+   * The tab comes from the browser-authenticated sender, never from the
+   * request payload, so a page cannot submit another tab's media.
+   */
+  const grabberSubmit: MessageBusHandler<'bg.grabberSubmit'> = async (
+    request,
+    sender
+  ) => {
+    const tab = assertGrabberSender(sender)
+    return submitMediaForTab(async () => tab, request)
+  }
+
+  /**
+   * bg.grabberFormats: list the yt-dlp qualities the sender tab's page URL
+   * offers (fork-local `media/formats` method). Never rejects — a
+   * disconnected desktop or any transport/listing failure degrades to
+   * `{ available: false }` so the overlay falls back to its sniffed rows.
+   * The URL always comes from the browser-authenticated sender tab, never
+   * from the request payload.
+   */
+  const grabberFormats: MessageBusHandler<'bg.grabberFormats'> = async (
+    _request,
+    sender
+  ) => {
+    let tab: (Browser.tabs.Tab & { id: number; url: string }) | undefined
+    if (
+      isExtensionPageSender(sender, deps.extensionId, deps.extensionBaseUrl)
+    ) {
+      const [activeTab] = await getActiveTabs()
+      if (
+        typeof activeTab?.id === 'number' &&
+        activeTab.url &&
+        /^https?:/i.test(activeTab.url)
+      ) {
+        tab = activeTab as Browser.tabs.Tab & { id: number; url: string }
+      }
+    } else {
+      tab = assertGrabberSender(sender)
+    }
+    if (!tab) {
+      throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
+    }
+    const unavailable = (reason: string): MediaFormatsResult => ({
+      available: false,
+      reason,
+      entries: [],
+    })
+    if (manager.getServerCapabilities() === null) {
+      return { connected: false, formats: unavailable('not-connected') }
+    }
+    try {
+      const rawCookies = await capturePageCookies({
+        url: tab.url,
+        ...(tab.cookieStoreId ? { storeId: tab.cookieStoreId } : {}),
+        browser: browserKind,
+        api: cookieApi,
+      })
+      const cookies = rawCookies
+        .filter(
+          (c) =>
+            typeof c.name === 'string' &&
+            c.name.trim().length > 0 &&
+            typeof c.value === 'string'
+        )
+        .map((c) => ({ name: c.name.trim(), value: c.value }))
+      const formats = await manager.request('media/formats', {
+        url: tab.url,
+        ...(cookies.length ? { cookies } : {}),
+      })
+      return { connected: true, formats }
+    } catch (err) {
+      console.warn('[motrix-ext][grabberFormats] failed to list formats:', err)
+      // Transport failure → desktop is effectively gone; a structured
+      // error (e.g. method unsupported by an older desktop) keeps
+      // connected: true with an unavailable result.
+      return {
+        connected: manager.getServerCapabilities() !== null,
+        formats: unavailable('failed'),
+      }
+    }
+  }
+
+  /**
+   * bg.grabberResolvePageDownload: content-script-specific page-download path
+   * for the in-page grab overlay. Validates that the sender is the extension's
+   * own content script on an http(s) tab, and derives the target tab directly
+   * from sender.tab.
+   */
+  const grabberResolvePageDownload: MessageBusHandler<
+    'bg.grabberResolvePageDownload'
+  > = async (request, sender) => {
+    const tab = assertGrabberSender(sender)
+    try {
+      const pageUrl = tab.url
+      const qualityLabel = normalizeQualityLabel(request.qualityLabel)
+      const check = isResolvableVideoPage(pageUrl, webStore)
+      if (!check.resolvable && !isPickerQualityHint(qualityLabel)) {
+        throw new Error('page not resolvable')
+      }
+      return await submissions.run(
+        {
+          idempotencyKey: request.idempotencyKey,
+          pairIfNeeded: request.pairIfNeeded === true,
+          source: 'page',
+          resourceKey: JSON.stringify([tab.id, pageUrl, qualityLabel]),
+        },
+        async ({ assertCurrent }) => {
+          assertCurrent()
+          const cookies = await capturePageCookies({
+            url: pageUrl,
+            ...(tab.cookieStoreId ? { storeId: tab.cookieStoreId } : {}),
+            browser: browserKind,
+            api: cookieApi,
+          })
+          const headers: Record<string, string> = {
+            Referer: `${new URL(pageUrl).origin}/`,
+            'User-Agent': userAgent,
+          }
+          const media = {
+            kind: 'direct' as const,
+            url: pageUrl,
+            pageUrl: pageUrl,
+            pageTitle: tab.title ?? pageUrl,
+            detectedAt: Date.now(),
+          }
+          const params = applyCallerIdempotencyKey(
+            buildMediaSubmitParams(media, cookies, headers),
+            request
+          )
+          params.meta.qualityLabel = qualityLabel
+          assertCurrent()
+          return params
+        }
+      )
+    } catch (error) {
+      throw toSafeMediaSubmitError(error)
+    }
+  }
+
+  return {
+    submitMedia,
+    resolvePageDownload,
+    grabberSnapshot,
+    grabberSubmit,
+    grabberFormats,
+    grabberResolvePageDownload,
+  }
+}
+
+/** Images are downloadable from the popup, but not what a grab button is for. */
+function isGrabTarget(item: DetectedMedia): boolean {
+  if (item.category === 'image') return false
+  return (
+    item.kind === 'direct' ||
+    item.kind === 'hls' ||
+    item.kind === 'dash' ||
+    item.kind === 'mux'
+  )
+}
+
+/** Biggest and newest first: size wins, then resolution, then recency. */
+function compareGrabTargets(a: DetectedMedia, b: DetectedMedia): number {
+  const sizeDelta = (b.sizeBytes ?? 0) - (a.sizeBytes ?? 0)
+  if (sizeDelta !== 0) return sizeDelta
+  const heightDelta = (b.height ?? 0) - (a.height ?? 0)
+  if (heightDelta !== 0) return heightDelta
+  return b.detectedAt - a.detectedAt
+}
+
+/** Short human label for the overlay: filename, then resolution, then host. */
+function grabLabel(item: DetectedMedia): string {
+  if (item.suggestedFilename) return item.suggestedFilename.slice(0, 120)
+  if (item.height) return `${item.height}p`
+  try {
+    return new URL(item.url).host
+  } catch {
+    return item.kind
+  }
 }

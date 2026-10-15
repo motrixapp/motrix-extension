@@ -19,6 +19,7 @@ const READ_METHODS = new Set<string>([
   Methods.TaskGet,
   Methods.StatsGet,
   Methods.EngineStatus,
+  'media/formats',
 ])
 
 const TRANSPORT_ERRORS = new Set<number>([
@@ -284,7 +285,14 @@ export class RpcRecovery {
   ): Promise<MdxpRequestMap[M][1]> {
     const epoch = this.epoch
     const startedAt = Date.now()
-    const deadlineAt = startedAt + (this.deps.totalTimeoutMs ?? 30_000)
+    const isFormats = (method as string) === 'media/formats'
+    const requestTimeoutMs = isFormats
+      ? Math.max(this.deps.requestTimeoutMs, 60_000)
+      : this.deps.requestTimeoutMs
+    const totalTimeoutMs = isFormats
+      ? Math.max(this.deps.totalTimeoutMs ?? 30_000, 65_000)
+      : (this.deps.totalTimeoutMs ?? 30_000)
+    const deadlineAt = startedAt + totalTimeoutMs
     if (this.blocked)
       throw new RpcNotReadyError('Motrix connection needs retry')
     if (this.isRecovering() && !READ_METHODS.has(method))
@@ -308,7 +316,7 @@ export class RpcRecovery {
           session,
           method,
           params,
-          Math.min(this.deps.requestTimeoutMs, deadlineAt - Date.now())
+          Math.min(requestTimeoutMs, deadlineAt - Date.now())
         )
         this.assertCurrent(session, epoch)
         this.succeeded(method)

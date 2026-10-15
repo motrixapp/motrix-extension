@@ -716,19 +716,52 @@ function responseSize(headers: Headers): number | undefined {
   return Number.isSafeInteger(value) && value > 0 ? value : undefined
 }
 
+const MEDIA_EXTENSIONS_RE =
+  /\.(?:ts|m4s|mp4|m4v|m4a|webm|m2ts|cmfv|cmfa|mp3|aac|flac|wav|ogg|opus|vtt|srt|dfxp)(?:$|[?#])/i
+
+function isBinaryOrMediaContentType(contentType?: string): boolean {
+  if (!contentType) return false
+  const type = contentType.split(';', 1)[0]?.trim().toLowerCase() ?? ''
+  return (
+    type.startsWith('video/') ||
+    type.startsWith('audio/') ||
+    type.startsWith('image/') ||
+    type.startsWith('font/') ||
+    type === 'application/octet-stream' ||
+    type === 'binary/octet-stream'
+  )
+}
+
 function shouldInspectBody(url: string, contentType?: string): boolean {
+  if (STREAM_SEGMENT_RE.test(url) || MEDIA_EXTENSIONS_RE.test(url)) {
+    return false
+  }
+  if (isBinaryOrMediaContentType(contentType)) {
+    return false
+  }
   const type = contentType?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
   const kind = classifyMediaUrl(url, contentType)
-  return (
-    kind === 'hls' ||
-    kind === 'dash' ||
-    type === 'application/json' ||
-    type.endsWith('+json') ||
-    type === 'application/xml' ||
-    type === 'text/xml' ||
-    type === 'text/plain' ||
-    type === 'application/octet-stream'
-  )
+  if (kind === 'hls' || kind === 'dash') {
+    return true
+  }
+  if (
+    type === 'application/vnd.apple.mpegurl' ||
+    type === 'application/x-mpegurl' ||
+    type === 'audio/x-mpegurl' ||
+    type === 'application/dash+xml'
+  ) {
+    return true
+  }
+  if (type === 'application/json' || type.endsWith('+json')) {
+    return true
+  }
+  if (type === 'application/xml' || type === 'text/xml') {
+    return true
+  }
+  if (type === 'text/plain') {
+    return /\.(?:m3u8|mpd)(?:$|[?#])/i.test(url)
+  }
+  return false
 }
 
 /**
@@ -850,9 +883,14 @@ export function installSniffer(
   ) {
     // Call before adding Promise handlers so a patched/native synchronous
     // throw keeps exactly the same observable semantics.
-    const result = Reflect.apply(origFetch, this, args)
+    const receiver = this ?? window
+    const result = Reflect.apply(origFetch, receiver, args)
     return result.then((response) => {
       if (!active) return response
+      // Never inspect non-OK or partial responses (HTTP 206, 204, 304, etc.)
+      // Streaming media chunk downloads use range requests (206) and must never
+      // be cloned or teed.
+      if (response.status !== 200) return response
       try {
         const requestUrl = fetchRequestUrl(args[0])
         const responseUrl = response.url || requestUrl

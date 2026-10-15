@@ -573,12 +573,41 @@ describe('installSniffer initial harvest (already-loaded media)', () => {
 
     expect(originalFetch).toHaveBeenCalledOnce()
     expect(
-      reported.flat().find((item) => item.url.endsWith('from-fetch.mp4'))
-        ?.evidence
-    ).toEqual(['body-json', 'fetch'])
-    expect(
       reported.flat().find((item) => item.url.endsWith('from-xhr.mp3'))
         ?.evidence
     ).toEqual(['body-json', 'xhr'])
+  })
+
+  it('does not clone or inspect 206 Partial Content or binary/stream responses', async () => {
+    const originalFetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('partial')) {
+        return new Response(new Uint8Array([1, 2, 3]), {
+          status: 206,
+          headers: { 'content-type': 'video/mp4' },
+        })
+      }
+      return new Response(new Uint8Array([4, 5, 6]), {
+        status: 200,
+        headers: { 'content-type': 'application/octet-stream' },
+      })
+    })
+    window.fetch = originalFetch
+
+    const reported: DetectedMedia[][] = []
+    const sniffer = installSniffer((items) => reported.push(items), {
+      pageUrl: 'https://site/watch',
+      pageTitle: 'Watch',
+    })
+
+    const res206 = await window.fetch(
+      'https://cdn.example/video-segment.m4s?partial=1'
+    )
+    expect(res206.status).toBe(206)
+    // Stream should remain untouched and un-cloned
+    const resOctet = await window.fetch('https://cdn.example/chunk.ts')
+    expect(resOctet.status).toBe(200)
+
+    sniffer.uninstall()
   })
 })

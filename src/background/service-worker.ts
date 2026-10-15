@@ -748,8 +748,11 @@ const popupDownloads = createPopupDownloadHandlers({
   mediaCredentialStore,
   extensionId,
   extensionBaseUrl: browser.runtime.getURL(''),
-  getActiveTabs: () =>
-    browser.tabs.query({ active: true, currentWindow: true }),
+  getActiveTabs: async () => {
+    const tabs = await browser.tabs.query({ active: true, currentWindow: true })
+    if (tabs.length > 0 && tabs[0]?.url) return tabs
+    return browser.tabs.query({ active: true, lastFocusedWindow: true })
+  },
   cookieApi: browser.cookies as unknown as Parameters<
     typeof createPopupDownloadHandlers
   >[0]['cookieApi'],
@@ -759,6 +762,13 @@ const popupDownloads = createPopupDownloadHandlers({
 })
 bus.on('bg.submitMedia', popupDownloads.submitMedia)
 bus.on('bg.resolvePageDownload', popupDownloads.resolvePageDownload)
+bus.on('bg.grabberSnapshot', popupDownloads.grabberSnapshot)
+bus.on('bg.grabberSubmit', popupDownloads.grabberSubmit)
+bus.on('bg.grabberFormats', popupDownloads.grabberFormats)
+bus.on(
+  'bg.grabberResolvePageDownload',
+  popupDownloads.grabberResolvePageDownload
+)
 
 bus.attach()
 
