@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { installGrabOverlay } from '../grab-overlay'
+import { installGrabOverlay } from '@/content/grab-overlay'
 
 describe('grab-overlay playback transition', () => {
   beforeEach(() => {
