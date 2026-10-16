@@ -303,6 +303,9 @@ export function installGrabOverlay(): void {
   let busy = false
   let toastTimer: ReturnType<typeof setTimeout> | null = null
   let pillElement: HTMLElement | null = null
+  /** The open panel's scroll container, and where the reader left it. */
+  let listElement: HTMLElement | null = null
+  let listScrollTop = 0
   // Last yt-dlp format listing, valid for the URL it was fetched for.
   let formats: MessageResponse<'bg.grabberFormats'>['formats'] | null = null
   let formatsForUrl: string | null = null
@@ -345,6 +348,12 @@ export function installGrabOverlay(): void {
   const render = (): void => {
     const content = hasContent()
     lastHasContent = content
+    // The overlay repaints on every 2s poll and on each playback/format event,
+    // and each repaint rebuilds the panel from scratch. Carry the open list's
+    // scroll position onto the rebuilt list, otherwise a reader who scrolled
+    // down is snapped back to the top of the list on the next tick.
+    listScrollTop = panelOpen && listElement ? listElement.scrollTop : 0
+    listElement = null
     wrap.replaceChildren()
     pillElement = null
     if (!content) {
@@ -366,6 +375,7 @@ export function installGrabOverlay(): void {
 
       const list = document.createElement('div')
       list.className = 'list'
+      listElement = list
       const appendNote = (text: string): void => {
         const note = document.createElement('div')
         note.className = 'row note'
@@ -455,6 +465,9 @@ export function installGrabOverlay(): void {
       }
       panel.appendChild(list)
       wrap.appendChild(panel)
+      // Restore only once the rebuilt list is in the document — a detached
+      // element would drop the assignment.
+      list.scrollTop = listScrollTop
     }
 
     const pill = document.createElement('button')

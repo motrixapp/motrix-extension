@@ -262,4 +262,37 @@ describe('grab-overlay playback transition', () => {
     expect(wrap.hidden).toBe(true)
     expect(wrap.querySelector('.pill')).toBeNull()
   })
+
+  it('keeps the open panel list scrolled where the reader left it', async () => {
+    installGrabOverlay()
+    const host = document.getElementById('motrix-grab-overlay') as any
+    const shadow = host.__motrixGrabShadow as ShadowRoot
+    const wrap = shadow.querySelector('.wrap') as HTMLElement
+
+    const video = createVideo()
+    document.body.appendChild(video)
+    video.dispatchEvent(new Event('play', { bubbles: false }))
+    await vi.advanceTimersByTimeAsync(2000)
+    await Promise.resolve()
+
+    const pill = wrap.querySelector('.pill') as HTMLButtonElement
+    expect(pill).not.toBeNull()
+    pill.click()
+    await Promise.resolve()
+    await vi.advanceTimersByTimeAsync(100)
+
+    const list = wrap.querySelector('.list') as HTMLElement
+    expect(list).not.toBeNull()
+    list.scrollTop = 120
+
+    // The overlay repaints on its 2s poll while the panel is open. The rebuilt
+    // list must not throw the reader back to the top.
+    await vi.advanceTimersByTimeAsync(2000)
+    await Promise.resolve()
+
+    const rebuilt = wrap.querySelector('.list') as HTMLElement
+    expect(rebuilt).not.toBeNull()
+    expect(rebuilt).not.toBe(list)
+    expect(rebuilt.scrollTop).toBe(120)
+  })
 })
