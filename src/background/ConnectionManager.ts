@@ -293,6 +293,8 @@ export interface ConnectionManagerOptions {
 
 const DEFAULT_REQUEST_TIMEOUT_MS = 15_000
 const DEFAULT_INITIALIZE_TIMEOUT_MS = 90_000
+/** Bounded wait for the fork-local loopback pairing-code auto-fill. */
+const PAIRING_CODE_LOOKUP_TIMEOUT_MS = 3_000
 
 export type BackendCompatibilityFailureReason =
   | 'backendUpgradeRequired'
@@ -823,7 +825,8 @@ export class ConnectionManager {
    */
   private wrapPairingCodeSource(
     source: PairingCodeSource,
-    scope: EndpointAttemptScope
+    scope: EndpointAttemptScope,
+    preResolve?: (request: PairingCodeRequest) => Promise<string | null>
   ): PairingCodeSource {
     if (typeof source !== 'function') return source
     const provider: PairingCodeProvider = async (request) => {
@@ -836,7 +839,22 @@ export class ConnectionManager {
       this.pendingPairingCode = pending
       this.setState('awaiting-code')
       try {
-        return await source(request)
+        // Fork-local loopback auto-fill runs after the state transition so a
+        // slow/unreachable endpoint can never delay `awaiting-code`. It races
+        // the manual prompt (already pending), so whichever yields a code first
+        // wins: the auto-fill in the normal case, the user's typed entry
+        // otherwise — and a hanging auto-fill can never block a typed code.
+        const manual = source(request)
+        if (preResolve === undefined) return await manual
+        const injected = await Promise.race([
+          preResolve(request).catch(() => null),
+          manual.then(
+            () => null,
+            () => null
+          ),
+        ])
+        if (injected !== null) return injected
+        return await manual
       } finally {
         // A stopped attempt's provider cannot be cancelled. If a replacement
         // attempt has already published its own prompt, the old provider's
@@ -854,6 +872,43 @@ export class ConnectionManager {
       }
     }
     return provider
+  }
+
+  /**
+   * Fork-local loopback auto-fill: fetch the pending PAKE code for `nonce` from
+   * the desktop's `POST /pairing-code` so the user never retypes it. Uses the
+   * same loopback + `X-Motrix-Bridge` non-simple-header protections as §4.2
+   * `/nonce`. Returns null on any failure (older desktop, endpoint disabled,
+   * no pending prompt) so the caller falls back to the manual prompt.
+   */
+  private async tryLoopbackPairingCode(
+    port: number,
+    nonce: string
+  ): Promise<string | null> {
+    if (!Number.isSafeInteger(port) || port <= 0 || nonce.length === 0) {
+      return null
+    }
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:${port}/pairing-code?nonce=${encodeURIComponent(nonce)}`,
+        {
+          method: 'POST',
+          headers: { 'X-Motrix-Bridge': '1' },
+          cache: 'no-store',
+          redirect: 'error',
+          signal: AbortSignal.timeout(PAIRING_CODE_LOOKUP_TIMEOUT_MS),
+        }
+      )
+      if (!response.ok) return null
+      const body: unknown = await response.json()
+      const code =
+        body && typeof body === 'object'
+          ? (body as { code?: unknown }).code
+          : undefined
+      return typeof code === 'string' && code.length > 0 ? code : null
+    } catch {
+      return null
+    }
   }
 
   /** Records an explicit candidate choice (from `bg.chooseCandidate`) for
@@ -2102,11 +2157,6 @@ export class ConnectionManager {
         'first-pair requires a pairing code source; none configured'
       )
     }
-    const codeSource = this.wrapPairingCodeSource(
-      this.opts.pairingCodeSource,
-      scope
-    )
-
     // One ephemeral keypair per real first-pair attempt. The public half goes
     // to the Native Host; the private half never leaves this call and is
     // forwarded to PairingFlow only if the host actually returned a ticket.
@@ -2135,6 +2185,18 @@ export class ConnectionManager {
     if (withNonce === null || withNonce.nonce === undefined) {
       throw new Error('could not obtain a §4.2 pairing nonce')
     }
+    // Loopback auto-fill: try the desktop's `/pairing-code` for this attempt's
+    // nonce before asking the user — the code only exists once the §7.1 prompt
+    // is queued, which is why the lookup runs lazily inside the provider. Falls
+    // back to the manual prompt when the desktop does not answer (older build,
+    // endpoint disabled, or non-loopback endpoint).
+    const pairPort = withNonce.wsPort
+    const pairNonce = withNonce.nonce
+    const codeSource = this.wrapPairingCodeSource(
+      this.opts.pairingCodeSource,
+      scope,
+      () => this.tryLoopbackPairingCode(pairPort, pairNonce)
+    )
     // This is the decision point the `degraded` field doc refers to:
     // `withNonce` is exactly what gets passed as `discovery` below, and
     // `PairingFlow.run` defaults `nmTicket` from `discovery.nmTicket` when
