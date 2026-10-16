@@ -107,14 +107,6 @@ function pickTargetVideo(): HTMLVideoElement | null {
   return best
 }
 
-function hasPlayingVideo(): boolean {
-  const videos = document.querySelectorAll('video')
-  for (const video of videos) {
-    if (!video.paused && !video.ended && video.readyState >= 2) return true
-  }
-  return false
-}
-
 function ensureHost(): HostElement {
   const existing = document.getElementById(HOST_ID)
   if (existing) return existing as HostElement
@@ -133,7 +125,7 @@ function ensureHost(): HostElement {
 const STYLE = `
   :host { all: initial; }
   .wrap {
-    position: fixed; left: 0; top: 0;
+    position: fixed;
     display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     font-size: 13px; color: #fff; direction: ltr;
@@ -225,8 +217,12 @@ export function installGrabOverlay(): void {
   toast.hidden = true
   toast.setAttribute('role', 'status')
 
-  const hasContent = (): boolean =>
-    items.length > 0 || hasPlayingVideo() || pickTargetVideo() !== null
+  // The overlay is a video affordance (IDM/Neat style), so it exists only while
+  // a sizeable, on-screen <video> can anchor it. Pages that only sniff media
+  // (no video element) keep their rows in the popup instead of floating a pill
+  // over arbitrary content — that corner fallback also stretched the fixed
+  // `.wrap` across the viewport and swallowed every click.
+  const hasContent = (): boolean => pickTargetVideo() !== null
 
   let lastHasContent = false
 
@@ -381,31 +377,31 @@ export function installGrabOverlay(): void {
 
   /**
    * Anchor the pill to the playing video's top-right corner (IDM/Neat style),
-   * shifting up when the open panel would push it out of view. Falls back to
-   * the screen corner when the page has no anchorable <video>. The whole wrap
-   * is hidden while the anchor video is scrolled off-screen.
+   * shifting up when the open panel would push it out of view. With no
+   * anchorable video on screen the whole overlay is hidden — it never falls
+   * back to a floating corner pill, which would both float over non-video pages
+   * and (when its left/top fell through to the stylesheet defaults) stretch the
+   * fixed, `pointer-events:auto` wrap across the viewport, blocking every click.
    */
   const position = (): void => {
     const video = pickTargetVideo()
-    const wrapWidth = wrap.offsetWidth
-    const wrapHeight = wrap.offsetHeight
-    const pillHeight = pillElement?.offsetHeight ?? 36
     if (!video) {
-      wrap.hidden = !hasContent()
-      wrap.style.left = ''
-      wrap.style.top = ''
-      wrap.style.right = `${EDGE_INSET + 4}px`
-      wrap.style.bottom = `${EDGE_INSET + 4}px`
+      wrap.hidden = true
       return
     }
     const rect = video.getBoundingClientRect()
+    const pillHeight = pillElement?.offsetHeight ?? 36
     const offscreen =
       rect.bottom < pillHeight + 2 * EDGE_INSET ||
       rect.top > window.innerHeight - EDGE_INSET ||
       rect.right < EDGE_INSET ||
       rect.left > window.innerWidth - EDGE_INSET
-    wrap.hidden = offscreen || !hasContent()
+    wrap.hidden = offscreen
     if (offscreen) return
+    // Measure only once visible: a display:none wrap reports 0x0, which would
+    // mis-anchor the pill on the transition from hidden back on-screen.
+    const wrapWidth = wrap.offsetWidth
+    const wrapHeight = wrap.offsetHeight
     let top = rect.top + EDGE_INSET
     if (panelOpen) top -= wrapHeight - pillHeight + 8
     top = Math.max(
@@ -419,8 +415,6 @@ export function installGrabOverlay(): void {
         window.innerWidth - wrapWidth - EDGE_INSET
       )
     )
-    wrap.style.right = ''
-    wrap.style.bottom = ''
     wrap.style.left = `${Math.round(left)}px`
     wrap.style.top = `${Math.round(top)}px`
   }

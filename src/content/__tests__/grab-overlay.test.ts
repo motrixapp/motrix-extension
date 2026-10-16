@@ -118,4 +118,67 @@ describe('grab-overlay playback transition', () => {
       })
     )
   })
+
+  it('stays hidden when the page only has sniffed media and no video element', async () => {
+    chrome.runtime.sendMessage = vi.fn(async (message: any) => {
+      if (message?.kind === 'bg.grabberSnapshot') {
+        return {
+          connected: true,
+          media: [{ key: 'm-1', label: 'clip.mp4', kind: 'video' }],
+        }
+      }
+      if (message?.kind === 'bg.grabberFormats') {
+        return {
+          connected: true,
+          formats: { available: false, entries: [], reason: 'test' },
+        }
+      }
+      return undefined
+    }) as any
+
+    installGrabOverlay()
+    await vi.advanceTimersByTimeAsync(2000)
+
+    const host = document.getElementById('motrix-grab-overlay') as any
+    const shadow = host.__motrixGrabShadow as ShadowRoot
+    const wrap = shadow.querySelector('.wrap') as HTMLElement
+
+    // No video to anchor to: the overlay must be hidden rather than float a
+    // clickable pill over the page (the bug that blocked clicks on every tab).
+    expect(wrap.hidden).toBe(true)
+    expect(wrap.querySelector('.pill')).toBeNull()
+  })
+
+  it('hides when the video scrolls off-screen instead of falling back to a corner pill', async () => {
+    installGrabOverlay()
+    const host = document.getElementById('motrix-grab-overlay') as any
+    const shadow = host.__motrixGrabShadow as ShadowRoot
+    const wrap = shadow.querySelector('.wrap') as HTMLElement
+
+    const video = createVideo()
+    document.body.appendChild(video)
+    video.dispatchEvent(new Event('play'))
+    await vi.advanceTimersByTimeAsync(2000)
+
+    expect(wrap.querySelector('.pill')).not.toBeNull()
+    expect(wrap.hidden).toBe(false)
+
+    // Scroll the video fully out of view.
+    video.getBoundingClientRect = () =>
+      ({
+        top: -1000,
+        left: 100,
+        right: 740,
+        bottom: -900,
+        width: 640,
+        height: 360,
+      }) as DOMRect
+    video.dispatchEvent(new Event('pause'))
+
+    expect(wrap.hidden).toBe(true)
+    expect(wrap.querySelector('.pill')).toBeNull()
+    // Never re-anchors to a viewport-stretching corner overlay.
+    expect(wrap.style.right).toBe('')
+    expect(wrap.style.bottom).toBe('')
+  })
 })
