@@ -181,4 +181,85 @@ describe('grab-overlay playback transition', () => {
     expect(wrap.style.right).toBe('')
     expect(wrap.style.bottom).toBe('')
   })
+
+  function createEmbedIframe(src: string): HTMLIFrameElement {
+    const frame = document.createElement('iframe')
+    frame.setAttribute('src', src)
+    frame.getBoundingClientRect = () =>
+      ({
+        top: 120,
+        left: 120,
+        right: 973,
+        bottom: 600,
+        width: 853,
+        height: 480,
+      }) as DOMRect
+    return frame
+  }
+
+  it('anchors the pill to a cross-origin embed player when the page has no video', async () => {
+    installGrabOverlay()
+    const host = document.getElementById('motrix-grab-overlay') as any
+    const shadow = host.__motrixGrabShadow as ShadowRoot
+    const wrap = shadow.querySelector('.wrap') as HTMLElement
+
+    const embedUrl = 'https://ok.ru/videoembed/15920023603899'
+    document.body.appendChild(createEmbedIframe(embedUrl))
+    await vi.advanceTimersByTimeAsync(2000)
+
+    expect(wrap.hidden).toBe(false)
+    expect(wrap.querySelector('.pill')).not.toBeNull()
+    // Formats are listed for the player URL, not the surrounding article.
+    expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'bg.grabberFormats',
+        payload: expect.objectContaining({ url: embedUrl }),
+      })
+    )
+  })
+
+  it('submits the embed player URL for resolution when anchored to it', async () => {
+    installGrabOverlay()
+    const host = document.getElementById('motrix-grab-overlay') as any
+    const shadow = host.__motrixGrabShadow as ShadowRoot
+    const wrap = shadow.querySelector('.wrap') as HTMLElement
+
+    const embedUrl = 'https://ok.ru/videoembed/15920023603899'
+    document.body.appendChild(createEmbedIframe(embedUrl))
+    await vi.advanceTimersByTimeAsync(2000)
+
+    const pill = wrap.querySelector('.pill') as HTMLButtonElement
+    pill.click()
+    await Promise.resolve()
+    await vi.advanceTimersByTimeAsync(100)
+
+    const row = wrap.querySelector(
+      '.panel .row:not(.note)'
+    ) as HTMLButtonElement
+    row.click()
+    await Promise.resolve()
+    await vi.advanceTimersByTimeAsync(100)
+
+    expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'bg.grabberResolvePageDownload',
+        payload: expect.objectContaining({ pageUrl: embedUrl }),
+      })
+    )
+  })
+
+  it('does not anchor to a large non-player iframe on a page with no media', async () => {
+    installGrabOverlay()
+    const host = document.getElementById('motrix-grab-overlay') as any
+    const shadow = host.__motrixGrabShadow as ShadowRoot
+    const wrap = shadow.querySelector('.wrap') as HTMLElement
+
+    document.body.appendChild(
+      createEmbedIframe('https://maps.example.com/embed?q=here')
+    )
+    await vi.advanceTimersByTimeAsync(2000)
+
+    expect(wrap.hidden).toBe(true)
+    expect(wrap.querySelector('.pill')).toBeNull()
+  })
 })

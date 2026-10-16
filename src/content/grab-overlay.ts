@@ -33,6 +33,48 @@ const FORMATS_TTL_MS = 60_000
 /** Videos smaller than this (CSS px) are treated as decorative, not content. */
 const MIN_VIDEO_WIDTH = 120
 const MIN_VIDEO_HEIGHT = 80
+/** A cross-origin player <iframe> must be at least this large to anchor to. */
+const MIN_EMBED_WIDTH = 240
+const MIN_EMBED_HEIGHT = 135
+/**
+ * Hosts that serve an embedded player we cannot introspect (cross-origin) but
+ * can still anchor to and hand to the desktop's yt-dlp resolver. Only needed
+ * when the sniffer found no media of its own — a page with sniffed media also
+ * anchors to its embed (any host), which keeps non-listed players working.
+ */
+const EMBED_HOST_SUFFIXES = [
+  'youtube.com',
+  'youtube-nocookie.com',
+  'player.vimeo.com',
+  'vimeo.com',
+  'dailymotion.com',
+  'dai.ly',
+  'ok.ru',
+  'facebook.com',
+  'fb.watch',
+  'streamable.com',
+  'rumble.com',
+  'odysee.com',
+  'bitchute.com',
+  'twitter.com',
+  'x.com',
+  'instagram.com',
+  'tiktok.com',
+  'vidara.to',
+  'streamtape.com',
+  'streamtape.to',
+  'dood.to',
+  'doodstream.com',
+  'vidsrc.to',
+  'vidsrc.me',
+  'vidsrc.xyz',
+  'filemoon.to',
+  'filemoon.sx',
+  'mixdrop.co',
+  'mixdrop.to',
+  'upstream.to',
+  'mp4upload.com',
+]
 
 type Snapshot = MessageResponse<'bg.grabberSnapshot'>
 type GrabItem = Snapshot['media'][number]
@@ -102,6 +144,61 @@ function pickTargetVideo(): HTMLVideoElement | null {
     if (score > bestScore) {
       bestScore = score
       best = video
+    }
+  }
+  return best
+}
+
+/** Absolute http(s) src of an iframe, or null when missing/non-http(s). */
+function frameSrc(frame: HTMLIFrameElement): string | null {
+  const raw = frame.getAttribute('src')?.trim()
+  if (!raw) return null
+  try {
+    const url = new URL(raw, location.href)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+      ? url.toString()
+      : null
+  } catch {
+    return null
+  }
+}
+
+function isEmbedHost(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase()
+    return EMBED_HOST_SUFFIXES.some((s) => host === s || host.endsWith(`.${s}`))
+  } catch {
+    return false
+  }
+}
+
+/**
+ * The embedded player worth anchoring to when the page has no <video> of its
+ * own — a large, on-screen, video-shaped <iframe>. Anchoring is restricted to a
+ * known embed host, or to any host when the tab already has sniffed media, so a
+ * page's decorative/ads/map iframes do not get a download pill.
+ */
+function pickTargetFrame(hasSniffedMedia: boolean): HTMLIFrameElement | null {
+  const frames = document.querySelectorAll('iframe')
+  let best: HTMLIFrameElement | null = null
+  let bestArea = 0
+  for (const frame of frames) {
+    const rect = frame.getBoundingClientRect()
+    if (rect.width < MIN_EMBED_WIDTH || rect.height < MIN_EMBED_HEIGHT) continue
+    const ratio = rect.width / rect.height
+    if (ratio < 1.2 || ratio > 2.4) continue
+    const visibleWidth =
+      Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0)
+    const visibleHeight =
+      Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
+    if (visibleWidth <= 0 || visibleHeight <= 0) continue
+    const src = frameSrc(frame)
+    if (!src) continue
+    if (!hasSniffedMedia && !isEmbedHost(src)) continue
+    const area = visibleWidth * visibleHeight
+    if (area > bestArea) {
+      bestArea = area
+      best = frame
     }
   }
   return best
@@ -217,12 +314,26 @@ export function installGrabOverlay(): void {
   toast.hidden = true
   toast.setAttribute('role', 'status')
 
+  /**
+   * Where the pill anchors: a same-document <video>, otherwise a large
+   * on-screen embedded-player <iframe>. `frameUrl` is non-null only for the
+   * iframe case — the URL the desktop should resolve in place of the
+   * surrounding article page.
+   */
+  const anchor = (): { rect: DOMRect; frameUrl: string | null } | null => {
+    const video = pickTargetVideo()
+    if (video) return { rect: video.getBoundingClientRect(), frameUrl: null }
+    const frame = pickTargetFrame(items.length > 0)
+    if (!frame) return null
+    return { rect: frame.getBoundingClientRect(), frameUrl: frameSrc(frame) }
+  }
+
   // The overlay is a video affordance (IDM/Neat style), so it exists only while
-  // a sizeable, on-screen <video> can anchor it. Pages that only sniff media
-  // (no video element) keep their rows in the popup instead of floating a pill
-  // over arbitrary content — that corner fallback also stretched the fixed
-  // `.wrap` across the viewport and swallowed every click.
-  const hasContent = (): boolean => pickTargetVideo() !== null
+  // a sizeable, on-screen video (or embedded player) can anchor it. Pages with
+  // neither keep their rows in the popup instead of floating a pill over
+  // arbitrary content — that corner fallback also stretched the fixed `.wrap`
+  // across the viewport and swallowed every click.
+  const hasContent = (): boolean => anchor() !== null
 
   let lastHasContent = false
 
@@ -384,12 +495,12 @@ export function installGrabOverlay(): void {
    * fixed, `pointer-events:auto` wrap across the viewport, blocking every click.
    */
   const position = (): void => {
-    const video = pickTargetVideo()
-    if (!video) {
+    const target = anchor()
+    if (!target) {
       wrap.hidden = true
       return
     }
-    const rect = video.getBoundingClientRect()
+    const rect = target.rect
     const pillHeight = pillElement?.offsetHeight ?? 36
     const offscreen =
       rect.bottom < pillHeight + 2 * EDGE_INSET ||
@@ -485,9 +596,13 @@ export function installGrabOverlay(): void {
     busy = true
     render()
     try {
+      const frameUrl = anchor()?.frameUrl ?? null
       await send('bg.grabberResolvePageDownload', {
         idempotencyKey: newDownloadOperationId(),
         ...(qualityLabel ? { qualityLabel } : {}),
+        // Present only when anchored to an embedded player; the background
+        // validates it belongs to this tab before honouring it.
+        ...(frameUrl ? { pageUrl: frameUrl } : {}),
       })
       panelOpen = false
       showToast(t('grabberSent', 'Sent to Motrix'))
@@ -528,7 +643,9 @@ export function installGrabOverlay(): void {
     if (panelOpen) render()
     try {
       const response = await send('bg.grabberFormats', {
-        url: location.href,
+        // Resolve the embedded player's URL when the pill is anchored to one,
+        // so the desktop lists that player's qualities rather than the article's.
+        url: anchor()?.frameUrl ?? location.href,
       })
       formats = response.formats
       formatsForUrl = location.href

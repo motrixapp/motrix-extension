@@ -406,6 +406,14 @@ export interface MessageMap {
   'bg.grabberResolvePageDownload': {
     request: {
       qualityLabel?: import('@/shared/mediaFormats').QualityLabel
+      /**
+       * Target URL for resolution. The overlay sends the embedded player's URL
+       * when it anchored to a cross-origin player <iframe> (e.g.
+       * ok.ru/videoembed/...) so the desktop resolves the actual media instead
+       * of the surrounding article page. The background only honours it after
+       * confirming it belongs to a frame of the sender's own tab.
+       */
+      pageUrl?: string
     } & CallerIdempotencyRequest
     response: import('@motrix/mdxp').DownloadSubmitResult
   }

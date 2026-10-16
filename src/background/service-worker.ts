@@ -759,6 +759,11 @@ const popupDownloads = createPopupDownloadHandlers({
   browserKind: __BROWSER__,
   userAgent: navigator.userAgent,
   webStore: isWebStoreBuild(),
+  getAllFrames: async ({ tabId }) => {
+    const getAllFrames = browser.webNavigation?.getAllFrames
+    if (!getAllFrames) return null
+    return (await getAllFrames({ tabId })) ?? null
+  },
 })
 bus.on('bg.submitMedia', popupDownloads.submitMedia)
 bus.on('bg.resolvePageDownload', popupDownloads.resolvePageDownload)

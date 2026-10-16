@@ -43,6 +43,14 @@ interface PopupDownloadDeps {
   browserKind: BrowserKind
   userAgent: string
   webStore: boolean
+  /**
+   * Lists a tab's frames (with their document URLs) so an embed-player URL sent
+   * by the grab overlay can be validated as belonging to the sender's own tab.
+   * Defaults to `browser.webNavigation.getAllFrames` in the service worker.
+   */
+  getAllFrames?: (details: {
+    tabId: number
+  }) => Promise<Array<{ url?: string }> | null>
 }
 
 /** Trusted popup intents capture their source before wake, then collect sensitive
@@ -58,6 +66,7 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     browserKind,
     userAgent,
     webStore,
+    getAllFrames,
   } = deps
   const assertSender = (sender: Browser.runtime.MessageSender): void => {
     if (!isExtensionPageSender(sender, deps.extensionId, deps.extensionBaseUrl))
@@ -81,6 +90,46 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     }
     return tab as Browser.tabs.Tab & { id: number; url: string }
   }
+
+  const isHttpUrl = (value: string): boolean => /^https?:/i.test(value)
+  const originOf = (value: string): string | null => {
+    try {
+      return new URL(value).origin
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Resolve which URL the overlay should act on. The overlay may point at an
+   * embedded player's OWN url (a cross-origin <iframe> it anchored to), but
+   * only a URL that is the sender tab's document or shares an origin with one
+   * of that tab's frames is honoured — a page must never be able to steer the
+   * extension into resolving an unrelated third-party address. Anything else
+   * falls back to the tab URL.
+   */
+  const resolveTargetUrl = async (
+    tab: Browser.tabs.Tab & { id: number; url: string },
+    candidate: string | undefined
+  ): Promise<string> => {
+    if (!candidate || !isHttpUrl(candidate)) return tab.url
+    if (candidate === tab.url) return candidate
+    const candidateOrigin = originOf(candidate)
+    if (!candidateOrigin) return tab.url
+    try {
+      const frames = (await getAllFrames?.({ tabId: tab.id })) ?? []
+      const belongsToTab = frames.some((frame) => {
+        if (!frame.url || !isHttpUrl(frame.url)) return false
+        return (
+          frame.url === candidate || originOf(frame.url) === candidateOrigin
+        )
+      })
+      return belongsToTab ? candidate : tab.url
+    } catch {
+      return tab.url
+    }
+  }
+
   /**
    * Submit one stored media item of `queryTab`'s tab.
    *
@@ -311,7 +360,7 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
    * from the request payload.
    */
   const grabberFormats: MessageBusHandler<'bg.grabberFormats'> = async (
-    _request,
+    request,
     sender
   ) => {
     let tab: (Browser.tabs.Tab & { id: number; url: string }) | undefined
@@ -340,9 +389,13 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     if (manager.getServerCapabilities() === null) {
       return { connected: false, formats: unavailable('not-connected') }
     }
+    // The overlay sends the embedded player's URL when it anchored to a
+    // cross-origin <iframe>; resolveTargetUrl only honours it when it really
+    // belongs to the sender tab, otherwise this falls back to the tab URL.
+    const targetUrl = await resolveTargetUrl(tab, request?.url)
     try {
       const rawCookies = await capturePageCookies({
-        url: tab.url,
+        url: targetUrl,
         ...(tab.cookieStoreId ? { storeId: tab.cookieStoreId } : {}),
         browser: browserKind,
         api: cookieApi,
@@ -356,7 +409,7 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
         )
         .map((c) => ({ name: c.name.trim(), value: c.value }))
       const formats = await manager.request('media/formats', {
-        url: tab.url,
+        url: targetUrl,
         ...(cookies.length ? { cookies } : {}),
       })
       return { connected: true, formats }
@@ -383,7 +436,10 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
   > = async (request, sender) => {
     const tab = assertGrabberSender(sender)
     try {
-      const pageUrl = tab.url
+      // The overlay anchored to an embedded player sends that player's URL so
+      // the desktop resolves the real media; resolveTargetUrl rejects anything
+      // that is not a frame of the sender tab, falling back to the tab URL.
+      const pageUrl = await resolveTargetUrl(tab, request.pageUrl)
       const qualityLabel = normalizeQualityLabel(request.qualityLabel)
       const check = isResolvableVideoPage(pageUrl, webStore)
       if (!check.resolvable && !isPickerQualityHint(qualityLabel)) {
