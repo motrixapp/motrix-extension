@@ -390,11 +390,13 @@ export function installGrabOverlay(): void {
       const appendRow = (
         label: string,
         meta: string,
-        onClick: () => void
+        onClick: () => void,
+        formatKey?: string
       ): void => {
         const row = document.createElement('button')
         row.type = 'button'
         row.className = 'row'
+        if (formatKey !== undefined) row.dataset.formatKey = formatKey
         row.disabled = busy || !connected
         const text = document.createElement('span')
         text.className = 'label'
@@ -422,9 +424,14 @@ export function installGrabOverlay(): void {
       if (qualityVideos.length > 0) {
         appendSection('grabberSectionVideo', 'Video')
         for (const entry of qualityVideos) {
-          appendRow(entry.label, formatEntryDescription(entry), () => {
-            void resolvePage(entry.key as QualityLabel)
-          })
+          appendRow(
+            entry.label,
+            formatEntryDescription(entry),
+            () => {
+              void resolvePage(entry.key as QualityLabel)
+            },
+            entry.key
+          )
         }
       }
       if (qualityAudio.length > 0) {
@@ -434,9 +441,14 @@ export function installGrabOverlay(): void {
             entry.key === 'mp3'
               ? t('grabberMp3', 'MP3 (audio only)')
               : entry.label
-          appendRow(label, formatEntryDescription(entry), () => {
-            void resolvePage(entry.key as QualityLabel)
-          })
+          appendRow(
+            label,
+            formatEntryDescription(entry),
+            () => {
+              void resolvePage(entry.key as QualityLabel)
+            },
+            entry.key
+          )
         }
       }
       if (connected && formatsFlight) {

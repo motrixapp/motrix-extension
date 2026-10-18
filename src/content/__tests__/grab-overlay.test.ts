@@ -121,6 +121,64 @@ describe('grab-overlay playback transition', () => {
     )
   })
 
+  it('marks only server-provided choices even when a captured row has the same quality label', async () => {
+    chrome.runtime.sendMessage = vi.fn(async (message: any) => {
+      if (message?.kind === 'bg.grabberSnapshot')
+        return {
+          connected: true,
+          media: [
+            {
+              key: 'captured-240p',
+              label: '240p',
+              kind: 'direct',
+              height: 240,
+            },
+          ],
+        }
+      if (message?.kind === 'bg.grabberFormats')
+        return {
+          connected: true,
+          listingId: 'background-only-proof',
+          formats: {
+            available: true,
+            entries: [
+              { key: '240p', label: '240p', kind: 'video', ext: 'mp4' },
+              { key: 'mp3', label: 'MP3', kind: 'audio' },
+            ],
+          },
+        }
+      return undefined
+    }) as any
+    document.body.appendChild(createVideo())
+    installGrabOverlay()
+    await vi.advanceTimersByTimeAsync(2000)
+    const host = document.getElementById('motrix-grab-overlay') as any
+    const shadow = host.__motrixGrabShadow as ShadowRoot
+    ;(shadow.querySelector('.pill') as HTMLButtonElement).click()
+    expect(shadow.querySelectorAll('[data-format-key]')).toHaveLength(0)
+    const showQualities = [...shadow.querySelectorAll('button')].find(
+      (row) => row.textContent === 'Show qualities'
+    )!
+    showQualities.click()
+    await vi.advanceTimersByTimeAsync(100)
+    const choices = [
+      ...shadow.querySelectorAll<HTMLButtonElement>('[data-format-key]'),
+    ]
+    expect(choices.map((row) => row.dataset.formatKey)).toEqual(['240p', 'mp3'])
+    expect(choices[0]?.textContent).toBe('240pmp4')
+    const captured = [...shadow.querySelectorAll('button')].find(
+      (row) => row.textContent === '240p240p'
+    )!
+    expect(captured).toBeDefined()
+    expect(captured.hasAttribute('data-format-key')).toBe(false)
+    const action = [...shadow.querySelectorAll('button')].find(
+      (row) => row.textContent === 'Show qualities'
+    )!
+    expect(action.hasAttribute('data-format-key')).toBe(false)
+    for (const row of choices)
+      expect(Object.keys(row.dataset)).toEqual(['formatKey'])
+  })
+
   it('stays hidden when the page only has sniffed media and no video element', async () => {
     chrome.runtime.sendMessage = vi.fn(async (message: any) => {
       if (message?.kind === 'bg.grabberSnapshot') {
