@@ -1,3 +1,7 @@
+import {
+  contentDispositionFilename,
+  type ResponseHeader,
+} from '@/background/capture/contentDisposition'
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import { isSensitiveDomain } from '@/background/capture/sensitiveDomains'
 import type { ConfirmationResult } from '@/background/DownloadConfirmationService'
@@ -38,7 +42,7 @@ interface EarlyRequestDetails {
   tabId: number
   originUrl?: string
   documentUrl?: string
-  responseHeaders?: { name: string; value?: string }[]
+  responseHeaders?: ResponseHeader[]
 }
 
 const BINARY_DOCUMENT_TYPES = new Set([
@@ -91,27 +95,6 @@ function isCandidate(details: EarlyRequestDetails): boolean {
   return BINARY_DOCUMENT_TYPES.has(
     header(details, 'content-type').split(';')[0]?.trim().toLowerCase() ?? ''
   )
-}
-
-/** Extracts the real filename from a Content-Disposition header (RFC 5987
- * filename* takes precedence over the quoted plain form). Download links
- * like download.jsp?id=... name the file only through this header. */
-function filenameFromDisposition(disposition: string | null): string | null {
-  if (!disposition) return null
-  const star = /filename\*\s*=\s*(?:UTF-8|utf-8)''([^;]+)/i.exec(disposition)
-  if (star) {
-    const raw = star[1]?.trim().replace(/^"|"$/g, '')
-    if (raw) {
-      try {
-        return decodeURIComponent(raw)
-      } catch {
-        return raw
-      }
-    }
-    return null
-  }
-  const plain = /filename\s*=\s*("?)([^";]+)\1/i.exec(disposition)
-  return plain ? (plain[2]?.trim() ?? null) : null
 }
 
 interface Prepared {
@@ -249,9 +232,8 @@ export function registerWebRequestEarlyTakeover(
         : undefined
     const length = Number(header(details, 'content-length'))
     const referrer = details.originUrl ?? details.documentUrl ?? tab?.url
-    const suggested = filenameFromDisposition(
-      header(details, 'content-disposition')
-    )
+    // This interception path is Firefox-only: header values are raw bytes.
+    const suggested = contentDispositionFilename(details.responseHeaders, true)
     const target = normalizeTarget({
       url: details.url,
       ...(referrer ? { referrer } : {}),

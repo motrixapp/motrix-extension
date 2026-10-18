@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   MAX_PENDING_REQUEST_HEADERS,
   NETWORK_MEDIA_REQUEST_TYPES,
@@ -8,6 +8,8 @@ import {
   registerNetworkMediaCapture,
 } from '@/background/networkMediaCapture'
 import { extensionBrowser } from '@/shared/browser'
+
+afterEach(() => vi.unstubAllGlobals())
 
 function request(
   changes: Partial<NetworkRequestDetails> = {}
@@ -497,6 +499,56 @@ describe('registerNetworkMediaCapture', () => {
         ],
       }),
     ])
+  })
+
+  it.each([
+    ['firefox', Buffer.from('中文.mp4').toString('latin1'), '中文.mp4'],
+    ['chromium', '中文.mp4', '中文.mp4'],
+    ['chromium', 'Ã©.mp4', 'Ã©.mp4'],
+    ['firefox', 'résumé.mp4', 'résumé.mp4'],
+  ])(
+    'decodes %s response filenames without changing Unicode',
+    async (browser, value, expected) => {
+      vi.stubGlobal('__BROWSER__', browser)
+      const harness = setup()
+      harness.headersListener()?.(
+        response({
+          responseHeaders: [
+            { name: 'Content-Type', value: 'video/mp4' },
+            {
+              name: 'Content-Disposition',
+              value: `attachment; filename="${value}"`,
+            },
+          ],
+        })
+      )
+      await vi.waitFor(() => expect(harness.addForPage).toHaveBeenCalledOnce())
+      expect(harness.addForPage.mock.calls[0]?.[2]?.[0]).toMatchObject({
+        suggestedFilename: expected,
+        evidence: expect.arrayContaining(['content-disposition']),
+      })
+    }
+  )
+
+  it('uses a binary Content-Disposition response filename', async () => {
+    const harness = setup()
+    harness.headersListener()?.(
+      response({
+        responseHeaders: [
+          { name: 'Content-Type', value: 'video/mp4' },
+          {
+            name: 'Content-Disposition',
+            binaryValue: Array.from(
+              Buffer.from('attachment; filename="中文.mp4"')
+            ),
+          },
+        ],
+      })
+    )
+    await vi.waitFor(() => expect(harness.addForPage).toHaveBeenCalledOnce())
+    expect(harness.addForPage.mock.calls[0]?.[2]?.[0]).toMatchObject({
+      suggestedFilename: '中文.mp4',
+    })
   })
 
   it('removes bidi controls and replaces a dangerous filename using response MIME', async () => {

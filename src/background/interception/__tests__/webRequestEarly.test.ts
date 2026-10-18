@@ -308,6 +308,11 @@ it('does not replay an accepted task when presentation throws synchronously', as
 it.each([
   ['attachment; filename="report.zip"', 'report.zip'],
   [
+    `attachment; filename="${Buffer.from('aaa123中文.zip').toString('latin1')}"`,
+    'aaa123中文.zip',
+  ],
+  ['attachment; filename="résumé.zip"', 'résumé.zip'],
+  [
     "attachment; filename=backup.zip; filename*=UTF-8''%E6%8A%A5%E5%91%8A.zip",
     '报告.zip',
   ],
@@ -336,3 +341,28 @@ it.each([
     })
   }
 )
+
+it('submits a decoded raw UTF-8 filename in direct takeover mode', async () => {
+  await register()
+  expect(
+    await listener(
+      request({
+        url: 'https://example.com/download?id=42',
+        responseHeaders: [
+          {
+            name: 'Content-Disposition',
+            value: `attachment; filename="${Buffer.from('aaa123中文.zip').toString('latin1')}"`,
+          },
+          { name: 'Content-Length', value: '1024' },
+        ],
+      })
+    )
+  ).toEqual({ cancel: true })
+  await deliver()
+  expect(submit).toHaveBeenCalledWith(
+    expect.objectContaining({
+      meta: expect.objectContaining({ suggestedFilename: 'aaa123中文.zip' }),
+    }),
+    expect.anything()
+  )
+})
