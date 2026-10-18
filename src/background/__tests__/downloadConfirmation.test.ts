@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import { createDownloadConfirmation } from '@/background/downloadConfirmation'
+import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
+import { confirmInterceptedDownload } from '@/background/interception/confirmDownload'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import { CONFIRMATION_PORT } from '@/shared/downloadConfirmation'
+import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 
 vi.mock('@/shared/platformCapabilities', () => ({
   supportsAutoOpenPopup: () => true,
@@ -60,6 +63,78 @@ function view(windowId = 4, senderUrl = browser.runtime.getURL('popup.html')) {
   message?.({ windowId })
   return { message, disconnect, port }
 }
+it.each(['unfocused', 'open-rejected', 'handshake-timeout'])(
+  'does not show an automatic download in a manually opened popup after %s',
+  async (reason) => {
+    vi.useFakeTimers()
+    if (reason === 'unfocused')
+      vi.mocked(browser.windows.get).mockResolvedValue({
+        id: 4,
+        focused: false,
+        type: 'normal',
+      } as never)
+    if (reason === 'open-rejected')
+      vi.mocked(browser.action.openPopup).mockRejectedValue(
+        new Error('unavailable')
+      )
+    const service = createDownloadConfirmation()
+    const pending = service.request({ ...target, origin: 'auto' }, 4, actions)
+    await vi.advanceTimersByTimeAsync(5001)
+    await expect(pending).resolves.toEqual({ action: 'unavailable' })
+    const manual = view()
+    await vi.waitFor(() =>
+      expect(manual.port.postMessage).toHaveBeenLastCalledWith({ draft: null })
+    )
+    expect(actions.submit).not.toHaveBeenCalled()
+    expect(actions.browser).not.toHaveBeenCalled()
+  }
+)
+it.each([
+  { totalBytes: -1, rules: [] },
+  { totalBytes: 0, rules: [] },
+  { totalBytes: undefined, rules: [] },
+  {
+    totalBytes: 1024,
+    rules: [
+      { id: 'small', match: { minSizeMB: 10 }, action: 'chrome' as const },
+    ],
+  },
+  {
+    totalBytes: 1024,
+    rules: [
+      {
+        id: 'excluded',
+        match: { domains: ['example.com'] },
+        action: 'chrome' as const,
+      },
+    ],
+  },
+])(
+  'does not leave a draft for downloads assigned to the browser: %j',
+  async ({ totalBytes, rules }) => {
+    const service = createDownloadConfirmation()
+    const confirm = vi.fn(async (target, windowId) => {
+      await service.request(target, windowId, actions)
+    })
+    await confirmInterceptedDownload(
+      { url: target.url, totalBytes },
+      { ...TAKEOVER_DEFAULT, enabled: true, downloadMode: 'confirm', rules },
+      Promise.resolve(4),
+      {
+        confirm,
+        captureGuard: async () => ({ origin: 'auto', assertCurrent: vi.fn() }),
+      } as unknown as ChromiumInterceptionDeps
+    )
+    const manual = view()
+    await vi.waitFor(() =>
+      expect(manual.port.postMessage).toHaveBeenLastCalledWith({ draft: null })
+    )
+    expect(confirm).not.toHaveBeenCalled()
+    expect(browser.action.openPopup).not.toHaveBeenCalled()
+    expect(actions.submit).not.toHaveBeenCalled()
+    expect(actions.browser).not.toHaveBeenCalled()
+  }
+)
 it('rejects an unfocused source window instead of selecting the new focused window', async () => {
   vi.mocked(browser.windows.get).mockResolvedValue({
     id: 4,

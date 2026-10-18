@@ -165,9 +165,10 @@ export class DownloadConfirmationService {
         .catch(() => {
           // Opening is advisory once a user has already confirmed in a live view.
           if (pending.draft.phase === 'editing') {
-            // Early takeover will replay in the browser after this result.
-            // Retaining its draft would allow a second, late submission.
-            if (target.nativeDownloadCancelled)
+            // Automatic downloads continue in the browser (or are replayed
+            // after early cancellation). A retained draft would offer a
+            // duplicate download when the user later opens the popup.
+            if (target.origin === 'auto' || target.nativeDownloadCancelled)
               pending.settle({ action: 'unavailable' })
             else resolve({ action: 'unavailable' })
           }

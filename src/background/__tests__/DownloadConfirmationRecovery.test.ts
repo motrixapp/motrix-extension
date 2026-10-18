@@ -48,6 +48,22 @@ afterEach(() => {
 })
 
 describe('confirmation session recovery', () => {
+  it('removes an unavailable automatic draft from session storage before a later popup can restore it', async () => {
+    const f = fixture()
+    await f.service.ready
+    f.io.open.mockRejectedValue(new Error('unavailable'))
+    await expect(
+      f.service.request({ ...target, origin: 'auto' }, 4, f.actions, binding)
+    ).resolves.toEqual({ action: 'unavailable' })
+    await vi.waitFor(() => expect(f.saved()).toEqual([]))
+    vi.clearAllTimers()
+    const restored = new DownloadConfirmationService(f.io)
+    await restored.ready
+    expect(restored.get(4)).toBeNull()
+    expect(f.io.recover).not.toHaveBeenCalled()
+    expect(f.actions.submit).not.toHaveBeenCalled()
+    expect(f.actions.browser).not.toHaveBeenCalled()
+  })
   it('restores unsent edits, including incomplete headers, without making requests or opening a popup', async () => {
     const f = fixture()
     await f.service.ready

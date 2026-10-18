@@ -109,23 +109,31 @@ describe('download confirmation ownership', () => {
     })
     expect(io.open).not.toHaveBeenCalled()
   })
-  it('discards a cancelled-response draft before returning browser fallback', async () => {
-    const { service, target, actions, io } = fixture()
-    io.open.mockRejectedValue(new Error('unavailable'))
-    const pending = service.request(
-      { ...target, origin: 'auto', nativeDownloadCancelled: true },
-      4,
-      actions
-    )
-    const draft = service.get(4)!
-    await expect(pending).resolves.toEqual({ action: 'unavailable' })
-    expect(service.get(4)).toBeNull()
-    expect(
-      service.decide(4, draft.id, { action: 'submit', options: draft.options })
-    ).toBe(false)
-    expect(actions.submit).not.toHaveBeenCalled()
-  })
-  it('retains a recoverable draft if the popup cannot open', async () => {
+  it.each([undefined, false, true])(
+    'discards an automatic draft when the popup cannot open (native cancelled: %s)',
+    async (nativeDownloadCancelled) => {
+      const { service, target, actions, io } = fixture()
+      io.open.mockRejectedValue(new Error('unavailable'))
+      const pending = service.request(
+        { ...target, origin: 'auto', nativeDownloadCancelled },
+        4,
+        actions
+      )
+      const draft = service.get(4)!
+      await expect(pending).resolves.toEqual({ action: 'unavailable' })
+      expect(service.get(4)).toBeNull()
+      expect(
+        service.decide(4, draft.id, {
+          action: 'submit',
+          options: draft.options,
+        })
+      ).toBe(false)
+      expect(actions.submit).not.toHaveBeenCalled()
+      expect(actions.browser).not.toHaveBeenCalled()
+      expect(io.publish).toHaveBeenLastCalledWith(4, null)
+    }
+  )
+  it('retains an explicit context-menu draft if the popup cannot open', async () => {
     const { service, request, io } = fixture()
     io.open.mockRejectedValue(new Error('unavailable'))
     await expect(request()).resolves.toEqual({ action: 'unavailable' })
