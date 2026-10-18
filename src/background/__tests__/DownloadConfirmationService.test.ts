@@ -140,6 +140,89 @@ describe('download confirmation ownership', () => {
     expect(service.get(4)).not.toBeNull()
     service.close(4)
   })
+  it('ignores delivery reports for a replaced draft or another window', async () => {
+    const { service, target, actions, io } = fixture()
+    const first = service.request({ ...target, origin: 'auto' }, 4, actions)
+    const oldId = service.get(4)!.id
+    service.close(4)
+    await first
+    io.open.mockRejectedValueOnce(new Error('unavailable'))
+    const second = service.request({ ...target, origin: 'auto' }, 4, actions)
+    service.markPresented(4, oldId)
+    service.markPresented(5, service.get(4)!.id)
+    await expect(second).resolves.toEqual({ action: 'unavailable' })
+    expect(service.get(4)).toBeNull()
+  })
+  it('does not erase a new draft when the previous popup opening rejects', async () => {
+    vi.useFakeTimers()
+    const { service, target, actions, io } = fixture()
+    let rejectOpening!: (error: Error) => void
+    io.open.mockReturnValueOnce(
+      new Promise((_, reject) => {
+        rejectOpening = reject
+      })
+    )
+    const first = service.request({ ...target, origin: 'auto' }, 4, actions)
+    service.close(4)
+    await first
+    const second = service.request({ ...target, origin: 'auto' }, 4, actions)
+    const id = service.get(4)!.id
+    rejectOpening(new Error('late opening failure'))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(service.get(4)?.id).toBe(id)
+    service.close(4)
+    await second
+  })
+  it.each(['submitting', 'failed', 'unknown'] as const)(
+    'preserves a %s submission when popup opening later fails',
+    async (phase) => {
+      vi.useFakeTimers()
+      const { service, target, actions, io } = fixture()
+      let rejectOpening!: (error: Error) => void
+      io.open.mockReturnValueOnce(
+        new Promise((_, reject) => {
+          rejectOpening = reject
+        })
+      )
+      if (phase === 'submitting')
+        actions.submit.mockReturnValueOnce(new Promise(() => {}))
+      else
+        actions.submit.mockRejectedValueOnce(
+          phase === 'unknown'
+            ? new DownloadOutcomeUnknownError()
+            : new Error('rejected')
+        )
+      const settled = vi.fn()
+      const pending = service
+        .request({ ...target, origin: 'auto' }, 4, actions)
+        .then(settled)
+      const draft = service.get(4)!
+      service.decide(4, draft.id, { action: 'submit', options: draft.options })
+      await vi.advanceTimersByTimeAsync(0)
+      expect(service.get(4)?.phase).toBe(phase)
+      rejectOpening(new Error('late opening failure'))
+      await vi.advanceTimersByTimeAsync(0)
+      expect(service.get(4)?.phase).toBe(phase)
+      expect(settled).not.toHaveBeenCalled()
+      expect(actions.submit).toHaveBeenCalledOnce()
+      expect(actions.browser).not.toHaveBeenCalled()
+      service.close(4)
+      await pending
+    }
+  )
+  it('keeps the original expiry after a draft is delivered', async () => {
+    vi.useFakeTimers()
+    const { service, target, actions } = fixture()
+    const pending = service.request({ ...target, origin: 'auto' }, 4, actions)
+    const draft = service.get(4)!
+    await vi.advanceTimersByTimeAsync(CONFIRMATION_TIMEOUT_MS - 100)
+    service.markPresented(4, draft.id)
+    await vi.advanceTimersByTimeAsync(100)
+    await expect(pending).resolves.toEqual({ action: 'cancel' })
+    expect(service.get(4)).toBeNull()
+    expect(actions.submit).not.toHaveBeenCalled()
+    expect(actions.browser).not.toHaveBeenCalled()
+  })
   it('retains edits on failure, reuses the operation identity on retry, and changes it for edited options', async () => {
     const { service, request, actions } = fixture()
     actions.submit.mockRejectedValue(new Error('private URL and credentials'))

@@ -4,7 +4,10 @@ import {
 } from '@/background/DownloadConfirmationService'
 import { rpcDeadline } from '@/background/RpcRecovery'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
-import { CONFIRMATION_PORT } from '@/shared/downloadConfirmation'
+import {
+  CONFIRMATION_PORT,
+  type DownloadConfirmation,
+} from '@/shared/downloadConfirmation'
 import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
 
 export function createDownloadConfirmation(
@@ -14,13 +17,15 @@ export function createDownloadConfirmation(
   const waitingViews = new Map<number, Set<() => void>>()
   const service = new DownloadConfirmationService({
     supported: supportsAutoOpenPopup,
-    open: async (windowId, isCurrent) => {
+    open: async (windowId, needsPresentation) => {
+      if (!needsPresentation()) return
       const window = await rpcDeadline(
         browser.windows.get(windowId),
         500,
         'confirmation window'
       )
-      if (!isCurrent() || !window.focused || window.type !== 'normal')
+      if (!needsPresentation()) return
+      if (!window.focused || window.type !== 'normal')
         throw new Error('confirmation window unavailable')
       if ([...views.values()].includes(windowId)) return
       await rpcDeadline(
@@ -28,7 +33,7 @@ export function createDownloadConfirmation(
         5000,
         'confirmation popup'
       )
-      if (!isCurrent() || [...views.values()].includes(windowId)) return
+      if (!needsPresentation() || [...views.values()].includes(windowId)) return
       // A popup closed before its handshake must not occupy the window for two minutes.
       let resolveView!: () => void
       const ready = new Promise<void>((resolve) => {
@@ -48,16 +53,26 @@ export function createDownloadConfirmation(
     publish: (windowId, draft) => {
       for (const [port, id] of views) {
         if (id !== windowId) continue
-        try {
-          port.postMessage({ draft })
-        } catch {
-          views.delete(port)
-        }
+        publishToView(port, windowId, draft)
       }
     },
     userAgent: () => navigator.userAgent,
     ...(recover ? { recover, storage: browser.storage.session } : {}),
   })
+  function publishToView(
+    port: Browser.runtime.Port,
+    windowId: number,
+    draft: DownloadConfirmation | null
+  ): boolean {
+    try {
+      port.postMessage({ draft })
+      if (draft) service.markPresented(windowId, draft.id)
+      return true
+    } catch {
+      views.delete(port)
+      return false
+    }
+  }
   // Browsers without programmatic popup support cannot host this workflow.
   if (!supportsAutoOpenPopup()) return service
   browser.runtime.onConnect.addListener((port) => {
@@ -82,7 +97,7 @@ export function createDownloadConfirmation(
         void service.ready
           .then(() => {
             if (views.get(port) !== windowId) return
-            port.postMessage({ draft: service.get(windowId) })
+            if (!publishToView(port, windowId, service.get(windowId))) return
             for (const resolve of waitingViews.get(windowId) ?? []) resolve()
           })
           .catch(() => {})

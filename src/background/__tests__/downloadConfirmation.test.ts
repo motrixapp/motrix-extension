@@ -40,7 +40,10 @@ beforeEach(() => {
     },
   })
 })
-afterEach(() => vi.useRealTimers())
+afterEach(() => {
+  vi.clearAllTimers()
+  vi.useRealTimers()
+})
 function view(windowId = 4, senderUrl = browser.runtime.getURL('popup.html')) {
   let message!: (value: unknown) => void
   let disconnect!: () => void
@@ -63,6 +66,121 @@ function view(windowId = 4, senderUrl = browser.runtime.getURL('popup.html')) {
   message?.({ windowId })
   return { message, disconnect, port }
 }
+it.each([
+  { stage: 'window lookup', nativeDownloadCancelled: false },
+  { stage: 'window lookup', nativeDownloadCancelled: true },
+  { stage: 'popup opening', nativeDownloadCancelled: false },
+  { stage: 'popup opening', nativeDownloadCancelled: true },
+])(
+  'preserves a delivered draft after $stage times out (native cancelled: $nativeDownloadCancelled)',
+  async ({ stage, nativeDownloadCancelled }) => {
+    vi.useFakeTimers()
+    if (stage === 'window lookup')
+      vi.mocked(browser.windows.get).mockReturnValue(new Promise(() => {}))
+    else
+      vi.mocked(browser.action.openPopup).mockReturnValue(new Promise(() => {}))
+    const service = createDownloadConfirmation()
+    const settled = vi.fn()
+    const pending = service
+      .request(
+        { ...target, origin: 'auto', nativeDownloadCancelled },
+        4,
+        actions
+      )
+      .then(settled)
+    await vi.advanceTimersByTimeAsync(1)
+    const popup = view()
+    await vi.advanceTimersByTimeAsync(1)
+    const draft = service.get(4)!
+    expect(popup.port.postMessage).toHaveBeenLastCalledWith({ draft })
+    const options = { ...draft.options, filename: 'user-edited.zip' }
+    popup.message({ id: draft.id, decision: { action: 'edit', options } })
+    await vi.advanceTimersByTimeAsync(5001)
+    expect(service.get(4)).toMatchObject({ id: draft.id, options })
+    expect(popup.port.postMessage).not.toHaveBeenCalledWith({ draft: null })
+    expect(settled).not.toHaveBeenCalled()
+    expect(actions.submit).not.toHaveBeenCalled()
+    expect(actions.browser).not.toHaveBeenCalled()
+    popup.message({ id: draft.id, decision: { action: 'browser' } })
+    await pending
+    expect(settled).toHaveBeenCalledExactlyOnceWith({ action: 'browser' })
+    expect(actions.browser).toHaveBeenCalledOnce()
+    expect(service.get(4)).toBeNull()
+  }
+)
+it('does not reopen a presented draft after the view closes during window lookup', async () => {
+  vi.useFakeTimers()
+  let finishLookup!: (window: Browser.windows.Window) => void
+  vi.mocked(browser.windows.get).mockReturnValue(
+    new Promise((resolve) => {
+      finishLookup = resolve
+    })
+  )
+  const service = createDownloadConfirmation()
+  const pending = service.request({ ...target, origin: 'auto' }, 4, actions)
+  await vi.advanceTimersByTimeAsync(1)
+  const popup = view()
+  await vi.advanceTimersByTimeAsync(1)
+  const draft = service.get(4)!
+  popup.disconnect()
+  finishLookup({
+    id: 4,
+    focused: true,
+    type: 'normal',
+  } as Browser.windows.Window)
+  await vi.advanceTimersByTimeAsync(1)
+  expect(browser.action.openPopup).not.toHaveBeenCalled()
+  expect(service.get(4)?.id).toBe(draft.id)
+  service.close(4)
+  await expect(pending).resolves.toEqual({ action: 'cancel' })
+})
+it('preserves delivery evidence across disconnect before a late popup opening failure', async () => {
+  vi.useFakeTimers()
+  vi.mocked(browser.action.openPopup).mockReturnValue(new Promise(() => {}))
+  const service = createDownloadConfirmation()
+  const pending = service.request({ ...target, origin: 'auto' }, 4, actions)
+  await vi.advanceTimersByTimeAsync(1)
+  const popup = view()
+  await vi.advanceTimersByTimeAsync(1)
+  const draft = service.get(4)!
+  expect(popup.port.postMessage).toHaveBeenLastCalledWith({ draft })
+  popup.disconnect()
+  await vi.advanceTimersByTimeAsync(5001)
+  expect(service.get(4)?.id).toBe(draft.id)
+  const resumed = view()
+  await vi.advanceTimersByTimeAsync(1)
+  expect(resumed.port.postMessage).toHaveBeenLastCalledWith({ draft })
+  resumed.message({ id: draft.id, decision: { action: 'cancel' } })
+  await expect(pending).resolves.toEqual({ action: 'cancel' })
+})
+it.each(['publish', 'handshake'])(
+  'does not retain an automatic draft when %s delivery throws',
+  async (stage) => {
+    vi.useFakeTimers()
+    const service = createDownloadConfirmation()
+    const breakDelivery = (popup: ReturnType<typeof view>) => {
+      popup.port.postMessage.mockImplementation(() => {
+        throw new Error('disconnected')
+      })
+    }
+    if (stage === 'publish') {
+      const popup = view()
+      await vi.advanceTimersByTimeAsync(0)
+      breakDelivery(popup)
+    }
+    const pending = service.request({ ...target, origin: 'auto' }, 4, actions)
+    if (stage === 'handshake') {
+      await vi.advanceTimersByTimeAsync(1)
+      breakDelivery(view())
+    }
+    await vi.advanceTimersByTimeAsync(5001)
+    await expect(pending).resolves.toEqual({ action: 'unavailable' })
+    expect(service.get(4)).toBeNull()
+    const manual = view()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(manual.port.postMessage).toHaveBeenLastCalledWith({ draft: null })
+  }
+)
 it.each(['unfocused', 'open-rejected', 'handshake-timeout'])(
   'does not show an automatic download in a manually opened popup after %s',
   async (reason) => {
@@ -163,35 +281,39 @@ it('does not open a cancelled draft after the window lookup finishes', async () 
   await Promise.resolve()
   expect(browser.action.openPopup).not.toHaveBeenCalled()
 })
-it('preserves edited drafts across popup disconnect and restores them into a new view', async () => {
-  const service = createDownloadConfirmation()
-  const v = view()
-  const pending = service.request(target, 4, actions)
-  await vi.waitFor(() =>
-    expect(v.port.postMessage).toHaveBeenCalledWith({
-      draft: expect.objectContaining({ target }),
-    })
-  )
-  expect(browser.action.openPopup).not.toHaveBeenCalled()
-  const draft = service.get(4)!
-  const options = {
-    ...draft.options,
-    filename: 'resume.zip',
-    extraHeaders: 'X-Unfinished:',
+it.each(['auto', 'context-menu'] as const)(
+  'preserves edited %s drafts across popup disconnect and restores them into a new view',
+  async (origin) => {
+    const service = createDownloadConfirmation()
+    const v = view()
+    const pending = service.request({ ...target, origin }, 4, actions)
+    await vi.waitFor(() =>
+      expect(v.port.postMessage).toHaveBeenCalledWith({
+        draft: expect.objectContaining({ target: { ...target, origin } }),
+      })
+    )
+    expect(browser.action.openPopup).not.toHaveBeenCalled()
+    expect(browser.windows.get).not.toHaveBeenCalled()
+    const draft = service.get(4)!
+    const options = {
+      ...draft.options,
+      filename: 'resume.zip',
+      extraHeaders: 'X-Unfinished:',
+    }
+    v.message({ id: draft.id, decision: { action: 'edit', options } })
+    v.disconnect()
+    expect(service.get(4)?.options).toEqual(options)
+    const resumed = view()
+    await vi.waitFor(() =>
+      expect(resumed.port.postMessage).toHaveBeenCalledWith({
+        draft: expect.objectContaining({ id: draft.id, options }),
+      })
+    )
+    expect(actions.submit).not.toHaveBeenCalled()
+    resumed.message({ id: draft.id, decision: { action: 'cancel' } })
+    await expect(pending).resolves.toEqual({ action: 'cancel' })
   }
-  v.message({ id: draft.id, decision: { action: 'edit', options } })
-  v.disconnect()
-  expect(service.get(4)?.options).toEqual(options)
-  const resumed = view()
-  await vi.waitFor(() =>
-    expect(resumed.port.postMessage).toHaveBeenCalledWith({
-      draft: expect.objectContaining({ id: draft.id, options }),
-    })
-  )
-  expect(actions.submit).not.toHaveBeenCalled()
-  resumed.message({ id: draft.id, decision: { action: 'cancel' } })
-  await expect(pending).resolves.toEqual({ action: 'cancel' })
-})
+)
 it('bounds waiting for a popup that closed before its handshake', async () => {
   vi.useFakeTimers()
   const service = createDownloadConfirmation()
