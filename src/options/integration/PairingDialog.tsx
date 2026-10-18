@@ -199,7 +199,7 @@ export function PairingDialog({
   )
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} disablePointerDismissal>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('options.pairing.pairDialogTitle')}</DialogTitle>

@@ -29,7 +29,7 @@ export type RecoverConfirmation = (
 
 interface ConfirmationIO {
   supported(): boolean
-  open(windowId: number, isCurrent: () => boolean): Promise<void>
+  open(windowId: number, needsPresentation: () => boolean): Promise<void>
   publish(windowId: number, draft: DownloadConfirmation | null): void
   userAgent(): string
   storage?:
@@ -52,6 +52,7 @@ export type ConfirmationResult =
 
 interface Pending {
   draft: DownloadConfirmation
+  presented: boolean
   operationId: string
   submittedOptions?: string
   actions: ConfirmationActions
@@ -143,6 +144,7 @@ export class DownloadConfirmationService {
     return new Promise((resolve) => {
       const pending: Pending = {
         draft,
+        presented: false,
         actions,
         binding,
         operationId: newDownloadOperationId(),
@@ -161,13 +163,22 @@ export class DownloadConfirmationService {
       void this.persist()
       this.publish(windowId, draft)
       void this.io
-        .open(windowId, () => this.pending.get(windowId) === pending)
+        .open(
+          windowId,
+          () => this.pending.get(windowId) === pending && !pending.presented
+        )
         .catch(() => {
-          // Opening is advisory once a user has already confirmed in a live view.
-          if (pending.draft.phase === 'editing') {
-            // Early takeover will replay in the browser after this result.
-            // Retaining its draft would allow a second, late submission.
-            if (target.nativeDownloadCancelled)
+          // Delivery to a popup owns the draft even if opening later fails or
+          // the view disconnects. Never trigger fallback behind an active form.
+          if (
+            this.pending.get(windowId) === pending &&
+            !pending.presented &&
+            pending.draft.phase === 'editing'
+          ) {
+            // Automatic downloads continue in the browser (or are replayed
+            // after early cancellation). A retained draft would offer a
+            // duplicate download when the user later opens the popup.
+            if (target.origin === 'auto' || target.nativeDownloadCancelled)
               pending.settle({ action: 'unavailable' })
             else resolve({ action: 'unavailable' })
           }
@@ -177,6 +188,12 @@ export class DownloadConfirmationService {
 
   get(windowId: number): DownloadConfirmation | null {
     return this.pending.get(windowId)?.draft ?? null
+  }
+
+  /** Called only after delivering this draft to a trusted popup port. */
+  markPresented(windowId: number, id: string): void {
+    const pending = this.pending.get(windowId)
+    if (pending?.draft.id === id) pending.presented = true
   }
 
   decide(windowId: number, id: string, input: unknown): boolean {
@@ -340,6 +357,8 @@ export class DownloadConfirmationService {
         }
         const pending: Pending = {
           draft: draft as DownloadConfirmation,
+          // Restored drafts have no outstanding popup-opening operation.
+          presented: false,
           binding,
           operationId,
           actions,
