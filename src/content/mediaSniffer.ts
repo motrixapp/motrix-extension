@@ -736,22 +736,20 @@ function shouldInspectBody(url: string, contentType?: string): boolean {
   if (STREAM_SEGMENT_RE.test(url) || MEDIA_EXTENSIONS_RE.test(url)) {
     return false
   }
-  if (isBinaryOrMediaContentType(contentType)) {
-    return false
-  }
   const type = contentType?.split(';', 1)[0]?.trim().toLowerCase() ?? ''
-  const kind = classifyMediaUrl(url, contentType)
-  if (kind === 'hls' || kind === 'dash') {
-    return true
-  }
   if (
     type === 'application/vnd.apple.mpegurl' ||
     type === 'application/x-mpegurl' ||
+    type === 'application/mpegurl' ||
+    type === 'audio/mpegurl' ||
     type === 'audio/x-mpegurl' ||
     type === 'application/dash+xml'
   ) {
     return true
   }
+  if (isBinaryOrMediaContentType(contentType)) return false
+  const kind = classifyMediaUrl(url, contentType)
+  if (kind === 'hls' || kind === 'dash') return true
   if (type === 'application/json' || type.endsWith('+json')) {
     return true
   }

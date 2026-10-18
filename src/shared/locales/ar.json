@@ -371,7 +371,11 @@
       "unsupportedReason": "يلزم FFmpeg لتنزيل هذا العنصر.",
       "unsupportedSelectionReason": "لا تستطيع الوجهة المختارة إرسال نوع واحد أو أكثر من أنواع الموارد المحددة.",
       "unsupportedResource": "لا يمكن إرسال {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "اضبط FFmpeg في إعدادات Motrix، ثم انقر على «فحص مجددًا»."
+      "refreshCapabilitiesHint": "اضبط FFmpeg في إعدادات Motrix، ثم انقر على «فحص مجددًا».",
+      "showQualities": "عرض خيارات الجودة",
+      "selectQuality": "اختيار الجودة",
+      "qualityAuto": "تلقائي (الأفضل)",
+      "downloadMp3": "التنزيل MP3"
     },
     "speed": {
       "download": "التنزيل",

@@ -76,7 +76,10 @@ export function createMdxpSimulator(server) {
       const digest = createHash('sha256')
         .update(JSON.stringify(input))
         .digest('hex')
-      state.submissions.push({ operationId: input.idempotencyKey })
+      state.submissions.push({
+        operationId: input.idempotencyKey,
+        suggestedFilename: input.meta.suggestedFilename,
+      })
       if (name === 'early-failed')
         return reject(-32602, 'Injected pre-dispatch rejection')
       if (name === 'early-disconnect-before') return socket.terminate()

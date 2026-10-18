@@ -371,7 +371,11 @@
       "unsupportedReason": "Cần FFmpeg để tải nội dung này.",
       "unsupportedSelectionReason": "Dịch vụ đã chọn không thể gửi một hoặc nhiều loại tài nguyên đã chọn.",
       "unsupportedResource": "Không thể gửi {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "Thiết lập FFmpeg trong phần cài đặt Motrix, sau đó nhấp vào “Quét lại”."
+      "refreshCapabilitiesHint": "Thiết lập FFmpeg trong phần cài đặt Motrix, sau đó nhấp vào “Quét lại”.",
+      "showQualities": "Hiện các mức chất lượng",
+      "selectQuality": "Chọn chất lượng",
+      "qualityAuto": "Tự động (tốt nhất)",
+      "downloadMp3": "Tải xuống MP3"
     },
     "speed": {
       "download": "Tải xuống",

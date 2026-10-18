@@ -371,7 +371,11 @@
       "unsupportedReason": "Az elem letöltéséhez FFmpeg szükséges.",
       "unsupportedSelectionReason": "A kiválasztott háttérszolgáltatás nem tudja elküldeni a kijelölt erőforrások egy vagy több típusát.",
       "unsupportedResource": "{{name}} nem küldhető el. {{reason}}",
-      "refreshCapabilitiesHint": "Állítsd be az FFmpeg-et a Motrix beállításaiban, majd kattints az „Új keresés” gombra."
+      "refreshCapabilitiesHint": "Állítsd be az FFmpeg-et a Motrix beállításaiban, majd kattints az „Új keresés” gombra.",
+      "showQualities": "Minőségek megjelenítése",
+      "selectQuality": "Minőség kiválasztása",
+      "qualityAuto": "Automatikus (legjobb)",
+      "downloadMp3": "Letöltés MP3"
     },
     "speed": {
       "download": "Letöltés",

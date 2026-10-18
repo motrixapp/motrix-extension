@@ -52,6 +52,7 @@ import {
 import { CredentialStore } from '@/background/mbp1/credential-store'
 import { MAX_RUNS_PER_SESSION } from '@/background/mbp1/pairing-flow'
 import { PinStore } from '@/background/mbp1/pin-store'
+import { MediaDocumentTracker } from '@/background/mediaDocument'
 import { normalizeMediaReport } from '@/background/mediaTrust'
 import { NotificationsConfigStore } from '@/background/NotificationsConfigStore'
 import { registerNetworkMediaCapture } from '@/background/networkMediaCapture'
@@ -741,6 +742,25 @@ bus.on('bg.getMediaThumbnail', async (request) =>
   )
 )
 
+const mediaDocuments = new MediaDocumentTracker({
+  getTab: (tabId) => browser.tabs.get(tabId),
+  getFrames: async (tabId) =>
+    (await browser.webNavigation?.getAllFrames?.({ tabId })) ?? null,
+})
+for (const event of [
+  browser.webNavigation?.onBeforeNavigate,
+  browser.webNavigation?.onCommitted,
+  browser.webNavigation?.onHistoryStateUpdated,
+  browser.webNavigation?.onReferenceFragmentUpdated,
+]) {
+  event?.addListener(({ tabId }) => mediaDocuments.invalidate(tabId))
+}
+browser.tabs.onRemoved.addListener((tabId) => mediaDocuments.invalidate(tabId))
+browser.tabs.onUpdated.addListener((tabId, change) => {
+  if (change.url || change.status === 'loading')
+    mediaDocuments.invalidate(tabId)
+})
+
 const popupDownloads = createPopupDownloadHandlers({
   manager,
   submissions,
@@ -759,11 +779,8 @@ const popupDownloads = createPopupDownloadHandlers({
   browserKind: __BROWSER__,
   userAgent: navigator.userAgent,
   webStore: isWebStoreBuild(),
-  getAllFrames: async ({ tabId }) => {
-    const getAllFrames = browser.webNavigation?.getAllFrames
-    if (!getAllFrames) return null
-    return (await getAllFrames({ tabId })) ?? null
-  },
+  documents: mediaDocuments,
+  getTab: (tabId) => browser.tabs.get(tabId),
 })
 bus.on('bg.submitMedia', popupDownloads.submitMedia)
 bus.on('bg.resolvePageDownload', popupDownloads.resolvePageDownload)

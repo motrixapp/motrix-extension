@@ -8,6 +8,10 @@ import { DownloadPreparationError } from '@/background/download-errors'
 import type { MediaStore } from '@/background/MediaStore'
 import type { MessageBusHandler } from '@/background/MessageBus'
 import { isExtensionPageSender } from '@/background/manualTask'
+import type {
+  MediaDocument,
+  MediaDocumentTracker,
+} from '@/background/mediaDocument'
 import {
   applyCallerIdempotencyKey,
   toSafeMediaSubmitError,
@@ -20,9 +24,9 @@ import {
   type DetectedMedia,
   isResolvableVideoPage,
   mediaStorageKey,
+  shouldExcludeHost,
 } from '@/shared/media'
 import {
-  isPickerQualityHint,
   type MediaFormatsResult,
   normalizeQualityLabel,
 } from '@/shared/mediaFormats'
@@ -32,7 +36,7 @@ import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
 const MAX_GRAB_ITEMS = 6
 
 interface PopupDownloadDeps {
-  manager: Pick<ConnectionManager, 'getServerCapabilities' | 'request'>
+  manager: Pick<ConnectionManager, 'getServerCapabilities' | 'listMediaFormats'>
   submissions: Pick<DownloadSubmissionService, 'run'>
   mediaStore: MediaStore
   mediaCredentialStore: MediaCredentialStore
@@ -43,14 +47,8 @@ interface PopupDownloadDeps {
   browserKind: BrowserKind
   userAgent: string
   webStore: boolean
-  /**
-   * Lists a tab's frames (with their document URLs) so an embed-player URL sent
-   * by the grab overlay can be validated as belonging to the sender's own tab.
-   * Defaults to `browser.webNavigation.getAllFrames` in the service worker.
-   */
-  getAllFrames?: (details: {
-    tabId: number
-  }) => Promise<Array<{ url?: string }> | null>
+  documents: MediaDocumentTracker
+  getTab: (tabId: number) => Promise<Browser.tabs.Tab>
 }
 
 /** Trusted popup intents capture their source before wake, then collect sensitive
@@ -66,7 +64,8 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     browserKind,
     userAgent,
     webStore,
-    getAllFrames,
+    documents,
+    getTab,
   } = deps
   const assertSender = (sender: Browser.runtime.MessageSender): void => {
     if (!isExtensionPageSender(sender, deps.extensionId, deps.extensionBaseUrl))
@@ -82,7 +81,11 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     sender: Browser.runtime.MessageSender
   ): Browser.tabs.Tab & { id: number; url: string } => {
     const tab = sender.tab
-    if (typeof tab?.id !== 'number' || !tab.url) {
+    if (
+      sender.id !== deps.extensionId ||
+      typeof tab?.id !== 'number' ||
+      !tab.url
+    ) {
       throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
     }
     if (!/^https?:/i.test(tab.url)) {
@@ -91,43 +94,50 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     return tab as Browser.tabs.Tab & { id: number; url: string }
   }
 
-  const isHttpUrl = (value: string): boolean => /^https?:/i.test(value)
-  const originOf = (value: string): string | null => {
-    try {
-      return new URL(value).origin
-    } catch {
-      return null
+  const denyExcluded = (document: MediaDocument): void => {
+    for (const url of [document.tab.url, document.url]) {
+      if (shouldExcludeHost(new URL(url).hostname, webStore))
+        throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
     }
   }
-
-  /**
-   * Resolve which URL the overlay should act on. The overlay may point at an
-   * embedded player's OWN url (a cross-origin <iframe> it anchored to), but
-   * only a URL that is the sender tab's document or shares an origin with one
-   * of that tab's frames is honoured — a page must never be able to steer the
-   * extension into resolving an unrelated third-party address. Anything else
-   * falls back to the tab URL.
-   */
-  const resolveTargetUrl = async (
-    tab: Browser.tabs.Tab & { id: number; url: string },
-    candidate: string | undefined
-  ): Promise<string> => {
-    if (!candidate || !isHttpUrl(candidate)) return tab.url
-    if (candidate === tab.url) return candidate
-    const candidateOrigin = originOf(candidate)
-    if (!candidateOrigin) return tab.url
-    try {
-      const frames = (await getAllFrames?.({ tabId: tab.id })) ?? []
-      const belongsToTab = frames.some((frame) => {
-        if (!frame.url || !isHttpUrl(frame.url)) return false
-        return (
-          frame.url === candidate || originOf(frame.url) === candidateOrigin
-        )
-      })
-      return belongsToTab ? candidate : tab.url
-    } catch {
-      return tab.url
+  const proofs = new Map<
+    string,
+    {
+      document: MediaDocument
+      assertSession(): void
+      keys: Set<string>
+      expiresAt: number
     }
+  >()
+  const checkChoice = (
+    document: MediaDocument,
+    quality: string,
+    listingId?: string
+  ): (() => void) => {
+    denyExcluded(document)
+    if (
+      quality === 'auto' &&
+      isResolvableVideoPage(document.url, webStore).resolvable
+    )
+      return document.assertCurrent
+    const proof = listingId ? proofs.get(listingId) : undefined
+    const assertChoice = () => {
+      document.assertCurrent()
+      denyExcluded(document)
+      if (
+        !proof ||
+        proof.expiresAt <= Date.now() ||
+        proof.document.tab.id !== document.tab.id ||
+        proof.document.url !== document.url ||
+        proof.document.identity !== document.identity ||
+        !proof.keys.has(quality)
+      )
+        throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
+      proof.document.assertCurrent()
+      proof.assertSession()
+    }
+    assertChoice()
+    return assertChoice
   }
 
   /**
@@ -145,7 +155,8 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
       mediaKey: string
       idempotencyKey: string
       pairIfNeeded?: boolean
-    }
+    },
+    assertDocument?: () => void
   ): Promise<Awaited<ReturnType<DownloadSubmissionService['run']>>> => {
     if (
       typeof request !== 'object' ||
@@ -166,6 +177,7 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
           idempotencyKey: request.idempotencyKey,
           pairIfNeeded: request.pairIfNeeded === true,
           source: 'media',
+          assertCurrent: assertDocument,
           resourceKey: JSON.stringify([
             tab?.id,
             media.pageUrl,
@@ -243,70 +255,87 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
   // Motrix's resolveToMux seam resolves the actual stream URLs server-side.
   // Does NOT gate on selectionKinds — 'direct' is always supported and turbo
   // upgrades the submit via resolveToMux on its side.
+  const submitPage = async (
+    document: MediaDocument,
+    request: {
+      idempotencyKey: string
+      pairIfNeeded?: boolean
+      qualityLabel?: string
+      listingId?: string
+    }
+  ) => {
+    const qualityLabel = normalizeQualityLabel(request.qualityLabel)
+    const assertChoice = checkChoice(document, qualityLabel, request.listingId)
+    return submissions.run(
+      {
+        idempotencyKey: request.idempotencyKey,
+        pairIfNeeded: request.pairIfNeeded === true,
+        source: 'page',
+        resourceKey: JSON.stringify([
+          document.tab.id,
+          document.url,
+          qualityLabel,
+        ]),
+        assertCurrent: assertChoice,
+      },
+      async ({ assertCurrent }) => {
+        assertCurrent()
+        await document.revalidate()
+        assertChoice()
+        const cookies =
+          qualityLabel === 'auto' && document.isTopFrame
+            ? await capturePageCookies({
+                url: document.url,
+                ...(document.tab.cookieStoreId
+                  ? { storeId: document.tab.cookieStoreId }
+                  : {}),
+                browser: browserKind,
+                api: cookieApi,
+              })
+            : []
+        await document.revalidate()
+        assertCurrent()
+        assertChoice()
+        const params = applyCallerIdempotencyKey(
+          buildMediaSubmitParams(
+            {
+              kind: 'direct',
+              url: document.url,
+              pageUrl: document.url,
+              pageTitle: document.tab.title ?? document.url,
+              detectedAt: Date.now(),
+            },
+            cookies,
+            {
+              Referer: `${new URL(document.url).origin}/`,
+              'User-Agent': userAgent,
+            }
+          ),
+          request
+        )
+        params.meta.qualityLabel = qualityLabel
+        return params
+      }
+    )
+  }
   const resolvePageDownload: MessageBusHandler<
     'bg.resolvePageDownload'
   > = async (request, sender) => {
     assertSender(sender)
     try {
       const [tab] = await getActiveTabs()
-      if (!tab?.url) throw new Error('no active tab')
-      const pageUrl = tab.url
-      const qualityLabel = normalizeQualityLabel(request.qualityLabel)
-      const check = isResolvableVideoPage(pageUrl, webStore)
-      // A REAL picker choice ('1080p' / 'mp3') only exists for pages the
-      // desktop's yt-dlp has already listed formats for, so it also unlocks
-      // the page submit on sites outside the resolveToMux allowlist. 'auto'
-      // never relaxes the gate.
-      if (!check.resolvable && !isPickerQualityHint(qualityLabel)) {
-        throw new Error('page not resolvable')
+      if (typeof tab?.id !== 'number')
+        throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
+      const document = await documents.capture(tab.id)
+      const revalidate = document.revalidate
+      document.revalidate = async () => {
+        const [active] = await getActiveTabs()
+        if (!active || active.id !== tab.id || active.url !== document.tab.url)
+          throw new Error(DOWNLOAD_ERROR.contextChanged)
+        await revalidate()
       }
-      return await submissions.run(
-        {
-          idempotencyKey: request.idempotencyKey,
-          pairIfNeeded: request.pairIfNeeded === true,
-          source: 'page',
-          // Distinct qualities are distinct submissions.
-          resourceKey: JSON.stringify([tab.id, pageUrl, qualityLabel]),
-        },
-        async ({ assertCurrent }) => {
-          assertCurrent()
-          const cookies = await capturePageCookies({
-            url: pageUrl,
-            ...(tab.cookieStoreId ? { storeId: tab.cookieStoreId } : {}),
-            browser: browserKind,
-            api: cookieApi,
-          })
-          const [currentTab] = await getActiveTabs()
-          if (
-            !currentTab ||
-            currentTab.id !== tab.id ||
-            !currentTab.url ||
-            new URL(currentTab.url).toString() !== new URL(pageUrl).toString()
-          ) {
-            throw new DownloadPreparationError(DOWNLOAD_ERROR.contextChanged)
-          }
-          const headers: Record<string, string> = {
-            Referer: `${new URL(pageUrl).origin}/`,
-            'User-Agent': userAgent,
-          }
-          const media = {
-            kind: 'direct' as const,
-            url: pageUrl,
-            pageUrl: pageUrl,
-            pageTitle: tab.title ?? pageUrl,
-            detectedAt: Date.now(),
-          }
-          const params = applyCallerIdempotencyKey(
-            buildMediaSubmitParams(media, cookies, headers),
-            request
-          )
-          params.meta.qualityLabel = qualityLabel
-          assertCurrent()
-          return params
-        }
-      )
+      return await submitPage(document, request)
     } catch (error) {
-      // Do not surface the active URL, cookie details or native errors.
       throw toSafeMediaSubmitError(error)
     }
   }
@@ -348,76 +377,71 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     sender
   ) => {
     const tab = assertGrabberSender(sender)
-    return submitMediaForTab(async () => tab, request)
+    const document = await documents.capture(tab.id, undefined, sender)
+    denyExcluded(document)
+    return submitMediaForTab(
+      async () => {
+        await document.revalidate()
+        return getTab(tab.id)
+      },
+      request,
+      document.assertCurrent
+    )
   }
 
-  /**
-   * bg.grabberFormats: list the yt-dlp qualities the sender tab's page URL
-   * offers (fork-local `media/formats` method). Never rejects — a
-   * disconnected desktop or any transport/listing failure degrades to
-   * `{ available: false }` so the overlay falls back to its sniffed rows.
-   * The URL always comes from the browser-authenticated sender tab, never
-   * from the request payload.
-   */
+  /** Explicit quality lookup. Page URL disclosure is gated in the manager;
+   * this path deliberately never reads or forwards browser credentials. */
   const grabberFormats: MessageBusHandler<'bg.grabberFormats'> = async (
     request,
     sender
   ) => {
-    let tab: (Browser.tabs.Tab & { id: number; url: string }) | undefined
-    if (
-      isExtensionPageSender(sender, deps.extensionId, deps.extensionBaseUrl)
-    ) {
-      const [activeTab] = await getActiveTabs()
-      if (
-        typeof activeTab?.id === 'number' &&
-        activeTab.url &&
-        /^https?:/i.test(activeTab.url)
-      ) {
-        tab = activeTab as Browser.tabs.Tab & { id: number; url: string }
-      }
-    } else {
-      tab = assertGrabberSender(sender)
-    }
-    if (!tab) {
-      throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
-    }
     const unavailable = (reason: string): MediaFormatsResult => ({
       available: false,
       reason,
       entries: [],
     })
-    if (manager.getServerCapabilities() === null) {
+    const capabilities = manager.getServerCapabilities()
+    if (!capabilities)
       return { connected: false, formats: unavailable('not-connected') }
-    }
-    // The overlay sends the embedded player's URL when it anchored to a
-    // cross-origin <iframe>; resolveTargetUrl only honours it when it really
-    // belongs to the sender tab, otherwise this falls back to the tab URL.
-    const targetUrl = await resolveTargetUrl(tab, request?.url)
+    if (capabilities.mediaFormats !== true)
+      return { connected: true, formats: unavailable('unsupported') }
+    const popup = isExtensionPageSender(
+      sender,
+      deps.extensionId,
+      deps.extensionBaseUrl
+    )
+    const tab = popup ? (await getActiveTabs())[0] : assertGrabberSender(sender)
+    if (typeof tab?.id !== 'number')
+      throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
     try {
-      const rawCookies = await capturePageCookies({
-        url: targetUrl,
-        ...(tab.cookieStoreId ? { storeId: tab.cookieStoreId } : {}),
-        browser: browserKind,
-        api: cookieApi,
+      const document = await documents.capture(
+        tab.id,
+        request?.url,
+        popup ? undefined : sender
+      )
+      denyExcluded(document)
+      const result = await manager.listMediaFormats(
+        { url: document.url },
+        document
+      )
+      document.assertCurrent()
+      if (!result.formats.available)
+        return { connected: true, formats: result.formats }
+      for (const [id, proof] of proofs) {
+        if (proof.expiresAt <= Date.now() || proof.document.signal.aborted)
+          proofs.delete(id)
+      }
+      while (proofs.size >= 128)
+        proofs.delete(proofs.keys().next().value as string)
+      const listingId = crypto.randomUUID()
+      proofs.set(listingId, {
+        document,
+        assertSession: result.assertCurrent,
+        keys: new Set(result.formats.entries.map((entry) => entry.key)),
+        expiresAt: Date.now() + 60_000,
       })
-      const cookies = rawCookies
-        .filter(
-          (c) =>
-            typeof c.name === 'string' &&
-            c.name.trim().length > 0 &&
-            typeof c.value === 'string'
-        )
-        .map((c) => ({ name: c.name.trim(), value: c.value }))
-      const formats = await manager.request('media/formats', {
-        url: targetUrl,
-        ...(cookies.length ? { cookies } : {}),
-      })
-      return { connected: true, formats }
-    } catch (err) {
-      console.warn('[motrix-ext][grabberFormats] failed to list formats:', err)
-      // Transport failure → desktop is effectively gone; a structured
-      // error (e.g. method unsupported by an older desktop) keeps
-      // connected: true with an unavailable result.
+      return { connected: true, formats: result.formats, listingId }
+    } catch {
       return {
         connected: manager.getServerCapabilities() !== null,
         formats: unavailable('failed'),
@@ -425,60 +449,14 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     }
   }
 
-  /**
-   * bg.grabberResolvePageDownload: content-script-specific page-download path
-   * for the in-page grab overlay. Validates that the sender is the extension's
-   * own content script on an http(s) tab, and derives the target tab directly
-   * from sender.tab.
-   */
   const grabberResolvePageDownload: MessageBusHandler<
     'bg.grabberResolvePageDownload'
   > = async (request, sender) => {
     const tab = assertGrabberSender(sender)
     try {
-      // The overlay anchored to an embedded player sends that player's URL so
-      // the desktop resolves the real media; resolveTargetUrl rejects anything
-      // that is not a frame of the sender tab, falling back to the tab URL.
-      const pageUrl = await resolveTargetUrl(tab, request.pageUrl)
-      const qualityLabel = normalizeQualityLabel(request.qualityLabel)
-      const check = isResolvableVideoPage(pageUrl, webStore)
-      if (!check.resolvable && !isPickerQualityHint(qualityLabel)) {
-        throw new Error('page not resolvable')
-      }
-      return await submissions.run(
-        {
-          idempotencyKey: request.idempotencyKey,
-          pairIfNeeded: request.pairIfNeeded === true,
-          source: 'page',
-          resourceKey: JSON.stringify([tab.id, pageUrl, qualityLabel]),
-        },
-        async ({ assertCurrent }) => {
-          assertCurrent()
-          const cookies = await capturePageCookies({
-            url: pageUrl,
-            ...(tab.cookieStoreId ? { storeId: tab.cookieStoreId } : {}),
-            browser: browserKind,
-            api: cookieApi,
-          })
-          const headers: Record<string, string> = {
-            Referer: `${new URL(pageUrl).origin}/`,
-            'User-Agent': userAgent,
-          }
-          const media = {
-            kind: 'direct' as const,
-            url: pageUrl,
-            pageUrl: pageUrl,
-            pageTitle: tab.title ?? pageUrl,
-            detectedAt: Date.now(),
-          }
-          const params = applyCallerIdempotencyKey(
-            buildMediaSubmitParams(media, cookies, headers),
-            request
-          )
-          params.meta.qualityLabel = qualityLabel
-          assertCurrent()
-          return params
-        }
+      return await submitPage(
+        await documents.capture(tab.id, request.pageUrl, sender),
+        request
       )
     } catch (error) {
       throw toSafeMediaSubmitError(error)

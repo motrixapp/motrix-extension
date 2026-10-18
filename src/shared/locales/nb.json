@@ -371,7 +371,11 @@
       "unsupportedReason": "FFmpeg kreves for å laste ned dette elementet.",
       "unsupportedSelectionReason": "Den valgte tilkoblingen kan ikke sende én eller flere av de valgte ressurstypene.",
       "unsupportedResource": "{{name}} kan ikke sendes. {{reason}}",
-      "refreshCapabilitiesHint": "Konfigurer FFmpeg i Motrix-innstillingene, og klikk på «Søk på nytt»."
+      "refreshCapabilitiesHint": "Konfigurer FFmpeg i Motrix-innstillingene, og klikk på «Søk på nytt».",
+      "showQualities": "Vis kvaliteter",
+      "selectQuality": "Velg kvalitet",
+      "qualityAuto": "Automatisk (best)",
+      "downloadMp3": "Nedlasting MP3"
     },
     "speed": {
       "download": "Nedlasting",

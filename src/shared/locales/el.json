@@ -371,7 +371,11 @@
       "unsupportedReason": "Χρειάζεται FFmpeg για τη λήψη αυτού του στοιχείου.",
       "unsupportedSelectionReason": "Η επιλεγμένη υπηρεσία δεν μπορεί να στείλει έναν ή περισσότερους επιλεγμένους τύπους πόρων.",
       "unsupportedResource": "Το {{name}} δεν μπορεί να σταλεί. {{reason}}",
-      "refreshCapabilitiesHint": "Ρυθμίστε το FFmpeg στις ρυθμίσεις Motrix και πατήστε «Σάρωση ξανά»."
+      "refreshCapabilitiesHint": "Ρυθμίστε το FFmpeg στις ρυθμίσεις Motrix και πατήστε «Σάρωση ξανά».",
+      "showQualities": "Εμφάνιση επιλογών ποιότητας",
+      "selectQuality": "Επιλογή ποιότητας",
+      "qualityAuto": "Αυτόματα (καλύτερη)",
+      "downloadMp3": "Λήψη MP3"
     },
     "speed": {
       "download": "Λήψη",

@@ -558,7 +558,10 @@ function ResolvablePageAction({
   site: 'bilibili' | 'youtube'
   canSubmit: boolean
   pairIfNeeded: boolean
-  onResolve: (qualityLabel?: QualityLabel) => Promise<{ taskId: string }>
+  onResolve: (
+    qualityLabel?: QualityLabel,
+    listingId?: string
+  ) => Promise<{ taskId: string }>
 }): React.ReactElement {
   const { t } = useTranslation()
   const disabledDescriptionId = useId()
@@ -567,26 +570,34 @@ function ResolvablePageAction({
   const [error, setError] = useState<string | null>(null)
   const [formats, setFormats] = useState<MediaFormatsResult | null>(null)
   const [formatsLoading, setFormatsLoading] = useState(false)
+  const [listingId, setListingId] = useState<string | undefined>()
+  const formatsRequest = useRef(0)
   const [selectedQuality, setSelectedQuality] = useState<QualityLabel>('auto')
   const discanSubmitReason = t('popup.integration.pairingUnavailable')
 
-  useEffect(() => {
-    let cancelled = false
+  useEffect(
+    () => () => {
+      formatsRequest.current += 1
+    },
+    []
+  )
+  const loadFormats = async (): Promise<void> => {
+    const generation = ++formatsRequest.current
     setFormatsLoading(true)
-    void send('bg.grabberFormats', undefined)
-      .then((res) => {
-        if (!cancelled && !isErrorResponse(res) && res.formats) {
-          setFormats(res.formats)
-        }
-      })
-      .catch(() => {})
-      .finally(() => {
-        if (!cancelled) setFormatsLoading(false)
-      })
-    return () => {
-      cancelled = true
+    setError(null)
+    try {
+      const response = await send('bg.grabberFormats', undefined)
+      if (generation !== formatsRequest.current || isErrorResponse(response))
+        return
+      setFormats(response.formats)
+      setListingId(response.listingId)
+      setSelectedQuality('auto')
+    } catch {
+      /* The existing download action remains available. */
+    } finally {
+      if (generation === formatsRequest.current) setFormatsLoading(false)
     }
-  }, [])
+  }
 
   const videoEntries = useMemo(
     () => (formats?.entries ?? []).filter((e) => e.kind === 'video'),
@@ -603,7 +614,7 @@ function ResolvablePageAction({
     setTaskId(null)
     setError(null)
     try {
-      const result = await onResolve(quality ?? selectedQuality)
+      const result = await onResolve(quality ?? selectedQuality, listingId)
       setTaskId(result.taskId)
     } catch (error) {
       setError(t(downloadErrorKey(error)))
@@ -618,6 +629,16 @@ function ResolvablePageAction({
   return (
     <div className="flex shrink-0 flex-col items-start gap-2 border-b border-border p-3">
       <div className="flex w-full flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          size="xs"
+          variant="outline"
+          disabled={!canSubmit || formatsLoading || submitting}
+          onClick={() => void loadFormats()}
+        >
+          {formatsLoading ? <Spinner data-icon="inline-start" /> : null}
+          {t('popup.sniffer.showQualities')}
+        </Button>
         {hasOfferings ? (
           <>
             <NativeSelect
@@ -642,7 +663,9 @@ function ResolvablePageAction({
               ))}
               {audioEntries.map((entry) => (
                 <NativeSelectOption key={entry.key} value={entry.key}>
-                  {entry.key === 'mp3' ? 'MP3 (Audio only)' : entry.label}
+                  {entry.key === 'mp3'
+                    ? `MP3 · ${t('popup.sniffer.filters.audio')}`
+                    : entry.label}
                 </NativeSelectOption>
               ))}
             </NativeSelect>

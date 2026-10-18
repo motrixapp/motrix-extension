@@ -219,7 +219,8 @@ export function usePageMedia(
   getThumbnail: (m: DetectedMedia) => Promise<string | null>
   resolvableSite: 'bilibili' | 'youtube' | null
   resolvePageDownload: (
-    qualityLabel?: QualityLabel
+    qualityLabel?: QualityLabel,
+    listingId?: string
   ) => Promise<{ taskId: string }>
 } {
   const [media, setMedia] = useState<DetectedMedia[]>([])
@@ -387,27 +388,62 @@ export function usePageMedia(
   )
 
   const resolvePageDownload = useCallback(
-    async (qualityLabel?: QualityLabel): Promise<{ taskId: string }> => {
+    async (
+      qualityLabel?: QualityLabel,
+      listingId?: string
+    ): Promise<{ taskId: string }> => {
       syncSubmissionKey()
       const scope = submissionKeyRef.current
       await hydratePendingKeys(scope)
+      const [activeTab] =
+        qualityLabel && qualityLabel !== 'auto'
+          ? await (popupExtensionApis().tabs?.query({
+              active: true,
+              currentWindow: true,
+            }) ?? Promise.resolve([]))
+          : []
+      const qualityKey =
+        qualityLabel && qualityLabel !== 'auto'
+          ? JSON.stringify([
+              'page-quality',
+              activeTab?.id,
+              activeTab?.url,
+              qualityLabel,
+            ])
+          : null
       const idempotencyKey =
-        pageIdempotencyKey.current ?? newDownloadOperationId()
-      pageIdempotencyKey.current = idempotencyKey
-      await rememberPageSubmission(scope, idempotencyKey)
+        (qualityKey
+          ? idempotencyKeys.current.get(qualityKey)
+          : pageIdempotencyKey.current) ?? newDownloadOperationId()
+      if (qualityKey) {
+        idempotencyKeys.current.set(qualityKey, idempotencyKey)
+        await rememberResourceSubmission(scope, qualityKey, idempotencyKey)
+      } else {
+        pageIdempotencyKey.current = idempotencyKey
+        await rememberPageSubmission(scope, idempotencyKey)
+      }
       const r = await send('bg.resolvePageDownload', {
         idempotencyKey,
         ...(qualityLabel ? { qualityLabel } : {}),
+        ...(listingId ? { listingId } : {}),
         ...(pairIfNeeded ? { pairIfNeeded: true } : {}),
       })
       if (isErrorResponse(r)) throw new Error(r.error)
-      if (
-        submissionKeyRef.current === scope &&
-        pageIdempotencyKey.current === idempotencyKey
-      ) {
-        pageIdempotencyKey.current = null
+      if (qualityKey) {
+        if (
+          submissionKeyRef.current === scope &&
+          idempotencyKeys.current.get(qualityKey) === idempotencyKey
+        )
+          idempotencyKeys.current.delete(qualityKey)
+        await clearResourceSubmission(scope, qualityKey, idempotencyKey)
+      } else {
+        if (
+          submissionKeyRef.current === scope &&
+          pageIdempotencyKey.current === idempotencyKey
+        )
+          pageIdempotencyKey.current = null
+        await clearPageSubmission(scope, idempotencyKey)
       }
-      await clearPageSubmission(scope, idempotencyKey)
       return r
     },
     [hydratePendingKeys, syncSubmissionKey, pairIfNeeded]

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { MediaCredentialStore } from '@/background/capture/MediaCredentialStore'
 import { DownloadSubmissionService } from '@/background/DownloadSubmissionService'
 import { MediaStore } from '@/background/MediaStore'
+import { MediaDocumentTracker } from '@/background/mediaDocument'
 import { createPopupDownloadHandlers } from '@/background/popupDownloads'
 import type { Browser } from '@/shared/browser'
 import { newDownloadOperationId } from '@/shared/integration'
@@ -30,6 +31,8 @@ function deferred() {
 
 async function fixture(
   options: {
+    pageUrl?: string
+    webStore?: boolean
     getAllFrames?: (details: {
       tabId: number
     }) => Promise<Array<{ url?: string }> | null>
@@ -49,6 +52,7 @@ async function fixture(
             selectionKinds: ['direct', 'hls'],
             ffmpegAvailable: true,
             taskReveal: false,
+            mediaFormats: true,
           }
         : null
     ),
@@ -65,7 +69,21 @@ async function fixture(
         return { taskId: 'task-1' }
       }
     ),
-    request: vi.fn(async () => ({ available: true, entries: [] })),
+    listMediaFormats: vi.fn(async () => ({
+      formats: {
+        available: true as const,
+        entries: [
+          {
+            kind: 'video' as const,
+            key: '1080p',
+            label: '1080p',
+            height: 1080,
+          },
+          { kind: 'audio' as const, key: 'mp3' as const, label: 'MP3' },
+        ],
+      },
+      assertCurrent: vi.fn(),
+    })),
   }
   const submissions = new DownloadSubmissionService({
     manager,
@@ -82,9 +100,29 @@ async function fixture(
   const mediaCredentialStore = new MediaCredentialStore()
   const observation = vi.spyOn(mediaCredentialStore, 'get')
   const getActiveTabs = vi.fn(async () => [
-    { id: 4, url: media.pageUrl, title: 'Watch' } as Browser.tabs.Tab,
+    {
+      id: 4,
+      url: options.pageUrl ?? media.pageUrl,
+      title: 'Watch',
+    } as Browser.tabs.Tab,
   ])
   const cookieApi = { getAll: vi.fn(async () => []) }
+  const getTab = vi.fn(async () => (await getActiveTabs())[0]!)
+  const documents = new MediaDocumentTracker({
+    getTab,
+    getFrames: async () => {
+      const frames = options.getAllFrames
+        ? await options.getAllFrames({ tabId: 4 })
+        : [{ url: options.pageUrl ?? media.pageUrl }]
+      return (
+        frames?.map((frame, frameId) => ({
+          ...frame,
+          frameId,
+          documentId: `doc-${frameId}`,
+        })) ?? null
+      )
+    },
+  })
   const handlers = createPopupDownloadHandlers({
     manager,
     submissions,
@@ -96,8 +134,9 @@ async function fixture(
     extensionBaseUrl: 'chrome-extension://extension-id/',
     browserKind: 'chromium',
     userAgent: 'test-browser',
-    webStore: false,
-    ...(options.getAllFrames ? { getAllFrames: options.getAllFrames } : {}),
+    webStore: options.webStore ?? false,
+    documents,
+    getTab,
   })
   return {
     handlers,
@@ -106,7 +145,8 @@ async function fixture(
     getActiveTabs,
     cookieApi,
     observation,
-    request: manager.request,
+    request: manager.listMediaFormats,
+    documents,
   }
 }
 beforeEach(() => {
@@ -221,6 +261,9 @@ describe('production popup download handlers', () => {
     const f = await fixture()
     const contentSender = {
       id: sender.id,
+      frameId: 0,
+      url: media.pageUrl,
+      documentId: 'doc-0',
       tab: { id: 4, url: media.pageUrl, title: 'Watch' } as Browser.tabs.Tab,
     }
     const operation = f.handlers.grabberResolvePageDownload(
@@ -253,124 +296,196 @@ describe('production popup download handlers', () => {
     ).rejects.toThrow('media-submit.invalid-request')
   })
 
-  describe('grabber embed-player targets', () => {
-    const embed = 'https://ok.ru/videoembed/15920023603899'
+  describe('authorized public qualities', () => {
+    const embed = 'https://ok.ru/videoembed/known'
     const capabilities = {
-      selectionKinds: ['direct'] as const,
+      selectionKinds: ['direct'],
       ffmpegAvailable: true,
       taskReveal: false,
+      mediaFormats: true,
     }
-    const contentSender = (url: string) => ({
+    const contentSender = {
       id: sender.id,
-      tab: { id: 4, url, title: 'Watch' } as Browser.tabs.Tab,
-    })
-
-    it('lists formats for an embedded player that is a frame of the sender tab', async () => {
+      frameId: 0,
+      url: media.pageUrl,
+      documentId: 'doc-0',
+      tab: { id: 4, url: media.pageUrl } as Browser.tabs.Tab,
+    }
+    const create = async (webStore = false) => {
       const f = await fixture({
-        getAllFrames: async ({ tabId }) =>
-          tabId === 4
-            ? [{ url: media.pageUrl }, { url: embed }]
-            : [{ url: media.pageUrl }],
-      })
-      f.manager.getServerCapabilities.mockReturnValue(capabilities)
-      await f.handlers.grabberFormats(
-        { url: embed },
-        contentSender(media.pageUrl)
-      )
-      expect(f.request).toHaveBeenCalledWith(
-        'media/formats',
-        expect.objectContaining({ url: embed })
-      )
-    })
-
-    it('falls back to the tab URL when the supplied target is not a frame of the tab', async () => {
-      const f = await fixture({
-        getAllFrames: async () => [{ url: media.pageUrl }],
-      })
-      f.manager.getServerCapabilities.mockReturnValue(capabilities)
-      await f.handlers.grabberFormats(
-        { url: 'https://evil.example/steal' },
-        contentSender(media.pageUrl)
-      )
-      expect(f.request).toHaveBeenCalledWith(
-        'media/formats',
-        expect.objectContaining({ url: media.pageUrl })
-      )
-    })
-
-    it('resolves an embedded player URL a real picker choice points at', async () => {
-      const f = await fixture({
+        webStore,
         getAllFrames: async () => [{ url: media.pageUrl }, { url: embed }],
       })
-      const operation = f.handlers.grabberResolvePageDownload(
-        {
-          idempotencyKey: newDownloadOperationId(),
-          qualityLabel: '1080p',
-          pageUrl: embed,
-        },
-        contentSender(media.pageUrl)
-      )
-      await vi.waitFor(() =>
-        expect(f.manager.ensureReady).toHaveBeenCalledOnce()
-      )
+      f.manager.getServerCapabilities.mockReturnValue(capabilities)
       f.ready.resolve()
-      await expect(operation).resolves.toEqual({ taskId: 'task-1' })
-      expect(f.cookieApi.getAll).toHaveBeenCalledWith({ url: embed })
-      expect(f.manager.submitDownload).toHaveBeenCalledWith(
-        expect.objectContaining({
-          source: expect.objectContaining({ pageUrl: embed }),
-        }),
-        expect.anything()
+      return f
+    }
+    it('lists an exact frame without reading cookies or waking the app', async () => {
+      const f = await create()
+      const result = await f.handlers.grabberFormats(
+        { url: embed },
+        contentSender
       )
+      expect(result.listingId).toEqual(expect.any(String))
+      expect(f.request).toHaveBeenCalledWith({ url: embed }, expect.anything())
+      expect(f.cookieApi.getAll).not.toHaveBeenCalled()
+      expect(f.manager.ensureReady).not.toHaveBeenCalled()
     })
-
-    it('ignores a target URL that is not a frame of the sender tab', async () => {
+    it.each(['https://ok.ru/account/private', 'https://evil.example/steal'])(
+      'rejects an unvisited target without substituting another page: %s',
+      async (url) => {
+        const f = await create()
+        const result = await f.handlers.grabberFormats({ url }, contentSender)
+        expect(result.formats.available).toBe(false)
+        expect(f.request).not.toHaveBeenCalled()
+      }
+    )
+    it('never captures top-level browser credentials for an embedded auto request', async () => {
+      const embedded = 'https://www.bilibili.com/video/fixture'
       const f = await fixture({
-        getAllFrames: async () => [{ url: media.pageUrl }],
+        getAllFrames: async () => [{ url: media.pageUrl }, { url: embedded }],
       })
-      const operation = f.handlers.grabberResolvePageDownload(
-        {
-          idempotencyKey: newDownloadOperationId(),
-          qualityLabel: '1080p',
-          pageUrl: 'https://evil.example/steal',
-        },
-        contentSender(media.pageUrl)
-      )
-      await vi.waitFor(() =>
-        expect(f.manager.ensureReady).toHaveBeenCalledOnce()
-      )
       f.ready.resolve()
-      await expect(operation).resolves.toEqual({ taskId: 'task-1' })
-      expect(f.cookieApi.getAll).toHaveBeenCalledWith({ url: media.pageUrl })
+      await expect(
+        f.handlers.grabberResolvePageDownload(
+          { idempotencyKey: newDownloadOperationId(), pageUrl: embedded },
+          contentSender
+        )
+      ).resolves.toEqual({ taskId: 'task-1' })
+      expect(f.cookieApi.getAll).not.toHaveBeenCalled()
       expect(f.manager.submitDownload).toHaveBeenCalledWith(
         expect.objectContaining({
-          source: expect.objectContaining({ pageUrl: media.pageUrl }),
+          selection: expect.objectContaining({
+            primary: expect.objectContaining({ cookies: [] }),
+          }),
         }),
         expect.anything()
       )
     })
-
-    it('resolves the tab URL when no frame list is available', async () => {
-      const f = await fixture()
-      const operation = f.handlers.grabberResolvePageDownload(
-        {
-          idempotencyKey: newDownloadOperationId(),
-          qualityLabel: '1080p',
-          pageUrl: embed,
-        },
-        contentSender(media.pageUrl)
+    it('requires an actual offered choice and submits public media without cookies', async () => {
+      const f = await create()
+      const request = {
+        idempotencyKey: newDownloadOperationId(),
+        qualityLabel: '1080p' as const,
+        pageUrl: embed,
+      }
+      await expect(
+        f.handlers.grabberResolvePageDownload(request, contentSender)
+      ).rejects.toThrow()
+      const result = await f.handlers.grabberFormats(
+        { url: embed },
+        contentSender
       )
-      await vi.waitFor(() =>
-        expect(f.manager.ensureReady).toHaveBeenCalledOnce()
-      )
-      f.ready.resolve()
-      await expect(operation).resolves.toEqual({ taskId: 'task-1' })
+      await expect(
+        f.handlers.grabberResolvePageDownload(
+          { ...request, listingId: result.listingId },
+          contentSender
+        )
+      ).resolves.toEqual({ taskId: 'task-1' })
+      expect(f.cookieApi.getAll).not.toHaveBeenCalled()
       expect(f.manager.submitDownload).toHaveBeenCalledWith(
         expect.objectContaining({
-          source: expect.objectContaining({ pageUrl: media.pageUrl }),
+          selection: expect.objectContaining({
+            primary: expect.objectContaining({ cookies: [] }),
+          }),
         }),
         expect.anything()
       )
+    })
+    it.each(['unoffered', 'navigation', 'session', 'expiry'])(
+      'rejects invalidated quality proof: %s',
+      async (reason) => {
+        const f = await create()
+        const result = await f.handlers.grabberFormats(
+          { url: embed },
+          contentSender
+        )
+        if (reason === 'navigation') f.documents.invalidate(4)
+        if (reason === 'session')
+          f.request.mock.results[0]!.value.then((r) =>
+            r.assertCurrent.mockImplementation(() => {
+              throw new Error('session changed')
+            })
+          )
+        if (reason === 'expiry')
+          vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 61_000)
+        await Promise.resolve()
+        await expect(
+          f.handlers.grabberResolvePageDownload(
+            {
+              idempotencyKey: newDownloadOperationId(),
+              pageUrl: embed,
+              qualityLabel: reason === 'unoffered' ? '720p' : '1080p',
+              listingId: result.listingId,
+            },
+            contentSender
+          )
+        ).rejects.toThrow()
+        expect(f.manager.submitDownload).not.toHaveBeenCalled()
+        vi.restoreAllMocks()
+      }
+    )
+    it('denies web-store sites before lookup and before quality submission', async () => {
+      const f = await create(true)
+      expect(
+        (await f.handlers.grabberFormats(undefined, contentSender)).formats
+          .available
+      ).toBe(false)
+      await expect(
+        f.handlers.resolvePageDownload(
+          {
+            idempotencyKey: newDownloadOperationId(),
+            qualityLabel: '1080p',
+            listingId: 'forged',
+          },
+          sender
+        )
+      ).rejects.toThrow()
+      await expect(
+        f.handlers.grabberResolvePageDownload(
+          {
+            idempotencyKey: newDownloadOperationId(),
+            qualityLabel: 'mp3',
+            listingId: 'forged',
+          },
+          contentSender
+        )
+      ).rejects.toThrow()
+      expect(f.request).not.toHaveBeenCalled()
+      expect(f.cookieApi.getAll).not.toHaveBeenCalled()
+    })
+    it.each(['www.youtube.com.', 'youtube-nocookie.com.'])(
+      'does not let a DNS root dot bypass web-store exclusion: %s',
+      async (host) => {
+        const url = `https://${host}/watch?v=fixture`
+        const f = await fixture({ webStore: true, pageUrl: url })
+        f.manager.getServerCapabilities.mockReturnValue(capabilities)
+        const response = await f.handlers.grabberFormats(undefined, sender)
+        expect(response.formats.available).toBe(false)
+        await expect(
+          f.handlers.resolvePageDownload(
+            {
+              idempotencyKey: newDownloadOperationId(),
+              qualityLabel: '1080p',
+              listingId: response.listingId,
+            },
+            sender
+          )
+        ).rejects.toThrow()
+        expect(f.request).not.toHaveBeenCalled()
+        expect(f.manager.submitDownload).not.toHaveBeenCalled()
+      }
+    )
+    it('does not query an old host with absent mediaFormats capability', async () => {
+      const f = await create()
+      f.manager.getServerCapabilities.mockReturnValue({
+        ...capabilities,
+        mediaFormats: false,
+      })
+      expect(
+        (await f.handlers.grabberFormats(undefined, sender)).formats.available
+      ).toBe(false)
+      expect(f.request).not.toHaveBeenCalled()
     })
   })
 })

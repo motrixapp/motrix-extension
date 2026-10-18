@@ -371,7 +371,11 @@
       "unsupportedReason": "ต้องใช้ FFmpeg เพื่อดาวน์โหลดรายการนี้",
       "unsupportedSelectionReason": "แบ็กเอนด์ที่เลือกไม่สามารถส่งทรัพยากรที่เลือกอย่างน้อยหนึ่งประเภทได้",
       "unsupportedResource": "ส่ง {{name}} ไม่ได้ {{reason}}",
-      "refreshCapabilitiesHint": "ตั้งค่า FFmpeg ในการตั้งค่า Motrix แล้วคลิก “สแกนอีกครั้ง”"
+      "refreshCapabilitiesHint": "ตั้งค่า FFmpeg ในการตั้งค่า Motrix แล้วคลิก “สแกนอีกครั้ง”",
+      "showQualities": "แสดงตัวเลือกคุณภาพ",
+      "selectQuality": "เลือกคุณภาพ",
+      "qualityAuto": "อัตโนมัติ (ดีที่สุด)",
+      "downloadMp3": "ดาวน์โหลด MP3"
     },
     "speed": {
       "download": "ดาวน์โหลด",

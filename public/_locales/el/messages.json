@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Επίσημη επέκταση Motrix για το πρόγραμμα περιήγησης. Στείλτε λήψεις στο Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Εμφάνιση επιλογών ποιότητας"
+  },
+  "grabberPanelTitle": {
+    "message": "Λήψη με το Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "Συνδεθείτε με το Motrix για αποστολή πόρων."
+  },
+  "grabberFormatsLoading": {
+    "message": "Σάρωση…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Αλλάξτε σελίδα ή δοκιμάστε αργότερα."
+  },
+  "grabberButtonLabel": {
+    "message": "Λήψη με το Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "Πόροι σελίδας"
+  },
+  "grabberSent": {
+    "message": "Παραδόθηκε στο Motrix"
+  },
+  "grabberFailed": {
+    "message": "Ο πόρος δεν στάλθηκε. Δοκιμάστε ξανά."
+  },
+  "grabberSectionVideo": {
+    "message": "Βίντεο"
+  },
+  "grabberSectionAudio": {
+    "message": "Ήχος"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Ήχος"
   }
 }

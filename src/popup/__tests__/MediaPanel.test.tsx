@@ -1192,6 +1192,7 @@ describe('MediaPanel resource rows', () => {
       if (kind === 'bg.grabberFormats') {
         return {
           connected: true,
+          listingId: 'test-listing',
           formats: {
             available: true,
             entries: [
@@ -1209,6 +1210,13 @@ describe('MediaPanel resource rows', () => {
     })
 
     render(<MediaPanel active connected />)
+    const show = await screen.findByRole('button', {
+      name: i18n.t('popup.sniffer.showQualities'),
+    })
+    expect(send.mock.calls.some(([kind]) => kind === 'bg.grabberFormats')).toBe(
+      false
+    )
+    fireEvent.click(show)
 
     const select = await screen.findByRole('combobox', {
       name: i18n.t('popup.sniffer.selectQuality', {
@@ -1228,6 +1236,7 @@ describe('MediaPanel resource rows', () => {
       expect(send).toHaveBeenCalledWith('bg.resolvePageDownload', {
         idempotencyKey: expect.any(String),
         qualityLabel: '1080p',
+        listingId: 'test-listing',
       })
     })
   })
@@ -1243,6 +1252,7 @@ describe('MediaPanel resource rows', () => {
       if (kind === 'bg.grabberFormats') {
         return {
           connected: true,
+          listingId: 'test-listing',
           formats: {
             available: true,
             entries: [
@@ -1259,6 +1269,13 @@ describe('MediaPanel resource rows', () => {
     })
 
     render(<MediaPanel active connected />)
+    const show = await screen.findByRole('button', {
+      name: i18n.t('popup.sniffer.showQualities'),
+    })
+    expect(send.mock.calls.some(([kind]) => kind === 'bg.grabberFormats')).toBe(
+      false
+    )
+    fireEvent.click(show)
 
     const mp3Btn = await screen.findByRole('button', { name: 'MP3' })
     fireEvent.click(mp3Btn)
@@ -1267,6 +1284,7 @@ describe('MediaPanel resource rows', () => {
       expect(send).toHaveBeenCalledWith('bg.resolvePageDownload', {
         idempotencyKey: expect.any(String),
         qualityLabel: 'mp3',
+        listingId: 'test-listing',
       })
     })
   })

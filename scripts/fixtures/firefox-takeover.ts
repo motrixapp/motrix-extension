@@ -124,6 +124,10 @@ registerWebRequestEarlyTakeover(deps, {
     if (windowId === undefined) throw new Error('No originating window')
     const draft = confirmation.get(windowId)
     if (!draft) throw new Error('No confirmation draft')
+    observations.push({
+      event: 'confirmation-filename',
+      filename: draft.options.filename,
+    })
     const action =
       caseName === 'early-confirm-accept'
         ? 'submit'

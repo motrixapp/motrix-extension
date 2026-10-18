@@ -371,7 +371,11 @@
       "unsupportedReason": "このコンテンツのダウンロードには FFmpeg が必要です。",
       "unsupportedSelectionReason": "選択したバックエンドでは、選択されたリソースの一部またはすべての種類を送信できません。",
       "unsupportedResource": "{{name}} を送信できません。{{reason}}",
-      "refreshCapabilitiesHint": "Motrix の設定で FFmpeg を設定してから、「再スキャン」をクリックしてください。"
+      "refreshCapabilitiesHint": "Motrix の設定で FFmpeg を設定してから、「再スキャン」をクリックしてください。",
+      "showQualities": "画質を表示",
+      "selectQuality": "画質を選択",
+      "qualityAuto": "自動（最高画質）",
+      "downloadMp3": "ダウンロード MP3"
     },
     "speed": {
       "download": "ダウンロード",

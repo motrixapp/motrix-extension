@@ -371,7 +371,11 @@
       "unsupportedReason": "FFmpeg este necesar pentru a descărca acest element.",
       "unsupportedSelectionReason": "Serviciul selectat nu poate trimite unul sau mai multe tipuri de resurse selectate.",
       "unsupportedResource": "{{name}} nu poate fi trimis. {{reason}}",
-      "refreshCapabilitiesHint": "Configurează FFmpeg în setările Motrix, apoi apasă pe „Scanează din nou”."
+      "refreshCapabilitiesHint": "Configurează FFmpeg în setările Motrix, apoi apasă pe „Scanează din nou”.",
+      "showQualities": "Afișează calitățile",
+      "selectQuality": "Selectează calitatea",
+      "qualityAuto": "Automată (cea mai bună)",
+      "downloadMp3": "Descărcare MP3"
     },
     "speed": {
       "download": "Descărcare",

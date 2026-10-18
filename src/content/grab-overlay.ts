@@ -1,6 +1,8 @@
 import { send } from '@/background/MessageBus'
 import { extensionBrowser as browser } from '@/shared/browser'
+import { isWebStoreBuild } from '@/shared/buildFlags'
 import { newDownloadOperationId } from '@/shared/integration'
+import { shouldExcludeHost } from '@/shared/media'
 import type { QualityLabel } from '@/shared/mediaFormats'
 import type { MessageResponse } from '@/shared/messages'
 
@@ -28,8 +30,6 @@ const POLL_INTERVAL_MS = 2_000
 const MAX_VISIBLE_ITEMS = 6
 const EDGE_INSET = 12
 const HOST_ID = 'motrix-grab-overlay'
-/** Format listings are stable for a while — refetch at most this often. */
-const FORMATS_TTL_MS = 60_000
 /** Videos smaller than this (CSS px) are treated as decorative, not content. */
 const MIN_VIDEO_WIDTH = 120
 const MIN_VIDEO_HEIGHT = 80
@@ -283,7 +283,11 @@ const STYLE = `
 
 export function installGrabOverlay(): void {
   if (typeof document === 'undefined' || !document.body) return
-  if (window !== window.top) return
+  if (
+    window !== window.top ||
+    shouldExcludeHost(location.hostname, isWebStoreBuild())
+  )
+    return
 
   const host = ensureHost()
   const shadow = host.__motrixGrabShadow
@@ -309,8 +313,8 @@ export function installGrabOverlay(): void {
   // Last yt-dlp format listing, valid for the URL it was fetched for.
   let formats: MessageResponse<'bg.grabberFormats'>['formats'] | null = null
   let formatsForUrl: string | null = null
-  let formatsFetchedAt = 0
   let formatsFlight = false
+  let listingId: string | undefined
 
   const toast = document.createElement('div')
   toast.className = 'toast'
@@ -348,10 +352,8 @@ export function installGrabOverlay(): void {
   const render = (): void => {
     const content = hasContent()
     lastHasContent = content
-    // The overlay repaints on every 2s poll and on each playback/format event,
-    // and each repaint rebuilds the panel from scratch. Carry the open list's
-    // scroll position onto the rebuilt list, otherwise a reader who scrolled
-    // down is snapped back to the top of the list on the next tick.
+    // Actual content changes rebuild the panel. Preserve its scroll position;
+    // unchanged passive polls retain the DOM and its current keyboard focus.
     listScrollTop = panelOpen && listElement ? listElement.scrollTop : 0
     listElement = null
     wrap.replaceChildren()
@@ -412,6 +414,9 @@ export function installGrabOverlay(): void {
         list.appendChild(section)
       }
 
+      appendRow(t('grabberShowQualities', 'Show qualities'), '', () => {
+        void fetchFormats()
+      })
       // yt-dlp quality rows: the desktop's own view of what this page
       // offers. The row's key echoes back as meta.qualityLabel on submit.
       if (qualityVideos.length > 0) {
@@ -439,7 +444,7 @@ export function installGrabOverlay(): void {
       } else if (
         formats &&
         !formats.available &&
-        formatsForUrl === location.href &&
+        formatsForUrl === (anchor()?.frameUrl ?? location.href) &&
         qualityVideos.length === 0 &&
         qualityAudio.length === 0
       ) {
@@ -491,7 +496,6 @@ export function installGrabOverlay(): void {
     pill.addEventListener('click', () => {
       panelOpen = !panelOpen
       render()
-      if (panelOpen) void fetchFormats()
     })
     wrap.appendChild(pill)
     pillElement = pill
@@ -613,6 +617,7 @@ export function installGrabOverlay(): void {
       await send('bg.grabberResolvePageDownload', {
         idempotencyKey: newDownloadOperationId(),
         ...(qualityLabel ? { qualityLabel } : {}),
+        ...(listingId ? { listingId } : {}),
         // Present only when anchored to an embedded player; the background
         // validates it belongs to this tab before honouring it.
         ...(frameUrl ? { pageUrl: frameUrl } : {}),
@@ -636,40 +641,37 @@ export function installGrabOverlay(): void {
 
   /**
    * Ask the desktop for this page's yt-dlp format list (quality picker).
-   * Auto-runs when a video starts playing and when the panel opens; the
-   * URL-keyed TTL keeps polling cheap. Never throws — a disconnected
-   * desktop or a listing failure simply leaves the sniffed rows as the
+   * Runs only from the explicit Show qualities button. A disconnected desktop
+   * or a listing failure simply leaves the sniffed rows as the
    * only offering (the background answers `{ available: false }`).
    */
   const fetchFormats = async (): Promise<void> => {
     if (formatsFlight || !connected) return
-    if (
-      formatsForUrl === location.href &&
-      formats &&
-      (formats.available
-        ? Date.now() - formatsFetchedAt < FORMATS_TTL_MS
-        : Date.now() - formatsFetchedAt < 5_000)
-    ) {
-      return
-    }
+    const targetUrl = anchor()?.frameUrl ?? location.href
+    const topUrl = location.href
     formatsFlight = true
     if (panelOpen) render()
     try {
       const response = await send('bg.grabberFormats', {
         // Resolve the embedded player's URL when the pill is anchored to one,
         // so the desktop lists that player's qualities rather than the article's.
-        url: anchor()?.frameUrl ?? location.href,
+        url: targetUrl,
       })
+      if (
+        topUrl !== location.href ||
+        targetUrl !== (anchor()?.frameUrl ?? location.href)
+      )
+        return
       formats = response.formats
-      formatsForUrl = location.href
-      formatsFetchedAt = Date.now()
+      listingId = response.listingId
+      formatsForUrl = targetUrl
       connected = response.connected
     } catch (error) {
       if (isContextInvalidated(error)) {
         teardown()
         return
       }
-      // Transient failure — retry on the next trigger (play / open / poll).
+      // A later explicit action may retry; passive events never disclose a URL.
     } finally {
       formatsFlight = false
       render()
@@ -691,23 +693,23 @@ export function installGrabOverlay(): void {
     }
     if (!snapshot) return
     const next = snapshot.media ?? []
-    const changed =
-      next.length !== items.length ||
-      next.some((item, index) => item.key !== items[index]?.key)
-    // SPA navigation invalidates the previous page's listing.
-    if (formatsForUrl !== null && formatsForUrl !== location.href) {
+    const changed = JSON.stringify(next) !== JSON.stringify(items)
+    const connectionChanged = connected !== snapshot.connected
+    const targetChanged =
+      formatsForUrl !== null &&
+      formatsForUrl !== (anchor()?.frameUrl ?? location.href)
+    if (targetChanged) {
       formats = null
-      formatsFetchedAt = 0
+      listingId = undefined
+      formatsForUrl = null
     }
     connected = snapshot.connected
     items = next
     const contentChanged = hasContent() !== lastHasContent
-    if (changed || contentChanged || panelOpen) render()
+    if (changed || contentChanged || connectionChanged || targetChanged)
+      render()
     schedulePosition()
-    // Auto-fetch qualities for any page the overlay would show (playing video
-    // OR sniffed media) so the picker is populated by the time the panel
-    // opens. fetchFormats dedupes via the URL-keyed TTL cache.
-    if (connected && hasContent()) void fetchFormats()
+    // Passive polling never discloses the page URL to the backend.
   }
 
   const resizeObserver =

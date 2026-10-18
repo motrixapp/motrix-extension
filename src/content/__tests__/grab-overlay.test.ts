@@ -104,7 +104,9 @@ describe('grab-overlay playback transition', () => {
     expect(panel).not.toBeNull()
 
     // Find and click the download button in the panel
-    const row = panel.querySelector('.row:not(.note)') as HTMLButtonElement
+    const row = panel.querySelector(
+      '.row:not(.note):last-child'
+    ) as HTMLButtonElement
     expect(row).not.toBeNull()
     expect(row.disabled).toBe(false)
     row.click()
@@ -209,7 +211,16 @@ describe('grab-overlay playback transition', () => {
 
     expect(wrap.hidden).toBe(false)
     expect(wrap.querySelector('.pill')).not.toBeNull()
-    // Formats are listed for the player URL, not the surrounding article.
+    expect(chrome.runtime.sendMessage).not.toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'bg.grabberFormats' })
+    )
+    ;(wrap.querySelector('.pill') as HTMLButtonElement).click()
+    const qualityButton = [...wrap.querySelectorAll('button')].find(
+      (button) => button.textContent === 'Show qualities'
+    )!
+    qualityButton.click()
+    await vi.advanceTimersByTimeAsync(100)
+    // Only the explicit action lists qualities for the verified player.
     expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
       expect.objectContaining({
         kind: 'bg.grabberFormats',
@@ -234,7 +245,7 @@ describe('grab-overlay playback transition', () => {
     await vi.advanceTimersByTimeAsync(100)
 
     const row = wrap.querySelector(
-      '.panel .row:not(.note)'
+      '.panel .row:not(.note):last-child'
     ) as HTMLButtonElement
     row.click()
     await Promise.resolve()
@@ -263,7 +274,7 @@ describe('grab-overlay playback transition', () => {
     expect(wrap.querySelector('.pill')).toBeNull()
   })
 
-  it('keeps the open panel list scrolled where the reader left it', async () => {
+  it('keeps panel scroll and keyboard focus during unchanged passive polls', async () => {
     installGrabOverlay()
     const host = document.getElementById('motrix-grab-overlay') as any
     const shadow = host.__motrixGrabShadow as ShadowRoot
@@ -284,15 +295,18 @@ describe('grab-overlay playback transition', () => {
     const list = wrap.querySelector('.list') as HTMLElement
     expect(list).not.toBeNull()
     list.scrollTop = 120
+    const focused = list.querySelector('button') as HTMLButtonElement
+    focused.focus()
+    expect(shadow.activeElement).toBe(focused)
 
-    // The overlay repaints on its 2s poll while the panel is open. The rebuilt
-    // list must not throw the reader back to the top.
+    // Unchanged polling must not replace the focused button or scroll container.
     await vi.advanceTimersByTimeAsync(2000)
     await Promise.resolve()
 
     const rebuilt = wrap.querySelector('.list') as HTMLElement
     expect(rebuilt).not.toBeNull()
-    expect(rebuilt).not.toBe(list)
+    expect(rebuilt).toBe(list)
+    expect(shadow.activeElement).toBe(focused)
     expect(rebuilt.scrollTop).toBe(120)
   })
 })

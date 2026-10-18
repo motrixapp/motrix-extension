@@ -371,7 +371,11 @@
       "unsupportedReason": "FFmpeg is needed to download this item.",
       "unsupportedSelectionReason": "The selected backend cannot submit one or more selected resource types.",
       "unsupportedResource": "{{name}} cannot be sent. {{reason}}",
-      "refreshCapabilitiesHint": "Set up FFmpeg in Motrix settings, then click “Scan again”."
+      "refreshCapabilitiesHint": "Set up FFmpeg in Motrix settings, then click “Scan again”.",
+      "showQualities": "Show qualities",
+      "selectQuality": "Select quality",
+      "qualityAuto": "Auto (Best)",
+      "downloadMp3": "Download MP3"
     },
     "speed": {
       "download": "Download",

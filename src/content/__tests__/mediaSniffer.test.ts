@@ -578,9 +578,43 @@ describe('installSniffer initial harvest (already-loaded media)', () => {
     ).toEqual(['body-json', 'xhr'])
   })
 
+  it('inspects an audio/x-mpegurl master playlist and discovers variants', async () => {
+    window.fetch = vi.fn(
+      async () =>
+        new Response(
+          '#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=1280x720\nhttps://cdn.example/720.m3u8\n',
+          {
+            headers: { 'content-type': 'audio/x-mpegurl' },
+          }
+        )
+    )
+    const reported: DetectedMedia[][] = []
+    const sniffer = installSniffer((items) => reported.push(items), {
+      pageUrl: 'https://site/watch',
+      pageTitle: 'Watch',
+    })
+    try {
+      await window.fetch('https://cdn.example/master.m3u8')
+      await vi.waitFor(() =>
+        expect(
+          reported
+            .flat()
+            .some((item) => item.url === 'https://cdn.example/720.m3u8')
+        ).toBe(true)
+      )
+    } finally {
+      sniffer.uninstall()
+    }
+  })
+
   it('does not clone or inspect 206 Partial Content or binary/stream responses', async () => {
+    const clone = vi.spyOn(Response.prototype, 'clone')
     const originalFetch = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input)
+      if (url.endsWith('/fake.m3u8'))
+        return new Response(new Uint8Array([1, 2, 3]), {
+          headers: { 'content-type': 'video/mp4' },
+        })
       if (url.includes('partial')) {
         return new Response(new Uint8Array([1, 2, 3]), {
           status: 206,
@@ -607,6 +641,8 @@ describe('installSniffer initial harvest (already-loaded media)', () => {
     // Stream should remain untouched and un-cloned
     const resOctet = await window.fetch('https://cdn.example/chunk.ts')
     expect(resOctet.status).toBe(200)
+    await window.fetch('https://cdn.example/fake.m3u8')
+    expect(clone).not.toHaveBeenCalled()
 
     sniffer.uninstall()
   })

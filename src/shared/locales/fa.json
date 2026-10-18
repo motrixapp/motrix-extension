@@ -371,7 +371,11 @@
       "unsupportedReason": "برای دانلود این مورد به FFmpeg نیاز است.",
       "unsupportedSelectionReason": "مقصد انتخاب‌شده نمی‌تواند یک یا چند نوع از منابع انتخاب‌شده را ارسال کند.",
       "unsupportedResource": "{{name}} قابل ارسال نیست. {{reason}}",
-      "refreshCapabilitiesHint": "FFmpeg را در تنظیمات Motrix راه‌اندازی کنید، سپس روی «بررسی دوباره» کلیک کنید."
+      "refreshCapabilitiesHint": "FFmpeg را در تنظیمات Motrix راه‌اندازی کنید، سپس روی «بررسی دوباره» کلیک کنید.",
+      "showQualities": "نمایش کیفیت‌ها",
+      "selectQuality": "انتخاب کیفیت",
+      "qualityAuto": "خودکار (بهترین)",
+      "downloadMp3": "دانلود MP3"
     },
     "speed": {
       "download": "دانلود",

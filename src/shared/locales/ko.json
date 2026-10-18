@@ -371,7 +371,11 @@
       "unsupportedReason": "이 콘텐츠를 다운로드하려면 FFmpeg가 필요합니다.",
       "unsupportedSelectionReason": "선택한 백엔드에서 선택된 리소스 유형 중 하나 이상을 전송할 수 없습니다.",
       "unsupportedResource": "{{name}}을(를) 전송할 수 없습니다. {{reason}}",
-      "refreshCapabilitiesHint": "Motrix 설정에서 FFmpeg를 설정한 다음 “다시 검색”을 클릭하세요."
+      "refreshCapabilitiesHint": "Motrix 설정에서 FFmpeg를 설정한 다음 “다시 검색”을 클릭하세요.",
+      "showQualities": "화질 보기",
+      "selectQuality": "화질 선택",
+      "qualityAuto": "자동 (최고 화질)",
+      "downloadMp3": "다운로드 MP3"
     },
     "speed": {
       "download": "다운로드",

@@ -363,6 +363,7 @@ export interface MessageMap {
   'bg.resolvePageDownload': {
     request: CallerIdempotencyRequest & {
       qualityLabel?: import('@/shared/mediaFormats').QualityLabel
+      listingId?: string
     }
     response: import('@motrix/mdxp').DownloadSubmitResult
   }
@@ -390,15 +391,16 @@ export interface MessageMap {
   }
 
   // in-page grab overlay → background → motrix: list the yt-dlp qualities a
-  // page URL offers (fork-local `media/formats` method). Never rejects —
-  // a disconnected desktop or a listing failure comes back as
+  // page URL offers through the published MDXP method. No cookies are collected.
+  // A disconnected desktop or a listing failure comes back as
   // `{ connected, formats: { available: false, ... } }` so the overlay can
   // fall back to its sniffed rows.
   'bg.grabberFormats': {
     request: { url?: string } | undefined
     response: {
       connected: boolean
-      formats: import('@/shared/mediaFormats').MediaFormatsResult
+      formats: import('@motrix/mdxp').MediaFormatsResult
+      listingId?: string
     }
   }
 
@@ -406,6 +408,7 @@ export interface MessageMap {
   'bg.grabberResolvePageDownload': {
     request: {
       qualityLabel?: import('@/shared/mediaFormats').QualityLabel
+      listingId?: string
       /**
        * Target URL for resolution. The overlay sends the embedded player's URL
        * when it anchored to a cross-origin player <iframe> (e.g.

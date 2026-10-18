@@ -1,3 +1,7 @@
+import {
+  contentDispositionFilename,
+  type ResponseHeader as ResponseHeaderLike,
+} from '@/background/capture/contentDisposition'
 import type {
   MediaCredentialStore,
   NetworkMediaCredentialObservation,
@@ -26,11 +30,6 @@ export const NETWORK_MEDIA_REQUEST_TYPES = [
   'other',
   'sub_frame',
 ] as const
-
-interface ResponseHeaderLike {
-  name: string
-  value?: string
-}
 
 export interface NetworkRequestDetails {
   requestId: string
@@ -315,45 +314,11 @@ function responseSizeBytes(headers: ResponseHeaderLike[] | undefined): {
     : {}
 }
 
-function decodeExtendedFilename(value: string): string {
-  const match = /^[^']*'[^']*'(.*)$/.exec(value)
-  const encoded = match?.[1] ?? value
-  try {
-    return decodeURIComponent(encoded)
-  } catch {
-    return encoded.replace(/%([\da-f]{2})/gi, (_match, hex: string) =>
-      String.fromCharCode(Number.parseInt(hex, 16))
-    )
-  }
-}
-
 function cleanSuggestedFilename(value: string | undefined): string | undefined {
   if (!value) return undefined
   const unescaped = value.replace(/\\(["\\])/g, '$1')
   const leaf = unescaped.split(/[\\/]/).at(-1)
   return leaf ? sanitizeFilename(leaf, 'download') : undefined
-}
-
-function contentDispositionFilename(
-  headers: ResponseHeaderLike[] | undefined
-): string | undefined {
-  const disposition = headerValue(headers, 'content-disposition')
-  if (!disposition) return undefined
-  const extended =
-    /(?:^|;)\s*filename\*\s*=\s*(?:"((?:\\.|[^"])*)"|([^;]*))/i.exec(
-      disposition
-    )
-  if (extended) {
-    const decoded = decodeExtendedFilename(
-      (extended[1] ?? extended[2] ?? '').trim()
-    )
-    const cleaned = cleanSuggestedFilename(decoded)
-    if (cleaned) return cleaned
-  }
-  const basic = /(?:^|;)\s*filename\s*=\s*(?:"((?:\\.|[^"])*)"|([^;]*))/i.exec(
-    disposition
-  )
-  return cleanSuggestedFilename((basic?.[1] ?? basic?.[2])?.trim())
 }
 
 function filenameFromUrl(url: URL): string | undefined {
@@ -699,8 +664,11 @@ export async function captureNetworkMediaResponse(
   const inferredMime = normalizeMimeType(
     inferMediaMimeType(resourceUrl.toString(), contentType)
   )
-  const dispositionFilename = contentDispositionFilename(
-    details.responseHeaders
+  const dispositionFilename = cleanSuggestedFilename(
+    contentDispositionFilename(
+      details.responseHeaders,
+      typeof __BROWSER__ !== 'undefined' && __BROWSER__ === 'firefox'
+    )
   )
   const baseFilename =
     dispositionFilename ??

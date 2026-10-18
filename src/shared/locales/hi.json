@@ -371,7 +371,11 @@
       "unsupportedReason": "इसे डाउनलोड करने के लिए FFmpeg ज़रूरी है।",
       "unsupportedSelectionReason": "चुना गया बैकएंड चयनित संसाधनों में से एक या अधिक प्रकार नहीं भेज सकता।",
       "unsupportedResource": "{{name}} भेजा नहीं जा सकता। {{reason}}",
-      "refreshCapabilitiesHint": "Motrix की सेटिंग में FFmpeg सेट अप करें, फिर “फिर स्कैन करें” पर क्लिक करें।"
+      "refreshCapabilitiesHint": "Motrix की सेटिंग में FFmpeg सेट अप करें, फिर “फिर स्कैन करें” पर क्लिक करें।",
+      "showQualities": "गुणवत्ता विकल्प दिखाएँ",
+      "selectQuality": "गुणवत्ता चुनें",
+      "qualityAuto": "स्वचालित (सर्वश्रेष्ठ)",
+      "downloadMp3": "डाउनलोड MP3"
     },
     "speed": {
       "download": "डाउनलोड",
