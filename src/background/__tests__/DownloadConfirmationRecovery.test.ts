@@ -48,6 +48,62 @@ afterEach(() => {
 })
 
 describe('confirmation session recovery', () => {
+  it('restores edited automatic drafts after a delivered popup reports a late opening failure', async () => {
+    const f = fixture()
+    await f.service.ready
+    let rejectOpening!: (error: Error) => void
+    f.io.open.mockReturnValueOnce(
+      new Promise((_, reject) => {
+        rejectOpening = reject
+      })
+    )
+    const settled = vi.fn()
+    void f.service
+      .request({ ...target, origin: 'auto' }, 4, f.actions, binding)
+      .then(settled)
+    const draft = f.service.get(4)!
+    f.service.markPresented(4, draft.id)
+    const options = {
+      ...draft.options,
+      filename: 'edited.zip',
+      cookie: 'session=test',
+    }
+    f.service.decide(4, draft.id, { action: 'edit', options })
+    rejectOpening(new Error('late opening failure'))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(settled).not.toHaveBeenCalled()
+    expect(f.saved()[0]?.draft.options).toEqual(options)
+    vi.clearAllTimers()
+    const restored = new DownloadConfirmationService(f.io)
+    await restored.ready
+    expect(restored.get(4)).toMatchObject({
+      id: draft.id,
+      options,
+      phase: 'editing',
+      expiresAt: draft.expiresAt,
+    })
+    expect(f.actions.submit).not.toHaveBeenCalled()
+    expect(f.actions.browser).not.toHaveBeenCalled()
+    restored.close(4)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(f.saved()).toEqual([])
+  })
+  it('removes an unavailable automatic draft from session storage before a later popup can restore it', async () => {
+    const f = fixture()
+    await f.service.ready
+    f.io.open.mockRejectedValue(new Error('unavailable'))
+    await expect(
+      f.service.request({ ...target, origin: 'auto' }, 4, f.actions, binding)
+    ).resolves.toEqual({ action: 'unavailable' })
+    await vi.waitFor(() => expect(f.saved()).toEqual([]))
+    vi.clearAllTimers()
+    const restored = new DownloadConfirmationService(f.io)
+    await restored.ready
+    expect(restored.get(4)).toBeNull()
+    expect(f.io.recover).not.toHaveBeenCalled()
+    expect(f.actions.submit).not.toHaveBeenCalled()
+    expect(f.actions.browser).not.toHaveBeenCalled()
+  })
   it('restores unsent edits, including incomplete headers, without making requests or opening a popup', async () => {
     const f = fixture()
     await f.service.ready

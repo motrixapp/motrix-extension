@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { zipSync } from 'fflate'
 import { build } from 'vite'
+import { waitForFirefoxFixture } from './fixtures/firefox-readiness.mjs'
 import { createMdxpSimulator } from './fixtures/mdxp-simulator.mjs'
 import {
   FIREFOX_CASES,
@@ -319,16 +320,10 @@ try {
     console.error(diagnostics)
     throw error
   }
-  let context
-  const pageDeadline = Date.now() + 10000
-  while (!context && Date.now() < pageDeadline) {
-    const tree = await command('browsingContext.getTree', {})
-    context = tree.contexts.find((page) =>
-      page.url?.endsWith('/runner.html')
-    )?.context
-    if (!context) await delay(100)
-  }
-  assert.ok(context, `Firefox did not open the fixture: ${diagnostics}`)
+  const context = await waitForFirefoxFixture(
+    command,
+    `moz-extension://${uuid}/runner.html`
+  )
   const receiverResponse = await command('script.evaluate', {
     expression: `checkFetchReceiver(${JSON.stringify(baseUrl)}).then(JSON.stringify)`,
     target: { context },

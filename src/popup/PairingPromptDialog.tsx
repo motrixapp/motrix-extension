@@ -29,6 +29,7 @@ export function PairingPromptDialog({
   return (
     <Dialog
       open
+      disablePointerDismissal
       onOpenChange={(open) => {
         if (!open) onDismiss()
       }}
