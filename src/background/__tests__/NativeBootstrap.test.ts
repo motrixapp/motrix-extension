@@ -14,6 +14,7 @@ declare const browser: {
 }
 
 interface FakePort {
+  error?: { message: string }
   postMessage: ReturnType<typeof vi.fn>
   disconnect: ReturnType<typeof vi.fn>
   onMessage: { addListener: (fn: (m: unknown) => void) => void }
@@ -154,6 +155,19 @@ describe('NativeBootstrap', () => {
     setTimeout(() => port.__fireDisconnect(), 5)
 
     await expect(promise).rejects.toThrow(/disconnect/i)
+  })
+
+  it('preserves Firefox native-host failures from Port.error', async () => {
+    const port = makeFakePort()
+    browser.runtime.connectNative = vi.fn(() => port)
+    const promise = new NativeBootstrap().discover()
+    port.error = { message: 'No such native application app.motrix.bridge' }
+    port.__fireDisconnect()
+    await expect(promise).rejects.toMatchObject({
+      code: 'disconnect',
+      message:
+        'NM host disconnected: No such native application app.motrix.bridge',
+    })
   })
 
   it('times out after configured ms', async () => {

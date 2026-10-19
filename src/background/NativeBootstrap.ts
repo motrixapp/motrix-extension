@@ -58,6 +58,8 @@ export interface NativeBootstrapOptions {
 }
 
 interface NMPort {
+  /** Firefox reports disconnect failures here instead of runtime.lastError. */
+  error?: { message: string }
   postMessage(msg: unknown): void
   disconnect(): void
   onMessage: { addListener(fn: (m: unknown) => void): void }
@@ -137,7 +139,8 @@ export class NativeBootstrap implements BootstrapProvider {
       })
 
       port.onDisconnect.addListener(() => {
-        const lastErr = browser.runtime.lastError?.message
+        const lastErr =
+          browser.runtime.lastError?.message ?? port.error?.message
         log.info(`[NM] onDisconnect lastError=${lastErr ?? 'none'}`)
         settle(() =>
           reject(
