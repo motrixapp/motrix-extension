@@ -480,6 +480,18 @@ export class DiscoveryService {
     )
     if (viaNm !== null) return [viaNm]
     const live = await this.sweepCandidates()
+    // A host can launch Motrix but lose its reply during cold start. Once
+    // the app is reachable, give this explicit pairing one launch-disabled
+    // chance to recover native attestation before using ticketless HTTP.
+    // Reuse the attempt's binding key and never attach another port's proof
+    // to a probe candidate. Background probes and picker enumeration do not
+    // need tickets and must not trigger this extra bootstrap.
+    if (opts.allowLaunch && opts.bindingPub !== undefined && live.length > 0) {
+      const recovered = await this.tryNativeBootstrap(false, opts.bindingPub)
+      if (recovered !== null && live.some((c) => c.port === recovered.wsPort)) {
+        return [recovered]
+      }
+    }
     return live.map(toProbeResult)
   }
 
@@ -666,12 +678,8 @@ export class DiscoveryService {
     const result: DiscoveryResult = { transport: 'nm', wsPort: reply.port }
     const nonce = readNonce(reply.nonce)
     if (nonce !== null) result.nonce = nonce
-    // A ticket is passed through byte-for-byte. §9.2 and §6.4 make a
-    // *downgraded* ticket land in `unverified` -- worse than presenting none --
-    // so it is tempting to drop one that looks stale. Doing that would game
-    // the identity the approval dialog shows, which is the user's only signal
-    // about what the server actually verified. A host that has no ticket sends
-    // none, and that (absent, not null) is what the ticketless path needs.
+    // Pass tickets through byte-for-byte; only the server can verify them.
+    // A missing ticket stays absent, not null, on the ticketless path.
     if (reply.nmTicket !== undefined && reply.nmTicket !== null) {
       result.nmTicket = reply.nmTicket
     }

@@ -12,6 +12,7 @@ import { deriveRemoteBridgeRoute } from '@/background/mbp1/bridge-route'
 import { readDiscoveryDoc } from '@/background/mbp1/discovery-service'
 import { hasLoopbackPermission } from '@/background/mbp1/permission-gate'
 import { RemoteDiscoveryService } from '@/background/mbp1/remote-discovery-service'
+import { generateBindingKeypair } from '@/background/mbp1/ticket-bootstrap'
 import { NativeBootstrapError } from '@/background/NativeBootstrap'
 import { pairingAuthorityForEndpoint } from '@/background/PairingEndpointService'
 import { extensionBrowser as browser } from '@/shared/browser'
@@ -248,17 +249,21 @@ export async function runConnectionDiagnostics(
             'The required Native Messaging API or packaged permission is unavailable in this browser/context.',
         }
       try {
-        // The existing host protocol has no ping. A launch-disabled legacy
-        // bootstrap may mint one unused nonce; discard it without pairing.
+        // Exercise the attestation path with a disposable binding key. A
+        // legacy start request can succeed even when Firefox identity proof
+        // is unavailable. Discard all returned ticket/nonce material without
+        // opening a pairing session; presence alone is not verification.
         const reply = await createBootstrapProvider(getBuildBrowser(), {
           timeoutMs: 4000,
         }).discover({
           allowLaunch: false,
+          bindingPub: generateBindingKeypair().pub,
         })
         nativePort = reply.wsPort
+        const hasTicket = reply.nmTicket !== null
         return {
-          status: reply.protocolVersion === 1 ? 'pass' : 'warn',
-          detail: `Host answered: port=${reply.wsPort}, protocolVersion=${reply.protocolVersion}, allowLaunch=false. Browser native-host access succeeded; App MBP1 admission remains untested. Any bootstrap nonce was discarded.`,
+          status: reply.protocolVersion === 1 && hasTicket ? 'pass' : 'warn',
+          detail: `Host answered: port=${reply.wsPort}, protocolVersion=${reply.protocolVersion}, allowLaunch=false; ${hasTicket ? 'attestation ticket returned (not verified by this diagnostic)' : 'no attestation ticket returned. Firefox/Safari pairing may show "Unverified extension". Update Motrix, then repair/re-enable browser integration and retry pairing'}. App MBP1 admission remains untested. All bootstrap ticket/nonce material was discarded.`,
         }
       } catch (error) {
         return nativeHostFailure(error)

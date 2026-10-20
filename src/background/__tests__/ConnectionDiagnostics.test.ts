@@ -86,7 +86,9 @@ describe('connection diagnostics', () => {
     expect(find(await task, 'native-host').detail).toContain('4 seconds')
     expect(port.disconnect).toHaveBeenCalledOnce()
     expect(port.postMessage).toHaveBeenCalledExactlyOnceWith({
-      action: 'start',
+      action: 'bootstrap',
+      protocolVersion: 1,
+      bindingPub: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/),
       allowLaunch: false,
     })
   })
@@ -105,7 +107,15 @@ describe('connection diagnostics', () => {
     )
     expect(NativeBootstrap.prototype.discover).toHaveBeenCalledExactlyOnceWith({
       allowLaunch: false,
+      bindingPub: expect.any(Uint8Array),
     })
+    expect(
+      vi.mocked(NativeBootstrap.prototype.discover).mock.calls[0]?.[0]
+        ?.bindingPub
+    ).toHaveLength(32)
+    expect(find(result, 'native-host').detail).toContain(
+      'attestation ticket returned'
+    )
     expect(fetch).toHaveBeenCalledTimes(6)
     expect(fetch).toHaveBeenCalledWith(
       'http://127.0.0.1:16900/discovery',
@@ -120,6 +130,25 @@ describe('connection diagnostics', () => {
       /private-(nonce|ticket|instance)/
     )
     expect(dependency.getPairingStatus).toHaveBeenCalledWith('local')
+  })
+
+  it('warns when a reachable native host cannot supply attestation', async () => {
+    vi.mocked(NativeBootstrap.prototype.discover).mockResolvedValue({
+      wsPort: 16900,
+      protocolVersion: 1,
+      nonce: 'private-nonce',
+      nmTicket: null,
+    })
+    const result = await runConnectionDiagnostics(deps(), 'local')
+    expect(find(result, 'native-host')).toMatchObject({ status: 'warn' })
+    expect(find(result, 'native-host').detail).toContain(
+      'no attestation ticket'
+    )
+    expect(find(result, 'native-host').detail).toContain('Unverified extension')
+    expect(find(result, 'native-host').detail).toContain(
+      'repair/re-enable browser integration'
+    )
+    expect(JSON.stringify(result)).not.toContain('private-nonce')
   })
 
   it('reports a packaged install separately from the build variant', async () => {
