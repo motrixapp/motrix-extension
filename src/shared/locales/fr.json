@@ -371,7 +371,11 @@
       "unsupportedReason": "FFmpeg est nécessaire pour télécharger ce contenu.",
       "unsupportedSelectionReason": "Le service sélectionné ne peut pas envoyer un ou plusieurs types de ressources sélectionnés.",
       "unsupportedResource": "Impossible d’envoyer {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "Configurez FFmpeg dans les réglages de Motrix, puis cliquez sur « Analyser à nouveau »."
+      "refreshCapabilitiesHint": "Configurez FFmpeg dans les réglages de Motrix, puis cliquez sur « Analyser à nouveau ».",
+      "showQualities": "Afficher les qualités",
+      "selectQuality": "Choisir la qualité",
+      "qualityAuto": "Automatique (meilleure)",
+      "downloadMp3": "Téléchargement MP3"
     },
     "speed": {
       "download": "Téléchargement",

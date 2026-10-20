@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Motrix 공식 브라우저 확장 프로그램. 다운로드를 Motrix로 보냅니다.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "화질 보기"
+  },
+  "grabberPanelTitle": {
+    "message": "Motrix로 다운로드"
+  },
+  "grabberNotConnected": {
+    "message": "리소스를 보내려면 Motrix에 연결하세요."
+  },
+  "grabberFormatsLoading": {
+    "message": "검색 중…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "페이지를 바꾸거나 나중에 다시 시도하세요."
+  },
+  "grabberButtonLabel": {
+    "message": "Motrix로 다운로드"
+  },
+  "grabberPageMeta": {
+    "message": "페이지 리소스"
+  },
+  "grabberSent": {
+    "message": "Motrix로 전송됨"
+  },
+  "grabberFailed": {
+    "message": "리소스를 전송하지 못했습니다. 다시 시도하세요."
+  },
+  "grabberSectionVideo": {
+    "message": "비디오"
+  },
+  "grabberSectionAudio": {
+    "message": "오디오"
+  },
+  "grabberMp3": {
+    "message": "MP3 · 오디오"
   }
 }

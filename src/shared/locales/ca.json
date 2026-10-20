@@ -371,7 +371,11 @@
       "unsupportedReason": "Cal FFmpeg per baixar aquest element.",
       "unsupportedSelectionReason": "El servei seleccionat no pot enviar un o més tipus de recursos de la selecció.",
       "unsupportedResource": "No es pot enviar {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "Configura FFmpeg a la configuració de Motrix i fes clic a «Torna a explorar»."
+      "refreshCapabilitiesHint": "Configura FFmpeg a la configuració de Motrix i fes clic a «Torna a explorar».",
+      "showQualities": "Mostra les qualitats",
+      "selectQuality": "Tria la qualitat",
+      "qualityAuto": "Automàtica (la millor)",
+      "downloadMp3": "Baixada MP3"
     },
     "speed": {
       "download": "Baixada",

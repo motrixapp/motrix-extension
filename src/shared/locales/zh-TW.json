@@ -371,7 +371,11 @@
       "unsupportedReason": "下載此內容需要 FFmpeg。",
       "unsupportedSelectionReason": "所選後端無法傳送一或多種已選取的資源類型。",
       "unsupportedResource": "無法傳送 {{name}}。{{reason}}",
-      "refreshCapabilitiesHint": "請先在 Motrix 中設定 FFmpeg，再點選「重新掃描」。"
+      "refreshCapabilitiesHint": "請先在 Motrix 中設定 FFmpeg，再點選「重新掃描」。",
+      "showQualities": "查看畫質",
+      "selectQuality": "選擇畫質",
+      "qualityAuto": "自動（最佳）",
+      "downloadMp3": "下載 MP3"
     },
     "speed": {
       "download": "下載",

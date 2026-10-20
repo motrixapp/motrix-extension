@@ -371,7 +371,11 @@
       "unsupportedReason": "За изтеглянето на този елемент е необходим FFmpeg.",
       "unsupportedSelectionReason": "Избраната услуга не може да изпрати един или повече от избраните типове ресурси.",
       "unsupportedResource": "{{name}} не може да се изпрати. {{reason}}",
-      "refreshCapabilitiesHint": "Настройте FFmpeg в настройките на Motrix и щракнете върху „Повторно сканиране“."
+      "refreshCapabilitiesHint": "Настройте FFmpeg в настройките на Motrix и щракнете върху „Повторно сканиране“.",
+      "showQualities": "Показване на качествата",
+      "selectQuality": "Избор на качество",
+      "qualityAuto": "Автоматично (най-добро)",
+      "downloadMp3": "Изтегляне MP3"
     },
     "speed": {
       "download": "Изтегляне",

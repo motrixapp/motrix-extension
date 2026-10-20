@@ -8,6 +8,11 @@ import {
 } from 'vscode-jsonrpc'
 import type { RpcStatus } from '@/shared/integration'
 
+export interface RpcRequestGuard {
+  assertCurrent(): void
+  signal: AbortSignal
+}
+
 export interface RpcSession {
   conn: MdxpConnection
   generation: number
@@ -92,6 +97,7 @@ interface RecoveryDeps {
 /** One bounded recovery shared by concurrent callers. Only explicitly listed
  * reads can be replayed; a timed-out write always retains its unknown outcome. */
 export class RpcRecovery {
+  private readonly pendingQueries = new Set<() => void>()
   private epoch = 0
   private flight: Promise<RpcSession> | null = null
   private probe: { session: RpcSession; closed: boolean } | null = null
@@ -119,6 +125,7 @@ export class RpcRecovery {
   }
 
   reset(): void {
+    for (const cancel of this.pendingQueries) cancel()
     this.epoch += 1
     this.flight = null
     this.probe = null
@@ -189,22 +196,44 @@ export class RpcRecovery {
     session: RpcSession,
     method: M,
     params: MdxpRequestMap[M][0],
-    timeoutMs: number
+    timeoutMs: number,
+    guard?: RpcRequestGuard
   ): Promise<MdxpRequestMap[M][1]> {
     if (timeoutMs <= 0) throw new RpcTimeoutError(method, 0)
-    const cancel = READ_METHODS.has(method)
-      ? new CancellationTokenSource()
-      : null
+    const cancel =
+      READ_METHODS.has(method) || method === Methods.MediaFormats
+        ? new CancellationTokenSource()
+        : null
+    let rejectAborted: ((error: Error) => void) | undefined
+    const aborted = new Promise<never>((_resolve, reject) => {
+      rejectAborted = reject
+    })
+    const abort = () => {
+      cancel?.cancel()
+      rejectAborted?.(new Error('media formats context changed'))
+    }
+    if (guard) {
+      this.pendingQueries.add(abort)
+      guard.signal.addEventListener('abort', abort, { once: true })
+    }
     try {
+      guard?.assertCurrent()
+      if (guard?.signal.aborted)
+        throw new Error('media formats context changed')
+      const sent = cancel
+        ? session.conn.sendRequest(method, params, cancel.token)
+        : session.conn.sendRequest(method, params)
       return await rpcDeadline(
-        cancel
-          ? session.conn.sendRequest(method, params, cancel.token)
-          : session.conn.sendRequest(method, params),
+        guard ? Promise.race([sent, aborted]) : sent,
         timeoutMs,
         method,
         () => cancel?.cancel()
       )
     } finally {
+      if (guard) {
+        this.pendingQueries.delete(abort)
+        guard.signal.removeEventListener('abort', abort)
+      }
       cancel?.dispose()
     }
   }
@@ -280,11 +309,19 @@ export class RpcRecovery {
 
   async request<M extends keyof MdxpRequestMap>(
     method: M,
-    params: MdxpRequestMap[M][0]
+    params: MdxpRequestMap[M][0],
+    guard?: RpcRequestGuard
   ): Promise<MdxpRequestMap[M][1]> {
     const epoch = this.epoch
     const startedAt = Date.now()
-    const deadlineAt = startedAt + (this.deps.totalTimeoutMs ?? 30_000)
+    const isFormats = method === Methods.MediaFormats
+    const requestTimeoutMs = isFormats
+      ? Math.max(this.deps.requestTimeoutMs, 60_000)
+      : this.deps.requestTimeoutMs
+    const totalTimeoutMs = isFormats
+      ? Math.max(this.deps.totalTimeoutMs ?? 30_000, 65_000)
+      : (this.deps.totalTimeoutMs ?? 30_000)
+    const deadlineAt = startedAt + totalTimeoutMs
     if (this.blocked)
       throw new RpcNotReadyError('Motrix connection needs retry')
     if (this.isRecovering() && !READ_METHODS.has(method))
@@ -308,7 +345,8 @@ export class RpcRecovery {
           session,
           method,
           params,
-          Math.min(this.deps.requestTimeoutMs, deadlineAt - Date.now())
+          Math.min(requestTimeoutMs, deadlineAt - Date.now()),
+          guard
         )
         this.assertCurrent(session, epoch)
         this.succeeded(method)

@@ -371,7 +371,11 @@
       "unsupportedReason": "Bu içeriği indirmek için FFmpeg gerekiyor.",
       "unsupportedSelectionReason": "Seçili arka uç, seçilen kaynak türlerinden birini veya birkaçını gönderemez.",
       "unsupportedResource": "{{name}} gönderilemiyor. {{reason}}",
-      "refreshCapabilitiesHint": "Motrix ayarlarında FFmpeg’i yapılandırın, ardından “Yeniden tara”ya tıklayın."
+      "refreshCapabilitiesHint": "Motrix ayarlarında FFmpeg’i yapılandırın, ardından “Yeniden tara”ya tıklayın.",
+      "showQualities": "Kalite seçeneklerini göster",
+      "selectQuality": "Kalite seçin",
+      "qualityAuto": "Otomatik (en iyi)",
+      "downloadMp3": "İndirme MP3"
     },
     "speed": {
       "download": "İndirme",

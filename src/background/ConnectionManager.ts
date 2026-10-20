@@ -4,6 +4,7 @@ import type {
   InitializeParams,
   MdxpConnection,
   MdxpRequestMap,
+  MediaFormatsResult,
   TaskCompletedParams,
   TaskErrorParams,
   TaskProgressParams,
@@ -13,6 +14,8 @@ import {
   DownloadSubmitResultSchema,
   ErrorCodes,
   InitializeResultSchema,
+  MediaFormatsParamsSchema,
+  MediaFormatsResultSchema,
   Methods,
   Notifications,
 } from '@motrix/mdxp'
@@ -105,6 +108,7 @@ import {
 import {
   applyRemoteSubmitPolicy,
   RemoteAutomaticTakeoverConsentRequiredError,
+  RemoteDataBoundaryConsentRequiredError,
 } from '@/background/remote-submit-policy'
 import { notificationText } from '@/background/SafariNotificationTransport'
 import { TaskEventStore } from '@/background/TaskEventStore'
@@ -540,6 +544,7 @@ export class ConnectionManager {
     selectionKinds: string[]
     taskReveal: boolean
     downloadDirectories?: boolean | undefined
+    mediaFormats?: boolean | undefined
   } | null = null
   private serverIdentity: ServerIdentity | null = null
   /**
@@ -897,6 +902,7 @@ export class ConnectionManager {
     selectionKinds: string[]
     taskReveal: boolean
     downloadDirectories?: boolean | undefined
+    mediaFormats?: boolean | undefined
   } | null {
     return this.serverCapabilities
   }
@@ -964,11 +970,65 @@ export class ConnectionManager {
     method: M,
     params: MdxpRequestMap[M][0]
   ): Promise<MdxpRequestMap[M][1]> {
+    if (method === Methods.MediaFormats)
+      throw new Error('media formats requires its authorized query path')
     const conn = this.currentConn
     if (conn === null || this.state !== 'connected') {
       throw new Error(`bridge not connected (state: ${this.state})`)
     }
     return this.rpcRecovery.request(method, params)
+  }
+
+  /** Cookie-free quality queries share the existing remote data grant. The
+   * returned fence stays in background memory to bind offered choices to this
+   * exact authenticated session; it is never sent to a page. */
+  async listMediaFormats(
+    input: { url: string },
+    document: {
+      assertCurrent(): void
+      revalidate(): Promise<void>
+      signal: AbortSignal
+    }
+  ): Promise<{ formats: MediaFormatsResult; assertCurrent(): void }> {
+    const conn = this.currentConn
+    const scope = this.currentEndpointScope
+    const instance = this.currentAuthenticatedInstanceId
+    const generation = this.generation
+    if (
+      !conn ||
+      !scope ||
+      !instance ||
+      this.state !== 'connected' ||
+      this.getRpcStatus().health !== 'healthy'
+    )
+      throw new RpcNotReadyError('Motrix is not ready')
+    const assertCurrent = () => {
+      document.assertCurrent()
+      this.ensureCurrentConnection(generation, conn)
+      if (
+        this.currentAuthenticatedInstanceId !== instance ||
+        this.serverCapabilities?.mediaFormats !== true
+      )
+        throw new Error('media formats context changed')
+    }
+    assertCurrent()
+    const params = MediaFormatsParamsSchema.parse({ url: input.url })
+    await document.revalidate()
+    assertCurrent()
+    if (scope.authority.kind === 'remote') {
+      const policy = await this.remotePolicyFor(scope, instance).get()
+      assertCurrent()
+      if (policy.remoteDataBoundaryAcceptedAt === null)
+        throw new RemoteDataBoundaryConsentRequiredError()
+    }
+    assertCurrent()
+    const raw = await this.rpcRecovery.request(Methods.MediaFormats, params, {
+      assertCurrent,
+      signal: document.signal,
+    })
+    await document.revalidate()
+    assertCurrent()
+    return { formats: MediaFormatsResultSchema.parse(raw), assertCurrent }
   }
 
   getRpcStatus(): import('@/shared/integration').RpcStatus {
@@ -2775,6 +2835,7 @@ export class ConnectionManager {
     selectionKinds: string[]
     taskReveal?: boolean
     downloadDirectories?: boolean | undefined
+    mediaFormats?: boolean | undefined
   }): void {
     this.serverCapabilities = {
       ffmpegAvailable: caps.ffmpegAvailable,
@@ -2783,6 +2844,7 @@ export class ConnectionManager {
       // but absent must never accidentally enable a desktop-shell action.
       taskReveal: caps.taskReveal === true,
       downloadDirectories: caps.downloadDirectories === true,
+      mediaFormats: caps.mediaFormats === true,
     }
   }
 }

@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Motrix 公式ブラウザー拡張機能。ダウンロードを Motrix に送信します。",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "画質を表示"
+  },
+  "grabberPanelTitle": {
+    "message": "Motrix でダウンロード"
+  },
+  "grabberNotConnected": {
+    "message": "リソースを送信するには Motrix に接続してください。"
+  },
+  "grabberFormatsLoading": {
+    "message": "スキャン中…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "ページを変えるか、後で再試行してください。"
+  },
+  "grabberButtonLabel": {
+    "message": "Motrix でダウンロード"
+  },
+  "grabberPageMeta": {
+    "message": "ページのリソース"
+  },
+  "grabberSent": {
+    "message": "Motrix に送信しました"
+  },
+  "grabberFailed": {
+    "message": "リソースを送信できませんでした。再試行してください。"
+  },
+  "grabberSectionVideo": {
+    "message": "動画"
+  },
+  "grabberSectionAudio": {
+    "message": "音声"
+  },
+  "grabberMp3": {
+    "message": "MP3 · 音声"
   }
 }

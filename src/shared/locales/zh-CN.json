@@ -371,7 +371,11 @@
       "unsupportedReason": "下载此内容需要 FFmpeg。",
       "unsupportedSelectionReason": "所选后端不支持一个或多个已选资源类型。",
       "unsupportedResource": "无法提交 {{name}}。{{reason}}",
-      "refreshCapabilitiesHint": "请在 Motrix 设置中配置 FFmpeg，然后点击“重新扫描”。"
+      "refreshCapabilitiesHint": "请在 Motrix 设置中配置 FFmpeg，然后点击“重新扫描”。",
+      "showQualities": "查看画质",
+      "selectQuality": "选择画质",
+      "qualityAuto": "自动（最佳）",
+      "downloadMp3": "下载 MP3"
     },
     "speed": {
       "download": "下载",

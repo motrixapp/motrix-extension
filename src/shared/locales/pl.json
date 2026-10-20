@@ -371,7 +371,11 @@
       "unsupportedReason": "Do pobrania tego elementu potrzebny jest FFmpeg.",
       "unsupportedSelectionReason": "Wybrana usługa nie może wysłać co najmniej jednego typu zaznaczonych zasobów.",
       "unsupportedResource": "Nie można wysłać {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "Skonfiguruj FFmpeg w ustawieniach Motrix, a następnie kliknij „Skanuj ponownie”."
+      "refreshCapabilitiesHint": "Skonfiguruj FFmpeg w ustawieniach Motrix, a następnie kliknij „Skanuj ponownie”.",
+      "showQualities": "Pokaż jakości",
+      "selectQuality": "Wybierz jakość",
+      "qualityAuto": "Automatycznie (najlepsza)",
+      "downloadMp3": "Pobieranie MP3"
     },
     "speed": {
       "download": "Pobieranie",

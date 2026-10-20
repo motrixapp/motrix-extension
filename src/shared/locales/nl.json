@@ -371,7 +371,11 @@
       "unsupportedReason": "FFmpeg is nodig om dit item te downloaden.",
       "unsupportedSelectionReason": "De geselecteerde backend kan een of meer geselecteerde brontypen niet verzenden.",
       "unsupportedResource": "{{name}} kan niet worden verzonden. {{reason}}",
-      "refreshCapabilitiesHint": "Stel FFmpeg in bij de Motrix-instellingen en klik op ‘Opnieuw scannen’."
+      "refreshCapabilitiesHint": "Stel FFmpeg in bij de Motrix-instellingen en klik op ‘Opnieuw scannen’.",
+      "showQualities": "Kwaliteitsopties tonen",
+      "selectQuality": "Kwaliteit kiezen",
+      "qualityAuto": "Automatisch (beste)",
+      "downloadMp3": "Downloaden MP3"
     },
     "speed": {
       "download": "Downloaden",

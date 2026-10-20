@@ -371,7 +371,11 @@
       "unsupportedReason": "Для скачивания этого файла нужен FFmpeg.",
       "unsupportedSelectionReason": "Выбранная служба не может отправить один или несколько выбранных типов ресурсов.",
       "unsupportedResource": "Не удаётся отправить {{name}}. {{reason}}",
-      "refreshCapabilitiesHint": "Настройте FFmpeg в настройках Motrix, затем нажмите «Сканировать снова»."
+      "refreshCapabilitiesHint": "Настройте FFmpeg в настройках Motrix, затем нажмите «Сканировать снова».",
+      "showQualities": "Показать варианты качества",
+      "selectQuality": "Выбрать качество",
+      "qualityAuto": "Авто (лучшее)",
+      "downloadMp3": "Скачивание MP3"
     },
     "speed": {
       "download": "Скачивание",

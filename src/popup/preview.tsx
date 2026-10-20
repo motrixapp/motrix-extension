@@ -312,6 +312,32 @@ const previewRuntime = {
             ? ['direct', 'hls', 'dash', 'mux']
             : ['direct'],
         }
+      case 'bg.grabberFormats':
+        return {
+          connected: previewConnection === 'connected',
+          listingId: 'preview-quality-list',
+          formats: {
+            available: true,
+            entries: [
+              {
+                key: '1080p',
+                kind: 'video',
+                label: '1080p',
+                height: 1080,
+                fps: 60,
+                ext: 'mp4',
+              },
+              {
+                key: '720p',
+                kind: 'video',
+                label: '720p',
+                height: 720,
+                ext: 'mp4',
+              },
+              { key: 'mp3', kind: 'audio', label: 'MP3' },
+            ],
+          },
+        }
       case 'bg.submitMedia':
       case 'bg.resolvePageDownload':
         return previewFfmpegAvailable

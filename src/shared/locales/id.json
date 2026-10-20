@@ -371,7 +371,11 @@
       "unsupportedReason": "FFmpeg diperlukan untuk mengunduh konten ini.",
       "unsupportedSelectionReason": "Backend yang dipilih tidak dapat mengirim satu atau beberapa jenis sumber daya yang dipilih.",
       "unsupportedResource": "{{name}} tidak dapat dikirim. {{reason}}",
-      "refreshCapabilitiesHint": "Siapkan FFmpeg di pengaturan Motrix, lalu klik “Pindai lagi”."
+      "refreshCapabilitiesHint": "Siapkan FFmpeg di pengaturan Motrix, lalu klik “Pindai lagi”.",
+      "showQualities": "Tampilkan kualitas",
+      "selectQuality": "Pilih kualitas",
+      "qualityAuto": "Otomatis (Terbaik)",
+      "downloadMp3": "Unduh MP3"
     },
     "speed": {
       "download": "Unduh",

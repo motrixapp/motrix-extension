@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Офіційне розширення Motrix для браузера. Надсилайте завантаження до Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Показати варіанти якості"
+  },
+  "grabberPanelTitle": {
+    "message": "Завантажити через Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "Підключіться до Motrix, щоб надсилати ресурси."
+  },
+  "grabberFormatsLoading": {
+    "message": "Сканування…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Перейдіть на іншу сторінку або спробуйте пізніше."
+  },
+  "grabberButtonLabel": {
+    "message": "Завантажити через Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "Ресурси сторінки"
+  },
+  "grabberSent": {
+    "message": "Передано до Motrix"
+  },
+  "grabberFailed": {
+    "message": "Не вдалося надіслати ресурс. Повторіть спробу."
+  },
+  "grabberSectionVideo": {
+    "message": "Відео"
+  },
+  "grabberSectionAudio": {
+    "message": "Аудіо"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Аудіо"
   }
 }
