@@ -33,7 +33,7 @@ available there, so the local Motrix App backend is shown only on desktop.
 
 ## Install
 
-Install [Motrix 2](https://motrix.app/download?channel=beta), then install the extension for your browser:
+Install [Motrix 2](https://motrix.app/download/), then install the extension for your browser:
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
 - [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)

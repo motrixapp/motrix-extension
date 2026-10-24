@@ -28,7 +28,7 @@ Firefox Android 通过 Motrix Server 连接。Android 不支持 Native Messaging
 
 ## 安装
 
-先安装 [Motrix 2](https://motrix.app/zh/download?channel=beta)，再安装对应浏览器的扩展：
+先安装 [Motrix 2](https://motrix.app/zh/download/)，再安装对应浏览器的扩展：
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/motrix-extension/lggbokfckofcgjndaboioakcmincinpo)
 - [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/motrix-extension/efcflljngohddnmfmebiamigoikmdfbf)
