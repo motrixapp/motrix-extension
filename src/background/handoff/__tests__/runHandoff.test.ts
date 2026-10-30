@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
-import { DownloadOutcomeUnknownError } from '@/background/download-errors'
+import {
+  DownloadOutcomeUnknownError,
+  DownloadPreparationError,
+} from '@/background/download-errors'
 import { HandoffEndpointChangedError } from '@/background/handoff/guard'
 import { type HandoffOps, runHandoff } from '@/background/handoff/runHandoff'
 import { RemoteDataBoundaryConsentRequiredError } from '@/background/remote-submit-policy'
@@ -41,6 +44,19 @@ function ops(over: Partial<HandoffOps> = {}): HandoffOps {
 }
 
 describe('runHandoff', () => {
+  it('falls back once without retrying a definite cookie admission rejection', async () => {
+    const o = ops({
+      submit: vi
+        .fn()
+        .mockRejectedValue(new DownloadPreparationError('download.rejected')),
+    })
+    expect(await runHandoff(target(), o)).toEqual({ kind: 'browser' })
+    expect(o.submit).toHaveBeenCalledOnce()
+    expect(o.fallbackToBrowser).toHaveBeenCalledOnce()
+    expect(o.notify).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 'error' })
+    )
+  })
   it('does not replay or browser-fallback an ambiguous submit after cancellation', async () => {
     const o = ops({
       submit: vi.fn(async () => {
