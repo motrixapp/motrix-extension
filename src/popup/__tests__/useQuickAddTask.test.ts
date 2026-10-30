@@ -27,6 +27,19 @@ function deferred<T>(): {
 }
 
 describe('useQuickAddTask', () => {
+  it('keeps a rejected cookie task editable and exposes the dedicated error without retrying', async () => {
+    send.mockRejectedValue(new Error('download.cookies-rejected'))
+    const onCreated = vi.fn()
+    const { result } = renderHook(() => useQuickAddTask({ onCreated }))
+    act(() => result.current.setInput('https://example.com/file.zip'))
+    await act(async () => {
+      await result.current.submit()
+    })
+    expect(result.current.error).toBe('cookiesRejected')
+    expect(result.current.input).toBe('https://example.com/file.zip')
+    expect(send).toHaveBeenCalledOnce()
+    expect(onCreated).not.toHaveBeenCalled()
+  })
   beforeEach(() => {
     send.mockReset()
   })

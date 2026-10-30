@@ -1081,6 +1081,13 @@ export class ConnectionManager {
       if (
         code === ErrorCodes.InvalidParams &&
         (error as { data?: { appCode?: string } })?.data?.appCode ===
+          'download-cookies-rejected'
+      ) {
+        throw new DownloadPreparationError(DOWNLOAD_ERROR.cookiesRejected)
+      }
+      if (
+        code === ErrorCodes.InvalidParams &&
+        (error as { data?: { appCode?: string } })?.data?.appCode ===
           'download-directory-unavailable'
       ) {
         throw new DownloadPreparationError(DOWNLOAD_ERROR.directoryUnavailable)

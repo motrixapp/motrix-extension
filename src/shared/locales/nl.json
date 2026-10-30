@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Verzendresultaat onbekend. Controleer de taken voordat je opnieuw verzendt.",
     "submitUnknownBody": "Verzendresultaat onbekend. Controleer de taken voordat je opnieuw verzendt.",
     "taskDetailsBody": "Open de takenlijst om de details te bekijken.",
-    "taskUpdatesTitle": "Meer taakupdates"
+    "taskUpdatesTitle": "Meer taakupdates",
+    "cookiesRejectedBody": "De aanmeldgegevens van deze taak zijn niet compatibel met Motrix. Het downloaden gaat verder in de browser.",
+    "browserFallbackUnknownBody": "Het resultaat van de browserdownload is onbekend. Controleer de downloads in de browser voordat je het opnieuw probeert.",
+    "submitRejectedBody": "Motrix heeft deze taak niet geaccepteerd. Controleer de downloadopties en probeer het opnieuw."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "De pagina of geselecteerde backend is gewijzigd. Selecteer de download opnieuw.",
       "preparing": "Download voorbereiden…",
       "sending": "Download verzenden…",
-      "pairedStatus": "Gekoppeld"
+      "pairedStatus": "Gekoppeld",
+      "cookiesRejected": "Motrix kan de aanmeldgegevens van deze taak niet gebruiken. Download het bestand met je browser."
     },
     "rpc": {
       "checking": "Motrix reageert traag. Verbinding controleren…",

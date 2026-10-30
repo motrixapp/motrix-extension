@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Resultado do envio desconhecido. Confira as tarefas antes de enviar novamente.",
     "submitUnknownBody": "Resultado do envio desconhecido. Confira as tarefas antes de enviar novamente.",
     "taskDetailsBody": "Abra a lista de tarefas para ver os detalhes.",
-    "taskUpdatesTitle": "Mais atualizações de tarefas"
+    "taskUpdatesTitle": "Mais atualizações de tarefas",
+    "cookiesRejectedBody": "Os dados de login desta tarefa não são compatíveis com o Motrix. O download está sendo feito pelo navegador.",
+    "browserFallbackUnknownBody": "O resultado do download pelo navegador é desconhecido. Verifique os downloads do navegador antes de tentar novamente.",
+    "submitRejectedBody": "O Motrix não aceitou esta tarefa. Verifique as opções de download e tente novamente."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "A página ou o serviço selecionado mudou. Selecione o download novamente.",
       "preparing": "Preparando download…",
       "sending": "Enviando download…",
-      "pairedStatus": "Pareado"
+      "pairedStatus": "Pareado",
+      "cookiesRejected": "O Motrix não pode usar os dados de login desta tarefa. Baixe o arquivo pelo navegador."
     },
     "rpc": {
       "checking": "O Motrix está demorando para responder. Verificando a conexão…",

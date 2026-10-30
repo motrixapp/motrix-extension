@@ -34,7 +34,10 @@
     "submitUnknownTitle": "傳送結果待確認，請先查看任務，避免重複傳送。",
     "submitUnknownBody": "傳送結果待確認，請先查看任務，避免重複傳送。",
     "taskDetailsBody": "請在工作清單中查看詳細資訊。",
-    "taskUpdatesTitle": "更多工作動態"
+    "taskUpdatesTitle": "更多工作動態",
+    "cookiesRejectedBody": "此任務的登入資訊無法交給 Motrix，已改用瀏覽器下載。",
+    "browserFallbackUnknownBody": "瀏覽器接續下載的結果待確認，請先檢查瀏覽器下載清單，避免重複下載。",
+    "submitRejectedBody": "Motrix 未接受此任務，請檢查下載選項後重試。"
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "頁面或所選後端已變更，請重新選擇下載。",
       "preparing": "正在準備下載…",
       "sending": "正在傳送下載…",
-      "pairedStatus": "已配對"
+      "pairedStatus": "已配對",
+      "cookiesRejected": "Motrix 無法使用此任務的登入資訊，請使用瀏覽器下載。"
     },
     "rpc": {
       "checking": "Motrix 回應逾時，正在檢查連線…",

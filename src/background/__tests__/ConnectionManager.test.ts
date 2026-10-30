@@ -2031,15 +2031,26 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
   it.each([
     { code: ErrorCodes.CapabilityNotSupported, reason: 'download.unsupported' },
     { code: ErrorCodes.InvalidParams, reason: 'download.rejected' },
+    {
+      code: ErrorCodes.InvalidParams,
+      appCode: 'download-cookies-rejected',
+      reason: 'download.cookies-rejected',
+    },
+    {
+      code: ErrorCodes.InternalError,
+      appCode: 'download-cookies-rejected',
+      reason: 'download.result-unknown',
+    },
   ])(
     'reports a definite cookie/capability rejection $code without an unknown outcome',
-    async ({ code, reason }) => {
+    async ({ code, reason, appCode }) => {
       const conn = makeSubmitFakeConn()
       const manager = makeManager({ mbp1Conn: conn })
       await manager.connect({ allowLaunch: true, userInitiated: true })
       conn.sendRequest.mockRejectedValueOnce({
         code,
         message: 'private native path',
+        data: { appCode },
       })
       await expect(
         manager.submitDownload({

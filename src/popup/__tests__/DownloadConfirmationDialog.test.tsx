@@ -144,6 +144,18 @@ it.each(['chromium', 'safari'])(
         draft: { ...draft, phase: 'failed', error: DOWNLOAD_ERROR.rejected },
       })
     )
+    act(() =>
+      receive({
+        draft: {
+          ...draft,
+          phase: 'failed',
+          error: DOWNLOAD_ERROR.cookiesRejected,
+        },
+      })
+    )
+    expect(screen.getByRole('alert').textContent).toBe(
+      i18n.t('popup.integration.cookiesRejected')
+    )
     expect(
       (
         screen.getByRole('button', {

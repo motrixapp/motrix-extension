@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Hasil pengiriman belum diketahui. Periksa tugas sebelum mengirim ulang.",
     "submitUnknownBody": "Hasil pengiriman belum diketahui. Periksa tugas sebelum mengirim ulang.",
     "taskDetailsBody": "Buka daftar tugas untuk melihat detail.",
-    "taskUpdatesTitle": "Pembaruan tugas lainnya"
+    "taskUpdatesTitle": "Pembaruan tugas lainnya",
+    "cookiesRejectedBody": "Data login tugas ini tidak kompatibel dengan Motrix. Unduhan dilanjutkan melalui browser.",
+    "browserFallbackUnknownBody": "Hasil unduhan browser belum diketahui. Periksa daftar unduhan browser sebelum mencoba lagi.",
+    "submitRejectedBody": "Motrix tidak menerima tugas ini. Periksa opsi unduhan lalu coba lagi."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "Halaman atau backend yang dipilih telah berubah. Pilih unduhan lagi.",
       "preparing": "Menyiapkan unduhan…",
       "sending": "Mengirim unduhan…",
-      "pairedStatus": "Disandingkan"
+      "pairedStatus": "Disandingkan",
+      "cookiesRejected": "Motrix tidak dapat menggunakan data login tugas ini. Unduh melalui browser."
     },
     "rpc": {
       "checking": "Motrix lambat merespons. Memeriksa koneksi…",

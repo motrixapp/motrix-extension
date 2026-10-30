@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Chưa xác định được kết quả gửi. Hãy kiểm tra tác vụ trước khi gửi lại.",
     "submitUnknownBody": "Chưa xác định được kết quả gửi. Hãy kiểm tra tác vụ trước khi gửi lại.",
     "taskDetailsBody": "Mở danh sách tác vụ để xem chi tiết.",
-    "taskUpdatesTitle": "Các cập nhật tác vụ khác"
+    "taskUpdatesTitle": "Các cập nhật tác vụ khác",
+    "cookiesRejectedBody": "Thông tin đăng nhập của tác vụ này không tương thích với Motrix. Trình duyệt đang tải xuống thay thế.",
+    "browserFallbackUnknownBody": "Chưa xác định được kết quả tải xuống của trình duyệt. Hãy kiểm tra danh sách tải xuống trước khi thử lại.",
+    "submitRejectedBody": "Motrix không chấp nhận tác vụ này. Hãy kiểm tra tùy chọn tải xuống và thử lại."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "Trang hoặc dịch vụ đã chọn đã thay đổi. Chọn lại lượt tải xuống.",
       "preparing": "Đang chuẩn bị tải xuống…",
       "sending": "Đang gửi lượt tải xuống…",
-      "pairedStatus": "Đã ghép đôi"
+      "pairedStatus": "Đã ghép đôi",
+      "cookiesRejected": "Motrix không thể sử dụng thông tin đăng nhập của tác vụ này. Hãy tải xuống bằng trình duyệt."
     },
     "rpc": {
       "checking": "Motrix phản hồi chậm. Đang kiểm tra kết nối…",

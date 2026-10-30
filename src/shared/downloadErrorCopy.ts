@@ -3,6 +3,8 @@ import { DOWNLOAD_ERROR } from '@/shared/integration'
 export function downloadErrorKey(error: unknown): string {
   const reason = error instanceof Error ? error.message : error
   switch (reason) {
+    case DOWNLOAD_ERROR.cookiesRejected:
+      return 'popup.integration.cookiesRejected'
     case DOWNLOAD_ERROR.resultUnknown:
       return 'popup.integration.resultUnknown'
     case DOWNLOAD_ERROR.pairingRequired:

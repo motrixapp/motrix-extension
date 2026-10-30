@@ -34,7 +34,10 @@
     "submitUnknownTitle": "发送结果待确认，请先查看任务，避免重复发送。",
     "submitUnknownBody": "发送结果待确认，请先查看任务，避免重复发送。",
     "taskDetailsBody": "请在任务列表中查看详情。",
-    "taskUpdatesTitle": "更多任务动态"
+    "taskUpdatesTitle": "更多任务动态",
+    "cookiesRejectedBody": "此任务的登录信息无法交给 Motrix，已改用浏览器下载。",
+    "browserFallbackUnknownBody": "浏览器接续下载的结果待确认，请先检查浏览器下载列表，避免重复下载。",
+    "submitRejectedBody": "Motrix 未接收此任务，请检查下载选项后重试。"
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "页面或所选后端已变化，请重新选择下载。",
       "preparing": "正在准备下载…",
       "sending": "正在发送下载…",
-      "pairedStatus": "已配对"
+      "pairedStatus": "已配对",
+      "cookiesRejected": "Motrix 无法使用此任务的登录信息，请使用浏览器下载。"
     },
     "rpc": {
       "checking": "Motrix 响应超时，正在检查连接…",

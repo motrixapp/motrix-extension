@@ -195,24 +195,34 @@ it('does not suppress a second user download of the same URL', async () => {
   expect(submit).toHaveBeenCalledTimes(2)
 })
 it('falls back only once when submission fails, even if browser download rejects', async () => {
-  submit.mockRejectedValue(new Error('rejected'))
+  const { DownloadPreparationError } = await import(
+    '@/background/download-errors'
+  )
+  submit.mockRejectedValue(
+    new DownloadPreparationError('download.cookies-rejected')
+  )
   download.mockRejectedValue(new Error('browser failed'))
   await register()
   expect(await listener(request())).toEqual({ cancel: true })
   await deliver()
   expect(download).toHaveBeenCalledOnce()
 })
-it('never falls back for an unknown submission outcome', async () => {
-  const { DownloadOutcomeUnknownError: Unknown } = await import(
-    '@/background/download-errors'
-  )
-  submit.mockRejectedValue(new Unknown())
-  await register()
-  await listener(request())
-  await deliver()
-  expect(submit).toHaveBeenCalledOnce()
-  expect(download).not.toHaveBeenCalled()
-})
+it.each(['classified', 'unclassified'])(
+  'never falls back for a %s unknown submission outcome',
+  async (kind) => {
+    const { DownloadOutcomeUnknownError: Unknown } = await import(
+      '@/background/download-errors'
+    )
+    submit.mockRejectedValue(
+      kind === 'classified' ? new Unknown() : new Error('response lost')
+    )
+    await register()
+    await listener(request())
+    await deliver()
+    expect(submit).toHaveBeenCalledOnce()
+    expect(download).not.toHaveBeenCalled()
+  }
+)
 it.each([
   'accepted',
   'browser',

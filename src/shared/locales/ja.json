@@ -34,7 +34,10 @@
     "submitUnknownTitle": "送信結果を確認できません。再送信する前にタスクを確認してください。",
     "submitUnknownBody": "送信結果を確認できません。再送信する前にタスクを確認してください。",
     "taskDetailsBody": "詳細はタスク一覧で確認してください。",
-    "taskUpdatesTitle": "その他のタスク更新"
+    "taskUpdatesTitle": "その他のタスク更新",
+    "cookiesRejectedBody": "このタスクのログイン情報は Motrix に対応していないため、ブラウザーでダウンロードしています。",
+    "browserFallbackUnknownBody": "ブラウザーでのダウンロード結果を確認できません。再試行する前にブラウザーのダウンロード一覧を確認してください。",
+    "submitRejectedBody": "Motrix はこのタスクを受け付けませんでした。ダウンロード設定を確認して再試行してください。"
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "ページまたは選択したバックエンドが変更されました。ダウンロードを選び直してください。",
       "preparing": "ダウンロードを準備中…",
       "sending": "ダウンロードを送信中…",
-      "pairedStatus": "ペアリング済み"
+      "pairedStatus": "ペアリング済み",
+      "cookiesRejected": "Motrix はこのタスクのログイン情報を使用できません。ブラウザーでダウンロードしてください。"
     },
     "rpc": {
       "checking": "Motrix の応答が遅れています。接続を確認中…",

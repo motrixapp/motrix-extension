@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Resultatet av sendingen er ukjent. Sjekk oppgavene før du sender på nytt.",
     "submitUnknownBody": "Resultatet av sendingen er ukjent. Sjekk oppgavene før du sender på nytt.",
     "taskDetailsBody": "Åpne oppgavelisten for å se detaljer.",
-    "taskUpdatesTitle": "Flere oppgaveoppdateringer"
+    "taskUpdatesTitle": "Flere oppgaveoppdateringer",
+    "cookiesRejectedBody": "Innloggingsdataene for denne oppgaven er ikke kompatible med Motrix. Nedlastingen utføres i nettleseren i stedet.",
+    "browserFallbackUnknownBody": "Resultatet av nedlastingen i nettleseren er ukjent. Sjekk nettleserens nedlastinger før du prøver igjen.",
+    "submitRejectedBody": "Motrix godtok ikke denne oppgaven. Sjekk nedlastingsalternativene og prøv igjen."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "Siden eller den valgte tilkoblingen er endret. Velg nedlastingen på nytt.",
       "preparing": "Forbereder nedlasting…",
       "sending": "Sender nedlasting…",
-      "pairedStatus": "Paret"
+      "pairedStatus": "Paret",
+      "cookiesRejected": "Motrix kan ikke bruke innloggingsdataene for denne oppgaven. Last ned filen med nettleseren."
     },
     "rpc": {
       "checking": "Motrix bruker lang tid på å svare. Kontrollerer tilkoblingen…",

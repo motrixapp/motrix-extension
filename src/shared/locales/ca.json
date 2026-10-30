@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Es desconeix el resultat de l'enviament. Comprova les tasques abans de tornar-lo a enviar.",
     "submitUnknownBody": "Es desconeix el resultat de l'enviament. Comprova les tasques abans de tornar-lo a enviar.",
     "taskDetailsBody": "Obre la llista de tasques per veure els detalls.",
-    "taskUpdatesTitle": "Més actualitzacions de tasques"
+    "taskUpdatesTitle": "Més actualitzacions de tasques",
+    "cookiesRejectedBody": "Les dades d’inici de sessió d’aquesta tasca no són compatibles amb Motrix. La baixada continua al navegador.",
+    "browserFallbackUnknownBody": "Es desconeix el resultat de la baixada al navegador. Comprova les baixades del navegador abans de tornar-ho a provar.",
+    "submitRejectedBody": "Motrix no ha acceptat aquesta tasca. Comprova les opcions de baixada i torna-ho a provar."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "La pàgina o el servei seleccionat ha canviat. Torna a seleccionar la baixada.",
       "preparing": "Preparant la baixada…",
       "sending": "Enviant la baixada…",
-      "pairedStatus": "Vinculat"
+      "pairedStatus": "Vinculat",
+      "cookiesRejected": "Motrix no pot utilitzar les dades d’inici de sessió d’aquesta tasca. Baixa el fitxer amb el navegador."
     },
     "rpc": {
       "checking": "Motrix triga a respondre. Comprovant la connexió…",

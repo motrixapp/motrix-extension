@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Sendeergebnis unbekannt. Prüfen Sie die Aufgaben, bevor Sie erneut senden.",
     "submitUnknownBody": "Sendeergebnis unbekannt. Prüfen Sie die Aufgaben, bevor Sie erneut senden.",
     "taskDetailsBody": "Öffne die Aufgabenliste, um Details anzuzeigen.",
-    "taskUpdatesTitle": "Weitere Aufgabenaktualisierungen"
+    "taskUpdatesTitle": "Weitere Aufgabenaktualisierungen",
+    "cookiesRejectedBody": "Die Anmeldedaten dieser Aufgabe sind mit Motrix nicht kompatibel. Der Download erfolgt stattdessen im Browser.",
+    "browserFallbackUnknownBody": "Der Status des Browser-Downloads ist unklar. Prüfen Sie vor einem erneuten Versuch die Downloads im Browser.",
+    "submitRejectedBody": "Motrix hat diese Aufgabe nicht angenommen. Prüfen Sie die Download-Optionen und versuchen Sie es erneut."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "Die Seite oder das ausgewählte Backend wurde geändert. Wählen Sie den Download erneut aus.",
       "preparing": "Download wird vorbereitet…",
       "sending": "Download wird gesendet…",
-      "pairedStatus": "Gekoppelt"
+      "pairedStatus": "Gekoppelt",
+      "cookiesRejected": "Motrix kann die Anmeldedaten dieser Aufgabe nicht verwenden. Laden Sie die Datei mit Ihrem Browser herunter."
     },
     "rpc": {
       "checking": "Motrix antwortet langsam. Verbindung wird geprüft…",
