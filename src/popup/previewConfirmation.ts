@@ -76,12 +76,18 @@ export function createPreviewConfirmationPort(scenario: string | null) {
       publish()
       setTimeout(() => {
         if (disposed || !draft) return
-        if (scenario === 'failed' || scenario === 'unknown') {
-          draft.phase = scenario
+        if (
+          scenario === 'failed' ||
+          scenario === 'unknown' ||
+          scenario === 'cookies-rejected'
+        ) {
+          draft.phase = scenario === 'unknown' ? 'unknown' : 'failed'
           draft.error =
             scenario === 'unknown'
               ? DOWNLOAD_ERROR.resultUnknown
-              : DOWNLOAD_ERROR.connectionFailed
+              : scenario === 'cookies-rejected'
+                ? DOWNLOAD_ERROR.cookiesRejected
+                : DOWNLOAD_ERROR.connectionFailed
           draft.expiresAt = Date.now() + 120_000
         } else draft = null
         publish()

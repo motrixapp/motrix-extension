@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Send result unknown. Check tasks before sending again.",
     "submitUnknownBody": "Send result unknown. Check tasks before sending again.",
     "taskDetailsBody": "Open the task list to view details.",
-    "taskUpdatesTitle": "More task updates"
+    "taskUpdatesTitle": "More task updates",
+    "cookiesRejectedBody": "This task’s login data is incompatible with Motrix. The browser is downloading it instead.",
+    "browserFallbackUnknownBody": "Browser download status is unknown. Check the browser’s downloads before trying again.",
+    "submitRejectedBody": "Motrix did not accept this task. Check the download options and try again."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "The page or selected backend changed. Select the download again.",
       "preparing": "Preparing download…",
       "sending": "Sending download…",
-      "pairedStatus": "Paired"
+      "pairedStatus": "Paired",
+      "cookiesRejected": "Motrix cannot use this task’s login data. Download it with your browser."
     },
     "rpc": {
       "checking": "Motrix is slow to respond. Checking the connection…",

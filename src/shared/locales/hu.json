@@ -34,7 +34,10 @@
     "submitUnknownTitle": "A küldés eredménye ismeretlen. Újraküldés előtt ellenőrizd a feladatokat.",
     "submitUnknownBody": "A küldés eredménye ismeretlen. Újraküldés előtt ellenőrizd a feladatokat.",
     "taskDetailsBody": "A részletekhez nyisd meg a feladatlistát.",
-    "taskUpdatesTitle": "További feladatfrissítések"
+    "taskUpdatesTitle": "További feladatfrissítések",
+    "cookiesRejectedBody": "A feladat bejelentkezési adatai nem kompatibilisek a Motrixszal. A letöltés a böngészőben folytatódik.",
+    "browserFallbackUnknownBody": "A böngészős letöltés eredménye ismeretlen. Újrapróbálkozás előtt ellenőrizze a böngésző letöltéseit.",
+    "submitRejectedBody": "A Motrix nem fogadta el ezt a feladatot. Ellenőrizze a letöltési beállításokat, majd próbálja újra."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "Az oldal vagy a kiválasztott háttérszolgáltatás megváltozott. Jelöld ki újra a letöltést.",
       "preparing": "Letöltés előkészítése…",
       "sending": "Letöltés küldése…",
-      "pairedStatus": "Párosítva"
+      "pairedStatus": "Párosítva",
+      "cookiesRejected": "A Motrix nem tudja használni a feladat bejelentkezési adatait. Töltse le a fájlt a böngészővel."
     },
     "rpc": {
       "checking": "A Motrix lassan válaszol. Kapcsolat ellenőrzése…",

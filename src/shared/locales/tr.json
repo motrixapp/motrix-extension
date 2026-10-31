@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Gönderim sonucu bilinmiyor. Tekrar göndermeden önce görevleri kontrol edin.",
     "submitUnknownBody": "Gönderim sonucu bilinmiyor. Tekrar göndermeden önce görevleri kontrol edin.",
     "taskDetailsBody": "Ayrıntıları görmek için görev listesini açın.",
-    "taskUpdatesTitle": "Diğer görev güncellemeleri"
+    "taskUpdatesTitle": "Diğer görev güncellemeleri",
+    "cookiesRejectedBody": "Bu görevin oturum açma verileri Motrix ile uyumlu değil. İndirme tarayıcıda devam ediyor.",
+    "browserFallbackUnknownBody": "Tarayıcı indirmesinin sonucu bilinmiyor. Yeniden denemeden önce tarayıcının indirmelerini kontrol edin.",
+    "submitRejectedBody": "Motrix bu görevi kabul etmedi. İndirme seçeneklerini kontrol edip yeniden deneyin."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "Sayfa veya seçilen arka uç değişti. İndirmeyi yeniden seçin.",
       "preparing": "İndirme hazırlanıyor…",
       "sending": "İndirme gönderiliyor…",
-      "pairedStatus": "Eşleştirildi"
+      "pairedStatus": "Eşleştirildi",
+      "cookiesRejected": "Motrix bu görevin oturum açma verilerini kullanamıyor. Dosyayı tarayıcınızla indirin."
     },
     "rpc": {
       "checking": "Motrix geç yanıt veriyor. Bağlantı denetleniyor…",

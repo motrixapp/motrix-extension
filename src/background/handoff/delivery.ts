@@ -10,6 +10,7 @@ import {
   RemoteDataBoundaryConsentRequiredError,
 } from '@/background/remote-submit-policy'
 import { i18n } from '@/shared/i18n'
+import { DOWNLOAD_ERROR } from '@/shared/integration'
 import type { Notify } from '@/shared/notifications'
 
 export const CONNECT_DEADLINE_MS = 8000
@@ -32,7 +33,7 @@ async function submitOrFallback(
 ): Promise<HandoffResult> {
   let accepted: { taskId: string }
   try {
-    accepted = await submitWithRetry(params, ops)
+    accepted = await submitOnce(params, ops)
   } catch (error) {
     if (error instanceof DownloadOutcomeUnknownError) {
       notifySafely(ops, {
@@ -43,17 +44,34 @@ async function submitOrFallback(
       return { kind: 'unknown', operationId: params.idempotencyKey ?? '' }
     }
     let fellBack = false
+    let fallbackUncertain = false
     try {
       // Magnet links cannot be restored through the browser downloads API.
       if (params.selection.kind === 'direct') {
         await ops.fallbackToBrowser()
         fellBack = true
       }
+    } catch (fallbackError) {
+      // The browser API can fail after starting a download. Do not retry or
+      // claim that fallback succeeded; ask the user to inspect browser downloads.
+      fallbackUncertain = true
+      throw fallbackError
     } finally {
+      const cookiesRejected =
+        error instanceof DownloadPreparationError &&
+        error.reason === DOWNLOAD_ERROR.cookiesRejected
       notifySafely(ops, {
         title: i18n.t('notify.submitFailedTitle'),
         message: i18n.t(
-          fellBack ? 'notify.submitFailedBody' : 'notify.notReachableBody'
+          fallbackUncertain
+            ? 'notify.browserFallbackUnknownBody'
+            : cookiesRejected
+              ? fellBack
+                ? 'notify.cookiesRejectedBody'
+                : 'popup.integration.cookiesRejected'
+              : fellBack
+                ? 'notify.submitFailedBody'
+                : 'notify.submitRejectedBody'
         ),
         severity: 'error',
       })
@@ -73,15 +91,15 @@ async function submitOrFallback(
   }
 }
 
-async function submitWithRetry(
+async function submitOnce(
   params: DownloadSubmitParams,
   ops: HandoffOps
 ): Promise<{ taskId: string }> {
   try {
     return await ops.submit(params)
   } catch (error) {
-    // Consent and endpoint changes cannot be repaired by resending the same
-    // request. Other failures retain the existing idempotent retry.
+    // A generic exception does not prove that the remote side rejected the
+    // task. Preserve uncertainty even when an adapter forgot to classify it.
     if (
       error instanceof DownloadOutcomeUnknownError ||
       error instanceof DownloadPreparationError ||
@@ -90,14 +108,7 @@ async function submitWithRetry(
       error instanceof RemoteAutomaticTakeoverConsentRequiredError
     )
       throw error
-    if (ops.getState() !== 'connected') {
-      try {
-        await ops.waitForConnected(CONNECT_DEADLINE_MS)
-      } catch {
-        // The retry remains authoritative if reconnect failed.
-      }
-    }
-    return await ops.submit(params)
+    throw new DownloadOutcomeUnknownError()
   }
 }
 

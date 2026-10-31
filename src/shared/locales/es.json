@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Resultado del envío desconocido. Revisa las tareas antes de volver a enviar.",
     "submitUnknownBody": "Resultado del envío desconocido. Revisa las tareas antes de volver a enviar.",
     "taskDetailsBody": "Abre la lista de tareas para ver los detalles.",
-    "taskUpdatesTitle": "Más actualizaciones de tareas"
+    "taskUpdatesTitle": "Más actualizaciones de tareas",
+    "cookiesRejectedBody": "Los datos de inicio de sesión de esta tarea no son compatibles con Motrix. La descarga continúa en el navegador.",
+    "browserFallbackUnknownBody": "Se desconoce el resultado de la descarga del navegador. Revisa sus descargas antes de volver a intentarlo.",
+    "submitRejectedBody": "Motrix no aceptó esta tarea. Revisa las opciones de descarga e inténtalo de nuevo."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "La página o el servicio seleccionado ha cambiado. Selecciona la descarga de nuevo.",
       "preparing": "Preparando descarga…",
       "sending": "Enviando descarga…",
-      "pairedStatus": "Vinculado"
+      "pairedStatus": "Vinculado",
+      "cookiesRejected": "Motrix no puede usar los datos de inicio de sesión de esta tarea. Descarga el archivo con tu navegador."
     },
     "rpc": {
       "checking": "Motrix tarda en responder. Comprobando la conexión…",

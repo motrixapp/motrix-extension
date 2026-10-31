@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Rezultatul trimiterii este necunoscut. Verifică sarcinile înainte de a retrimite.",
     "submitUnknownBody": "Rezultatul trimiterii este necunoscut. Verifică sarcinile înainte de a retrimite.",
     "taskDetailsBody": "Deschide lista de sarcini pentru a vedea detaliile.",
-    "taskUpdatesTitle": "Mai multe actualizări ale sarcinilor"
+    "taskUpdatesTitle": "Mai multe actualizări ale sarcinilor",
+    "cookiesRejectedBody": "Datele de autentificare ale acestei sarcini nu sunt compatibile cu Motrix. Descărcarea se efectuează în browser.",
+    "browserFallbackUnknownBody": "Rezultatul descărcării în browser este necunoscut. Verifică descărcările browserului înainte de a reîncerca.",
+    "submitRejectedBody": "Motrix nu a acceptat această sarcină. Verifică opțiunile de descărcare și încearcă din nou."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "Pagina sau serviciul selectat s-a schimbat. Selectează din nou descărcarea.",
       "preparing": "Se pregătește descărcarea…",
       "sending": "Se trimite descărcarea…",
-      "pairedStatus": "Asociat"
+      "pairedStatus": "Asociat",
+      "cookiesRejected": "Motrix nu poate utiliza datele de autentificare ale acestei sarcini. Descarcă fișierul cu browserul."
     },
     "rpc": {
       "checking": "Motrix răspunde lent. Se verifică conexiunea…",

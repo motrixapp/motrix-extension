@@ -29,6 +29,7 @@ export const QUICK_ADD_TASK_I18N_KEYS = {
   errors: {
     invalidOptions: 'popup.taskForm.invalidOptions',
     directoryUnavailable: 'popup.taskForm.directoryUnavailable',
+    cookiesRejected: 'popup.integration.cookiesRejected',
     empty: 'popup.quickAdd.error.empty',
     unsupported: 'popup.quickAdd.error.unsupported',
     invalid: 'popup.quickAdd.error.invalid',

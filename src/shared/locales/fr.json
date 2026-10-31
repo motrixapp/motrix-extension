@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Résultat de l’envoi inconnu. Vérifiez les tâches avant de renvoyer.",
     "submitUnknownBody": "Résultat de l’envoi inconnu. Vérifiez les tâches avant de renvoyer.",
     "taskDetailsBody": "Ouvrez la liste des tâches pour voir les détails.",
-    "taskUpdatesTitle": "Autres mises à jour des tâches"
+    "taskUpdatesTitle": "Autres mises à jour des tâches",
+    "cookiesRejectedBody": "Les données de connexion de cette tâche sont incompatibles avec Motrix. Le téléchargement se poursuit dans le navigateur.",
+    "browserFallbackUnknownBody": "Le résultat du téléchargement dans le navigateur est inconnu. Vérifiez ses téléchargements avant de réessayer.",
+    "submitRejectedBody": "Motrix n’a pas accepté cette tâche. Vérifiez les options de téléchargement et réessayez."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "La page ou le service sélectionné a changé. Sélectionnez à nouveau le téléchargement.",
       "preparing": "Préparation du téléchargement…",
       "sending": "Envoi du téléchargement…",
-      "pairedStatus": "Associé"
+      "pairedStatus": "Associé",
+      "cookiesRejected": "Motrix ne peut pas utiliser les données de connexion de cette tâche. Téléchargez le fichier avec votre navigateur."
     },
     "rpc": {
       "checking": "Motrix tarde à répondre. Vérification de la connexion…",

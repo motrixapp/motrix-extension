@@ -2028,39 +2028,56 @@ describe('ConnectionManager — submitDownload + cancelDownload', () => {
     manager.stop()
   })
 
-  it('reports a capability rejection as unsupported instead of an unknown download outcome', async () => {
-    const conn = makeSubmitFakeConn()
-    const manager = makeManager({ mbp1Conn: conn })
-    await manager.connect({ allowLaunch: true, userInitiated: true })
-    conn.sendRequest.mockRejectedValueOnce({
-      code: ErrorCodes.CapabilityNotSupported,
-      message: 'private native path',
-    })
-    await expect(
-      manager.submitDownload({
-        source: {
-          pageUrl: 'https://example.com',
-          pageTitle: 'Video',
-          detectedAt: 1,
-        },
-        selection: {
-          kind: 'direct',
-          primary: {
-            url: 'https://example.com/video.mp4',
-            headers: {},
-            cookies: [],
-            refererPolicy: 'strict-origin-when-cross-origin',
-          },
-        },
-        meta: { suggestedFilename: 'video.mp4', qualityLabel: '' },
+  it.each([
+    { code: ErrorCodes.CapabilityNotSupported, reason: 'download.unsupported' },
+    { code: ErrorCodes.InvalidParams, reason: 'download.rejected' },
+    {
+      code: ErrorCodes.InvalidParams,
+      appCode: 'download-cookies-rejected',
+      reason: 'download.cookies-rejected',
+    },
+    {
+      code: ErrorCodes.InternalError,
+      appCode: 'download-cookies-rejected',
+      reason: 'download.result-unknown',
+    },
+  ])(
+    'reports a definite cookie/capability rejection $code without an unknown outcome',
+    async ({ code, reason, appCode }) => {
+      const conn = makeSubmitFakeConn()
+      const manager = makeManager({ mbp1Conn: conn })
+      await manager.connect({ allowLaunch: true, userInitiated: true })
+      conn.sendRequest.mockRejectedValueOnce({
+        code,
+        message: 'private native path',
+        data: { appCode },
       })
-    ).rejects.toThrow('download.unsupported')
-    expect(
-      conn.sendRequest.mock.calls.filter(
-        ([method]) => method === 'download/submit'
-      )
-    ).toHaveLength(1)
-  })
+      await expect(
+        manager.submitDownload({
+          source: {
+            pageUrl: 'https://example.com',
+            pageTitle: 'Video',
+            detectedAt: 1,
+          },
+          selection: {
+            kind: 'direct',
+            primary: {
+              url: 'https://example.com/video.mp4',
+              headers: {},
+              cookies: [],
+              refererPolicy: 'strict-origin-when-cross-origin',
+            },
+          },
+          meta: { suggestedFilename: 'video.mp4', qualityLabel: '' },
+        })
+      ).rejects.toThrow(reason)
+      expect(
+        conn.sendRequest.mock.calls.filter(
+          ([method]) => method === 'download/submit'
+        )
+      ).toHaveLength(1)
+    }
+  )
 
   it('submitDownload forwards download/submit and returns the taskId', async () => {
     const fakeConn = makeSubmitFakeConn()

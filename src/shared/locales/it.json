@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Esito dell’invio sconosciuto. Controlla le attività prima di inviare di nuovo.",
     "submitUnknownBody": "Esito dell’invio sconosciuto. Controlla le attività prima di inviare di nuovo.",
     "taskDetailsBody": "Apri l’elenco delle attività per vedere i dettagli.",
-    "taskUpdatesTitle": "Altri aggiornamenti delle attività"
+    "taskUpdatesTitle": "Altri aggiornamenti delle attività",
+    "cookiesRejectedBody": "I dati di accesso di questa attività non sono compatibili con Motrix. Il download prosegue nel browser.",
+    "browserFallbackUnknownBody": "L’esito del download nel browser è sconosciuto. Controlla i download del browser prima di riprovare.",
+    "submitRejectedBody": "Motrix non ha accettato questa attività. Controlla le opzioni di download e riprova."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "La pagina o il servizio selezionato è cambiato. Seleziona di nuovo il download.",
       "preparing": "Preparazione del download…",
       "sending": "Invio del download…",
-      "pairedStatus": "Associato"
+      "pairedStatus": "Associato",
+      "cookiesRejected": "Motrix non può utilizzare i dati di accesso di questa attività. Scarica il file con il browser."
     },
     "rpc": {
       "checking": "Motrix tarda a rispondere. Verifica della connessione…",

@@ -9,6 +9,7 @@ import {
 } from '@/shared/taskOptions'
 
 export type QuickAddTaskErrorKind =
+  | 'cookiesRejected'
   | 'invalidOptions'
   | 'directoryUnavailable'
   | 'empty'
@@ -308,23 +309,25 @@ export function useQuickAddTask({
     } catch (error) {
       if (mountedRef.current)
         setError(
-          (error as Error)?.message === DOWNLOAD_ERROR.directoryUnavailable
-            ? 'directoryUnavailable'
-            : (error as Error)?.message === DOWNLOAD_ERROR.resultUnknown
-              ? 'resultUnknown'
-              : (error as Error)?.message === DOWNLOAD_ERROR.pairingRequired
-                ? 'pairingRequired'
-                : [
-                      DOWNLOAD_ERROR.connectionFailed,
-                      DOWNLOAD_ERROR.preparationTimeout,
-                    ].includes((error as Error)?.message as never)
-                  ? 'connectionFailed'
+          (error as Error)?.message === DOWNLOAD_ERROR.cookiesRejected
+            ? 'cookiesRejected'
+            : (error as Error)?.message === DOWNLOAD_ERROR.directoryUnavailable
+              ? 'directoryUnavailable'
+              : (error as Error)?.message === DOWNLOAD_ERROR.resultUnknown
+                ? 'resultUnknown'
+                : (error as Error)?.message === DOWNLOAD_ERROR.pairingRequired
+                  ? 'pairingRequired'
                   : [
-                        DOWNLOAD_ERROR.endpointChanged,
-                        DOWNLOAD_ERROR.contextChanged,
+                        DOWNLOAD_ERROR.connectionFailed,
+                        DOWNLOAD_ERROR.preparationTimeout,
                       ].includes((error as Error)?.message as never)
-                    ? 'contextChanged'
-                    : 'submitFailed'
+                    ? 'connectionFailed'
+                    : [
+                          DOWNLOAD_ERROR.endpointChanged,
+                          DOWNLOAD_ERROR.contextChanged,
+                        ].includes((error as Error)?.message as never)
+                      ? 'contextChanged'
+                      : 'submitFailed'
         )
       return null
     } finally {

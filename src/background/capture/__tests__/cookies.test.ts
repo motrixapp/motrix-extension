@@ -2,6 +2,21 @@ import { describe, expect, it } from 'vitest'
 import { mapCookies } from '@/background/capture/cookies'
 
 describe('mapCookies', () => {
+  it.each(['', '中文', 'a b', 'a:b'])(
+    'preserves browser-supported cookie name %j without encoding or filtering',
+    (name) => {
+      const input = {
+        name,
+        value: 'synthetic',
+        domain: '.example.com',
+        path: '/files',
+        secure: true,
+        httpOnly: true,
+        sameSite: 'lax',
+      }
+      expect(mapCookies([input])).toEqual([input])
+    }
+  )
   it('maps no_restriction to none and converts expirationDate seconds to ms', () => {
     const [c] = mapCookies([
       {

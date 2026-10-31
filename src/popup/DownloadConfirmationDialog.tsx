@@ -239,6 +239,8 @@ function ConfirmationForm({
 
 function confirmationErrorKey(error: DownloadErrorReason): string {
   switch (error) {
+    case DOWNLOAD_ERROR.cookiesRejected:
+      return 'popup.integration.cookiesRejected'
     case DOWNLOAD_ERROR.directoryUnavailable:
       return 'popup.taskForm.directoryUnavailable'
     case DOWNLOAD_ERROR.resultUnknown:

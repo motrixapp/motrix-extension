@@ -34,7 +34,10 @@
     "submitUnknownTitle": "Wynik wysyłania jest nieznany. Sprawdź zadania przed ponownym wysłaniem.",
     "submitUnknownBody": "Wynik wysyłania jest nieznany. Sprawdź zadania przed ponownym wysłaniem.",
     "taskDetailsBody": "Otwórz listę zadań, aby zobaczyć szczegóły.",
-    "taskUpdatesTitle": "Więcej aktualizacji zadań"
+    "taskUpdatesTitle": "Więcej aktualizacji zadań",
+    "cookiesRejectedBody": "Dane logowania tego zadania są niezgodne z Motrix. Pobieranie odbywa się w przeglądarce.",
+    "browserFallbackUnknownBody": "Wynik pobierania w przeglądarce jest nieznany. Przed ponowną próbą sprawdź listę pobierania w przeglądarce.",
+    "submitRejectedBody": "Motrix nie przyjął tego zadania. Sprawdź opcje pobierania i spróbuj ponownie."
   },
   "options": {
     "diagnostics": {
@@ -479,7 +482,8 @@
       "contextChanged": "Strona lub wybrana usługa uległa zmianie. Wybierz pobieranie ponownie.",
       "preparing": "Przygotowywanie pobierania…",
       "sending": "Wysyłanie pobierania…",
-      "pairedStatus": "Sparowano"
+      "pairedStatus": "Sparowano",
+      "cookiesRejected": "Motrix nie może użyć danych logowania tego zadania. Pobierz plik w przeglądarce."
     },
     "rpc": {
       "checking": "Motrix odpowiada powoli. Sprawdzanie połączenia…",

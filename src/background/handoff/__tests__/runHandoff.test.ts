@@ -1,8 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
-import { DownloadOutcomeUnknownError } from '@/background/download-errors'
+import {
+  DownloadOutcomeUnknownError,
+  DownloadPreparationError,
+} from '@/background/download-errors'
 import { HandoffEndpointChangedError } from '@/background/handoff/guard'
 import { type HandoffOps, runHandoff } from '@/background/handoff/runHandoff'
 import { RemoteDataBoundaryConsentRequiredError } from '@/background/remote-submit-policy'
+import { i18n } from '@/shared/i18n'
 import type { TakeoverTarget } from '@/shared/takeover'
 
 function target(over: Partial<TakeoverTarget> = {}): TakeoverTarget {
@@ -41,6 +45,24 @@ function ops(over: Partial<HandoffOps> = {}): HandoffOps {
 }
 
 describe('runHandoff', () => {
+  it('falls back once without retrying a definite cookie admission rejection', async () => {
+    const o = ops({
+      submit: vi
+        .fn()
+        .mockRejectedValue(
+          new DownloadPreparationError('download.cookies-rejected')
+        ),
+    })
+    expect(await runHandoff(target(), o)).toEqual({ kind: 'browser' })
+    expect(o.submit).toHaveBeenCalledOnce()
+    expect(o.fallbackToBrowser).toHaveBeenCalledOnce()
+    expect(o.notify).toHaveBeenCalledWith(
+      expect.objectContaining({
+        severity: 'error',
+        message: i18n.t('notify.cookiesRejectedBody'),
+      })
+    )
+  })
   it('does not replay or browser-fallback an ambiguous submit after cancellation', async () => {
     const o = ops({
       submit: vi.fn(async () => {
@@ -200,58 +222,40 @@ describe('runHandoff', () => {
     ).toEqual([])
   })
 
-  it('submit rejects after commit: falls back to a browser download', async () => {
+  it('unclassified submit errors stay unknown without replay or browser fallback', async () => {
     const o = ops({
-      submit: vi.fn(async () => {
-        throw new Error('boom')
-      }),
+      submit: vi.fn().mockRejectedValue(new Error('unclassified failure')),
     })
-    await runHandoff(target(), o)
+    expect(await runHandoff(target(), o)).toMatchObject({ kind: 'unknown' })
     expect(o.cancelNative).toHaveBeenCalledOnce()
-    expect(o.submit).toHaveBeenCalledTimes(2)
-    expect(o.fallbackToBrowser).toHaveBeenCalledOnce()
+    expect(o.submit).toHaveBeenCalledOnce()
+    expect(o.fallbackToBrowser).not.toHaveBeenCalled()
   })
 
-  it('retries a lost submit response with the same idempotency key before fallback', async () => {
+  it('does not retry a lost response even when a later retry could return success', async () => {
     const submit = vi
       .fn(async (_params: DownloadSubmitParamsLike) => ({
         taskId: 'recovered',
       }))
       .mockRejectedValueOnce(new Error('response lost'))
     const o = ops({ submit })
-
-    await runHandoff(target(), o)
-
-    expect(submit).toHaveBeenCalledTimes(2)
-    const first = submit.mock.calls[0]?.[0]
-    const second = submit.mock.calls[1]?.[0]
-    expect(first?.idempotencyKey).toMatch(/^.{8,128}$/)
-    expect(second?.idempotencyKey).toBe(first?.idempotencyKey)
+    expect(await runHandoff(target(), o)).toMatchObject({ kind: 'unknown' })
+    expect(submit).toHaveBeenCalledOnce()
+    expect(submit.mock.calls[0]?.[0].idempotencyKey).toMatch(/^.{8,128}$/)
     expect(o.fallbackToBrowser).not.toHaveBeenCalled()
   })
 
-  it('waits for a probe reconnect before retrying a transport failure', async () => {
+  it('does not replay a possibly accepted submit after a transport disconnect', async () => {
     let state: ReturnType<HandoffOps['getState']> = 'connected'
-    const waitForConnected = vi.fn(async () => {
-      state = 'connected'
-      return true
+    const waitForConnected = vi.fn(async () => true)
+    const submit = vi.fn(async () => {
+      state = 'disconnected'
+      throw new Error('socket closed')
     })
-    const submit = vi
-      .fn(async () => ({ taskId: 'recovered' }))
-      .mockImplementationOnce(async () => {
-        state = 'disconnected'
-        throw new Error('socket closed')
-      })
-    const o = ops({
-      getState: () => state,
-      waitForConnected,
-      submit,
-    })
-
-    await runHandoff(target(), o)
-
-    expect(waitForConnected).toHaveBeenCalledWith(8000)
-    expect(submit).toHaveBeenCalledTimes(2)
+    const o = ops({ getState: () => state, waitForConnected, submit })
+    expect(await runHandoff(target(), o)).toMatchObject({ kind: 'unknown' })
+    expect(waitForConnected).not.toHaveBeenCalled()
+    expect(submit).toHaveBeenCalledOnce()
     expect(o.fallbackToBrowser).not.toHaveBeenCalled()
   })
 
@@ -275,7 +279,7 @@ describe('runHandoff', () => {
     const o = ops({
       notify,
       submit: vi.fn(async () => {
-        throw new Error('submit failed')
+        throw new DownloadPreparationError('download.rejected')
       }),
       fallbackToBrowser: vi.fn(async () => {
         throw new Error('native fallback failed')
@@ -285,8 +289,13 @@ describe('runHandoff', () => {
     await expect(runHandoff(target(), o)).rejects.toThrow(
       'native fallback failed'
     )
+    expect(o.fallbackToBrowser).toHaveBeenCalledOnce()
+    expect(o.submit).toHaveBeenCalledOnce()
     expect(notify).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'error' })
+      expect.objectContaining({
+        severity: 'error',
+        message: i18n.t('notify.browserFallbackUnknownBody'),
+      })
     )
   })
 
@@ -366,7 +375,7 @@ describe('runHandoff', () => {
       ops({
         notify: failNotify,
         submit: vi.fn(async () => {
-          throw new Error('boom')
+          throw new DownloadPreparationError('download.rejected')
         }),
       })
     )
@@ -443,7 +452,7 @@ describe('runHandoff', () => {
   it('magnet submit failure stays retryable instead of becoming a browser download', async () => {
     const o = ops({
       submit: vi.fn(async () => {
-        throw new Error('submit failed')
+        throw new DownloadPreparationError('download.rejected')
       }),
     })
 
@@ -452,7 +461,7 @@ describe('runHandoff', () => {
       o
     )
 
-    expect(o.submit).toHaveBeenCalledTimes(2)
+    expect(o.submit).toHaveBeenCalledOnce()
     expect(o.fallbackToBrowser).not.toHaveBeenCalled()
     expect(o.notify).toHaveBeenCalledWith(
       expect.objectContaining({ severity: 'error' })
