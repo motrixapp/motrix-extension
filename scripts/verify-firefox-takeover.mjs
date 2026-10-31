@@ -255,7 +255,13 @@ try {
           ...browserArgs,
         ]
       : browserArgs,
-    { stdio: ['ignore', 'pipe', 'pipe'] }
+    {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      // Current Firefox gates privileged BiDi commands (including temporary
+      // extension installation) on this variable. Scope it to the isolated
+      // fixture browser; retain the command-line flag for older releases.
+      env: { ...process.env, MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: '1' },
+    }
   )
   firefox.on('error', (error) => process.stderr.write(`${error.message}\n`))
   firefox.stderr.on('data', (data) => {
