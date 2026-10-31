@@ -13,7 +13,9 @@ export interface DiscoverOptions {
    * The ephemeral binding public key, exactly 32 raw bytes. Chromium and
    * Firefox retain a ticketless legacy request when omitted. Safari supplies
    * a disposable key for endpoint-only discovery and discards its ticket;
-   * pairing callers must supply the public half of their retained keypair.
+   * pairing callers supply their retained ephemeral public key. Safari legacy
+   * credential migration supplies its persistent installation public key; the
+   * reconnect signature proves possession without exposing the private key.
    */
   bindingPub?: Uint8Array
 }

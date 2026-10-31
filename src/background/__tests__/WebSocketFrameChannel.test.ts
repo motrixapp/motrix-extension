@@ -65,15 +65,28 @@ async function makeOpenChannel(): Promise<{
   const ws = FakeWebSocket.lastInstance
   if (ws === null) throw new Error('WebSocket not constructed')
   ws.fireOpen()
-  // `open()`'s post-await continuation (assigning `this.ws` and attaching
-  // the steady-state listeners) runs as a microtask after `fireOpen()`
-  // resolves the inner promise — awaiting here is what makes the channel
-  // actually usable by the time this helper returns.
+  // The caller must still observe open's cancellation check before using it.
   await openPromise
   return { channel, ws }
 }
 
 describe('WebSocketFrameChannel.open', () => {
+  it('retains a server-first challenge delivered immediately after open', async () => {
+    const channel = new WebSocketFrameChannel({
+      WebSocketCtor: FakeWebSocket as unknown as typeof WebSocket,
+    })
+    const opening = channel.open('ws://127.0.0.1:16803/v1')
+    const ws = FakeWebSocket.lastInstance
+    if (!ws) throw new Error('WebSocket not constructed')
+    ws.fireOpen()
+    ws.fireText('{"type":"reconnectChallenge"}')
+    await opening
+    await expect(channel.receiveText(100)).resolves.toBe(
+      '{"type":"reconnectChallenge"}'
+    )
+    channel.close()
+  })
+
   it('requests the motrix-bridge.v1 subprotocol', async () => {
     const channel = new WebSocketFrameChannel({
       WebSocketCtor: FakeWebSocket as unknown as typeof WebSocket,

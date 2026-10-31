@@ -134,12 +134,15 @@ export const pairHelloFrameSchema = z
     browser: browserField,
     claimedExtensionId: asciiString(),
     clientInstallationId: asciiString(),
+    safariInstallationKey: base64UrlBytes(KEY_BYTES).optional(),
     nmTicket: z.unknown().optional(),
     ticketBindingKey: base64UrlBytes(KEY_BYTES).optional(),
   })
   .strict()
   .refine(
-    (f) => (f.nmTicket === undefined) === (f.ticketBindingKey === undefined),
+    (f) =>
+      (f.nmTicket === undefined) === (f.ticketBindingKey === undefined) &&
+      (f.safariInstallationKey === undefined || f.browser === 'safari'),
     {
       message:
         'ticketBindingKey is required if and only if nmTicket is present',
@@ -204,6 +207,14 @@ export type CredentialAckFrame = z.infer<typeof credentialAckFrameSchema>
 export const reconnectResponseFrameSchema = z
   .object({
     type: z.literal('reconnectResponse'),
+    safariResume: z
+      .object({
+        installationKey: base64UrlBytes(KEY_BYTES),
+        proof: base64UrlBytes(SIGNATURE_BYTES),
+        nmTicket: z.unknown().optional(),
+      })
+      .strict()
+      .optional(),
     credentialId: asciiString(),
     C: base64UrlBytes(NONCE_BYTES),
     mac: base64UrlBytes(MAC_BYTES),
@@ -446,6 +457,7 @@ export function buildPairHello(args: {
   clientInstallationId: string
   nmTicket?: unknown
   ticketBindingKey?: string
+  safariInstallationKey?: string
 }): PairHelloFrame {
   // Built by explicit assignment rather than by spreading optionals: under
   // `exactOptionalPropertyTypes` an explicit `nmTicket: undefined` is a
@@ -459,6 +471,8 @@ export function buildPairHello(args: {
     claimedExtensionId: args.claimedExtensionId,
     clientInstallationId: args.clientInstallationId,
   }
+  if (args.safariInstallationKey !== undefined)
+    frame.safariInstallationKey = args.safariInstallationKey
   if (args.nmTicket !== undefined) frame.nmTicket = args.nmTicket
   if (args.ticketBindingKey !== undefined) {
     frame.ticketBindingKey = args.ticketBindingKey
@@ -491,12 +505,16 @@ export function buildReconnectResponse(args: {
   credentialId: string
   C: string
   mac: string
+  safariResume?: ReconnectResponseFrame['safariResume']
 }): ReconnectResponseFrame {
   return validateOutbound(reconnectResponseFrameSchema, {
     type: 'reconnectResponse',
     credentialId: args.credentialId,
     C: args.C,
     mac: args.mac,
+    ...(args.safariResume === undefined
+      ? {}
+      : { safariResume: args.safariResume }),
   })
 }
 

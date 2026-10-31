@@ -127,7 +127,7 @@ Before replacing the installed app, the installer stages and re-verifies a full 
 
 Updates preserve the installed path's registration and refresh it after replacement. Only the exact duplicate build-product path is unregistered; a failed first installation also unregisters its newly placed copy. Global LaunchServices/PlugInKit state is never reset. A verified identical build is a no-op. A changed build must increase `CFBundleVersion`, which the native build script does automatically. The installer does not launch applications, change Safari permissions, or register the desktop bootstrap service. Safari can still require an extension toggle or restart to use updated code; verify its active build and current Origin before pairing.
 
-Local installation of build 7 was verified in Safari as `Motrix Extension 0.1.14.7`, enabled with the ordinary popup. Loopback website access remained Allow and other sites remained Ask. The desktop bootstrap service remained enabled. Keeping the stable path registered did **not** preserve Safari's popup UUID in this local Xcode rebuild/update workflow. Do not assume an Origin survives development updates or reuse credentials across different Origins. This observation does not establish the behavior of App Store updates.
+Local installation of build 7 was verified in Safari as `Motrix Extension 0.1.14.7`, enabled with the ordinary popup. Loopback website access remained Allow and other sites remained Ask. The desktop bootstrap service remained enabled. Keeping the stable path registered did **not** preserve Safari's popup UUID in this local Xcode rebuild/update workflow. Do not assume an Origin survives development updates. Reusing credentials across Origins requires the installation-continuity proof described below. This observation does not establish the behavior of App Store updates.
 
 ### Verified locally
 
@@ -245,3 +245,24 @@ node scripts/safari-local-mdxp.mjs --source ../mdxp --consumer . --consumer ../M
 ```
 
 The script compiles the authoritative MDXP source into a content-addressed snapshot, then copies the package, licenses, and runtime dependencies into each consumer's `node_modules`. It preserves the previous entry in a hidden sibling backup and leaves manifests, lockfiles, and package stores unchanged. A normal dependency reinstall restores the published version; rerun this explicit development step afterwards. Do not publish artifacts built with this local snapshot as a protocol release.
+
+
+### Pairing persistence across Safari restarts
+
+Safari changes its extension Origin on every launch. Current clients require a
+backend advertising `X-Motrix-Safari-Continuity: 1` for new Safari pairings. The
+extension keeps a random installation signing key and authenticates each new
+Origin with both that key and the existing MBP1 credential. The backend retains
+the original authorization identity for task routing and revocation.
+
+Existing official local pairings enroll automatically through a fresh signed
+native bootstrap ticket without launching Motrix in the background. Remote
+legacy pairings can enroll while the original Origin is still live; otherwise
+one explicit code pairing is required. Old backends need an update. Do not
+clear Safari storage or replace the signing identity to troubleshoot this flow.
+
+Release acceptance must include pairing once, completely quitting Safari,
+reopening and reconnecting without a code, repeating after a Motrix restart,
+switching independent Safari profiles and backend authorities, and revoking the
+original authorization while a connection uses a changed Origin. Unit and socket
+tests do not replace this signed-app Safari acceptance.

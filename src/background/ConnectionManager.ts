@@ -1757,6 +1757,15 @@ export class ConnectionManager {
       )
     }
 
+    if (
+      principal.browser === 'safari' &&
+      !discovery.untrustedDocument.safariContinuity
+    )
+      throw new BackendCompatibilityError(
+        'backendUpgradeRequired',
+        'Safari persistent pairing requires a newer Motrix version'
+      )
+
     this.setState('connecting')
     for (const credential of order) {
       const instanceId = credential.authenticatedInstanceId
@@ -1779,6 +1788,9 @@ export class ConnectionManager {
             instanceId: discovery.untrustedDocument.instanceId,
             appVersion: discovery.untrustedDocument.appVersion,
             compatibility: 'compatible',
+            ...(discovery.untrustedDocument.safariContinuity
+              ? { safariContinuity: true }
+              : {}),
           },
           principal,
           instanceId,
@@ -1858,6 +1870,9 @@ export class ConnectionManager {
           instanceId: discovery.untrustedDocument.instanceId,
           appVersion: discovery.untrustedDocument.appVersion,
           compatibility: 'compatible',
+          ...(discovery.untrustedDocument.safariContinuity
+            ? { safariContinuity: true }
+            : {}),
         },
         principal,
         claimedExtensionId: this.opts.clientInfo.extensionId,
@@ -1959,6 +1974,15 @@ export class ConnectionManager {
         }
 
         foundEndpoint = true
+        if (
+          principal.browser === 'safari' &&
+          credential.safariInstallationKey === undefined &&
+          !discovered.safariContinuity
+        )
+          throw new BackendCompatibilityError(
+            'backendUpgradeRequired',
+            'Safari persistent pairing requires a newer Motrix version'
+          )
 
         // §12: prefer the pin's instanceId (proven by an earlier verified
         // confirmB/reconnectAccept) over the untrusted §4.1 discovery hint —
@@ -1980,6 +2004,20 @@ export class ConnectionManager {
         let result: ReconnectFlowResult
         try {
           const flow = this.createReconnectFlow({
+            safariBootstrap: async (publicKey, wsPort) => {
+              try {
+                const reply = await this.bootstrap.discover({
+                  bindingPub: publicKey,
+                  allowLaunch: false,
+                })
+                this.ensureCurrentAttempt(generation)
+                return reply.wsPort === wsPort
+                  ? (reply.nmTicket ?? undefined)
+                  : undefined
+              } catch {
+                return undefined
+              }
+            },
             channel,
             creds: scope.credentials,
             pins: this.pinStore,
@@ -2136,6 +2174,11 @@ export class ConnectionManager {
       await this.discoveryService.preflightCompatibility(candidate)
     this.ensureCurrentAttempt(generation)
     this.assertBackendCompatibility(preflighted)
+    if (principal.browser === 'safari' && !preflighted.safariContinuity)
+      throw new BackendCompatibilityError(
+        'backendUpgradeRequired',
+        'Safari persistent pairing requires a newer Motrix version'
+      )
 
     const withNonce = await this.discoveryService.ensureNonce(preflighted)
     this.ensureCurrentAttempt(generation)

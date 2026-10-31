@@ -21,7 +21,12 @@ import {
   backendAuthorityKey,
   LOCAL_BACKEND_AUTHORITY,
 } from '@/background/mbp1/backend-authority'
-import { b64uEncode, concatBytes, enc } from '@/background/mbp1/canonical'
+import {
+  b64uDecode,
+  b64uEncode,
+  concatBytes,
+  enc,
+} from '@/background/mbp1/canonical'
 import { createOperationQueue } from '@/background/mbp1/operation-queue'
 
 /** §6.7 wire principal. A second browser profile is a new principal. */
@@ -29,6 +34,7 @@ export interface Principal {
   browser: string
   verifiedOrigin: string
   clientInstallationId: string
+  safariInstallationKey?: string
 }
 
 export type CredentialState = 'provisional' | 'committed'
@@ -45,6 +51,8 @@ export interface StoredCredential {
   credentialId: string
   mutualKey: string
   principalKey: string
+  safariInstallationKey?: string
+  safariPairedOrigin?: string
   state: CredentialState
   /** Present exactly when `state === 'provisional'`. */
   sub?: ProvisionalSub
@@ -106,6 +114,8 @@ interface PersistedCredential {
   credentialId: string
   mutualKey: string
   principalKey: string
+  safariInstallationKey?: string
+  safariPairedOrigin?: string
   state: CredentialState
   sub?: ProvisionalSub
   createdAt: number
@@ -183,15 +193,61 @@ function finishAuthorityRevocation(
   })
 }
 
-/** Stable, injective storage key for a wire principal. */
+/** Storage identity: Safari keeps its installation across rotating transport origins. */
 export function principalKey(p: Principal): string {
   return b64uEncode(
     concatBytes(
       enc(p.browser),
-      enc(p.verifiedOrigin),
+      enc(p.browser === 'safari' ? 'safari-installation-v1' : p.verifiedOrigin),
       enc(p.clientInstallationId)
     )
   )
+}
+
+/** Read the former origin-bound key without guessing from malformed data. */
+function readSafariPrincipalKey(key: string): Principal | null {
+  try {
+    const data = b64uDecode(key)
+    if (data.length > 2048) return null
+    const fields: string[] = []
+    let offset = 0
+    for (let i = 0; i < 3; i++) {
+      if (offset + 8 > data.length) return null
+      const length = Number(
+        new DataView(data.buffer, data.byteOffset + offset, 8).getBigUint64(
+          0,
+          true
+        )
+      )
+      offset += 8
+      if (
+        !Number.isSafeInteger(length) ||
+        length < 1 ||
+        offset + length > data.length
+      )
+        return null
+      const bytes = data.subarray(offset, offset + length)
+      if (bytes.some((byte) => byte > 0x7f)) return null
+      fields.push(String.fromCharCode(...bytes))
+      offset += length
+    }
+    if (offset !== data.length || fields[0] !== 'safari') return null
+    const origin = fields[1] as string
+    if (
+      origin !== 'safari-installation-v1' &&
+      !/^safari-web-extension:\/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(
+        origin
+      )
+    )
+      return null
+    return {
+      browser: 'safari',
+      verifiedOrigin: origin,
+      clientInstallationId: fields[2] as string,
+    }
+  } catch {
+    return null
+  }
 }
 
 /** Stable, injective map key for `{authorityKey, principalKey}`. */
@@ -249,10 +305,36 @@ function readCredentialBase(value: unknown): CredentialBase | null {
     return null
   }
 
+  const safari = readSafariPrincipalKey(raw.principalKey)
+  if (
+    raw.safariInstallationKey !== undefined &&
+    (safari === null ||
+      typeof raw.safariInstallationKey !== 'string' ||
+      !/^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/.test(raw.safariInstallationKey))
+  )
+    return null
+  if (
+    raw.safariPairedOrigin !== undefined &&
+    (typeof raw.safariPairedOrigin !== 'string' ||
+      !/^safari-web-extension:\/\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(
+        raw.safariPairedOrigin
+      ))
+  )
+    return null
   const base = {
     credentialId: raw.credentialId,
     mutualKey: raw.mutualKey,
-    principalKey: raw.principalKey,
+    principalKey: safari === null ? raw.principalKey : principalKey(safari),
+    ...(raw.safariInstallationKey === undefined
+      ? {}
+      : { safariInstallationKey: raw.safariInstallationKey }),
+    ...(safari === null ||
+    (raw.safariPairedOrigin === undefined &&
+      safari.verifiedOrigin === 'safari-installation-v1')
+      ? {}
+      : {
+          safariPairedOrigin: raw.safariPairedOrigin ?? safari.verifiedOrigin,
+        }),
     createdAt: raw.createdAt,
   }
   if (raw.state === 'committed') {
@@ -568,6 +650,12 @@ function publicCredential(credential: PersistedCredential): StoredCredential {
     credentialId: credential.credentialId,
     mutualKey: credential.mutualKey,
     principalKey: credential.principalKey,
+    ...(credential.safariInstallationKey === undefined
+      ? {}
+      : { safariInstallationKey: credential.safariInstallationKey }),
+    ...(credential.safariPairedOrigin === undefined
+      ? {}
+      : { safariPairedOrigin: credential.safariPairedOrigin }),
     state: credential.state,
     createdAt: credential.createdAt,
     authenticatedInstanceId: credential.authenticatedInstanceId,
@@ -691,6 +779,14 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
         credentialId: cred.credentialId,
         mutualKey: cred.mutualKey,
         principalKey: key,
+        ...(principal.browser === 'safari'
+          ? {
+              safariPairedOrigin: principal.verifiedOrigin,
+              ...(principal.safariInstallationKey === undefined
+                ? {}
+                : { safariInstallationKey: principal.safariInstallationKey }),
+            }
+          : {}),
         state: 'provisional',
         sub: 'unacked',
         createdAt: Date.now(),
@@ -781,6 +877,17 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
         credentialId: target.credentialId,
         mutualKey: target.mutualKey,
         principalKey: target.principalKey,
+        ...(target.safariInstallationKey === undefined
+          ? {}
+          : { safariInstallationKey: target.safariInstallationKey }),
+        ...(principal.browser === 'safari'
+          ? {
+              safariPairedOrigin: principal.verifiedOrigin,
+              ...(principal.safariInstallationKey === undefined
+                ? {}
+                : { safariInstallationKey: principal.safariInstallationKey }),
+            }
+          : {}),
         state: 'committed',
         createdAt: target.createdAt,
         authenticatedInstanceId: storedInstanceId,
@@ -856,6 +963,17 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
         credentialId: target.credentialId,
         mutualKey: target.mutualKey,
         principalKey: target.principalKey,
+        ...(target.safariInstallationKey === undefined
+          ? {}
+          : { safariInstallationKey: target.safariInstallationKey }),
+        ...(principal.browser === 'safari'
+          ? {
+              safariPairedOrigin: principal.verifiedOrigin,
+              ...(principal.safariInstallationKey === undefined
+                ? {}
+                : { safariInstallationKey: principal.safariInstallationKey }),
+            }
+          : {}),
         state: 'committed',
         createdAt: target.createdAt,
         authenticatedInstanceId: storedInstanceId,
@@ -935,6 +1053,10 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
         (credential) =>
           credential.authorityKey === this.authorityKey &&
           credential.principalKey === key &&
+          (!this.remote ||
+            principal.browser !== 'safari' ||
+            credential.safariInstallationKey !== undefined ||
+            credential.safariPairedOrigin === principal.verifiedOrigin) &&
           (!this.remote || credential.authenticatedInstanceId !== null)
       )
       const activeId =
@@ -978,6 +1100,10 @@ export class AuthorityCredentialStore implements CredentialAttemptStore {
         (credential) =>
           credential.authorityKey === this.authorityKey &&
           credential.principalKey === key &&
+          (!this.remote ||
+            principal.browser !== 'safari' ||
+            credential.safariInstallationKey !== undefined ||
+            credential.safariPairedOrigin === principal.verifiedOrigin) &&
           (!this.remote || credential.authenticatedInstanceId !== null) &&
           credential.state === 'committed'
       )
