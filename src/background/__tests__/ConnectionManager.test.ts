@@ -2334,3 +2334,59 @@ describe('ConnectionManager activity delegation', () => {
     expect(mgr.hasActiveTasks()).toBe(false)
   })
 })
+
+describe('Safari continuity compatibility', () => {
+  it.each([false, true])(
+    'requires the backend capability before offering a new pairing (supported=%s)',
+    async (supported) => {
+      const { extensionBrowser } = await import('@/shared/browser')
+      const getURL = vi
+        .spyOn(extensionBrowser.runtime, 'getURL')
+        .mockReturnValue(
+          'safari-web-extension://41cf2a73-eb74-4f1d-a74b-da20e9f24d8b/'
+        )
+      const manifest = extensionBrowser.runtime.getManifest()
+      const getManifest = vi
+        .spyOn(extensionBrowser.runtime, 'getManifest')
+        .mockReturnValue({ ...manifest, permissions: ['nativeMessaging'] })
+      const ensureNonce = vi.fn(async (result) => ({
+        ...result,
+        nonce: 'nonce',
+      }))
+      const discoveryService = {
+        discoverForReconnect: vi.fn(async () => null),
+        discoverForFirstPair: vi.fn(async () => [
+          {
+            transport: 'probe',
+            wsPort: 16802,
+            compatibility: 'compatible',
+            ...(supported ? { safariContinuity: true } : {}),
+          },
+        ]),
+        preflightCompatibility: vi.fn(async (result) => result),
+        ensureNonce,
+      } as unknown as DiscoveryService
+      const mgr = makeManager({
+        clientInfo: {
+          ...CLIENT_INFO,
+          browser: 'safari',
+          extensionId: 'app.motrix.safari.extension',
+        },
+        discoveryService,
+      })
+      try {
+        await mgr.clearGateAndStart()
+        expect(mgr.getState()).toBe(supported ? 'connected' : 'disconnected')
+        if (supported) expect(ensureNonce).toHaveBeenCalledOnce()
+        else {
+          expect(mgr.getLastErrorReason()).toBe('backendUpgradeRequired')
+          expect(ensureNonce).not.toHaveBeenCalled()
+        }
+      } finally {
+        mgr.stop()
+        getURL.mockRestore()
+        getManifest.mockRestore()
+      }
+    }
+  )
+})

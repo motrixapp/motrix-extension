@@ -1,3 +1,8 @@
+import {
+  bindSafariResume,
+  getSafariInstallationKey,
+  signSafariResume,
+} from '@/background/mbp1/safari-installation'
 /**
  * MBP1 reconnect state machine (bridge-pairing-protocol.md §8, §6.7, §12).
  *
@@ -267,6 +272,10 @@ export class ReconnectFlowError extends Error {
 }
 
 export interface ReconnectFlowDeps {
+  safariBootstrap?: (
+    publicKey: Uint8Array,
+    wsPort: number
+  ) => Promise<unknown | undefined>
   channel: FrameChannel
   creds: CredentialLifecycleSource
   pins: PinStore
@@ -335,8 +344,38 @@ export class ReconnectFlow {
     this.assertAsciiField(args.principal.verifiedOrigin, 'verifiedOrigin')
     this.assertAsciiField(args.instanceId, 'instanceId')
 
+    let installation:
+      | Awaited<ReturnType<typeof getSafariInstallationKey>>
+      | undefined
     try {
-      return await this.session(args)
+      let nmTicket: unknown
+      if (
+        args.principal.browser === 'safari' &&
+        (args.discovery.safariContinuity ||
+          args.credential.safariInstallationKey !== undefined)
+      ) {
+        installation = await getSafariInstallationKey()
+        this.ensureCurrent()
+        if (
+          args.credential.safariInstallationKey !== undefined &&
+          args.credential.safariInstallationKey !== installation.publicKey
+        ) {
+          throw new Error(
+            'Safari installation identity does not match its credential'
+          )
+        }
+        if (
+          args.credential.safariInstallationKey === undefined &&
+          args.remoteV1Url === undefined
+        ) {
+          nmTicket = await this.deps.safariBootstrap?.(
+            b64uDecode(installation.publicKey),
+            args.discovery.wsPort
+          )
+          this.ensureCurrent()
+        }
+      }
+      return await this.session(args, installation, nmTicket)
     } catch (error) {
       // Closed on every failure path. On success the caller owns the socket
       // from here on — MDXP `motrix/initialize` runs inside the envelope this
@@ -345,11 +384,15 @@ export class ReconnectFlow {
       throw error instanceof ReconnectFlowError
         ? error
         : this.wrapUnknownError(error)
+    } finally {
+      installation?.privateKey.fill(0)
     }
   }
 
   private async session(
-    args: ReconnectFlowRunArgs
+    args: ReconnectFlowRunArgs,
+    installation?: Awaited<ReturnType<typeof getSafariInstallationKey>>,
+    nmTicket?: unknown
   ): Promise<ReconnectFlowResult> {
     const { credential, discovery, principal, instanceId } = args
 
@@ -377,13 +420,15 @@ export class ReconnectFlow {
         'stored credential mutualKey is not valid base64url'
       )
     }
-    const RT = reconnectTranscript({
+    let RT = reconnectTranscript({
       protocolVersion: MBP1_PROTOCOL_VERSION,
       credentialId: credential.credentialId,
       browser: principal.browser,
       verifiedOrigin: principal.verifiedOrigin,
       instanceId,
     })
+    if (installation)
+      RT = bindSafariResume(RT, installation.publicKey, nmTicket)
     const macs = reconnectMacs(mutualKey, S, C, RT)
 
     let responseFrame: ReturnType<typeof buildReconnectResponse>
@@ -396,6 +441,15 @@ export class ReconnectFlow {
         credentialId: credential.credentialId,
         C: b64uEncode(C),
         mac: b64uEncode(macs.client),
+        ...(installation === undefined
+          ? {}
+          : {
+              safariResume: {
+                installationKey: installation.publicKey,
+                proof: signSafariResume(installation.privateKey, S, C, RT),
+                ...(nmTicket === undefined ? {} : { nmTicket }),
+              },
+            }),
       })
     } catch (error) {
       throw this.toFlowError(error)
@@ -434,7 +488,9 @@ export class ReconnectFlow {
     // present, making an interruption recoverable rather than orphaning pins.
     await this.deps.creds.finalizeAndPrune(
       credential.credentialId,
-      principal,
+      installation === undefined
+        ? principal
+        : { ...principal, safariInstallationKey: installation.publicKey },
       instanceId,
       async (staleIds) => {
         if (args.remoteV1Url !== undefined) return

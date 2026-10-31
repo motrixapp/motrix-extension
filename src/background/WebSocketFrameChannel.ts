@@ -137,6 +137,10 @@ export class WebSocketFrameChannel implements FrameChannel {
         if (settled) return
         settled = true
         cleanup()
+        // /v1 speaks first. Capture a challenge delivered in the same turn
+        // as open, before the awaiting caller's microtask can resume.
+        ws.addEventListener('message', this.onMessage)
+        ws.addEventListener('close', this.onSocketClose)
         resolve()
       }
       const onError = (): void => {
@@ -157,13 +161,11 @@ export class WebSocketFrameChannel implements FrameChannel {
     })
 
     // `open` and an owner-driven close can cross in the microtask between
-    // the event and this continuation. Never attach steady-state listeners
-    // or report success after ownership was cancelled.
+    // the event and this continuation. Never report success after ownership
+    // was cancelled; close() already detached the steady-state listeners.
     if (this.closed) {
       throw this.closeError ?? new Error('WebSocketFrameChannel closed')
     }
-    ws.addEventListener('message', this.onMessage)
-    ws.addEventListener('close', this.onSocketClose)
   }
 
   async sendText(frame: object): Promise<void> {

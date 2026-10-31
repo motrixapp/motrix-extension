@@ -1,3 +1,4 @@
+import { getSafariInstallationKey } from '@/background/mbp1/safari-installation'
 /**
  * MBP1 first-pair state machine (bridge-pairing-protocol.md §6.1, §6.5-§6.7,
  * §7.2, §7.3).
@@ -375,6 +376,22 @@ export class PairingFlow {
   }
 
   async run(args: PairingFlowRunArgs): Promise<PairingFlowResult> {
+    if (
+      args.principal.browser === 'safari' &&
+      args.discovery.safariContinuity
+    ) {
+      const installation = await getSafariInstallationKey()
+      installation.privateKey.fill(0)
+      this.ensureCurrent()
+      args = {
+        ...args,
+        principal: {
+          ...args.principal,
+          safariInstallationKey: installation.publicKey,
+        },
+      }
+    }
+
     // Everything that can be decided locally is decided before the §7.3 gate,
     // so a caller error never consumes a lockout slot or an attempt.
     const prepared = this.prepare(args)
@@ -551,6 +568,9 @@ export class PairingFlow {
       browser: prepared.browser,
       claimedExtensionId: args.claimedExtensionId,
       clientInstallationId: args.principal.clientInstallationId,
+      ...(args.principal.safariInstallationKey === undefined
+        ? {}
+        : { safariInstallationKey: args.principal.safariInstallationKey }),
       ...(prepared.ticket === null
         ? {}
         : {
@@ -579,6 +599,9 @@ export class PairingFlow {
       verifiedOrigin: args.principal.verifiedOrigin,
       claimedExtensionId: args.claimedExtensionId,
       clientInstallationId: args.principal.clientInstallationId,
+      ...(args.principal.safariInstallationKey === undefined
+        ? {}
+        : { safariInstallationKey: args.principal.safariInstallationKey }),
     })
     const bId = buildBId(instanceId)
     const aad = buildAad({

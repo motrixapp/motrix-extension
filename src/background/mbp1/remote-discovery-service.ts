@@ -73,6 +73,7 @@ export interface RemoteDiscoveryRequestOptions {
 }
 
 export interface RemoteDiscoveryDocument {
+  readonly safariContinuity?: boolean
   readonly app: 'motrix-bridge'
   readonly apiVersion: number
   readonly instanceId: string
@@ -1037,6 +1038,8 @@ export class RemoteDiscoveryService {
         document = null
       }
       if (document === null) return unavailable('malformedDocument')
+      if (response.headers.get('X-Motrix-Safari-Continuity') === '1')
+        document = Object.freeze({ ...document, safariContinuity: true })
       const result = classifyDocument(authority, document)
       if (result.status === 'compatible') {
         remoteNonceCapabilities.set(result, {

@@ -38,13 +38,17 @@ export function buildAId(a: {
   verifiedOrigin: string
   claimedExtensionId: string
   clientInstallationId: string
+  safariInstallationKey?: string
 }): Uint8Array {
   return concatBytes(
     enc('MBP1/A/v1'),
     enc(a.browser),
     enc(a.verifiedOrigin),
     enc(a.claimedExtensionId),
-    enc(a.clientInstallationId)
+    enc(a.clientInstallationId),
+    ...(a.safariInstallationKey === undefined
+      ? []
+      : [enc('MBP1/safari-installation/v1'), enc(a.safariInstallationKey)])
   )
 }
 

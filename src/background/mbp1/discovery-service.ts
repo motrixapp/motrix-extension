@@ -48,6 +48,7 @@ import { extensionBrowser } from '@/shared/browser'
  * come from a `/discovery` sweep and never carry either.
  */
 export interface DiscoveryResult {
+  safariContinuity?: boolean
   transport: 'nm' | 'probe'
   wsPort: number
   instanceId?: string
@@ -78,6 +79,7 @@ export interface DiscoveryConfig {
 
 /** One live `/discovery` responder. `appVersion` is display data only. */
 export interface LiveCandidate {
+  safariContinuity?: boolean
   port: number
   instanceId: string
   appVersion: string
@@ -323,6 +325,7 @@ function toProbeResult(candidate: LiveCandidate): DiscoveryResult {
     // exactly that, not "field absent".
     appVersion: candidate.appVersion,
     compatibility: candidate.compatibility,
+    ...(candidate.safariContinuity ? { safariContinuity: true } : {}),
   }
 }
 
@@ -578,13 +581,19 @@ export class DiscoveryService {
       instanceId: live.instanceId,
       appVersion: live.appVersion,
       compatibility: live.compatibility,
+      ...(live.safariContinuity ? { safariContinuity: true } : {}),
     }
   }
 
   private async probePin(pin: Pin): Promise<DiscoveryResult | null> {
     const live = await this.probe(pin.port, this.config.discoveryTimeoutMs)
     if (live === null || live.instanceId !== pin.instanceId) return null
-    return { transport: 'probe', wsPort: pin.port, instanceId: live.instanceId }
+    return {
+      transport: 'probe',
+      wsPort: pin.port,
+      instanceId: live.instanceId,
+      ...(live.safariContinuity ? { safariContinuity: true } : {}),
+    }
   }
 
   /**
@@ -622,7 +631,13 @@ export class DiscoveryService {
         }
       )
       if (!response.ok) return null
-      return readDiscoveryDoc(port, await response.json())
+      const candidate = readDiscoveryDoc(port, await response.json())
+      if (
+        candidate &&
+        response.headers?.get('X-Motrix-Safari-Continuity') === '1'
+      )
+        candidate.safariContinuity = true
+      return candidate
     } catch {
       return null
     }

@@ -796,3 +796,13 @@ describe('RemoteDiscoveryService', () => {
     ).toThrow()
   })
 })
+
+it('reads the Safari continuity header without extending the strict discovery JSON document', async () => {
+  const { service } = serviceReturning(
+    jsonResponse(document(), { headers: { 'X-Motrix-Safari-Continuity': '1' } })
+  )
+  expect(await service.discover(route())).toMatchObject({
+    status: 'compatible',
+    untrustedDocument: { safariContinuity: true },
+  })
+})
