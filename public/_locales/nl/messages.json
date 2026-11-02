@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Officiële Motrix-browserextensie. Verzend downloads naar Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Kwaliteitsopties tonen"
+  },
+  "grabberPanelTitle": {
+    "message": "Downloaden met Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "Maak verbinding met Motrix om bronnen te verzenden."
+  },
+  "grabberFormatsLoading": {
+    "message": "Scannen…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Wissel van pagina of probeer het later opnieuw."
+  },
+  "grabberButtonLabel": {
+    "message": "Downloaden met Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "Paginabronnen"
+  },
+  "grabberSent": {
+    "message": "Doorgegeven aan Motrix"
+  },
+  "grabberFailed": {
+    "message": "Kan de bron niet verzenden. Probeer het opnieuw."
+  },
+  "grabberSectionVideo": {
+    "message": "Video"
+  },
+  "grabberSectionAudio": {
+    "message": "Audio"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Audio"
   }
 }

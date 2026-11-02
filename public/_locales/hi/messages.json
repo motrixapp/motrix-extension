@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Motrix का आधिकारिक ब्राउज़र एक्सटेंशन. डाउनलोड Motrix को भेजें.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "गुणवत्ता विकल्प दिखाएँ"
+  },
+  "grabberPanelTitle": {
+    "message": "Motrix से डाउनलोड करें"
+  },
+  "grabberNotConnected": {
+    "message": "संसाधन भेजने के लिए Motrix से कनेक्ट करें।"
+  },
+  "grabberFormatsLoading": {
+    "message": "स्कैन हो रहा है…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "पेज बदलें या बाद में कोशिश करें।"
+  },
+  "grabberButtonLabel": {
+    "message": "Motrix से डाउनलोड करें"
+  },
+  "grabberPageMeta": {
+    "message": "पेज के संसाधन"
+  },
+  "grabberSent": {
+    "message": "Motrix को भेज दिया गया"
+  },
+  "grabberFailed": {
+    "message": "संसाधन भेजा नहीं जा सका। फिर कोशिश करें।"
+  },
+  "grabberSectionVideo": {
+    "message": "वीडियो"
+  },
+  "grabberSectionAudio": {
+    "message": "ऑडियो"
+  },
+  "grabberMp3": {
+    "message": "MP3 · ऑडियो"
   }
 }

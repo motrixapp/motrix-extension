@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "إضافة Motrix الرسمية للمتصفح. أرسل التنزيلات إلى Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "عرض خيارات الجودة"
+  },
+  "grabberPanelTitle": {
+    "message": "التنزيل باستخدام Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "اتصل بـ Motrix لإرسال الموارد."
+  },
+  "grabberFormatsLoading": {
+    "message": "جارٍ الفحص…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "انتقل إلى صفحة أخرى أو حاول لاحقًا."
+  },
+  "grabberButtonLabel": {
+    "message": "التنزيل باستخدام Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "موارد الصفحة"
+  },
+  "grabberSent": {
+    "message": "تم التسليم إلى Motrix"
+  },
+  "grabberFailed": {
+    "message": "تعذّر إرسال المورد. حاول مجددًا."
+  },
+  "grabberSectionVideo": {
+    "message": "الفيديو"
+  },
+  "grabberSectionAudio": {
+    "message": "الصوت"
+  },
+  "grabberMp3": {
+    "message": "MP3 · الصوت"
   }
 }

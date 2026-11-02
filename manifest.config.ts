@@ -22,6 +22,16 @@ export default defineManifest((env) => {
       all_frames: true,
       world: 'MAIN' as const,
     },
+    // In-page grab overlay (top frame only — one pill per page). It reads the
+    // sniffer's findings through the background and never touches page media
+    // itself, so it can start once the DOM exists.
+    {
+      matches: ['http://*/*', 'https://*/*'],
+      js: ['src/content/grab-overlay.ts'],
+      run_at: 'document_idle' as const,
+      all_frames: false,
+      world: 'ISOLATED' as const,
+    },
   ]
   return {
     manifest_version: 3,

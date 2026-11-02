@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Oficjalne rozszerzenie Motrix do przeglądarki. Wysyłaj pobieranie do Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Pokaż jakości"
+  },
+  "grabberPanelTitle": {
+    "message": "Pobierz przez Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "Połącz się z Motrix, aby wysyłać zasoby."
+  },
+  "grabberFormatsLoading": {
+    "message": "Skanowanie…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Zmień stronę lub spróbuj później."
+  },
+  "grabberButtonLabel": {
+    "message": "Pobierz przez Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "Zasoby strony"
+  },
+  "grabberSent": {
+    "message": "Przekazano do Motrix"
+  },
+  "grabberFailed": {
+    "message": "Nie udało się wysłać zasobu. Spróbuj ponownie."
+  },
+  "grabberSectionVideo": {
+    "message": "Wideo"
+  },
+  "grabberSectionAudio": {
+    "message": "Dźwięk"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Dźwięk"
   }
 }

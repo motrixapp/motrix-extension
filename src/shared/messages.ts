@@ -358,8 +358,66 @@ export interface MessageMap {
   // popup → background → motrix: resolve and submit the current tab's watch-page URL.
   // Used for bilibili/youtube watch pages that the generic sniffer cannot detect;
   // Motrix's resolveToMux seam handles the actual resolution server-side.
+  // `qualityLabel` carries the grab overlay's format choice ('1080p' / 'mp3');
+  // 'auto' and absent mean the desktop default format.
   'bg.resolvePageDownload': {
-    request: CallerIdempotencyRequest
+    request: CallerIdempotencyRequest & {
+      qualityLabel?: import('@/shared/mediaFormats').QualityLabel
+      listingId?: string
+    }
+    response: import('@motrix/mdxp').DownloadSubmitResult
+  }
+
+  // in-page grab overlay → background: what the overlay may offer for its tab
+  'bg.grabberSnapshot': {
+    request: undefined
+    response: {
+      connected: boolean
+      media: Array<{
+        key: string
+        kind: import('@/shared/media').DetectedMedia['kind']
+        label: string
+        height?: number
+        sizeBytes?: number
+        mimeType?: string
+      }>
+    }
+  }
+
+  // in-page grab overlay → background → motrix: send one detected item
+  'bg.grabberSubmit': {
+    request: { mediaKey: string } & CallerIdempotencyRequest
+    response: import('@motrix/mdxp').DownloadSubmitResult
+  }
+
+  // in-page grab overlay → background → motrix: list the yt-dlp qualities a
+  // page URL offers through the published MDXP method. No cookies are collected.
+  // A disconnected desktop or a listing failure comes back as
+  // `{ connected, formats: { available: false, ... } }` so the overlay can
+  // fall back to its sniffed rows.
+  'bg.grabberFormats': {
+    request: { url?: string } | undefined
+    response: {
+      connected: boolean
+      formats: import('@motrix/mdxp').MediaFormatsResult
+      listingId?: string
+    }
+  }
+
+  // in-page grab overlay → background → motrix: submit the overlay tab's page URL for resolution
+  'bg.grabberResolvePageDownload': {
+    request: {
+      qualityLabel?: import('@/shared/mediaFormats').QualityLabel
+      listingId?: string
+      /**
+       * Target URL for resolution. The overlay sends the embedded player's URL
+       * when it anchored to a cross-origin player <iframe> (e.g.
+       * ok.ru/videoembed/...) so the desktop resolves the actual media instead
+       * of the surrounding article page. The background only honours it after
+       * confirming it belongs to a frame of the sender's own tab.
+       */
+      pageUrl?: string
+    } & CallerIdempotencyRequest
     response: import('@motrix/mdxp').DownloadSubmitResult
   }
 }

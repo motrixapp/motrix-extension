@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Motrix 官方瀏覽器擴充功能，將下載交給 Motrix。",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "查看畫質"
+  },
+  "grabberPanelTitle": {
+    "message": "使用 Motrix 下載"
+  },
+  "grabberNotConnected": {
+    "message": "連線至 Motrix 以傳送資源。"
+  },
+  "grabberFormatsLoading": {
+    "message": "正在掃描…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "請切換頁面或稍後再試。"
+  },
+  "grabberButtonLabel": {
+    "message": "使用 Motrix 下載"
+  },
+  "grabberPageMeta": {
+    "message": "網頁資源"
+  },
+  "grabberSent": {
+    "message": "已傳送至 Motrix"
+  },
+  "grabberFailed": {
+    "message": "無法傳送資源，請重試。"
+  },
+  "grabberSectionVideo": {
+    "message": "影片"
+  },
+  "grabberSectionAudio": {
+    "message": "音訊"
+  },
+  "grabberMp3": {
+    "message": "MP3 · 音訊"
   }
 }

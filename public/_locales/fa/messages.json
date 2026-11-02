@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "افزونهٔ رسمی Motrix برای مرورگر. دانلودها را به Motrix بفرستید.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "نمایش کیفیت‌ها"
+  },
+  "grabberPanelTitle": {
+    "message": "دانلود با Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "برای ارسال منابع به Motrix متصل شوید."
+  },
+  "grabberFormatsLoading": {
+    "message": "در حال بررسی…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "صفحه را عوض کنید یا بعداً تلاش کنید."
+  },
+  "grabberButtonLabel": {
+    "message": "دانلود با Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "منابع صفحه"
+  },
+  "grabberSent": {
+    "message": "به Motrix تحویل داده شد"
+  },
+  "grabberFailed": {
+    "message": "منبع ارسال نشد. دوباره تلاش کنید."
+  },
+  "grabberSectionVideo": {
+    "message": "ویدیو"
+  },
+  "grabberSectionAudio": {
+    "message": "صدا"
+  },
+  "grabberMp3": {
+    "message": "MP3 · صدا"
   }
 }

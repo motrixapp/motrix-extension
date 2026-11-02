@@ -254,6 +254,7 @@ export async function inspectFetchResponseBody(
   fallbackUrl: string,
   onBytesRead?: (byteLength: number) => void
 ): Promise<BodyMediaCandidate[]> {
+  if (response.bodyUsed) return []
   let clone: Response
   try {
     clone = response.clone()

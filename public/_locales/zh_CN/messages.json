@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Motrix 官方浏览器扩展，把下载交给 Motrix。",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "查看画质"
+  },
+  "grabberPanelTitle": {
+    "message": "用 Motrix 下载"
+  },
+  "grabberNotConnected": {
+    "message": "连接 Motrix 后可提交资源。"
+  },
+  "grabberFormatsLoading": {
+    "message": "扫描中…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "切换页面或稍后重试。"
+  },
+  "grabberButtonLabel": {
+    "message": "用 Motrix 下载"
+  },
+  "grabberPageMeta": {
+    "message": "页面资源"
+  },
+  "grabberSent": {
+    "message": "已交给 Motrix"
+  },
+  "grabberFailed": {
+    "message": "资源提交失败，请重试。"
+  },
+  "grabberSectionVideo": {
+    "message": "视频"
+  },
+  "grabberSectionAudio": {
+    "message": "音频"
+  },
+  "grabberMp3": {
+    "message": "MP3 · 音频"
   }
 }

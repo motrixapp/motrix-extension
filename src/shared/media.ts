@@ -296,7 +296,8 @@ const EXCLUDED_SUFFIXES = [
 
 export function shouldExcludeHost(host: string, webStore: boolean): boolean {
   if (!webStore) return false
-  const h = host.toLowerCase()
+  // Site policy is DNS-based, unlike Cookie scopes: a root dot cannot bypass it.
+  const h = host.toLowerCase().replace(/\.+$/, '')
   return EXCLUDED_SUFFIXES.some((s) => h === s || h.endsWith(`.${s}`))
 }
 
