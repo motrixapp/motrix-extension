@@ -2,8 +2,8 @@
 
 The extension is already listed in Chrome Web Store, Microsoft Edge Add-ons,
 and Firefox AMO. The **Submit browser extension to stores** workflow updates
-these existing listings using `publish-browser-extension`, the same publishing
-tool used by `wxt submit`. CRXJS remains the build system.
+these existing listings using `publish-browser-extension` for Chrome and
+Firefox and a dedicated Edge Publish API client. CRXJS remains the build system.
 
 ## One-time repository configuration
 
@@ -100,6 +100,12 @@ approval; it does not cancel an existing pending review or request a review
 exemption. Firefox uses the public `listed` channel and retains desktop and
 Android compatibility.
 
+For Edge, a live run automatically uploads the package, waits for upload
+validation, submits the draft for review, and waits for the submission operation
+to report `Succeeded`. No separate Partner Center submit action is needed when
+the API succeeds. This confirms that a submission was created; Microsoft still
+needs to review it before the store version changes.
+
 The same operation through `gh` (replace the example with the release tag):
 
 ```bash
@@ -148,10 +154,9 @@ gh workflow run submit-stores.yml --repo motrixapp/motrix-extension \
 ```
 
 Chrome and Firefox dry runs check authentication against their store APIs.
-**The upstream Edge adapter does not call an authentication endpoint in dry-run
-mode.** An Edge dry run only checks local artifacts and configuration; it cannot
-confirm that the API key is valid. Dry runs also cannot prove that an uploaded
-package will pass store validation or review.
+**Edge dry runs do not call the store API.** An Edge dry run only checks local
+artifacts and configuration; it cannot confirm that the API key is valid. Dry
+runs also cannot prove that an uploaded package will pass store validation or review.
 
 The source ZIP is checked for necessary build inputs, not rebuilt by the
 submission job. When changing build tooling, verify that the source ZIP can be
@@ -167,9 +172,22 @@ the other stores. Submissions to the same store are serialized across versions,
 and an active submission is never automatically cancelled. GitHub concurrency
 is not an unlimited queue: avoid dispatching several pending releases at once.
 
-Successful submission means the API accepted the submission, not that review
-has finished or that the version is publicly available. A failed or timed-out
-job may already have uploaded a package or submitted a version. Inspect the
+For Edge, HTTP `202 Accepted` alone never makes the job pass. Both the upload and
+submission operations must report `Succeeded`. The client polls every 5 seconds,
+allows up to 8 minutes per operation (including its initial POST), and bounds
+each HTTP request to 60 seconds. These limits leave time within the 20-minute
+submission job for setup, verification and reporting errors. Logs identify each
+operation ID. A failed operation prints the API response, including `message`,
+`errorCode` and `errors`, in both the log and Actions job summary. Missing operation
+IDs, unexpected responses, HTTP/network failures and timeouts also fail the job.
+API credentials are redacted from Edge errors. POST requests are never retried
+automatically because the server may already have accepted them.
+
+See [Edge operation states and errors](https://learn.microsoft.com/en-us/microsoft-edge/extensions/update/api/addons-api-reference#check-the-publishing-status).
+
+Successful submission does not mean that review has finished or that the version
+is publicly available. A failed or timed-out job may already have uploaded a
+package or submitted a version. Inspect the
 store dashboard before retrying, especially after a network error. There is no
 cross-store rollback and the tool does not guarantee idempotent retries.
 
@@ -203,13 +221,16 @@ particular, Edge's Update API does not provide listing-metadata update endpoints
 ## Local development
 
 `publish-browser-extension` and the ZIP reader are exact dev dependencies in the
-lockfile. The wrapper uses the publisher's public per-store adapters so a
+lockfile. Chrome and Firefox use the publisher's public per-store adapters so a
 failure throws normally and the job can write its summary; the upstream
-multi-store `submit()` exits the process on failure. Only the explicitly
-selected store is configured. Changes to the dependencies or workflow should pass:
+multi-store `submit()` exits the process on failure. Edge uses
+`scripts/edge-store.mjs` because the upstream adapter does not check the
+asynchronous submission result. Only the explicitly selected store is configured.
+Changes to the dependencies or workflow should pass:
 
 ```bash
 pnpm exec vitest run src/__tests__/store-submission.test.ts
+node --test scripts/__tests__/edge-store.test.mjs
 pnpm lint
 pnpm typecheck
 actionlint .github/workflows/*.yml
@@ -217,5 +238,7 @@ actionlint .github/workflows/*.yml
 
 The regression tests exercise release identity/checksum failures, source patch
 requirements, the installed publisher's configuration schema, and the boundary
-that prevents upload when verification fails. They use a fake publisher and do
-not contact store APIs.
+that prevents upload when verification fails. Mock Edge API responses exercise
+the upload-to-review sequence, asynchronous failures, operation IDs, timeouts,
+credential redaction, and the CLI exit code and Actions summary. Tests do not
+contact store APIs.

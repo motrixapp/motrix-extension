@@ -1,6 +1,7 @@
 import { appendFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { submitEdge } from './edge-store.mjs'
 import {
   CHROME_EXTENSION_ID,
   FIREFOX_EXTENSION_ID,
@@ -90,20 +91,19 @@ export async function submitStore(
 }
 
 async function publishStoreConfig(config) {
-  const {
-    ChromeWebStoreV2,
-    EdgeAddonStoreV1_1,
-    FirefoxAddonStoreV5,
-    validateConfig,
-  } = await import('publish-browser-extension')
+  const { ChromeWebStoreV2, FirefoxAddonStoreV5, validateConfig } =
+    await import('publish-browser-extension')
   // The upstream multi-store submit() calls process.exit on failure. Use its
   // public store adapters so errors reach our job summary. Validate the explicit
   // config directly to prevent ambient *_ZIP variables from selecting stores.
   const resolved = validateConfig(config)
   const store = STORE_IDS.find((name) => resolved[name])
+  if (store === 'edge') {
+    await submitEdge(resolved.edge, { dryRun: resolved.dryRun })
+    return { edge: { success: true } }
+  }
   const adapters = {
     chrome: ChromeWebStoreV2,
-    edge: EdgeAddonStoreV1_1,
     firefox: FirefoxAddonStoreV5,
   }
   const adapter = new adapters[store](resolved[store], (status) =>
@@ -126,12 +126,18 @@ if (
     await submitStore({ store, tag, directory: 'artifacts', dryRun })
     result = dryRun
       ? store === 'edge'
-        ? 'Dry run passed local checks. Upstream does not validate Edge API credentials in dry-run mode.'
+        ? 'Dry run passed local checks. Edge API credentials are not validated in dry-run mode.'
         : 'Dry run passed artifact and authentication checks; nothing uploaded.'
       : 'Submitted for review. Store approval and public availability are separate.'
     console.log(result)
   } catch (error) {
     console.error(error.message)
+    // Encode API text as inert preformatted content in the Actions summary.
+    const detail = String(error.message)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+    result = `Failed. Inspect the store status before retrying.\n\n<pre>${detail}</pre>`
     process.exitCode = 1
   } finally {
     if (
