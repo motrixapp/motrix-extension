@@ -1,9 +1,15 @@
 // @vitest-environment node
+import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { buffer } from 'node:stream/consumers'
 import { strToU8, zipSync } from 'fflate'
 import { validateConfig } from 'publish-browser-extension'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -307,7 +313,7 @@ describe('store release provenance', () => {
 })
 
 describe('single-store submission', () => {
-  it('runs the installed Edge adapter in dry-run mode without contacting stores or reading unrelated ZIP variables', async () => {
+  it('runs Edge in dry-run mode without contacting stores or reading unrelated ZIP variables', async () => {
     const { directory } = fixture()
     const fetch = vi
       .fn()
@@ -321,11 +327,10 @@ describe('single-store submission', () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 
-  it('propagates a real adapter HTTP failure without letting the publisher exit the process', async () => {
+  it('propagates an Edge HTTP failure without letting the publisher exit the process', async () => {
     const { directory } = fixture()
     const fetch = vi.fn().mockImplementation(async (_url, init) => {
-      // Fetch consumes the upload stream before fixture cleanup can remove it.
-      await buffer(init.body)
+      await new Response(init.body).arrayBuffer()
       return new Response('{"error":"unauthorized"}', {
         status: 401,
         statusText: 'Unauthorized',
@@ -344,6 +349,73 @@ describe('single-store submission', () => {
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(exit).not.toHaveBeenCalled()
   })
+
+  it.each(['Succeeded', 'Failed'])(
+    'CLI reports the actual Edge submission result (%s) in its exit code and Actions summary',
+    (status) => {
+      const { directory } = fixture()
+      const workspace = mkdtempSync(join(tmpdir(), 'motrix-edge-cli-'))
+      directories.push(workspace)
+      renameSync(directory, join(workspace, 'artifacts'))
+      const preload = join(workspace, 'mock-api.mjs')
+      const summary = join(workspace, 'summary.md')
+      const uploadId = '11111111-1111-1111-1111-111111111111'
+      const submissionId = '22222222-2222-2222-2222-222222222222'
+      writeFileSync(
+        preload,
+        `const responses = [
+          new Response(null, { status: 202, headers: { Location: '${uploadId}' } }),
+          Response.json({ id: '${uploadId}', status: 'Succeeded' }),
+          new Response(null, { status: 202, headers: { Location: '${submissionId}' } }),
+          Response.json({ id: '${submissionId}', status: '${status}',
+            message: 'Listing <invalid>', errorCode: 'SubmissionValidationError',
+            errors: ['Privacy URL required'] })
+        ];
+        globalThis.fetch = async () => {
+          const response = responses.shift();
+          if (!response) throw new Error('Unexpected API request');
+          return response;
+        };`
+      )
+      const result = spawnSync(
+        process.execPath,
+        ['--import', preload, resolve('scripts/submit-store.mjs')],
+        {
+          cwd: workspace,
+          env: {
+            ...process.env,
+            ...settings,
+            STORE: 'edge',
+            RELEASE_TAG: tag,
+            DRY_RUN: 'false',
+            GITHUB_STEP_SUMMARY: summary,
+          },
+          encoding: 'utf8',
+          timeout: 10000,
+        }
+      )
+      expect(result.error).toBeUndefined()
+      const report = readFileSync(summary, 'utf8')
+      if (status === 'Succeeded') {
+        expect(result.status).toBe(0)
+        expect(result.stdout).toContain(`operation ${submissionId}: Succeeded`)
+        expect(report).toContain('Submitted for review')
+      } else {
+        expect(result.status).toBe(1)
+        for (const detail of [
+          submissionId,
+          'SubmissionValidationError',
+          'Privacy URL required',
+        ]) {
+          expect(result.stderr).toContain(detail)
+          expect(report).toContain(detail)
+        }
+        expect(report).toContain('Listing &lt;invalid&gt;')
+        expect(report).not.toContain('Submitted for review')
+        expect(result.stdout).not.toContain('Submitted for review')
+      }
+    }
+  )
 
   it.each(['chrome', 'edge', 'firefox'])(
     'uses supported publisher options for %s only',
