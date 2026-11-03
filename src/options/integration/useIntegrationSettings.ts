@@ -36,6 +36,7 @@ export function useIntegrationSettings() {
   const [busy, setBusy] = useState(false)
   const [remotePolicyBusy, setRemotePolicyBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [snapshotUnavailable, setSnapshotUnavailable] = useState(false)
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingServer, setEditingServer] =
     useState<MotrixServerEndpoint | null>(null)
@@ -44,66 +45,36 @@ export function useIntegrationSettings() {
   const [remotePolicy, setRemotePolicy] =
     useState<RemoteBackendPolicyV1 | null>(null)
 
+  const snapshotRevision = useRef(0)
+  const activeActions = useRef(0)
+  const mounted = useRef(true)
+
   const refreshConnection = useCallback(async (): Promise<void> => {
-    const response = await send('bg.getState', undefined)
-    assertMessageSucceeded(response)
-    setConnectionState(response.state)
-    setServerIdentity(response.server ?? null)
-  }, [])
-
-  const refreshPairing = useCallback(
-    async (endpointId: string): Promise<void> => {
-      setPairingLoading(true)
-      try {
-        const response = await send('bg.getPairingStatus', { endpointId })
-        assertMessageSucceeded(response)
-        setPairing({ endpointId, paired: response.paired })
-      } finally {
-        setPairingLoading(false)
-      }
-    },
-    []
-  )
-
-  useEffect(() => {
-    let cancelled = false
-    void (async () => {
-      try {
-        const [endpointConfig, stateResponse] = await Promise.all([
-          send('bg.getEndpointConfig', undefined),
-          send('bg.getState', undefined),
-        ])
-        if (cancelled) return
-        assertMessageSucceeded(endpointConfig)
-        assertMessageSucceeded(stateResponse)
-        setConfig(endpointConfig)
-        setConnectionState(stateResponse.state)
-        setServerIdentity(stateResponse.server ?? null)
-        const pairingResponse = await send('bg.getPairingStatus', {
-          endpointId: endpointConfig.activeEndpointId,
-        })
-        if (cancelled) return
-        assertMessageSucceeded(pairingResponse)
-        setPairing({
-          endpointId: endpointConfig.activeEndpointId,
-          paired: pairingResponse.paired,
-        })
-        setPairingLoading(false)
-      } catch (cause) {
-        if (!cancelled) {
-          setError((cause as Error).message)
-          setPairingLoading(false)
-        }
-      }
-    })()
-    return () => {
-      cancelled = true
+    const revision = ++snapshotRevision.current
+    try {
+      // Endpoint, pairing and transport state are one background-owned snapshot.
+      // Separate reads can attach a new connection to the previously selected row.
+      const response = await send('bg.getState', undefined)
+      assertMessageSucceeded(response)
+      if (!response.endpoint)
+        throw new Error('integration snapshot unavailable')
+      if (!mounted.current || revision !== snapshotRevision.current) return
+      setSnapshotUnavailable(false)
+      setConfig(response.endpoint)
+      setConnectionState(response.state)
+      setServerIdentity(response.server ?? null)
+      setPairing({
+        endpointId: response.endpoint.activeEndpointId,
+        paired: response.pairing === 'stored',
+      })
+      setPairingLoading(response.pairing === 'loading')
+    } catch (cause) {
+      if (!mounted.current || revision !== snapshotRevision.current) return
+      throw cause
     }
   }, [])
 
   const activeEndpointId = config?.activeEndpointId ?? LOCAL_ENDPOINT_ID
-  const activeEndpointIdRef = useRef(activeEndpointId)
-  activeEndpointIdRef.current = activeEndpointId
   const activeServer =
     config?.servers.find((server) => server.id === activeEndpointId) ?? null
   const paired =
@@ -111,43 +82,40 @@ export function useIntegrationSettings() {
   const isRemote = activeEndpointId !== LOCAL_ENDPOINT_ID
 
   useEffect(() => {
-    if (
-      connectionState === 'connected' ||
-      connectionState === 'disconnected' ||
-      connectionState === 'denied'
-    ) {
-      return
-    }
-
-    let cancelled = false
+    mounted.current = true
     let inFlight = false
-    const syncingEndpointId = activeEndpointId
     const syncConnection = async (): Promise<void> => {
-      if (inFlight) return
+      if (document.hidden || inFlight || activeActions.current > 0) return
       inFlight = true
       try {
-        const response = await send('bg.getState', undefined)
-        assertMessageSucceeded(response)
-        if (cancelled || activeEndpointIdRef.current !== syncingEndpointId) {
-          return
-        }
-        setConnectionState(response.state)
-        setServerIdentity(response.server ?? null)
+        await refreshConnection()
       } catch {
-        // A transitional state can briefly outlive the background page. The
-        // next tick retries until the connection reaches a terminal state.
+        // An unavailable background page is not proof that a credential was
+        // revoked, but the settings page must not keep claiming it is connected.
+        setConnectionState('disconnected')
+        setServerIdentity(null)
+        setRemotePolicy(null)
+        setPairingLoading(false)
+        setSnapshotUnavailable(true)
       } finally {
         inFlight = false
       }
     }
-
+    const wake = () => void syncConnection()
+    // Terminal states can change without an action in this page (NAS restart,
+    // revocation, another popup). Keep reconciling while visible; never connect.
+    window.addEventListener('focus', wake)
+    document.addEventListener('visibilitychange', wake)
     void syncConnection()
-    const timer = window.setInterval(() => void syncConnection(), 1_000)
+    const timer = window.setInterval(wake, 1_000)
     return () => {
-      cancelled = true
+      mounted.current = false
+      snapshotRevision.current += 1
       window.clearInterval(timer)
+      window.removeEventListener('focus', wake)
+      document.removeEventListener('visibilitychange', wake)
     }
-  }, [activeEndpointId, connectionState])
+  }, [refreshConnection])
 
   useEffect(() => {
     let cancelled = false
@@ -181,6 +149,8 @@ export function useIntegrationSettings() {
     rethrow = false,
     setPending: React.Dispatch<React.SetStateAction<boolean>> = setBusy
   ): Promise<void> => {
+    activeActions.current += 1
+    snapshotRevision.current += 1
     setPending(true)
     setError(null)
     try {
@@ -192,16 +162,14 @@ export function useIntegrationSettings() {
         assertMessageSucceeded(latest)
         setConfig(latest)
         setPairing(null)
-        await Promise.all([
-          refreshPairing(latest.activeEndpointId),
-          refreshConnection(),
-        ])
+        await refreshConnection()
       } catch {
         // Preserve the original operation error. A subsequent user action or
         // page reload will retry the catalogue read if this refresh also fails.
       }
       if (rethrow) throw cause
     } finally {
+      activeActions.current -= 1
       setPending(false)
     }
   }
@@ -219,10 +187,7 @@ export function useIntegrationSettings() {
       setRemotePolicy(null)
       setConnectionState('bootstrapping')
       setServerIdentity(null)
-      await Promise.all([
-        refreshPairing(activated.config.activeEndpointId),
-        refreshConnection(),
-      ])
+      await refreshConnection()
     }, rethrow)
   }
 
@@ -230,7 +195,7 @@ export function useIntegrationSettings() {
     await runAction(async () => {
       const response = await send('bg.reconnect', undefined)
       assertMessageSucceeded(response)
-      await Promise.all([refreshPairing(activeEndpointId), refreshConnection()])
+      await refreshConnection()
     })
   }
 
@@ -240,7 +205,7 @@ export function useIntegrationSettings() {
         endpointId: activeEndpointId,
       })
       assertMessageSucceeded(response)
-      await Promise.all([refreshPairing(activeEndpointId), refreshConnection()])
+      await refreshConnection()
     })
   }
 
@@ -312,10 +277,7 @@ export function useIntegrationSettings() {
         : result.config
       setConfig(nextConfig)
       setPairing(null)
-      await Promise.all([
-        refreshPairing(nextConfig.activeEndpointId),
-        refreshConnection(),
-      ])
+      await refreshConnection()
     }, true)
   }
 
@@ -337,16 +299,13 @@ export function useIntegrationSettings() {
       if (removed.wasActive) {
         setPairing(null)
         setConnectionState('disconnected')
-        await Promise.all([
-          refreshPairing(removed.config.activeEndpointId),
-          refreshConnection(),
-        ])
+        await refreshConnection()
       }
     })
   }
 
   const refreshAfterPairing = (): void => {
-    void Promise.all([refreshPairing(activeEndpointId), refreshConnection()])
+    void refreshConnection().catch(() => undefined)
   }
 
   return {
@@ -361,7 +320,9 @@ export function useIntegrationSettings() {
     busy,
     remotePolicyBusy,
     remotePolicy,
-    error,
+    error:
+      error ??
+      (snapshotUnavailable ? t('popup.integration.connectionFailed') : null),
     editorOpen,
     setEditorOpen,
     editingServer,

@@ -1,4 +1,11 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { StrictMode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -185,6 +192,8 @@ beforeEach(() => {
         (server) => server.id === config.activeEndpointId
       )
       return {
+        endpoint: structuredClone(config),
+        pairing: pairing[config.activeEndpointId] ? 'stored' : 'none',
         state: connectionState,
         ...(connectionState === 'connected'
           ? {
@@ -250,6 +259,151 @@ beforeEach(() => {
 })
 
 describe('IntegrationTab', () => {
+  it('clears stale connected state when a snapshot is unavailable and recovers without reconnecting', async () => {
+    vi.useFakeTimers()
+    const view = render(<IntegrationTab />)
+    try {
+      await act(async () => {})
+      vi.mocked(browser.runtime.sendMessage).mockResolvedValueOnce({
+        state: 'connected',
+      })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      expect(screen.queryByText('Connected')).toBeNull()
+      expect(screen.getByText(/Couldn’t connect to Motrix/)).toBeTruthy()
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      expect(screen.getByText('Connected')).toBeTruthy()
+      expect(screen.queryByText(/Couldn’t connect to Motrix/)).toBeNull()
+      expect(messagesOfKind('bg.reconnect')).toHaveLength(0)
+    } finally {
+      view.unmount()
+      vi.useRealTimers()
+    }
+  })
+  it('updates connection and pairing after a NAS disconnect without starting a reconnect', async () => {
+    vi.useFakeTimers()
+    const view = render(<IntegrationTab />)
+    try {
+      await act(async () => {})
+      expect(screen.getByText('Connected')).toBeTruthy()
+      connectionState = 'disconnected'
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      expect(screen.queryByText('Connected')).toBeNull()
+      expect(screen.getByText('Disconnected')).toBeTruthy()
+      expect(
+        (
+          screen.getByRole('button', {
+            name: 'Forget pairing',
+          }) as HTMLButtonElement
+        ).disabled
+      ).toBe(false)
+      pairing[LOCAL_ENDPOINT_ID] = false
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      expect(
+        (
+          screen.getByRole('button', {
+            name: 'Forget pairing',
+          }) as HTMLButtonElement
+        ).disabled
+      ).toBe(true)
+      expect(messagesOfKind('bg.reconnect')).toHaveLength(0)
+      expect(messagesOfKind('bg.activateEndpoint')).toHaveLength(0)
+    } finally {
+      view.unmount()
+      vi.useRealTimers()
+    }
+  })
+
+  it('pauses reads in a hidden settings tab and reconciles the full snapshot on return', async () => {
+    vi.useFakeTimers()
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(false)
+    const view = render(<IntegrationTab />)
+    try {
+      await act(async () => {})
+      const reads = messagesOfKind('bg.getState').length
+      hidden.mockReturnValue(true)
+      connectionState = 'disconnected'
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000)
+      })
+      expect(messagesOfKind('bg.getState')).toHaveLength(reads)
+      config = { ...config, activeEndpointId: serverA.id }
+      hidden.mockReturnValue(false)
+      await act(async () => {
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+      expect(screen.getByText('Disconnected')).toBeTruthy()
+      const row = within(
+        screen.getByRole('list', { name: 'Available Motrix backends' })
+      )
+        .getByText('Studio')
+        .closest('[role="listitem"]')!
+      expect(row.getAttribute('aria-current')).toBe('true')
+      expect(
+        (
+          screen.getByRole('button', {
+            name: 'Forget pairing',
+          }) as HTMLButtonElement
+        ).disabled
+      ).toBe(true)
+    } finally {
+      view.unmount()
+      hidden.mockRestore()
+      vi.useRealTimers()
+    }
+  })
+
+  it('does not let an old background read overwrite an explicit backend switch', async () => {
+    vi.useFakeTimers()
+    const baseSend = browser.runtime.sendMessage
+    let hold = false
+    let release!: (value: unknown) => void
+    let oldSnapshot: unknown
+    browser.runtime.sendMessage = vi.fn(async (env) => {
+      const response = await baseSend(env)
+      if (hold && env.kind === 'bg.getState') {
+        hold = false
+        oldSnapshot = response
+        return new Promise((resolve) => {
+          release = resolve
+        })
+      }
+      return response
+    })
+    const view = render(<IntegrationTab />)
+    try {
+      await act(async () => {})
+      hold = true
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000)
+      })
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Use Home' }))
+      })
+      const row = within(
+        screen.getByRole('list', { name: 'Available Motrix backends' })
+      )
+        .getByText('Home')
+        .closest('[role="listitem"]')!
+      expect(row.getAttribute('aria-current')).toBe('true')
+      await act(async () => {
+        release(oldSnapshot)
+      })
+      expect(row.getAttribute('aria-current')).toBe('true')
+      expect(screen.getByText('Connected')).toBeTruthy()
+      expect(messagesOfKind('bg.activateEndpoint')).toHaveLength(1)
+    } finally {
+      view.unmount()
+      vi.useRealTimers()
+    }
+  })
   it('shows Server-only setup when Native Messaging is unavailable', async () => {
     const connectNative = browser.runtime.connectNative
     browser.runtime.connectNative = undefined
@@ -261,7 +415,9 @@ describe('IntegrationTab', () => {
       })
 
       expect(within(backendList).queryByText('Motrix App')).toBeNull()
-      expect(within(backendList).getAllByRole('listitem')).toHaveLength(2)
+      await waitFor(() =>
+        expect(within(backendList).getAllByRole('listitem')).toHaveLength(2)
+      )
       expect(
         await screen.findByRole('heading', {
           level: 2,
@@ -389,9 +545,10 @@ describe('IntegrationTab', () => {
     expect(messagesOfKind('bg.activateEndpoint').at(-1)?.payload).toEqual({
       endpointId: serverA.id,
     })
-    expect(messagesOfKind('bg.getPairingStatus').at(-1)?.payload).toEqual({
-      endpointId: serverA.id,
-    })
+    expect(
+      (screen.getByRole('button', { name: 'Pair' }) as HTMLButtonElement)
+        .disabled
+    ).toBe(false)
     expect(messagesOfKind('bg.reconnect')).toHaveLength(0)
     expect(screen.queryByLabelText('Pair token')).toBeNull()
     expect(
@@ -404,9 +561,13 @@ describe('IntegrationTab', () => {
 
     await user.click(screen.getByRole('button', { name: 'Use Home' }))
     await waitFor(() =>
-      expect(messagesOfKind('bg.getPairingStatus').at(-1)?.payload).toEqual({
-        endpointId: serverB.id,
-      })
+      expect(
+        (
+          screen.getByRole('button', {
+            name: 'Forget pairing',
+          }) as HTMLButtonElement
+        ).disabled
+      ).toBe(false)
     )
     const identityStatus = await screen.findByRole('alert', {
       name: 'Server information',
@@ -707,9 +868,10 @@ describe('IntegrationTab', () => {
     expect(config.servers[0]?.url).toBe('wss://new-studio.example')
     expect(config.servers[0]?.revision).toBe(serverA.revision + 1)
     expect(config.servers[0]?.state).toBe('ready')
-    expect(messagesOfKind('bg.getPairingStatus').at(-1)?.payload).toEqual({
-      endpointId: serverA.id,
-    })
+    expect(
+      (screen.getByRole('button', { name: 'Pair' }) as HTMLButtonElement)
+        .disabled
+    ).toBe(false)
   })
 
   it('sends the expected revision and preserves it for a name-only edit', async () => {
@@ -792,9 +954,13 @@ describe('IntegrationTab', () => {
     expect(config.servers).toEqual([])
     expect(await screen.findByText('Disconnected')).toBeTruthy()
     expect(screen.queryByText('Starting')).toBeNull()
-    expect(messagesOfKind('bg.getPairingStatus').at(-1)?.payload).toEqual({
-      endpointId: LOCAL_ENDPOINT_ID,
-    })
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Forget pairing',
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(false)
     await waitFor(() =>
       expect(within(backendList).getAllByRole('listitem')).toHaveLength(1)
     )
@@ -829,8 +995,8 @@ describe('IntegrationTab', () => {
     expect(config.activeEndpointId).toBe(LOCAL_ENDPOINT_ID)
     expect(config.servers).toEqual([serverB])
     expect(connectionState).toBe('connected')
-    expect(messagesOfKind('bg.getState')).toHaveLength(1)
-    expect(messagesOfKind('bg.getPairingStatus')).toHaveLength(1)
+    expect(messagesOfKind('bg.reconnect')).toHaveLength(0)
+    expect(messagesOfKind('bg.unpair')).toHaveLength(0)
     expect(within(backendList).getByText('Motrix App')).toBeTruthy()
     expect(within(backendList).queryByText('Studio')).toBeNull()
     expect(await screen.findByText('Connected')).toBeTruthy()
@@ -872,9 +1038,6 @@ describe('IntegrationTab', () => {
       within(dialog).getByRole('button', { name: 'Save server' })
     )
     await screen.findByText('server changed; refresh and try again')
-    await waitFor(() =>
-      expect(messagesOfKind('bg.getEndpointConfig')).toHaveLength(2)
-    )
 
     // The icon-only dismiss button also has a localized Cancel label.
     await user.click(within(dialog).getByText('Cancel', { selector: 'button' }))
