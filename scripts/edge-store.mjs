@@ -32,6 +32,7 @@ export async function submitEdge(
   options,
   {
     dryRun = false,
+    draftOnly = false,
     log = console.log,
     fetch = globalThis.fetch,
     wait = sleep,
@@ -118,11 +119,15 @@ export async function submitEdge(
     }
   }
 
-  await runOperation(
-    'upload',
-    `${submissionPath}/draft/package`,
-    await readFile(options.zip),
-    'application/zip'
-  )
+  if (draftOnly) {
+    log('Edge upload: skipped; maintainer verified the existing draft')
+  } else {
+    await runOperation(
+      'upload',
+      `${submissionPath}/draft/package`,
+      await readFile(options.zip),
+      'application/zip'
+    )
+  }
   return runOperation('submission', submissionPath, '{}', 'application/json')
 }

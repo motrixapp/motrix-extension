@@ -38,6 +38,16 @@ export function parseDryRun(value) {
   throw new Error('DRY_RUN must be explicitly set to true or false')
 }
 
+export function validateEdgeDraftTag({ store, tag, dryRun, edgeDraftTag }) {
+  if (edgeDraftTag === undefined || edgeDraftTag === '') return false
+  if (store !== 'edge' || dryRun || edgeDraftTag !== tag) {
+    throw new Error(
+      'EDGE_DRAFT_TAG must match the release tag for a live Edge-only submission'
+    )
+  }
+  return true
+}
+
 function readArchive(path, wanted) {
   const names = new Set()
   const files = unzipSync(readFileSync(path), {
@@ -160,7 +170,13 @@ if (
     if (process.argv[2] === 'plan') {
       const files = releaseFiles(process.env.RELEASE_TAG ?? '')
       const stores = selectStores(process.env.STORE_SELECTION ?? '')
-      parseDryRun(process.env.DRY_RUN)
+      const dryRun = parseDryRun(process.env.DRY_RUN)
+      validateEdgeDraftTag({
+        store: process.env.STORE_SELECTION,
+        tag: process.env.RELEASE_TAG,
+        dryRun,
+        edgeDraftTag: process.env.EDGE_DRAFT_TAG,
+      })
       const output = `version=${files.version}\nstores=${JSON.stringify(stores)}\n`
       if (process.env.GITHUB_OUTPUT)
         appendFileSync(process.env.GITHUB_OUTPUT, output)

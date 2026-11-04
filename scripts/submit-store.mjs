@@ -8,6 +8,7 @@ import {
   parseDryRun,
   releaseFiles,
   STORE_IDS,
+  validateEdgeDraftTag,
   verifyRelease,
 } from './store-release.mjs'
 
@@ -81,8 +82,11 @@ export async function submitStore(
 ) {
   verifyRelease(options.directory, options.tag)
   const config = submissionConfig(options, env)
+  const edgeDraftOnly = validateEdgeDraftTag(options)
   const submit = publish ?? publishStoreConfig
-  const results = await submit(config)
+  const results = edgeDraftOnly
+    ? await submit(config, { edgeDraftOnly })
+    : await submit(config)
   if (results[options.store]?.success !== true) {
     throw new Error(
       `${options.store} submission failed; inspect the publisher output before retrying`
@@ -90,7 +94,7 @@ export async function submitStore(
   }
 }
 
-async function publishStoreConfig(config) {
+async function publishStoreConfig(config, { edgeDraftOnly = false } = {}) {
   const { ChromeWebStoreV2, FirefoxAddonStoreV5, validateConfig } =
     await import('publish-browser-extension')
   // The upstream multi-store submit() calls process.exit on failure. Use its
@@ -99,7 +103,10 @@ async function publishStoreConfig(config) {
   const resolved = validateConfig(config)
   const store = STORE_IDS.find((name) => resolved[name])
   if (store === 'edge') {
-    await submitEdge(resolved.edge, { dryRun: resolved.dryRun })
+    await submitEdge(resolved.edge, {
+      dryRun: resolved.dryRun,
+      draftOnly: edgeDraftOnly,
+    })
     return { edge: { success: true } }
   }
   const adapters = {
@@ -123,7 +130,13 @@ if (
   const tag = process.env.RELEASE_TAG
   try {
     const dryRun = parseDryRun(process.env.DRY_RUN)
-    await submitStore({ store, tag, directory: 'artifacts', dryRun })
+    await submitStore({
+      store,
+      tag,
+      directory: 'artifacts',
+      dryRun,
+      edgeDraftTag: process.env.EDGE_DRAFT_TAG,
+    })
     result = dryRun
       ? store === 'edge'
         ? 'Dry run passed local checks. Edge API credentials are not validated in dry-run mode.'

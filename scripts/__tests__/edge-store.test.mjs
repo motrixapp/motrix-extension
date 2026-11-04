@@ -202,3 +202,18 @@ test('dry runs never upload or submit', async (t) => {
   await submitEdge(options, { ...dependencies, dryRun: true })
   assert.equal(calls.length, 0)
 })
+
+test('submits a verified existing draft without uploading another package', async (t) => {
+  const { options, dependencies, calls } = fixture(t, [
+    accepted(submissionId),
+    status(submissionId, 'Succeeded'),
+  ])
+  await submitEdge(options, { ...dependencies, draftOnly: true })
+  assert.deepEqual(
+    calls.map(({ method, url }) => [method, url]),
+    [
+      ['POST', `${origin}${path}`],
+      ['GET', `${origin}${path}/operations/${submissionId}`],
+    ]
+  )
+})
