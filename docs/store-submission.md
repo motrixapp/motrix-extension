@@ -202,6 +202,19 @@ If a version is already accepted or under review, do not re-upload it blindly.
 Wait for the existing submission or use the store's own controls. The workflow
 does not automatically bump versions, cancel review, or resubmit all stores.
 
+If Partner Center shows the intended package in the current Edge draft and no
+review submission has been made, submit that draft without re-uploading:
+
+```bash
+gh workflow run submit-stores.yml --repo motrixapp/motrix-extension \
+  --ref main -f tag=v0.1.23 -f store=edge -f dry_run=false -f edge_draft_tag=v0.1.23
+```
+
+Repeat the tag only after checking the draft in Partner Center. The Publish API
+submits the current draft and does not bind the request to a version. GitHub
+artifact verification still runs, but cannot verify the bytes of an existing
+Partner Center draft. The job waits for the submission operation to succeed.
+
 For Firefox, **Check Firefox submission status** reads an existing version
 without uploading anything. Run it from `main` with the release tag and approve
 `store-firefox`. It reports review status, source presence, and compatibility.

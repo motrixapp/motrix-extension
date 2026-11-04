@@ -18,6 +18,9 @@ on:
         description: Check artifacts and credentials without uploading (Edge credentials are not checked)
         type: boolean
         default: true
+      edge_draft_tag:
+        description: 'Edge only: repeat the release tag after verifying the matching draft in Partner Center. Skips upload.'
+        type: string
 
 permissions:
   contents: read
@@ -51,6 +54,7 @@ jobs:
           RELEASE_TAG: ${{ inputs.tag }}
           STORE_SELECTION: ${{ inputs.store }}
           DRY_RUN: ${{ inputs.dry_run }}
+          EDGE_DRAFT_TAG: ${{ inputs.edge_draft_tag }}
         run: node scripts/store-release.mjs plan
       - name: Download the published release
         env:
@@ -121,6 +125,7 @@ jobs:
           STORE: ${{ matrix.store }}
           RELEASE_TAG: ${{ inputs.tag }}
           DRY_RUN: ${{ inputs.dry_run }}
+          EDGE_DRAFT_TAG: ${{ inputs.edge_draft_tag }}
           CHROME_PUBLISHER_ID: ${{ matrix.store == 'chrome' && vars.CHROME_PUBLISHER_ID || '' }}
           CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ matrix.store == 'chrome' && vars.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL || '' }}
           CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ matrix.store == 'chrome' && secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY || '' }}
