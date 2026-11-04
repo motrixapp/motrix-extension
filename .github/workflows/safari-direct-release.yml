@@ -11,6 +11,10 @@ on:
         description: 'Create a draft GitHub Release after signing and notarization'
         type: boolean
         default: false
+      use_intel_runner:
+        description: 'Use macOS 26 Intel runners when arm64 runners are unavailable'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -25,7 +29,7 @@ env:
 jobs:
   build:
     name: Build without signing credentials
-    runs-on: macos-26
+    runs-on: ${{ inputs.use_intel_runner && 'macos-26-intel' || 'macos-26' }}
     timeout-minutes: 30
     outputs:
       version: ${{ steps.metadata.outputs.version }}
@@ -102,7 +106,7 @@ jobs:
   sign:
     name: Sign and notarize verified app
     needs: build
-    runs-on: macos-26
+    runs-on: ${{ inputs.use_intel_runner && 'macos-26-intel' || 'macos-26' }}
     timeout-minutes: 50
     environment: safari-direct-release
     outputs:
