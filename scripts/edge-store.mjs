@@ -76,8 +76,9 @@ export async function submitEdge(
         signal: AbortSignal.timeout(Math.min(REQUEST_TIMEOUT_MS, remaining())),
       })
       const text = await response.text()
-      const expected = method === 'POST' ? 202 : 200
-      if (response.status !== expected)
+      // The status endpoint can return 202 with an InProgress operation body.
+      const expected = method === 'POST' ? [202] : [200, 202]
+      if (!expected.includes(response.status))
         throw new Error(
           `HTTP ${response.status} ${response.statusText}: ${text || '(empty response)'}`
         )

@@ -49,10 +49,10 @@ function fixture(t, responses) {
 test('automatically uploads and submits, waiting for both operations to succeed', async (t) => {
   const { options, dependencies, calls, logs, waits } = fixture(t, [
     accepted(uploadId),
-    status(uploadId, 'InProgress'),
+    Response.json({ id: uploadId, status: 'InProgress' }, { status: 202 }),
     status(uploadId, 'Succeeded'),
     accepted(`${origin}${path}/operations/${submissionId}`),
-    status(submissionId, 'InProgress'),
+    Response.json({ id: submissionId, status: 'InProgress' }, { status: 202 }),
     status(submissionId, 'InProgress'),
     status(submissionId, 'Succeeded'),
   ])
