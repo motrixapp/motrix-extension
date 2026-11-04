@@ -255,7 +255,15 @@ const previewRuntime = {
           : 'disconnected'
         return { ok: true }
       case 'bg.getState':
-        return { state: previewConnectionState }
+        return {
+          state: previewConnectionState,
+          endpoint: structuredClone(previewEndpoint),
+          pairing: pairedEndpoints.has(previewEndpoint.activeEndpointId)
+            ? 'stored'
+            : 'none',
+          phase: previewConnectionState === 'connected' ? 'ready' : 'idle',
+          attemptIntent: null,
+        }
       case 'bg.getTakeoverConfig':
         return previewTakeover
       case 'bg.patchDownloadMode':

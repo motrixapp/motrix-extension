@@ -47,7 +47,17 @@ beforeEach(() => {
       }
     if (env.kind === 'bg.hasPairedBackend') return { paired: false }
     if (env.kind === 'bg.getPairingStatus') return { paired: false }
-    if (env.kind === 'bg.getState') return { state: 'disconnected' }
+    if (env.kind === 'bg.getState')
+      return {
+        state: 'disconnected',
+        pairing: 'none',
+        endpoint: {
+          version: 3,
+          activeEndpointId: 'local',
+          servers: [],
+          cleanupTombstones: [],
+        },
+      }
     if (env.kind === 'bg.listAdapters') return { adapters: [] }
     if (env.kind === 'bg.getNotificationsConfig')
       return { master: true, confirm: false, error: true, reminder: true }
