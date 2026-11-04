@@ -1,6 +1,6 @@
 # AMO reviewer build instructions
 
-This archive contains the human-readable source for Motrix Extension 0.1.12.
+This archive contains the human-readable source for Motrix Extension.
 The submitted Firefox extension is generated with Vite, CRXJS, TypeScript,
 React, and Tailwind CSS, so a source submission is required.
 
