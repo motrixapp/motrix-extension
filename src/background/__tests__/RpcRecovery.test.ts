@@ -342,3 +342,62 @@ it('joins the recorded recovery when disposing its socket rejects another pendin
   expect(reconnect).toHaveBeenCalledOnce()
   expect(replacementSend).toHaveBeenCalledTimes(2)
 })
+
+describe('media query disclosure lifetime', () => {
+  it('cancels a timed-out formats query without replaying it', async () => {
+    const { rpc, send, replacementSend } = fixture()
+    let cancelled = false
+    send.mockImplementationOnce((_method, _params, token) => {
+      token.onCancellationRequested(() => {
+        cancelled = true
+      })
+      return never()
+    })
+    const controller = new AbortController()
+    const result = rpc.request(
+      Methods.MediaFormats,
+      { url: 'https://page.example/watch' },
+      {
+        assertCurrent() {},
+        signal: controller.signal,
+      }
+    )
+    const rejected = expect(result).rejects.toThrow('timed out')
+    await vi.advanceTimersByTimeAsync(60_001)
+    await rejected
+    expect(cancelled).toBe(true)
+    expect(
+      send.mock.calls.filter(([method]) => method === Methods.MediaFormats)
+    ).toHaveLength(1)
+    expect(replacementSend).not.toHaveBeenCalled()
+  })
+  it.each(['navigation', 'retirement'])(
+    'cancels on %s without transport recovery',
+    async (cause) => {
+      const { rpc, send, reconnect } = fixture()
+      let cancelled = false
+      send.mockImplementationOnce((_method, _params, token) => {
+        token.onCancellationRequested(() => {
+          cancelled = true
+        })
+        return never()
+      })
+      const controller = new AbortController()
+      const query = rpc.request(
+        Methods.MediaFormats,
+        { url: 'https://page.example/watch' },
+        {
+          assertCurrent() {},
+          signal: controller.signal,
+        }
+      )
+      const rejected = expect(query).rejects.toThrow('context changed')
+      if (cause === 'navigation') controller.abort()
+      else rpc.reset()
+      await rejected
+      expect(cancelled).toBe(true)
+      expect(reconnect).not.toHaveBeenCalled()
+      expect(send).toHaveBeenCalledOnce()
+    }
+  )
+})

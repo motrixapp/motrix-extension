@@ -452,6 +452,33 @@ describe('usePageMedia', () => {
     expect(keys[2]).not.toBe(keys[1])
   })
 
+  it('keeps failed quality operations distinct while retaining the unknown outcome key', async () => {
+    tabsQuery.mockResolvedValue([{ id: 4, url: 'https://page.example/watch' }])
+    send
+      .mockRejectedValueOnce(new Error('response port closed'))
+      .mockResolvedValueOnce({ taskId: 'lower-quality' })
+      .mockResolvedValueOnce({ taskId: 'original-quality' })
+    const first = renderHook(() => usePageMedia('quality-backend'))
+    await act(async () => {
+      await expect(
+        first.result.current.resolvePageDownload('1080p', 'proof-a')
+      ).rejects.toThrow()
+    })
+    await act(async () => {
+      await first.result.current.resolvePageDownload('720p', 'proof-a')
+    })
+    first.unmount()
+    const reopened = renderHook(() => usePageMedia('quality-backend'))
+    await act(async () => {
+      await reopened.result.current.resolvePageDownload('1080p', 'proof-b')
+    })
+    const keys = send.mock.calls.map(
+      ([, payload]) => (payload as { idempotencyKey: string }).idempotencyKey
+    )
+    expect(keys[1]).not.toBe(keys[0])
+    expect(keys[2]).toBe(keys[0])
+  })
+
   it('restores a page key after the Popup closes before acknowledgement', async () => {
     const lostAcknowledgement = deferred<{ taskId: string }>()
     send

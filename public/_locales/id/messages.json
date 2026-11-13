@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Ekstensi Browser Resmi Motrix. Kirim unduhan ke Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Tampilkan kualitas"
+  },
+  "grabberPanelTitle": {
+    "message": "Unduh dengan Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "Hubungkan Motrix untuk mengirim sumber daya."
+  },
+  "grabberFormatsLoading": {
+    "message": "Memindai…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Pindah halaman atau coba lagi nanti."
+  },
+  "grabberButtonLabel": {
+    "message": "Unduh dengan Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "Sumber daya halaman"
+  },
+  "grabberSent": {
+    "message": "Dikirim ke Motrix"
+  },
+  "grabberFailed": {
+    "message": "Tidak dapat mengirim sumber daya. Coba lagi."
+  },
+  "grabberSectionVideo": {
+    "message": "Video"
+  },
+  "grabberSectionAudio": {
+    "message": "Audio"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Audio"
   }
 }

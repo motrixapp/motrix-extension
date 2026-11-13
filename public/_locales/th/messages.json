@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "ส่วนขยายเบราว์เซอร์อย่างเป็นทางการของ Motrix. ส่งการดาวน์โหลดไปยัง Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "แสดงตัวเลือกคุณภาพ"
+  },
+  "grabberPanelTitle": {
+    "message": "ดาวน์โหลดด้วย Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "เชื่อมต่อกับ Motrix เพื่อส่งทรัพยากร"
+  },
+  "grabberFormatsLoading": {
+    "message": "กำลังสแกน…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "เปลี่ยนหน้าหรือลองอีกครั้งภายหลัง"
+  },
+  "grabberButtonLabel": {
+    "message": "ดาวน์โหลดด้วย Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "ทรัพยากรของหน้าเว็บ"
+  },
+  "grabberSent": {
+    "message": "ส่งไปยัง Motrix แล้ว"
+  },
+  "grabberFailed": {
+    "message": "ส่งทรัพยากรไม่ได้ โปรดลองอีกครั้ง"
+  },
+  "grabberSectionVideo": {
+    "message": "วิดีโอ"
+  },
+  "grabberSectionAudio": {
+    "message": "เสียง"
+  },
+  "grabberMp3": {
+    "message": "MP3 · เสียง"
   }
 }

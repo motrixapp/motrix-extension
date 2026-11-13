@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Estensione ufficiale di Motrix per il browser. Invia i download a Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Mostra qualità"
+  },
+  "grabberPanelTitle": {
+    "message": "Scarica con Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "Connettiti a Motrix per inviare risorse."
+  },
+  "grabberFormatsLoading": {
+    "message": "Scansione…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Cambia pagina o riprova più tardi."
+  },
+  "grabberButtonLabel": {
+    "message": "Scarica con Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "Risorse della pagina"
+  },
+  "grabberSent": {
+    "message": "Inviato a Motrix"
+  },
+  "grabberFailed": {
+    "message": "Impossibile inviare la risorsa. Riprova."
+  },
+  "grabberSectionVideo": {
+    "message": "Video"
+  },
+  "grabberSectionAudio": {
+    "message": "Audio"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Audio"
   }
 }

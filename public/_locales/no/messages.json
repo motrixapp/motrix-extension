@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Offisiell Motrix-nettleserutvidelse. Send nedlastinger til Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Vis kvaliteter"
+  },
+  "grabberPanelTitle": {
+    "message": "Last ned med Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "Koble til Motrix for å sende ressurser."
+  },
+  "grabberFormatsLoading": {
+    "message": "Søker…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Bytt side eller prøv igjen senere."
+  },
+  "grabberButtonLabel": {
+    "message": "Last ned med Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "Sideressurser"
+  },
+  "grabberSent": {
+    "message": "Sendt til Motrix"
+  },
+  "grabberFailed": {
+    "message": "Kunne ikke sende ressursen. Prøv igjen."
+  },
+  "grabberSectionVideo": {
+    "message": "Video"
+  },
+  "grabberSectionAudio": {
+    "message": "Lyd"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Lyd"
   }
 }

@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Tiện ích trình duyệt chính thức của Motrix. Gửi nội dung tải xuống đến Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Hiện các mức chất lượng"
+  },
+  "grabberPanelTitle": {
+    "message": "Tải xuống bằng Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "Kết nối tới Motrix để gửi tài nguyên."
+  },
+  "grabberFormatsLoading": {
+    "message": "Đang quét…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Chuyển trang hoặc thử lại sau."
+  },
+  "grabberButtonLabel": {
+    "message": "Tải xuống bằng Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "Tài nguyên trang"
+  },
+  "grabberSent": {
+    "message": "Đã gửi tới Motrix"
+  },
+  "grabberFailed": {
+    "message": "Không thể gửi tài nguyên. Hãy thử lại."
+  },
+  "grabberSectionVideo": {
+    "message": "Video"
+  },
+  "grabberSectionAudio": {
+    "message": "Âm thanh"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Âm thanh"
   }
 }

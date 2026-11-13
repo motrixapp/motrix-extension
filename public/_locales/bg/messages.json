@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Официално разширение на Motrix за браузър. Изпращане на изтегляния към Motrix.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Показване на качествата"
+  },
+  "grabberPanelTitle": {
+    "message": "Изтегляне с Motrix"
+  },
+  "grabberNotConnected": {
+    "message": "Свържете се с Motrix, за да изпращате ресурси."
+  },
+  "grabberFormatsLoading": {
+    "message": "Сканиране…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Сменете страницата или опитайте по-късно."
+  },
+  "grabberButtonLabel": {
+    "message": "Изтегляне с Motrix"
+  },
+  "grabberPageMeta": {
+    "message": "Ресурси на страницата"
+  },
+  "grabberSent": {
+    "message": "Предадено на Motrix"
+  },
+  "grabberFailed": {
+    "message": "Ресурсът не може да се изпрати. Опитайте отново."
+  },
+  "grabberSectionVideo": {
+    "message": "Видео"
+  },
+  "grabberSectionAudio": {
+    "message": "Аудио"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Аудио"
   }
 }

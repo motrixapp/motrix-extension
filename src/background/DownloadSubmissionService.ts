@@ -95,6 +95,7 @@ export class DownloadSubmissionService {
       resourceKey: string
       directory?: DirectorySelection | undefined
       pairIfNeeded?: boolean | undefined
+      assertCurrent?: (() => void) | undefined
     },
     prepare: (context: DownloadPreparation) => Promise<DownloadSubmitParams>
   ): Promise<DownloadSubmitResult> {
@@ -131,6 +132,7 @@ export class DownloadSubmissionService {
     ).join('')
     const assertCurrent = (): void => {
       guard.assertCurrent()
+      input.assertCurrent?.()
       if (this.now() >= deadlineAt)
         throw new DownloadPreparationError(DOWNLOAD_ERROR.preparationTimeout)
     }

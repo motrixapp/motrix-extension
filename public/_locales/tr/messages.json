@@ -6,5 +6,41 @@
   "appDescription": {
     "message": "Resmî Motrix Tarayıcı Uzantısı. İndirmeleri Motrix'e gönderin.",
     "description": "Short summary shown under the name in the browser and in store listings."
+  },
+  "grabberShowQualities": {
+    "message": "Kalite seçeneklerini göster"
+  },
+  "grabberPanelTitle": {
+    "message": "Motrix ile indir"
+  },
+  "grabberNotConnected": {
+    "message": "Kaynak göndermek için Motrix’e bağlanın."
+  },
+  "grabberFormatsLoading": {
+    "message": "Taranıyor…"
+  },
+  "grabberFormatsUnavailable": {
+    "message": "Sayfayı değiştirin veya sonra tekrar deneyin."
+  },
+  "grabberButtonLabel": {
+    "message": "Motrix ile indir"
+  },
+  "grabberPageMeta": {
+    "message": "Sayfa kaynakları"
+  },
+  "grabberSent": {
+    "message": "Motrix’e gönderildi"
+  },
+  "grabberFailed": {
+    "message": "Kaynak gönderilemedi. Tekrar deneyin."
+  },
+  "grabberSectionVideo": {
+    "message": "Video"
+  },
+  "grabberSectionAudio": {
+    "message": "Ses"
+  },
+  "grabberMp3": {
+    "message": "MP3 · Ses"
   }
 }
