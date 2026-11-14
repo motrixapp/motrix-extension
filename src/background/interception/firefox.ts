@@ -133,7 +133,7 @@ async function handle(
   const logDecision = () =>
     log.debug(
       '[takeover] Firefox decision=',
-      decideTakeover(cfg, target),
+      decideTakeover(cfg, target, item.url),
       'mime=',
       item.mime,
       'totalBytes=',
@@ -151,7 +151,7 @@ async function handle(
     )
   item = latest
   logDecision()
-  if (decideTakeover(cfg, target) !== 'motrix') return
+  if (decideTakeover(cfg, target, item.url) !== 'motrix') return
 
   const { contentType } = await runProbe()
   const current = await readActiveFirefoxDownload(item.id)
@@ -162,7 +162,7 @@ async function handle(
   logDecision()
   if (
     cfg.downloadMode === 'confirm' ||
-    decideTakeover(cfg, target) !== 'motrix' ||
+    decideTakeover(cfg, target, item.url) !== 'motrix' ||
     !isEligibleDownload(current, deps.selfExtensionId)
   )
     return
@@ -197,7 +197,7 @@ async function handle(
       if (
         !active ||
         config.downloadMode === 'confirm' ||
-        decideTakeover(config, makeTarget(active)) !== 'motrix'
+        decideTakeover(config, makeTarget(active), active.url) !== 'motrix'
       )
         throw new Error('Firefox native download no longer eligible')
       await cancelFirefoxDownload(item.id)

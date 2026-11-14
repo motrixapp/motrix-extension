@@ -34,7 +34,7 @@ export async function confirmInterceptedDownload(
         : null,
     origin: 'auto',
   })
-  const decision = decideTakeover(config, target)
+  const decision = decideTakeover(config, target, item.url)
   log.debug(
     '[takeover] confirm-path decision=',
     decision,

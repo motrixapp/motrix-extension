@@ -490,3 +490,58 @@ it.each(['accepted', 'unknown', 'browser', 'skipped', 'failed'] as const)(
     expect(downloads.download).not.toHaveBeenCalled()
   }
 )
+
+describe('initial host exclusions across redirects', () => {
+  it('does not hand off an excluded initial URL with a different final host and missing referrer', async () => {
+    register(
+      enabledConfig({
+        rules: [
+          {
+            id: 'excluded',
+            match: { domains: ['www.24bit.net'] },
+            action: 'chrome',
+          },
+        ],
+      })
+    )
+    const suggest = vi.fn()
+    listener?.(
+      item({
+        url: 'https://www.24bit.net/download',
+        finalUrl: 'https://cdn.other.test/file.zip',
+        referrer: '',
+      }),
+      suggest
+    )
+    await vi.waitFor(() => expect(suggest).toHaveBeenCalledOnce())
+    expect(mockedRunHandoff).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+  })
+  it('still hands off the final URL when the initial host is not excluded', async () => {
+    register(
+      enabledConfig({
+        rules: [
+          {
+            id: 'excluded',
+            match: { domains: ['www.24bit.net'] },
+            action: 'chrome',
+          },
+        ],
+      })
+    )
+    listener?.(
+      item({
+        url: 'https://allowed.test/download',
+        finalUrl: 'https://cdn.other.test/file.zip',
+        referrer: '',
+      }),
+      vi.fn()
+    )
+    await vi.waitFor(() =>
+      expect(mockedRunHandoff).toHaveBeenCalledWith(
+        expect.objectContaining({ url: 'https://cdn.other.test/file.zip' }),
+        expect.anything()
+      )
+    )
+  })
+})
