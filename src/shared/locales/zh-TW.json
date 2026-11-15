@@ -367,6 +367,7 @@
       "sent": "已傳送",
       "sending": "傳送中",
       "submitFailed": "無法傳送資源，請重試。",
+      "siteExcluded": "此網站或媒體來源已被排除。請在設定中移除排除項目後再傳送至 Motrix。",
       "title": "資源偵測",
       "unavailableDescription": "請切換頁面或稍後再試。",
       "unavailableTitle": "無法掃描此頁面",

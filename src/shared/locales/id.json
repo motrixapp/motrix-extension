@@ -367,6 +367,7 @@
       "sent": "Terkirim",
       "sending": "Mengirim",
       "submitFailed": "Tidak dapat mengirim sumber daya. Coba lagi.",
+      "siteExcluded": "Situs atau sumber media ini dikecualikan. Hapus pengecualian di pengaturan untuk mengirim ke Motrix.",
       "title": "Deteksi sumber daya",
       "unavailableDescription": "Pindah halaman atau coba lagi nanti.",
       "unavailableTitle": "Halaman ini tak bisa dipindai",

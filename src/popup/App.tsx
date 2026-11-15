@@ -266,6 +266,7 @@ const PopupContent = memo(function PopupContent({
               supportsBackendConnections() ? state.pairing : 'unavailable'
             }
             submissionKey={backendKey}
+            siteExcluded={quickSettings.excludedSite !== null}
             onMediaCountChange={onMediaCountChange}
           />
         </TabsContent>

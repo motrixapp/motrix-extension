@@ -31,6 +31,7 @@ import type {
   EndpointConfig,
   MotrixServerEndpoint,
 } from '@/background/EndpointConfigStore'
+import { DOWNLOAD_ERROR } from '@/shared/integration'
 import type { CreateManualTaskRequest } from '@/shared/manualTask'
 
 export interface CallerIdempotencyRequest {
@@ -42,6 +43,7 @@ export interface CallerIdempotencyRequest {
 export const MEDIA_SUBMIT_ERROR = {
   invalidRequest: 'media-submit.invalid-request',
   submitFailed: 'media-submit.submit-failed',
+  siteExcluded: DOWNLOAD_ERROR.siteExcluded,
 } as const
 
 /**

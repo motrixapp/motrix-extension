@@ -367,6 +367,7 @@
       "sent": "Verzonden",
       "sending": "Verzenden",
       "submitFailed": "Kan de bron niet verzenden. Probeer het opnieuw.",
+      "siteExcluded": "Deze site of mediabron is uitgesloten. Verwijder de uitzondering in de instellingen om naar Motrix te sturen.",
       "title": "Bronnendetectie",
       "unavailableDescription": "Wissel van pagina of probeer het later opnieuw.",
       "unavailableTitle": "Pagina kan niet worden gescand",

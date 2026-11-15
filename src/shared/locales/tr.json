@@ -367,6 +367,7 @@
       "sent": "Gönderildi",
       "sending": "Gönderiliyor",
       "submitFailed": "Kaynak gönderilemedi. Tekrar deneyin.",
+      "siteExcluded": "Bu site veya medya kaynağı hariç tutuldu. Motrix’e göndermek için ayarlardan istisnayı kaldırın.",
       "title": "Kaynak algılama",
       "unavailableDescription": "Sayfayı değiştirin veya sonra tekrar deneyin.",
       "unavailableTitle": "Bu sayfa taranamıyor",

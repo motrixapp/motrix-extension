@@ -46,6 +46,7 @@ export interface DownloadOperation {
 }
 
 export const DOWNLOAD_ERROR = {
+  siteExcluded: 'site-excluded',
   cookiesRejected: 'download.cookies-rejected',
   directoryUnavailable: 'download.directory-unavailable',
   pairingRequired: 'download.pairing-required',

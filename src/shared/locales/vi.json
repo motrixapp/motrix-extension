@@ -367,6 +367,7 @@
       "sent": "Đã gửi",
       "sending": "Đang gửi",
       "submitFailed": "Không thể gửi tài nguyên. Hãy thử lại.",
+      "siteExcluded": "Trang web hoặc nguồn phương tiện này bị loại trừ. Hãy xóa ngoại lệ trong cài đặt để gửi tới Motrix.",
       "title": "Dò tài nguyên",
       "unavailableDescription": "Chuyển trang hoặc thử lại sau.",
       "unavailableTitle": "Không thể quét trang này",

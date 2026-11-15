@@ -124,6 +124,56 @@ describe('MediaPanel resource rows', () => {
     )
   })
 
+  it('explains an excluded site and enables downloads after the exclusion is removed', async () => {
+    send.mockImplementation(async (kind: string) => {
+      if (kind === 'bg.scanActiveTab')
+        return { media: [ITEM], selectionKinds: ['direct', 'mux'] }
+      if (kind === 'bg.submitMedia') return { ok: true }
+      return {}
+    })
+
+    const { rerender } = render(<MediaPanel active connected siteExcluded />)
+    const reason = i18n.t('popup.sniffer.siteExcluded')
+    expect(await screen.findByText(reason)).toBeTruthy()
+    const resource = await screen.findByRole('button', {
+      name: /video\.mp4 cannot be sent/i,
+    })
+    expect(resource.getAttribute('aria-disabled')).toBe('true')
+    fireEvent.click(resource)
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select video.mp4' }))
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Download selected',
+        }) as HTMLButtonElement
+      ).disabled
+    ).toBe(true)
+    expect(submitCalls()).toHaveLength(0)
+
+    rerender(<MediaPanel active connected siteExcluded={false} />)
+    expect(screen.queryByText(reason)).toBeNull()
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Quick download video.mp4' })
+    )
+    await waitFor(() => expect(submitCalls()).toHaveLength(1))
+  })
+
+  it('explains an exclusion enforced by the background after the popup loaded', async () => {
+    send.mockImplementation(async (kind: string) => {
+      if (kind === 'bg.scanActiveTab')
+        return { media: [ITEM], selectionKinds: ['direct', 'mux'] }
+      if (kind === 'bg.submitMedia') return { error: 'site-excluded' }
+      return {}
+    })
+    render(<MediaPanel active connected />)
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Quick download video.mp4' })
+    )
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      i18n.t('popup.sniffer.siteExcluded')
+    )
+  })
+
   it('discovers resources while mounted behind another popup tab', async () => {
     send.mockImplementation(async (kind: string) => {
       if (kind === 'bg.scanActiveTab') {
@@ -1102,6 +1152,56 @@ describe('MediaPanel resource rows', () => {
     rejected = false
     fireEvent.click(action)
     await waitFor(() => expect(screen.queryByRole('alert')).toBeNull())
+  })
+
+  it('blocks page resolution while the current site is excluded and enables it when unblocked', async () => {
+    tabsQuery.mockResolvedValue([
+      { id: 1, url: 'https://www.youtube.com/watch?v=motrix' },
+    ])
+    send.mockImplementation(async (kind: string) => {
+      if (kind === 'bg.scanActiveTab')
+        return { media: [], selectionKinds: ['direct'] }
+      if (kind === 'bg.resolvePageDownload') return { taskId: 'page-task' }
+      return {}
+    })
+    const { rerender } = render(<MediaPanel active connected siteExcluded />)
+    const action = await screen.findByRole('button', {
+      name: i18n.t('popup.sniffer.pageAction.youtube'),
+    })
+    expect((action as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(action)
+    expect(
+      send.mock.calls.filter(([kind]) => kind === 'bg.resolvePageDownload')
+    ).toHaveLength(0)
+
+    rerender(<MediaPanel active connected siteExcluded={false} />)
+    fireEvent.click(action)
+    await waitFor(() =>
+      expect(
+        send.mock.calls.filter(([kind]) => kind === 'bg.resolvePageDownload')
+      ).toHaveLength(1)
+    )
+  })
+
+  it('explains a site exclusion rejected by the background during page resolution', async () => {
+    tabsQuery.mockResolvedValue([
+      { id: 1, url: 'https://www.youtube.com/watch?v=motrix' },
+    ])
+    send.mockImplementation(async (kind: string) => {
+      if (kind === 'bg.scanActiveTab')
+        return { media: [], selectionKinds: ['direct'] }
+      if (kind === 'bg.resolvePageDownload') return { error: 'site-excluded' }
+      return {}
+    })
+    render(<MediaPanel active connected />)
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: i18n.t('popup.sniffer.pageAction.youtube'),
+      })
+    )
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      i18n.t('popup.sniffer.siteExcluded')
+    )
   })
 
   it('allows page resolution while paired and offline', async () => {

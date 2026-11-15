@@ -367,6 +367,7 @@
       "sent": "Trimis",
       "sending": "Se trimite",
       "submitFailed": "Resursa nu a putut fi trimisă. Reîncearcă.",
+      "siteExcluded": "Acest site sau această sursă media este exclusă. Elimină excluderea din setări pentru a trimite la Motrix.",
       "title": "Detector de resurse",
       "unavailableDescription": "Schimbă pagina sau încearcă mai târziu.",
       "unavailableTitle": "Pagina nu poate fi scanată",

@@ -367,6 +367,7 @@
       "sent": "Wysłano",
       "sending": "Wysyłanie",
       "submitFailed": "Nie udało się wysłać zasobu. Spróbuj ponownie.",
+      "siteExcluded": "Ta witryna lub źródło multimediów jest wykluczone. Usuń wykluczenie w ustawieniach, aby wysłać do Motrix.",
       "title": "Wykrywanie zasobów",
       "unavailableDescription": "Zmień stronę lub spróbuj później.",
       "unavailableTitle": "Nie można skanować strony",

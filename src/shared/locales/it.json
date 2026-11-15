@@ -367,6 +367,7 @@
       "sent": "Inviato",
       "sending": "Invio",
       "submitFailed": "Impossibile inviare la risorsa. Riprova.",
+      "siteExcluded": "Questo sito o sorgente multimediale è escluso. Rimuovi l’esclusione nelle impostazioni per inviarlo a Motrix.",
       "title": "Rileva risorse",
       "unavailableDescription": "Cambia pagina o riprova più tardi.",
       "unavailableTitle": "Pagina non analizzabile",

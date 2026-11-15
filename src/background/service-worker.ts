@@ -750,6 +750,7 @@ const popupDownloads = createPopupDownloadHandlers({
   extensionBaseUrl: browser.runtime.getURL(''),
   getActiveTabs: () =>
     browser.tabs.query({ active: true, currentWindow: true }),
+  getTakeoverConfig: () => takeoverConfigStore.get(),
   cookieApi: browser.cookies as unknown as Parameters<
     typeof createPopupDownloadHandlers
   >[0]['cookieApi'],

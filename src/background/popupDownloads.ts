@@ -18,6 +18,8 @@ import type { BrowserKind } from '@/shared/browserKind'
 import { DOWNLOAD_ERROR } from '@/shared/integration'
 import { isResolvableVideoPage } from '@/shared/media'
 import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
+import { excludedSiteDomain, siteDomain } from '@/shared/siteExclusion'
+import type { TakeoverConfig } from '@/shared/takeover'
 
 interface PopupDownloadDeps {
   manager: Pick<ConnectionManager, 'getServerCapabilities'>
@@ -27,6 +29,7 @@ interface PopupDownloadDeps {
   extensionId: string
   extensionBaseUrl: string
   getActiveTabs: () => Promise<Browser.tabs.Tab[]>
+  getTakeoverConfig: () => Promise<TakeoverConfig>
   cookieApi: Parameters<typeof capturePageCookies>[0]['api']
   browserKind: BrowserKind
   userAgent: string
@@ -42,6 +45,7 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
     mediaStore,
     mediaCredentialStore,
     getActiveTabs,
+    getTakeoverConfig,
     cookieApi,
     browserKind,
     userAgent,
@@ -50,6 +54,18 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
   const assertSender = (sender: Browser.runtime.MessageSender): void => {
     if (!isExtensionPageSender(sender, deps.extensionId, deps.extensionBaseUrl))
       throw new Error(MEDIA_SUBMIT_ERROR.invalidRequest)
+  }
+  // Explicit Sniffer submissions must respect the saved site exclusions even
+  // while automatic takeover is disabled. Keep full URLs out of the error.
+  const assertSitesAllowed = async (...urls: Array<string | undefined>) => {
+    const config = await getTakeoverConfig()
+    if (
+      urls.some((url) => {
+        const domain = siteDomain(url)
+        return domain !== null && excludedSiteDomain(config, domain) !== null
+      })
+    )
+      throw new DownloadPreparationError(DOWNLOAD_ERROR.siteExcluded)
   }
   // bg.submitMedia: forward a detected media item to Motrix via MDXP.
   // Gates on selectionKinds capability reported by the server at initialize time;
@@ -73,11 +89,20 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
         async () => activeTab,
         mediaStore
       )
+      const assertMediaAllowed = () =>
+        assertSitesAllowed(
+          media.pageUrl,
+          media.frameUrl,
+          media.url,
+          media.audioUrl
+        )
+      await assertMediaAllowed()
       return await submissions.run(
         {
           idempotencyKey: request.idempotencyKey,
           pairIfNeeded: request.pairIfNeeded === true,
           source: 'media',
+          validateBeforeSubmit: assertMediaAllowed,
           resourceKey: JSON.stringify([
             activeTab?.id,
             media.pageUrl,
@@ -85,6 +110,8 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
           ]),
         },
         async ({ assertCurrent }) => {
+          assertCurrent()
+          await assertMediaAllowed()
           assertCurrent()
           const caps = manager.getServerCapabilities()
           const kinds = caps?.selectionKinds ?? ['direct']
@@ -158,6 +185,8 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
       const [tab] = await getActiveTabs()
       if (!tab?.url) throw new Error('no active tab')
       const pageUrl = tab.url
+      const assertPageAllowed = () => assertSitesAllowed(pageUrl)
+      await assertPageAllowed()
       const check = isResolvableVideoPage(pageUrl, webStore)
       if (!check.resolvable) throw new Error('page not resolvable')
       return await submissions.run(
@@ -165,9 +194,12 @@ export function createPopupDownloadHandlers(deps: PopupDownloadDeps) {
           idempotencyKey: request.idempotencyKey,
           pairIfNeeded: request.pairIfNeeded === true,
           source: 'page',
+          validateBeforeSubmit: assertPageAllowed,
           resourceKey: JSON.stringify([tab.id, pageUrl]),
         },
         async ({ assertCurrent }) => {
+          assertCurrent()
+          await assertPageAllowed()
           assertCurrent()
           const cookies = await capturePageCookies({
             url: pageUrl,

@@ -367,6 +367,7 @@
       "sent": "Elküldve",
       "sending": "Küldés",
       "submitFailed": "Nem sikerült elküldeni az erőforrást. Próbáld újra.",
+      "siteExcluded": "Ez a webhely vagy médiaforrás ki van zárva. A Motrixba küldéshez távolítsa el a kizárást a beállításokban.",
       "title": "Erőforrás-kereső",
       "unavailableDescription": "Válts oldalt, vagy próbáld újra később.",
       "unavailableTitle": "Az oldal nem vizsgálható",
