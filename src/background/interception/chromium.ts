@@ -146,7 +146,7 @@ async function handleHeld(
       origin: 'auto',
     })
 
-    const decision = decideTakeover(cfg, target, item.url)
+    const decision = decideTakeover(cfg, target)
     log.debug(
       '[takeover] onDeterminingFilename(held) url=',
       describeUrlForLog(url),

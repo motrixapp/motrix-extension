@@ -98,28 +98,3 @@ describe('confirmation respects automatic takeover policy', () => {
     expect(f.confirm).not.toHaveBeenCalled()
   })
 })
-
-it('does not confirm a download whose original host is excluded after redirect', async () => {
-  const f = fixture()
-  await confirmInterceptedDownload(
-    {
-      ...item,
-      url: 'https://www.24bit.net/download',
-      finalUrl: 'https://cdn.other.test/file.zip',
-      referrer: '',
-    },
-    {
-      ...config,
-      rules: [
-        {
-          id: 'excluded',
-          match: { domains: ['www.24bit.net'] },
-          action: 'chrome',
-        },
-      ],
-    },
-    Promise.resolve(4),
-    f.deps
-  )
-  expect(f.confirm).not.toHaveBeenCalled()
-})

@@ -7,24 +7,18 @@ import {
   type TakeoverTarget,
 } from '@/shared/takeover'
 
-function ruleMatches(
-  rule: TakeoverRule,
-  target: TakeoverTarget,
-  originalUrl?: string
-): boolean {
+function ruleMatches(rule: TakeoverRule, target: TakeoverTarget): boolean {
   const { match } = rule
   if (match.domains && match.domains.length > 0) {
     const host = hostOf(target.url)
     const pageHost = hostOf(target.pageUrl)
-    const originalHost = originalUrl ? hostOf(originalUrl) : ''
-    // Exclusions cover the initial request and its referring page as well as
-    // the final host. Allow rules still match only the final download host.
+    // Site exclusions follow the originating page even when its files are
+    // served by a different CDN. Allow rules still match the download host.
     if (
       !match.domains.some(
         (d) =>
           hostSuffixMatch(host, d) ||
-          (rule.action === 'chrome' &&
-            (hostSuffixMatch(pageHost, d) || hostSuffixMatch(originalHost, d)))
+          (rule.action === 'chrome' && hostSuffixMatch(pageHost, d))
       )
     )
       return false
@@ -42,8 +36,7 @@ function ruleMatches(
 
 export function decideTakeover(
   config: TakeoverConfig,
-  target: TakeoverTarget,
-  originalUrl?: string
+  target: TakeoverTarget
 ): 'motrix' | 'chrome' {
   // An explicit right-click "Download with Motrix" is direct user intent, not
   // a candidate for the auto-interception policy. Hand it to Motrix regardless
@@ -53,7 +46,7 @@ export function decideTakeover(
   if (target.origin === 'context-menu') return 'motrix'
   if (!config.enabled) return 'chrome'
   for (const rule of config.rules) {
-    if (ruleMatches(rule, target, originalUrl)) {
+    if (ruleMatches(rule, target)) {
       return rule.action === 'motrix' ? 'motrix' : 'chrome' // 'ask' reserved for Plan 2 -> chrome
     }
   }
