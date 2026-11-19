@@ -59,6 +59,14 @@ export function createDownloadConfirmation(
     userAgent: () => navigator.userAgent,
     ...(recover ? { recover, storage: browser.storage.session } : {}),
   })
+  function detach(port: Browser.runtime.Port) {
+    const id = views.get(port)
+    views.delete(port)
+    if (id === undefined || [...views.values()].includes(id)) return
+    const target = service.get(id)?.target
+    if (target?.pausedDownloadId !== undefined || target?.releaseClickId)
+      service.close(id)
+  }
   function publishToView(
     port: Browser.runtime.Port,
     windowId: number,
@@ -69,7 +77,7 @@ export function createDownloadConfirmation(
       if (draft) service.markPresented(windowId, draft.id)
       return true
     } catch {
-      views.delete(port)
+      detach(port)
       return false
     }
   }
@@ -112,11 +120,7 @@ export function createDownloadConfirmation(
         service.decide(windowId, message.id, message.decision)
       }
     })
-    port.onDisconnect.addListener(() => {
-      views.delete(port)
-      // Closing a popup only detaches its view. Explicit cancel, window removal,
-      // or draft expiry owns cancellation; a new popup can resume the draft.
-    })
+    port.onDisconnect.addListener(() => detach(port))
   })
   browser.windows.onRemoved.addListener((windowId) => service.close(windowId))
   return service

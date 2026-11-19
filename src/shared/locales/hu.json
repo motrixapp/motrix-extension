@@ -167,7 +167,9 @@
       "consentCancel": "Mégse",
       "consentConfirm": "Engedélyezés",
       "consentDialogLabel": "Elküldöd a letöltéseket a Motrixnak?",
-      "denylistLabel": "Kizárási lista (soronként egy gépnév – mindig a böngésző kezeli)",
+      "denylistInvalid": "Soronként egy tartományt vagy HTTP(S)-hivatkozást adjon meg.",
+      "releaseClick": "Kérdezzen rá a motrix.app telepítőinek lekérése előtt",
+      "denylistLabel": "Saját védelmi lista (soronként egy tartomány, az altartományokkal együtt)",
       "enableAria": "Átvétel engedélyezése",
       "enableLabel": "Megfelelő letöltések küldése a Motrixnak",
       "loading": "Átvételi beállítások betöltése…",
@@ -522,6 +524,7 @@
       "browserHint": "A böngészős letöltések a böngésző saját fájlnév- és kérésbeállításait használják.",
       "unavailable": "Nem sikerült megnyitni a megerősítést. Fejezze be a nyitott letöltési űrlapot, majd próbálja újra. Nem indult letöltés.",
       "close": "Bezárás",
+      "pausedDescription": "A böngésző letöltése a választásig szünetel.",
       "interceptedDescription": "A böngésző már megkezdte a letöltést. A Motrix újra lekéri a hivatkozást, ami egyszer használatos hivatkozásoknál sikertelen lehet. Az eredeti letöltés folytatódik, és másolatot hozhat létre.",
       "earlyInterceptedDescription": "A böngésző eredeti kérése megszakadt. A Motrix vagy a böngésző újból lekéri a hivatkozást; az egyszer használatos hivatkozások nem feltétlenül működnek.",
       "keepBrowser": "Böngésző letöltésének megtartása"

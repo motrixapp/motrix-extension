@@ -4,7 +4,7 @@ import type { ChromiumInterceptionDeps } from '@/background/interception/chromiu
 import { pickDownloadUrl } from '@/background/interception/eligibility'
 import { describeUrlForLog, log } from '@/background/log'
 import { decideTakeover } from '@/background/policy/decideTakeover'
-import type { TakeoverConfig } from '@/shared/takeover'
+import type { TakeoverConfig, TakeoverTarget } from '@/shared/takeover'
 
 /** Keep the original response alive: neither metadata probes nor an open form
  * can prove that a one-use URL will tolerate another request. */
@@ -19,7 +19,13 @@ export async function confirmInterceptedDownload(
   },
   config: TakeoverConfig,
   capturedWindow: Promise<number | null> | undefined,
-  deps: ChromiumInterceptionDeps,
+  deps: Pick<ChromiumInterceptionDeps, 'captureGuard'> & {
+    confirm?: (
+      target: TakeoverTarget,
+      windowId: number | undefined,
+      guard: HandoffGuard
+    ) => Promise<void>
+  },
   capturedGuard?: HandoffGuard
 ): Promise<void> {
   if (!deps.confirm) return

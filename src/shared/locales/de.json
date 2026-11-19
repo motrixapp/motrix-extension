@@ -167,7 +167,9 @@
       "consentCancel": "Abbrechen",
       "consentConfirm": "Aktivieren",
       "consentDialogLabel": "Downloads an Motrix senden?",
-      "denylistLabel": "Sperrliste (ein Host pro Zeile – Downloads bleiben immer im Browser)",
+      "denylistInvalid": "Gib pro Zeile eine Domain oder einen HTTP(S)-Link ein.",
+      "releaseClick": "Vor dem Abruf von Installationsdateien auf motrix.app fragen",
+      "denylistLabel": "Persönliche Schutzliste (eine Domain pro Zeile, einschließlich Subdomains)",
       "enableAria": "Download-Übernahme aktivieren",
       "enableLabel": "Geeignete Downloads an Motrix senden",
       "loading": "Übernahmeeinstellungen werden geladen…",
@@ -522,6 +524,7 @@
       "browserHint": "Browser-Downloads verwenden die Dateinamen- und Anfrageeinstellungen des Browsers.",
       "unavailable": "Bestätigung konnte nicht geöffnet werden. Schließen Sie das offene Downloadformular ab und versuchen Sie es erneut. Kein Download wurde gestartet.",
       "close": "Schließen",
+      "pausedDescription": "Der Browser-Download ist bis zu deiner Auswahl pausiert.",
       "interceptedDescription": "Der Browser hat den Download bereits gestartet. Motrix fordert den Link erneut an; bei Einmallinks kann dies scheitern. Der ursprüngliche Download läuft weiter und kann ein Duplikat erzeugen.",
       "earlyInterceptedDescription": "Die ursprüngliche Browseranfrage wurde abgebrochen. Motrix oder der Browser ruft den Link beim Fortfahren erneut ab; einmalige Links können fehlschlagen.",
       "keepBrowser": "Browser-Download beibehalten"

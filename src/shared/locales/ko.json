@@ -167,7 +167,9 @@
       "consentCancel": "취소",
       "consentConfirm": "사용",
       "consentDialogLabel": "다운로드를 Motrix로 보낼까요?",
-      "denylistLabel": "제외 목록(한 줄에 호스트 하나 — 항상 브라우저에서 처리)",
+      "denylistInvalid": "각 줄에 도메인 또는 HTTP(S) 링크를 입력하세요.",
+      "releaseClick": "motrix.app 설치 파일을 요청하기 전에 확인",
+      "denylistLabel": "개인 보호 목록 (한 줄에 도메인 하나, 하위 도메인 포함)",
       "enableAria": "다운로드 인계 사용",
       "enableLabel": "지원되는 다운로드를 Motrix로 전송",
       "loading": "다운로드 인계 설정 불러오는 중…",
@@ -522,6 +524,7 @@
       "browserHint": "브라우저 다운로드에는 브라우저 자체의 파일 이름 및 요청 설정이 사용됩니다.",
       "unavailable": "확인 화면을 열 수 없습니다. 열려 있는 다운로드 양식을 마친 후 다시 시도하세요. 다운로드는 시작되지 않았습니다.",
       "close": "닫기",
+      "pausedDescription": "선택할 때까지 브라우저 다운로드가 일시 중지됩니다.",
       "interceptedDescription": "브라우저에서 이미 다운로드를 시작했습니다. Motrix는 링크를 다시 요청하므로 일회용 링크는 실패할 수 있습니다. 원래 다운로드는 계속되며 중복 파일이 생길 수 있습니다.",
       "earlyInterceptedDescription": "브라우저의 원래 요청이 취소되었습니다. Motrix나 브라우저로 계속하면 링크를 다시 요청하므로 일회용 링크는 실패할 수 있습니다.",
       "keepBrowser": "브라우저 다운로드 유지"

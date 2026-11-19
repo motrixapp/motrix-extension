@@ -167,7 +167,9 @@
       "consentCancel": "Annuleren",
       "consentConfirm": "Inschakelen",
       "consentDialogLabel": "Downloads naar Motrix verzenden?",
-      "denylistLabel": "Uitzonderingslijst (één host per regel – altijd door de browser afgehandeld)",
+      "denylistInvalid": "Voer per regel één domein of HTTP(S)-link in.",
+      "releaseClick": "Vragen voordat installatiebestanden van motrix.app worden opgevraagd",
+      "denylistLabel": "Persoonlijke beschermingslijst (één domein per regel, inclusief subdomeinen)",
       "enableAria": "Overname inschakelen",
       "enableLabel": "Geschikte downloads naar Motrix verzenden",
       "loading": "Instellingen voor downloadovername laden…",
@@ -522,6 +524,7 @@
       "browserHint": "Browserdownloads gebruiken de eigen bestandsnaam en verzoekinstellingen van de browser.",
       "unavailable": "Kan de bevestiging niet openen. Rond een eventueel geopend downloadformulier af en probeer opnieuw. Er is geen download gestart.",
       "close": "Sluiten",
+      "pausedDescription": "De browserdownload is gepauzeerd totdat je kiest.",
       "interceptedDescription": "De browser heeft deze download al gestart. Motrix vraagt de link opnieuw op; bij eenmalige links kan dit mislukken. De oorspronkelijke download gaat door en kan een duplicaat opleveren.",
       "earlyInterceptedDescription": "Het oorspronkelijke browserverzoek is geannuleerd. Doorgaan met Motrix of de browser vraagt de link opnieuw op; eenmalige links kunnen mislukken.",
       "keepBrowser": "Browserdownload behouden"

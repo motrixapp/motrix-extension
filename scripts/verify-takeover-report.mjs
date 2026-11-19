@@ -2,7 +2,12 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 
+import {
+  clickCases,
+  verifyClickResult,
+} from './fixtures/release-click-browser.mjs'
 export const FIREFOX_CASES = Object.freeze([
+  ...clickCases,
   'known',
   'probe-only',
   'confirm',
@@ -13,6 +18,10 @@ export const FIREFOX_CASES = Object.freeze([
   'early-direct',
   'early-no-type',
   'early-confirm-accept',
+  'early-confirm-rejected',
+  'early-confirm-unavailable',
+  'early-protected',
+  'early-protected-direct',
   'early-confirm-browser',
   'early-confirm-cancel',
   'early-failed',
@@ -47,7 +56,13 @@ export function verifyTakeoverReport(report, { revision, browser } = {}) {
   for (const item of report.cases) {
     assert.equal(item.status, 'passed', item.name)
     assert.equal(item.result?.name, item.name)
-    assert.ok(item.result.requests.length > 0, `${item.name}: no HTTP evidence`)
+    if (item.name.startsWith('click-'))
+      verifyClickResult(item.name, item.result)
+    else
+      assert.ok(
+        item.result.requests.length > 0,
+        `${item.name}: no HTTP evidence`
+      )
     assert.ok(
       Number.isInteger(item.result.mdxp.taskCount),
       `${item.name}: no MDXP evidence`

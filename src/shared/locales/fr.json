@@ -167,7 +167,9 @@
       "consentCancel": "Annuler",
       "consentConfirm": "Activer",
       "consentDialogLabel": "Envoyer les téléchargements à Motrix ?",
-      "denylistLabel": "Liste d’exclusion (un hôte par ligne — toujours laissé au navigateur)",
+      "denylistInvalid": "Saisissez un domaine ou un lien HTTP(S) par ligne.",
+      "releaseClick": "Demander avant de récupérer un programme d’installation sur motrix.app",
+      "denylistLabel": "Liste de protection personnelle (un domaine par ligne, sous-domaines inclus)",
       "enableAria": "Activer la prise en charge",
       "enableLabel": "Envoyer les téléchargements compatibles à Motrix",
       "loading": "Chargement des réglages de prise en charge…",
@@ -522,6 +524,7 @@
       "browserHint": "Les téléchargements du navigateur utilisent ses propres paramètres de nom de fichier et de requête.",
       "unavailable": "Impossible d’ouvrir la confirmation. Terminez le formulaire ouvert, puis réessayez. Aucun téléchargement n’a été lancé.",
       "close": "Fermer",
+      "pausedDescription": "Le téléchargement du navigateur est en pause en attendant votre choix.",
       "interceptedDescription": "Le navigateur a déjà démarré ce téléchargement. Motrix demandera à nouveau le lien, ce qui peut échouer avec un lien à usage unique. Le téléchargement initial continue et peut créer un doublon.",
       "earlyInterceptedDescription": "La requête initiale du navigateur a été annulée. Continuer avec Motrix ou le navigateur relance la requête ; les liens à usage unique peuvent échouer.",
       "keepBrowser": "Conserver le téléchargement du navigateur"

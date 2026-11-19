@@ -65,7 +65,17 @@ beforeEach(() => {
       update: ok(),
       onClicked: event(),
     },
-    downloads: { onDeterminingFilename: event() },
+    downloads: {
+      onChanged: event(),
+      onCreated: event(),
+      onDeterminingFilename: event(),
+    },
+    webRequest: {
+      ...originalBrowser.webRequest,
+      onBeforeRequest: event(),
+      onBeforeRedirect: event(),
+      onHeadersReceived: event(),
+    },
     action: {
       setBadgeText: ok(),
       setBadgeBackgroundColor: ok(),
@@ -73,7 +83,7 @@ beforeEach(() => {
       setTitle: ok(),
       setIcon: ok(),
     },
-    alarms: { create: ok(), clear: ok(), onAlarm: event() },
+    alarms: { get: ok(), create: ok(), clear: ok(), onAlarm: event() },
   }
   vi.stubGlobal('browser', browser)
   vi.stubGlobal('chrome', browser)

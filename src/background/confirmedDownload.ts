@@ -24,7 +24,8 @@ export type ConfirmedDownloadDeps = Pick<
 export function createConfirmedDownloadActions(
   deps: ConfirmedDownloadDeps,
   target: TakeoverTarget,
-  guard: HandoffGuard
+  guard: HandoffGuard,
+  beforeSend?: () => Promise<void>
 ): ConfirmationActions {
   return {
     submit: (options, operationId) => {
@@ -52,6 +53,9 @@ export function createConfirmedDownloadActions(
             isMagnetUrl(target.url) || ops.isSensitive(hostOf(target.url))
               ? []
               : await ops.captureCookies(target.url)
+          guard.assertCurrent()
+          assertCurrent()
+          await beforeSend?.()
           guard.assertCurrent()
           assertCurrent()
           return applyTaskOptions(

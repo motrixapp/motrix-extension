@@ -339,3 +339,23 @@ it('releases a pending draft when its window closes', async () => {
   removed(4)
   await expect(pending).resolves.toEqual({ action: 'cancel' })
 })
+
+it.each([{ pausedDownloadId: 17 }, { releaseClickId: 'release' }])(
+  'closes a browser-owned confirmation only after the last popup detaches (%o)',
+  async (marker) => {
+    const service = createDownloadConfirmation()
+    const pending = service.request(
+      { ...target, origin: 'auto', ...marker },
+      4,
+      actions
+    )
+    const first = view(),
+      last = view()
+    await vi.waitFor(() => expect(last.port.postMessage).toHaveBeenCalled())
+    first.disconnect()
+    expect(service.get(4)).toBeTruthy()
+    last.disconnect()
+    expect(await pending).toEqual({ action: 'cancel' })
+    expect(service.get(4)).toBeNull()
+  }
+)

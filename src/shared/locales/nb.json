@@ -167,7 +167,9 @@
       "consentCancel": "Avbryt",
       "consentConfirm": "Aktiver",
       "consentDialogLabel": "Sende nedlastinger til Motrix?",
-      "denylistLabel": "Unntaksliste (ett vertsnavn per linje – håndteres alltid av nettleseren)",
+      "denylistInvalid": "Skriv inn ett domene eller én HTTP(S)-lenke per linje.",
+      "releaseClick": "Spør før installasjonsfiler hentes fra motrix.app",
+      "denylistLabel": "Personlig beskyttelsesliste (ett domene per linje, inkludert underdomener)",
       "enableAria": "Aktiver overtakelse",
       "enableLabel": "Send egnede nedlastinger til Motrix",
       "loading": "Laster innstillinger for overtakelse…",
@@ -522,6 +524,7 @@
       "browserHint": "Nedlastinger i nettleseren bruker nettleserens egne filnavn og forespørselsinnstillinger.",
       "unavailable": "Kunne ikke åpne bekreftelsen. Fullfør et eventuelt åpent nedlastingsskjema og prøv igjen. Ingen nedlasting ble startet.",
       "close": "Lukk",
+      "pausedDescription": "Nedlastingen i nettleseren er satt på pause mens du velger.",
       "interceptedDescription": "Nettleseren har allerede startet nedlastingen. Motrix ber om lenken på nytt, noe som kan mislykkes med engangslenker. Den opprinnelige nedlastingen fortsetter og kan lage en kopi.",
       "earlyInterceptedDescription": "Den opprinnelige nettleserforespørselen ble avbrutt. Hvis du fortsetter med Motrix eller nettleseren, hentes lenken på nytt; engangslenker kan mislykkes.",
       "keepBrowser": "Behold nettlesernedlasting"

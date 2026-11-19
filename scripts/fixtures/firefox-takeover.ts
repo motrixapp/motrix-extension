@@ -5,6 +5,8 @@ import {
   type MdxpConnection,
   Methods,
 } from '@motrix/mdxp/browser'
+import { createElement } from 'react'
+import { createRoot } from 'react-dom/client'
 import { createConfirmedDownloadActions } from '@/background/confirmedDownload'
 import { DownloadConfirmationService } from '@/background/DownloadConfirmationService'
 import {
@@ -12,13 +14,19 @@ import {
   DownloadPreparationError,
 } from '@/background/download-errors'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
+import { registerChromiumInterception } from '@/background/interception/chromium'
 import { registerFirefoxInterception } from '@/background/interception/firefox'
+import { registerNativeConfirmation } from '@/background/interception/nativeConfirmation'
+import { registerReleaseClicks } from '@/background/interception/releaseClick'
+import { observeReplaySources } from '@/background/interception/replaySource'
 import { registerWebRequestEarlyTakeover } from '@/background/interception/webRequestEarly'
 import { log } from '@/background/log'
 import { WebSocketClient } from '@/background/WebSocketClient'
-import { extensionBrowser as browser } from '@/shared/browser'
+import { DownloadConfirmationForm } from '@/popup/DownloadConfirmationDialog'
+import { extensionBrowser as browser, nativeBrowser } from '@/shared/browser'
+import { i18n } from '@/shared/i18n'
 import { DOWNLOAD_ERROR } from '@/shared/integration'
-import { TAKEOVER_DEFAULT, type TakeoverTarget } from '@/shared/takeover'
+import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 
 // Exercise the production adapter with Firefox's real downloads/cookies APIs.
 // The backend is a loopback MDXP peer; MBP1 and desktop startup are out of scope.
@@ -70,79 +78,218 @@ browser.downloads.onCreated.addListener((item) => {
 browser.downloads.onChanged.addListener((delta) => {
   if (!nativeIds.includes(delta.id)) return
   observations.push({ event: 'changed', keys: Object.keys(delta) })
+  if (caseName.startsWith('early-confirm-'))
+    void browser.downloads.search({ id: delta.id }).then(([d]) => {
+      if (d)
+        observations.push({
+          event: 'native-status',
+          id: d.id,
+          start: d.startTime,
+          state: d.state,
+          paused: d.paused,
+          error: d.error,
+          canResume: d.canResume,
+        })
+    })
 })
+const replaySource = observeReplaySources(
+  (_role, url) => !!url?.includes('/early-protected'),
+  (url) =>
+    new URL(url).hostname === '127.0.0.1' &&
+    new URL(url).pathname.startsWith('/download/') &&
+    !url.endsWith('/confirm')
+)
 const deps = {
+  replaySource,
+  popup: {
+    captureWindow: async () =>
+      (await browser.windows.getLastFocused()).id ?? null,
+    present: async () => {},
+  },
+
   getConfig: async () => config,
   isPaired: async () => true,
   gate: { shouldAutoConnect: async () => true },
   nudge: { maybeNudge: async () => {} },
-  captureGuard: async () => ({ origin: 'auto', assertCurrent() {} }),
+  captureGuard: async () => ({
+    origin: 'auto',
+    endpointId: 'fixture',
+    assertCurrent() {},
+  }),
   selfExtensionId: browser.runtime.id,
   manager: {
     getState: () => 'connected',
     getRpcStatus: () => ({ health: 'healthy' }),
     submitDownload: submit,
   },
-  confirm: async (target: TakeoverTarget) => {
-    confirmations += 1
-    observations.push({ event: 'confirmed', sizeBytes: target.sizeBytes })
-  },
   notify() {},
 } as unknown as ChromiumInterceptionDeps
-registerFirefoxInterception(deps)
-registerWebRequestEarlyTakeover(deps, {
-  confirmRequest: async (target, windowId, guard) => {
-    confirmations += 1
-    const confirmation = new DownloadConfirmationService({
-      supported: () => true,
-      open: async () => {},
-      publish: () => {},
-      userAgent: () => navigator.userAgent,
-    })
-    const actions = createConfirmedDownloadActions(
-      {
-        ...deps,
-        confirmation,
-        submissions: {
-          run: async (request, prepare) => {
-            const params = await prepare({ assertCurrent() {} } as Parameters<
-              typeof prepare
-            >[0])
-            return submit({ ...params, idempotencyKey: request.idempotencyKey })
-          },
+if (nativeBrowser.downloads.onDeterminingFilename)
+  registerChromiumInterception(deps)
+else {
+  registerFirefoxInterception(deps)
+  registerWebRequestEarlyTakeover(deps)
+}
+const service = new DownloadConfirmationService({
+  supported: () => true,
+  userAgent: () => navigator.userAgent,
+  publish() {},
+  open: async (windowId) => {
+    confirmations++
+    if (['early-confirm-unavailable', 'click-unavailable'].includes(caseName))
+      throw new Error('popup unavailable')
+    await new Promise((r) => setTimeout(r, 350))
+    const draft = service.get(windowId)
+    if (!draft) throw new Error('missing draft')
+    if (draft.target.releaseClickId) {
+      const response = await fetch(
+        new URL('/seen/' + caseName, draft.target.url)
+      )
+      observations.push({
+        event: 'before-decision',
+        requests: Number(await response.text()),
+        nativeCount: nativeIds.length,
+      })
+    } else {
+      if (draft.target.pausedDownloadId === undefined)
+        throw new Error('Missing native ID')
+      const [item] = await browser.downloads.search({
+        id: draft.target.pausedDownloadId,
+      })
+      observations.push({
+        event: 'confirmation-hold',
+        nativeCount: nativeIds.length,
+        paused: item?.paused,
+        id: item?.id,
+      })
+      observations.push({
+        event: 'confirmation-filename',
+        filename: draft.options.filename,
+      })
+      if (caseName === 'early-confirm-accept') {
+        // Longer than the Chromium filename deadline and the fixture's entire transfer.
+        await new Promise((r) => setTimeout(r, 12500))
+        const [held] = await browser.downloads.search({
+          id: draft.target.pausedDownloadId,
+        })
+        observations.push({
+          event: 'quiet-hold',
+          stable:
+            held?.paused === true && held.bytesReceived === item?.bytesReceived,
+        })
+      }
+    }
+    const action = caseName.endsWith('-browser')
+      ? 'browser'
+      : caseName.endsWith('-cancel')
+        ? 'cancel'
+        : 'submit'
+    const host = document.body.appendChild(document.createElement('div'))
+    const root = createRoot(host)
+    try {
+      root.render(
+        createElement(DownloadConfirmationForm, {
+          draft,
+          onDismiss: () => service.close(windowId),
+          onDecide: (decision) => service.decide(windowId, draft.id, decision),
+        })
+      )
+      const label = i18n.t(
+        action === 'browser'
+          ? draft.target.releaseClickId
+            ? 'popup.confirmDownload.browser'
+            : 'popup.confirmDownload.keepBrowser'
+          : action === 'cancel'
+            ? 'popup.quickAdd.cancel'
+            : 'popup.quickAdd.add'
+      )
+      let clicked = false
+      const deadline = Date.now() + 2000
+      while (!clicked && Date.now() < deadline) {
+        const button = Array.from(document.querySelectorAll('button')).find(
+          (b) => b.textContent?.trim() === label
+        )
+        if (button && !button.disabled) {
+          button.click()
+          clicked = true
+        } else await new Promise((r) => setTimeout(r, 20))
+      }
+      observations.push({
+        event: 'form-click',
+        action,
+        clicked,
+        ...(!clicked
+          ? {
+              label,
+              buttons: [...document.querySelectorAll('button')].map((b) => [
+                b.textContent,
+                b.disabled,
+              ]),
+              text: document.body.innerText.slice(0, 500),
+            }
+          : {}),
+      })
+    } catch (error) {
+      observations.push({ event: 'form-error', message: String(error) })
+      throw error
+    } finally {
+      root.unmount()
+      host.remove()
+    }
+  },
+})
+const actions: Parameters<typeof registerNativeConfirmation>[0]['actions'] = (
+  target,
+  guard,
+  beforeSend
+) =>
+  createConfirmedDownloadActions(
+    {
+      ...deps,
+      confirmation: service,
+      submissions: {
+        run: async (request, prepare) => {
+          const params = await prepare({ assertCurrent() {} } as Parameters<
+            typeof prepare
+          >[0])
+          return submit({ ...params, idempotencyKey: request.idempotencyKey })
         },
       },
-      target,
-      guard
-    )
-    const result = confirmation.request(target, windowId, actions)
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    observations.push({
-      event: 'confirmation-hold',
-      nativeCount: nativeIds.length,
-    })
-    if (windowId === undefined) throw new Error('No originating window')
-    const draft = confirmation.get(windowId)
-    if (!draft) throw new Error('No confirmation draft')
-    observations.push({
-      event: 'confirmation-filename',
-      filename: draft.options.filename,
-    })
-    const action =
-      caseName === 'early-confirm-accept'
-        ? 'submit'
-        : caseName === 'early-confirm-browser'
-          ? 'browser'
-          : 'cancel'
-    confirmation.decide(windowId, draft.id, { action, options: draft.options })
-    const decision = await result
-    confirmationSettled = true
-    observations.push({
-      event: 'confirmation-settled',
-      action: decision.action,
-    })
-    return decision
+    },
+    target,
+    guard,
+    beforeSend
+  )
+registerReleaseClicks(
+  {
+    ...deps,
+    actions,
+    available: () => true,
+    protected: () => false,
+    confirmation: service,
+    report: (outcome) => observations.push({ event: 'click-report', outcome }),
   },
+  (url) => new URL(url).pathname.startsWith('/start/click-'),
+  (url) => new URL(url).pathname.startsWith('/download/click-')
+)
+registerNativeConfirmation({
+  ...deps,
+  replaySource,
+  confirmation: {
+    dismissPausedDownloads: (id) => service.dismissPausedDownloads(id),
+    request: async (...args) => {
+      const result = await service.request(...args)
+      observations.push({
+        event: 'confirmation-settled',
+        action: result.action,
+      })
+      confirmationSettled = true
+      return result
+    },
+  },
+  operations: async () => [],
+  report: (outcome) => observations.push({ event: 'report', outcome }),
+  actions,
 })
 
 Object.assign(window, {
@@ -176,7 +323,9 @@ Object.assign(window, {
           name: 'takeover-fixture',
           version: '1.0',
           extensionId: browser.runtime.id,
-          browser: 'firefox',
+          browser: nativeBrowser.downloads.onDeterminingFilename
+            ? 'chromium'
+            : 'firefox',
           browserVersion: navigator.userAgent,
           locale: 'en',
         },
@@ -201,8 +350,11 @@ Object.assign(window, {
     config = {
       ...TAKEOVER_DEFAULT,
       enabled: input.name !== 'early-off',
+      releaseClick: true,
       downloadMode:
-        input.name === 'confirm' || input.name.startsWith('early-confirm-')
+        ['confirm', 'early-protected'].includes(input.name) ||
+        input.name.startsWith('early-confirm-') ||
+        input.name.startsWith('click-')
           ? 'confirm'
           : 'direct',
       unknownSizeAction: input.name === 'unknown-motrix' ? 'motrix' : 'chrome',
@@ -219,7 +371,7 @@ Object.assign(window, {
           : [],
     }
     const tab = await browser.tabs.create({
-      url: `${input.baseUrl}/start/${input.name}`,
+      url: `${input.baseUrl}/start/${input.name}${nativeBrowser.downloads.onDeterminingFilename ? '?click=1' : ''}`,
     })
     const deadline =
       Date.now() + (input.name.startsWith('early-') ? 1800 : 4200)
@@ -230,7 +382,8 @@ Object.assign(window, {
     if (input.name.startsWith('early-confirm-')) {
       // Persisting the decision and creating a native download are asynchronous.
       // Wait for the actual outcome instead of attributing late events to the next case.
-      const confirmationDeadline = Date.now() + 5000
+      const confirmationDeadline =
+        Date.now() + (input.name === 'early-confirm-accept' ? 17000 : 5000)
       while (
         Date.now() < confirmationDeadline &&
         (!confirmationSettled ||
@@ -239,6 +392,54 @@ Object.assign(window, {
         await new Promise((resolve) => setTimeout(resolve, 50))
       if (!confirmationSettled)
         observations.push({ event: 'confirmation-timeout' })
+    }
+    if (
+      [
+        'confirm',
+        'early-protected',
+        'early-protected-direct',
+        'early-confirm-browser',
+        'early-confirm-rejected',
+        'early-confirm-unavailable',
+      ].includes(input.name)
+    ) {
+      const until = Date.now() + 6000
+      while (
+        Date.now() < until &&
+        nativeId !== undefined &&
+        (await browser.downloads.search({ id: nativeId }))[0]?.state ===
+          'in_progress'
+      )
+        await new Promise((r) => setTimeout(r, 50))
+    }
+    if (input.name.startsWith('click-')) {
+      const native = [
+        'click-browser',
+        'click-bypass',
+        'click-rejected',
+        'click-unavailable',
+      ].includes(input.name)
+      const until = Date.now() + 4500
+      while (Date.now() < until) {
+        if (
+          native &&
+          nativeId !== undefined &&
+          (await browser.downloads.search({ id: nativeId }))[0]?.state ===
+            'complete'
+        )
+          break
+        if (
+          !native &&
+          observations.some((o) => o.event === 'form-click') &&
+          (input.name === 'click-cancel' || submits > 0)
+        )
+          break
+        await new Promise((r) => setTimeout(r, 40))
+      }
+    }
+    if (input.name === 'click-unknown') {
+      const win = await browser.windows.getLastFocused()
+      if (win.id !== undefined) service.close(win.id)
     }
     const items =
       nativeId === undefined
@@ -250,7 +451,9 @@ Object.assign(window, {
       confirmations,
       observations: [...observations],
       nativeCount: nativeIds.length,
-      native: items.map(({ state, totalBytes, paused }) => ({
+      native: items.map(({ id, state, totalBytes, paused, filename }) => ({
+        id,
+        filename,
         state,
         totalBytes,
         paused,

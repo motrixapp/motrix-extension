@@ -167,7 +167,9 @@
       "consentCancel": "İptal",
       "consentConfirm": "Etkinleştir",
       "consentDialogLabel": "İndirmeler Motrix’e gönderilsin mi?",
-      "denylistLabel": "Dışlama listesi (her satıra bir ana makine — daima tarayıcıya bırakılır)",
+      "denylistInvalid": "Her satıra bir alan adı veya HTTP(S) bağlantısı girin.",
+      "releaseClick": "motrix.app üzerinden kurulum dosyası istenmeden önce sor",
+      "denylistLabel": "Kişisel koruma listesi (her satıra alt alan adları dahil bir alan adı)",
       "enableAria": "Devralmayı etkinleştir",
       "enableLabel": "Uygun indirmeleri Motrix’e gönder",
       "loading": "Devralma ayarları yükleniyor…",
@@ -522,6 +524,7 @@
       "browserHint": "Tarayıcı indirmeleri, tarayıcının kendi dosya adı ve istek ayarlarını kullanır.",
       "unavailable": "Onay açılamadı. Açık indirme formunu tamamlayıp yeniden deneyin. İndirme başlatılmadı.",
       "close": "Kapat",
+      "pausedDescription": "Siz seçim yapana kadar tarayıcı indirmesi duraklatıldı.",
       "interceptedDescription": "Tarayıcı bu indirmeyi zaten başlattı. Motrix bağlantıyı tekrar isteyecek; bu işlem tek kullanımlık bağlantılarda başarısız olabilir. Asıl indirme devam eder ve yinelenen bir dosya oluşturabilir.",
       "earlyInterceptedDescription": "Tarayıcının ilk isteği iptal edildi. Motrix veya tarayıcıyla devam etmek bağlantıyı yeniden ister; tek kullanımlık bağlantılar başarısız olabilir.",
       "keepBrowser": "Tarayıcı indirmesini koru"

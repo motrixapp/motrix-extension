@@ -54,6 +54,10 @@ beforeEach(() => {
     cookies: { getAll: captureCookies },
   })
   deps = {
+    replaySource: (i: { url: string; finalUrl?: string }) => ({
+      url: i.finalUrl || i.url,
+      allowed: () => true,
+    }),
     getConfig: async () => config,
     captureGuard: async () => ({ origin: 'auto', assertCurrent }),
     manager: {
@@ -105,22 +109,6 @@ it('uses the native size rather than the size of a different probed response', a
   expect(probeTarget).not.toHaveBeenCalled()
 })
 
-it('confirms with late native metadata without requesting a one-use URL', async () => {
-  config.downloadMode = 'confirm'
-  const operation = handleFirefoxDownloadSafely({ ...current! }, deps)
-  await vi.advanceTimersByTimeAsync(200)
-  current!.totalBytes = 2048
-  await settle(operation)
-  expect(confirm).toHaveBeenCalledExactlyOnceWith(
-    expect.objectContaining({ sizeBytes: 2048, origin: 'auto' }),
-    undefined,
-    expect.anything()
-  )
-  expect(probeTarget).not.toHaveBeenCalled()
-  expect(cancel).not.toHaveBeenCalled()
-  expect(submit).not.toHaveBeenCalled()
-})
-
 it.each(['direct', 'confirm'] as const)(
   'honors both unknown-size choices within a finite metadata budget in %s mode',
   async (downloadMode) => {
@@ -135,9 +123,7 @@ it.each(['direct', 'confirm'] as const)(
       expect(cancel).not.toHaveBeenCalled()
       await settle(operation, 1)
       const accepted = unknownSizeAction === 'motrix' ? 1 : 0
-      expect(confirm).toHaveBeenCalledTimes(
-        downloadMode === 'confirm' ? accepted : 0
-      )
+      expect(confirm).toHaveBeenCalledTimes(0)
       expect(submit).toHaveBeenCalledTimes(
         downloadMode === 'direct' ? accepted : 0
       )
