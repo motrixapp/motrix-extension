@@ -256,10 +256,13 @@ try {
       )
     )
     report.extensionSha256 = createHash('sha256').update(archive).digest('hex')
+    // Firefox 143 content processes need the archive when they load a new tab.
+    const archivePath = resolve(profile, 'takeover-fixture.xpi')
+    await writeFile(archivePath, archive)
     await command('webExtension.install', {
       extensionData: {
-        type: 'base64',
-        value: Buffer.from(archive).toString('base64'),
+        type: 'archivePath',
+        path: archivePath,
       },
     })
   } catch (error) {
@@ -296,6 +299,8 @@ try {
       awaitPromise: true,
       resultOwnership: 'none',
     })
+    // A failed UI assertion can close the session before we await this command.
+    void running.catch(() => {})
     if (name.startsWith('click-')) {
       let tab
       const until = Date.now() + 4000
