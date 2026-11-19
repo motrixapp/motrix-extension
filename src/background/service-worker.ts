@@ -1,3 +1,4 @@
+import handoffSdk from 'virtual:local-handoff-sdk'
 // YouTube MAIN-world sniffer (Chromium development build only — excluded from
 // Chrome/Edge Web Store and Firefox builds by the virtual build-variant module).
 import youtubeSnifferScriptPath from 'virtual:motrix-youtube-sniffer-script'
@@ -20,7 +21,10 @@ import { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { ConnectionManager } from '@/background/ConnectionManager'
 import { MediaCredentialStore } from '@/background/capture/MediaCredentialStore'
-import { createConfirmedDownloadActions } from '@/background/confirmedDownload'
+import {
+  createConfirmedDownloadActions,
+  prepareConfirmedParams,
+} from '@/background/confirmedDownload'
 import { createContextMenuDownloadRunner } from '@/background/contextMenu/download'
 import {
   registerContextMenu,
@@ -32,6 +36,7 @@ import { createDownloadDirectoriesHandler } from '@/background/downloadDirectori
 import { EndpointCatalogService } from '@/background/EndpointCatalogService'
 import { EndpointConfigStore } from '@/background/EndpointConfigStore'
 import { HandoffEndpointTracker } from '@/background/handoff/guard'
+import { candidateHandoffPeer } from '@/background/interception/candidatePeer'
 import { registerChromiumInterception } from '@/background/interception/chromium'
 import { registerFirefoxInterception } from '@/background/interception/firefox'
 import { registerNativeConfirmation } from '@/background/interception/nativeConfirmation'
@@ -889,6 +894,32 @@ if (__BROWSER__ === 'chromium' || __BROWSER__ === 'firefox') {
       }),
   })
   registerNativeConfirmation({
+    onHandoffReady: (listener) =>
+      manager.onStateChange((state) => {
+        if (state === 'connected') listener()
+      }),
+    handoffPeer: (endpointId, revision) => {
+      if (!handoffSdk || endpointId !== 'local' || revision !== 0) return
+      return candidateHandoffPeer(
+        manager,
+        handoffSdk,
+        async (target, options) => {
+          const guard = await handoffEndpoints.capture('auto')
+          if (
+            !guard ||
+            guard.endpointId !== endpointId ||
+            (guard.endpointRevision ?? 0) !== revision
+          )
+            throw new Error('Handoff endpoint changed')
+          return prepareConfirmedParams(
+            confirmedDownloadDeps,
+            target,
+            guard,
+            options
+          )
+        }
+      )
+    },
     ...interceptionDeps,
     confirmation: downloadConfirmation,
     actions: (target, guard, beforeSend) =>

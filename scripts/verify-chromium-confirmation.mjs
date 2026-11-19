@@ -9,6 +9,11 @@ import { chromium } from 'playwright-core'
 import { build } from 'vite'
 import { createMdxpSimulator } from './fixtures/mdxp-simulator.mjs'
 import {
+  buildPairedFixture,
+  pairedMode,
+  runPairedBrowser,
+} from './fixtures/paired-browser-driver.mjs'
+import {
   buildClickScript,
   clickCases,
   clickScript,
@@ -17,7 +22,12 @@ import {
 import { createTakeoverOrigin } from './fixtures/takeover-origin.mjs'
 
 const root = resolve(import.meta.dirname, '..')
-const temp = await mkdtemp(join(tmpdir(), 'motrix-chromium-confirm-'))
+const temp = await mkdtemp(
+  join(
+    resolve(process.env.TAKEOVER_TEMP_ROOT ?? tmpdir()),
+    'motrix-chromium-confirm-'
+  )
+)
 const ext = join(temp, 'extension'),
   profile = join(temp, 'profile'),
   downloads = join(temp, 'downloads')
@@ -30,24 +40,26 @@ try {
     mkdir(join(profile, 'Default'), { recursive: true }),
     mkdir(downloads),
   ])
-  await build({
-    configFile: false,
-    root,
-    publicDir: false,
-    define: { 'process.env.NODE_ENV': JSON.stringify('production') },
-    logLevel: 'error',
-    resolve: { alias: { '@': join(root, 'src') } },
-    build: {
-      outDir: ext,
-      emptyOutDir: false,
-      lib: {
-        entry: join(root, 'scripts/fixtures/firefox-takeover.ts'),
-        name: 'fixture',
-        formats: ['iife'],
-        fileName: () => 'fixture.js',
+  if (pairedMode) await buildPairedFixture(root, ext, 'chromium')
+  else
+    await build({
+      configFile: false,
+      root,
+      publicDir: false,
+      define: { 'process.env.NODE_ENV': JSON.stringify('production') },
+      logLevel: 'error',
+      resolve: { alias: { '@': join(root, 'src') } },
+      build: {
+        outDir: ext,
+        emptyOutDir: false,
+        lib: {
+          entry: join(root, 'scripts/fixtures/firefox-takeover.ts'),
+          name: 'fixture',
+          formats: ['iife'],
+          fileName: () => 'fixture.js',
+        },
       },
-    },
-  })
+    })
   await buildClickScript(root, ext)
   await writeFile(
     join(ext, 'manifest.json'),
@@ -92,18 +104,45 @@ try {
   const cdp = await ctx.newCDPSession(page)
   await cdp.send('Browser.setDownloadBehavior', { behavior: 'default' })
   await page.goto(new URL('runner.html', worker.url()).href)
-  await page.waitForFunction(() => typeof window.runCase === 'function')
-  for (const name of [
-    ...clickCases,
-    'early-confirm-accept',
-    'early-confirm-cancel',
-    'early-confirm-browser',
-    'early-confirm-rejected',
-    'early-confirm-unavailable',
-    'early-protected',
-    'early-protected-direct',
-    'confirm',
-  ]) {
+  if (pairedMode) {
+    await page.waitForFunction(
+      () => typeof window.beginPairedHandoff === 'function'
+    )
+    await runPairedBrowser({
+      browser: 'chromium',
+      browserVersion: ctx.browser().version(),
+      origin: baseUrl,
+      requests,
+      evaluate: (expression) => page.evaluate(expression),
+      enterCode: async (code) => {
+        await page.locator('#pair-code').fill(code)
+        await page.getByRole('button', { name: 'Pair', exact: true }).click()
+      },
+      clickDownload: async (name) => {
+        const end = Date.now() + 5000
+        let tab
+        while (!tab && Date.now() < end) {
+          tab = ctx.pages().find((p) => p.url().includes(`/start/${name}`))
+          if (!tab) await new Promise((r) => setTimeout(r, 20))
+        }
+        assert.ok(tab, name)
+        await tab.getByRole('link', { name: 'Download' }).click()
+      },
+    })
+  } else await page.waitForFunction(() => typeof window.runCase === 'function')
+  for (const name of pairedMode
+    ? []
+    : [
+        ...clickCases,
+        'early-confirm-accept',
+        'early-confirm-cancel',
+        'early-confirm-browser',
+        'early-confirm-rejected',
+        'early-confirm-unavailable',
+        'early-protected',
+        'early-protected-direct',
+        'confirm',
+      ]) {
     const opened = ctx.waitForEvent('page')
     const run = page.evaluate((input) => window.runCase(input), {
       name,
