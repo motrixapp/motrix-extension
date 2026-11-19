@@ -60,7 +60,7 @@ const saveReport = () =>
   )
 await saveReport()
 const temporary = await mkdtemp(
-  join(process.env.TAKEOVER_TEMP_ROOT ?? tmpdir(), 'firefox-takeover-')
+  join(resolve(process.env.TAKEOVER_TEMP_ROOT ?? tmpdir()), 'firefox-takeover-')
 )
 const extension = join(temporary, 'extension')
 const profile = join(temporary, 'profile')

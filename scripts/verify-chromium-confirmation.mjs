@@ -23,7 +23,10 @@ import { createTakeoverOrigin } from './fixtures/takeover-origin.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const temp = await mkdtemp(
-  join(process.env.TAKEOVER_TEMP_ROOT ?? tmpdir(), 'motrix-chromium-confirm-')
+  join(
+    resolve(process.env.TAKEOVER_TEMP_ROOT ?? tmpdir()),
+    'motrix-chromium-confirm-'
+  )
 )
 const ext = join(temp, 'extension'),
   profile = join(temp, 'profile'),
