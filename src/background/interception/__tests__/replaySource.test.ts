@@ -63,3 +63,12 @@ it('leaves ambiguous, redirected-in and unknown downloads in the browser', () =>
   s.request('post', stable, 'POST')
   expect(s.lookup({ url: stable })).toBeNull()
 })
+
+it('waits for late headers only for the already observed public request', async () => {
+  const s = setup()
+  expect(await s.lookup.waitForResponse({ url: signed })).toBeNull()
+  s.request('late', stable)
+  const evidence = s.lookup.waitForResponse({ url: stable })
+  s.response('late', stable)
+  expect((await evidence)?.url).toBe(stable)
+})

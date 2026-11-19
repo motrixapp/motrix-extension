@@ -35,7 +35,13 @@ export function createTakeoverOrigin() {
       return
     }
     const list = requests.get(name) ?? []
-    list.push({ method: request.method, range: request.headers.range ?? null })
+    list.push({
+      method: request.method,
+      range: request.headers.range ?? null,
+      ...(name?.startsWith('paired-')
+        ? { fromEngine: request.headers['x-motrix-fixture'] === 'paired' }
+        : {}),
+    })
     requests.set(name, list)
     if (
       ['confirm', 'early-protected', 'early-protected-direct'].includes(name) &&
@@ -48,6 +54,7 @@ export function createTakeoverOrigin() {
       name === 'confirm' ||
       name?.startsWith('early-protected') ||
       name?.startsWith('early-confirm-') ||
+      name?.startsWith('paired-') ||
       name?.startsWith('click-')
         ? 1024 * 1024
         : ['small', 'early-small'].includes(name)
@@ -69,7 +76,7 @@ export function createTakeoverOrigin() {
       return
     }
     const resume =
-      name?.startsWith('early-confirm-') &&
+      (name?.startsWith('early-confirm-') || name?.startsWith('paired-')) &&
       /^bytes=(\d+)-$/.exec(request.headers.range ?? '')
     const offset = resume ? Number(resume[1]) : 0
     if (request.headers.range && (!resume || offset >= size)) {
@@ -77,7 +84,7 @@ export function createTakeoverOrigin() {
       return
     }
     response.writeHead(resume ? 206 : 200, {
-      ...(name?.startsWith('early-confirm-')
+      ...(name?.startsWith('early-confirm-') || name?.startsWith('paired-')
         ? { 'Accept-Ranges': 'bytes', ETag: '"fixture-file"' }
         : {}),
       ...(resume

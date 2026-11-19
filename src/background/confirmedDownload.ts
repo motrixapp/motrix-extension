@@ -5,13 +5,15 @@ import type {
   DownloadConfirmationService,
 } from '@/background/DownloadConfirmationService'
 import type { DownloadSubmissionService } from '@/background/DownloadSubmissionService'
+import { DownloadPreparationError } from '@/background/download-errors'
 import { notifySafely } from '@/background/handoff/delivery'
 import type { HandoffGuard } from '@/background/handoff/guard'
 import { makeOps, type OpsDeps } from '@/background/handoff/makeOps'
 import { i18n } from '@/shared/i18n'
+import { DOWNLOAD_ERROR } from '@/shared/integration'
 import { supportsBrowserDownload } from '@/shared/platformCapabilities'
 import { hostOf, isMagnetUrl, type TakeoverTarget } from '@/shared/takeover'
-import { applyTaskOptions } from '@/shared/taskOptions'
+import { applyTaskOptions, type TaskOptions } from '@/shared/taskOptions'
 
 export type ConfirmedDownloadDeps = Pick<
   OpsDeps,
@@ -19,6 +21,35 @@ export type ConfirmedDownloadDeps = Pick<
 > & {
   confirmation: Pick<DownloadConfirmationService, 'request'>
   submissions: Pick<DownloadSubmissionService, 'run'>
+}
+
+export async function prepareConfirmedParams(
+  deps: ConfirmedDownloadDeps,
+  target: TakeoverTarget,
+  guard: HandoffGuard,
+  options: TaskOptions
+) {
+  guard.assertCurrent()
+  if (
+    options.directory &&
+    (options.directory.endpointId !== guard.endpointId ||
+      options.directory.endpointRevision !== (guard.endpointRevision ?? 0))
+  )
+    throw new DownloadPreparationError(DOWNLOAD_ERROR.contextChanged)
+  const ops = makeOps({
+    ...deps,
+    guard,
+    taskOptions: options,
+    cancelNative: async () => {},
+    fallbackToBrowser: async () => {},
+    confirmSensitive: async () => true,
+  })
+  const cookies =
+    isMagnetUrl(target.url) || ops.isSensitive(hostOf(target.url))
+      ? []
+      : await ops.captureCookies(target.url)
+  guard.assertCurrent()
+  return applyTaskOptions(buildSubmitParams(target, cookies, {}), options)
 }
 
 export function createConfirmedDownloadActions(
@@ -41,27 +72,18 @@ export function createConfirmedDownloadActions(
         async ({ assertCurrent }) => {
           guard.assertCurrent()
           assertCurrent()
-          const ops = makeOps({
-            ...deps,
+          const params = await prepareConfirmedParams(
+            deps,
+            target,
             guard,
-            taskOptions: options,
-            cancelNative: async () => {},
-            fallbackToBrowser: async () => {},
-            confirmSensitive: async () => true,
-          })
-          const cookies =
-            isMagnetUrl(target.url) || ops.isSensitive(hostOf(target.url))
-              ? []
-              : await ops.captureCookies(target.url)
+            options
+          )
           guard.assertCurrent()
           assertCurrent()
           await beforeSend?.()
           guard.assertCurrent()
           assertCurrent()
-          return applyTaskOptions(
-            buildSubmitParams(target, cookies, {}),
-            options
-          )
+          return params
         }
       )
     },

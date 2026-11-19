@@ -6,6 +6,7 @@ export async function waitForFirefoxFixture(
   command,
   runnerUrl,
   {
+    expression = READY_EXPRESSION,
     timeoutMs = 10_000,
     now = Date.now,
     sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
@@ -20,7 +21,7 @@ export async function waitForFirefoxFixture(
     )?.context
     if (context) {
       const response = await command('script.evaluate', {
-        expression: READY_EXPRESSION,
+        expression,
         target: { context },
         awaitPromise: false,
         resultOwnership: 'none',

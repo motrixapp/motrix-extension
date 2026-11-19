@@ -11,6 +11,11 @@ import { build } from 'vite'
 import { waitForFirefoxFixture } from './fixtures/firefox-readiness.mjs'
 import { createMdxpSimulator } from './fixtures/mdxp-simulator.mjs'
 import {
+  buildPairedFixture,
+  pairedMode,
+  runPairedBrowser,
+} from './fixtures/paired-browser-driver.mjs'
+import {
   buildClickScript,
   clickScript,
   verifyClickResult,
@@ -29,12 +34,17 @@ const appLog = (directory) => join(directory, 'launch-services.log')
 const root = resolve(import.meta.dirname, '..')
 const reportDirectory = resolve(
   process.env.TAKEOVER_REPORT_DIR ??
-    join(root, '.cache/firefox-takeover-report')
+    join(
+      root,
+      pairedMode
+        ? '.cache/paired-handoff/firefox-runtime'
+        : '.cache/firefox-takeover-report'
+    )
 )
 const report = {
   schemaVersion: 1,
-  suite: 'firefox-browser-integration',
-  backend: 'mdxp-simulator',
+  suite: pairedMode ? 'paired-download-handoff' : 'firefox-browser-integration',
+  backend: pairedMode ? 'MBP1 WebSocket + SQLite + aria2' : 'mdxp-simulator',
   revision: process.env.GITHUB_SHA ?? null,
   status: 'running',
   startedAt: new Date().toISOString(),
@@ -84,26 +94,28 @@ const command = (method, params) =>
 try {
   await mkdir(extension)
   await mkdir(profile)
-  await build({
-    configFile: false,
-    root,
-    define: {
-      'process.env.NODE_ENV': JSON.stringify('production'),
-      __BROWSER__: JSON.stringify('firefox'),
-    },
-    logLevel: 'error',
-    resolve: { alias: { '@': join(root, 'src') } },
-    build: {
-      outDir: extension,
-      emptyOutDir: false,
-      lib: {
-        entry: join(root, 'scripts/fixtures/firefox-takeover.ts'),
-        formats: ['iife'],
-        name: 'fixture',
-        fileName: () => 'fixture.js',
+  if (pairedMode) await buildPairedFixture(root, extension, 'firefox')
+  else
+    await build({
+      configFile: false,
+      root,
+      define: {
+        'process.env.NODE_ENV': JSON.stringify('production'),
+        __BROWSER__: JSON.stringify('firefox'),
       },
-    },
-  })
+      logLevel: 'error',
+      resolve: { alias: { '@': join(root, 'src') } },
+      build: {
+        outDir: extension,
+        emptyOutDir: false,
+        lib: {
+          entry: join(root, 'scripts/fixtures/firefox-takeover.ts'),
+          formats: ['iife'],
+          name: 'fixture',
+          fileName: () => 'fixture.js',
+        },
+      },
+    })
   await buildClickScript(root, extension)
   await writeFile(
     join(extension, 'manifest.json'),
@@ -268,25 +280,89 @@ try {
   }
   const context = await waitForFirefoxFixture(
     command,
-    `moz-extension://${uuid}/runner.html`
+    `moz-extension://${uuid}/runner.html`,
+    pairedMode
+      ? { expression: 'typeof beginPairedHandoff==="function"' }
+      : undefined
   )
-  const receiverResponse = await command('script.evaluate', {
-    expression: `checkFetchReceiver(${JSON.stringify(baseUrl)}).then(JSON.stringify)`,
-    target: { context },
-    awaitPromise: true,
-    resultOwnership: 'none',
-  })
-  assert.equal(
-    receiverResponse.type,
-    'success',
-    JSON.stringify(receiverResponse)
-  )
-  const receiver = JSON.parse(receiverResponse.result.value)
-  console.log(JSON.stringify({ fetchReceiver: receiver }))
-  assert.match(receiver.unboundError, /Window|Illegal invocation|incompatible/)
-  assert.equal(receiver.boundStatus, 404)
-  report.fetchReceiver = 'passed'
-  for (const name of FIREFOX_CASES) {
+  if (pairedMode) {
+    async function evaluate(expression) {
+      const result = await command('script.evaluate', {
+        expression: `(async()=>JSON.stringify(await (${expression})))()`,
+        target: { context },
+        awaitPromise: true,
+        resultOwnership: 'none',
+      })
+      if (result.type !== 'success')
+        throw Error(result.exceptionDetails?.text ?? 'Firefox fixture error')
+      return result.result.value ? JSON.parse(result.result.value) : undefined
+    }
+    const paired = await runPairedBrowser({
+      browser: 'firefox',
+      browserVersion: report.browserVersion,
+      origin: baseUrl,
+      requests,
+      evaluate,
+      clickDownload: async (name) => {
+        let target
+        const end = Date.now() + 5000
+        while (!target && Date.now() < end) {
+          const tree = await command('browsingContext.getTree', {})
+          target = tree.contexts.find((t) =>
+            t.url.startsWith(`${baseUrl}/start/${name}`)
+          )?.context
+          if (!target) await delay(30)
+        }
+        assert.ok(target, name)
+        await command('script.evaluate', {
+          expression: "document.querySelector('a').focus()",
+          target: { context: target },
+          awaitPromise: false,
+          resultOwnership: 'none',
+        })
+        await command('input.performActions', {
+          context: target,
+          actions: [
+            {
+              type: 'key',
+              id: 'keyboard',
+              actions: [
+                { type: 'keyDown', value: '\uE007' },
+                { type: 'keyUp', value: '\uE007' },
+              ],
+            },
+          ],
+        })
+      },
+      enterCode: async (code) => {
+        await evaluate(
+          `(async()=>{const end=Date.now()+5000;while(!document.querySelector('#pair-code')&&Date.now()<end)await new Promise(r=>setTimeout(r,20));const input=document.querySelector('#pair-code');input.value=${JSON.stringify(code)};input.form.requestSubmit();return true})()`
+        )
+      },
+    })
+    Object.assign(report, paired, { suite: 'paired-download-handoff' })
+  } else {
+    const receiverResponse = await command('script.evaluate', {
+      expression: `checkFetchReceiver(${JSON.stringify(baseUrl)}).then(JSON.stringify)`,
+      target: { context },
+      awaitPromise: true,
+      resultOwnership: 'none',
+    })
+    assert.equal(
+      receiverResponse.type,
+      'success',
+      JSON.stringify(receiverResponse)
+    )
+    const receiver = JSON.parse(receiverResponse.result.value)
+    console.log(JSON.stringify({ fetchReceiver: receiver }))
+    assert.match(
+      receiver.unboundError,
+      /Window|Illegal invocation|incompatible/
+    )
+    assert.equal(receiver.boundStatus, 404)
+    report.fetchReceiver = 'passed'
+  }
+  for (const name of pairedMode ? [] : FIREFOX_CASES) {
     activeCase = { name, status: 'running' }
     report.cases.push(activeCase)
     await saveReport()
@@ -535,12 +611,14 @@ try {
     activeCase.status = 'passed'
     await saveReport()
   }
-  report.status = 'passed'
-  verifyTakeoverReport(report, {
-    revision: process.env.GITHUB_SHA,
-    browser: process.env.EXPECTED_FIREFOX_VERSION,
-  })
-  console.log('Firefox native takeover regression: PASS')
+  if (!pairedMode) {
+    report.status = 'passed'
+    verifyTakeoverReport(report, {
+      revision: process.env.GITHUB_SHA,
+      browser: process.env.EXPECTED_FIREFOX_VERSION,
+    })
+    console.log('Firefox native takeover regression: PASS')
+  }
 } catch (error) {
   report.status = 'failed'
   report.error = error.stack ?? String(error)

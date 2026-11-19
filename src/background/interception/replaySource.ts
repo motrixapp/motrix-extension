@@ -33,6 +33,7 @@ export function observeReplaySources(
     response?: ReplaySource
     blocked: boolean
   }
+  const waiting = new Map<string, Set<() => void>>()
   const candidates = new Map<string, Record>()
   const redirected = new Map<string, number>()
   let ambiguousUntil = 0
@@ -107,11 +108,12 @@ export function observeReplaySources(
         size: size > 0 ? size : undefined,
         mime: header('content-type'),
       }
+      for (const notify of waiting.get(d.requestId) ?? []) notify()
     },
     filter,
     ['responseHeaders']
   )
-  return (item: ReplayItem): ReplaySource | null => {
+  const lookup = (item: ReplayItem): ReplaySource | null => {
     prune()
     if (Date.now() < ambiguousUntil) return null
     // A signed landing URL opened independently must not inherit a previous
@@ -143,4 +145,38 @@ export function observeReplaySources(
         response.allowed() && !protectedUrl('source', item.referrer),
     }
   }
+  // Firefox can deliver onCreated between onBeforeRequest and onHeadersReceived.
+  // Only wait for one already recognized request, without pausing or probing it.
+  async function waitForResponse(
+    item: ReplayItem
+  ): Promise<ReplaySource | null> {
+    const immediate = lookup(item)
+    if (immediate) return immediate
+    const matching = [...candidates].filter(
+      ([, r]) =>
+        r.initial === item.url && (!item.finalUrl || r.final === item.finalUrl)
+    )
+    const entry = matching[0]
+    if (
+      matching.length !== 1 ||
+      !entry ||
+      entry[1].blocked ||
+      entry[1].response
+    )
+      return null
+    const [id] = entry
+    return new Promise((resolve) => {
+      const set = waiting.get(id) ?? new Set()
+      const finish = () => {
+        clearTimeout(timer)
+        set.delete(finish)
+        if (!set.size) waiting.delete(id)
+        resolve(lookup(item))
+      }
+      const timer = setTimeout(finish, 500)
+      set.add(finish)
+      waiting.set(id, set)
+    })
+  }
+  return Object.assign(lookup, { waitForResponse })
 }

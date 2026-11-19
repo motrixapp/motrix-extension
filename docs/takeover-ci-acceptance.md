@@ -87,3 +87,21 @@ PR #45 已于 2026-10-02 合并为 `0c119e6`。本次优化从该提交单独建
 本次交付是故障处理和验收基础。浏览器保留原请求、prepare/commit/status/abort
 协议及服务端持久账本、完整 UI 和 Chromium E2E 仍在后续范围，不能将本次通过
 理解为整个事务交接方案已经完成。确认继续由扩展负责。
+
+
+## 本地真实配对及暂停交接
+
+在候选 MDXP 工作目录完成构建后，从扩展仓库运行。Chrome 需支持加载临时扩展（如 Chrome for Testing）；macOS 上的 Firefox 可用 `FIREFOX_APP=/Applications/Firefox.app` 指定。
+
+```sh
+export MOTRIX_HOST_DIR=../Motrix
+export MOTRIX_HANDOFF_SDK=../mdxp-handoff-contract
+pnpm test:chromium-confirmation --paired-handoff
+pnpm test:firefox-takeover --paired-handoff
+```
+
+这两个入口启动独立的本机 MBP1 监听器、SQLite 数据库和 aria2。浏览器从空 profile 开始，通过宿主的操作员提示输入本次生成的配对码，在加密 WebSocket 的 initialize 响应中取得账本实例和接管能力。验收驱动使用生产确认表单；配对码只在隔离测试驱动内传递。已配对客户端的 prepare／commit／status／abort 全部经过真实网络调度及认证会话。
+
+每个浏览器验证五种选择或故障：选 Motrix、选浏览器、取消、prepare 明确拒绝、commit 写库后实际断开 WebSocket。检查同一原生下载 ID 的暂停与终态、配对次数、重连后的任务 ID、账本状态、引擎请求和文件摘要。拒绝后 abort 建立终止记录，浏览器恢复原项；已确认停止后丢回执则重连原实例查询 status。Firefox 恢复原 ID 时可发送 Range。逐项证据默认写入 `.cache/paired-handoff/`，可用 `PAIRED_REPORT_DIR` 指定其他本地目录。
+
+本地候选 Chromium／Firefox 构建可设置 `MOTRIX_LOCAL_HANDOFF_SDK` 为已构建候选 SDK 的工作目录。常规构建保留原协议，Web Store 构建忽略这个本地开关。宿主只对显式装配完整账本模块的扩展会话宣告能力。该验收覆盖本机类型的 MBP1 WebSocket，远端 Server 的 WSS、账户与凭据转发策略仍有独立门禁。

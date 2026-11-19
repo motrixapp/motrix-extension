@@ -890,8 +890,46 @@ export class ConnectionManager {
     }))
   }
 
-  /** Capabilities reported by the server during initialize handshake; null
-   *  until the first successful handshake. */
+  private localHandoffPrincipal: string | undefined
+  private localHandoffAdvertisement: unknown
+  /** Only an authenticated local session can carry the candidate handoff. */
+  getLocalHandoffChannel() {
+    const conn = this.currentConn
+    const generation = this.generation
+    if (
+      !conn ||
+      this.state !== 'connected' ||
+      this.currentEndpointScope?.activeEndpointId !== 'local' ||
+      this.currentEndpointScope.endpointConfig.mode !== 'local' ||
+      !this.localHandoffAdvertisement ||
+      !this.localHandoffPrincipal ||
+      !this.serverIdentity?.instanceId
+    )
+      return null
+    return {
+      bindingId: JSON.stringify([
+        this.serverIdentity.instanceId,
+        this.localHandoffPrincipal,
+      ]),
+      advertisement: this.localHandoffAdvertisement,
+      request: async (
+        method: `download/handoff.${'prepare' | 'commit' | 'abort' | 'status'}`,
+        params: unknown
+      ) => {
+        this.ensureCurrentConnection(generation, conn)
+        // Mutations are never retried by generic RPC recovery. Only the
+        // coordinator can decide between status, abort and same-key commit.
+        const result = await rpcDeadline(
+          conn.raw.sendRequest(method, params),
+          8000,
+          'download handoff'
+        )
+        this.ensureCurrentConnection(generation, conn)
+        return result
+      },
+    }
+  }
+
   getServerCapabilities(): {
     ffmpegAvailable: boolean
     selectionKinds: string[]
@@ -928,6 +966,9 @@ export class ConnectionManager {
           'Motrix runtime changed during capability refresh'
         )
       }
+      this.localHandoffAdvertisement = (
+        rawResult as { capabilities?: { downloadHandoff?: unknown } }
+      )?.capabilities?.downloadHandoff
       this.captureCapabilities(result.capabilities)
       return this.getServerCapabilities()
     })()
@@ -1659,6 +1700,8 @@ export class ConnectionManager {
     this.currentEndpointScope = null
     this.currentAuthenticatedInstanceId = null
     this.serverCapabilities = null
+    this.localHandoffPrincipal = undefined
+    this.localHandoffAdvertisement = undefined
     this.initializeRequest = null
     this.capabilitiesRefreshFlight = null
     this.serverIdentity = null
@@ -1930,6 +1973,11 @@ export class ConnectionManager {
       clientInstallationId: await getClientInstallationId(),
     }
     this.ensureCurrentAttempt(generation)
+    this.localHandoffPrincipal = JSON.stringify([
+      principal.browser,
+      principal.verifiedOrigin,
+      principal.clientInstallationId,
+    ])
 
     // §6.7 MAY-level housekeeping, run at the point the store is actually
     // about to be loaded for this attempt: age out `unacked` provisionals
@@ -2516,6 +2564,9 @@ export class ConnectionManager {
         ? {}
         : { instanceId: authenticatedInstanceId }),
     }
+    this.localHandoffAdvertisement = (
+      rawResult as { capabilities?: { downloadHandoff?: unknown } }
+    )?.capabilities?.downloadHandoff
     this.captureCapabilities(result.capabilities)
     this.initializeRequest = { conn, params: initializeParams }
     conn.sendNotification(Notifications.MotrixInitialized, undefined)
@@ -2690,6 +2741,8 @@ export class ConnectionManager {
     this.currentEndpointScope = null
     this.currentAuthenticatedInstanceId = null
     this.serverCapabilities = null
+    this.localHandoffPrincipal = undefined
+    this.localHandoffAdvertisement = undefined
     this.initializeRequest = null
     this.capabilitiesRefreshFlight = null
     this.serverIdentity = null

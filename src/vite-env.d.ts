@@ -14,3 +14,10 @@ declare module 'virtual:motrix-youtube-sniffer-script' {
   const scriptPath: string | null
   export default scriptPath
 }
+
+declare module 'virtual:local-handoff-sdk' {
+  const sdk:
+    | import('@/background/interception/candidatePeer').CandidateSdk
+    | null
+  export default sdk
+}

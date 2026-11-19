@@ -8,12 +8,19 @@ import type { HandoffGuard } from '@/background/handoff/guard'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
 import { confirmInterceptedDownload } from '@/background/interception/confirmDownload'
 import { isEligibleDownload } from '@/background/interception/eligibility'
+import {
+  FencedHandoffError,
+  type NativeHandoffPeer,
+  reconcileHandoff,
+  submitPausedHandoff,
+} from '@/background/interception/pausedHandoff'
 import type {
   ReplayItem,
   ReplaySource,
 } from '@/background/interception/replaySource'
 import { decideTakeover } from '@/background/policy/decideTakeover'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
+import { getBuildBrowser } from '@/shared/browserKind'
 import type { DownloadOperation } from '@/shared/integration'
 import type { TakeoverTarget } from '@/shared/takeover'
 
@@ -22,6 +29,16 @@ const leaseSchema = z.object({
   id: z.number().int(),
   startTime: z.string(),
   phase: z.enum(['editing', 'submitting', 'accepted']),
+  handoff: z
+    .object({
+      instanceId: z.uuid(),
+      bindingId: z.string(),
+      taskId: z.string().optional(),
+      id: z.uuid(),
+      hash: z.string().regex(/^[0-9a-f]{64}$/),
+      phase: z.enum(['preparing', 'stopping', 'stopped']),
+    })
+    .optional(),
   endpointId: z.string(),
   revision: z.number(),
   operationId: z.string().optional(),
@@ -32,7 +49,14 @@ type NativeDeps = Pick<
   ChromiumInterceptionDeps,
   'popup' | 'getConfig' | 'captureGuard' | 'selfExtensionId'
 > & {
-  replaySource(item: ReplayItem): ReplaySource | null
+  onHandoffReady?: (listener: () => void) => void
+  handoffPeer?: (
+    endpointId: string,
+    revision: number
+  ) => NativeHandoffPeer | undefined
+  replaySource: ((item: ReplayItem) => ReplaySource | null) & {
+    waitForResponse?: (item: ReplayItem) => Promise<ReplaySource | null>
+  }
   confirmation: Pick<
     DownloadConfirmationService,
     'request' | 'dismissPausedDownloads'
@@ -51,17 +75,31 @@ async function live(lease: Lease) {
   return item?.startTime === lease.startTime ? item : undefined
 }
 
-async function release(lease: Lease, store: Store, cancel: boolean) {
+function held(item: Awaited<ReturnType<typeof live>>) {
+  return (
+    item?.paused &&
+    (item.state === 'in_progress' ||
+      (item.state === 'interrupted' && item.canResume))
+  )
+}
+
+async function release(
+  lease: Lease,
+  store: Store,
+  cancel: boolean,
+  retainLease = false
+) {
   const item = await live(lease)
-  if (item?.paused && item.state !== 'complete') {
+  if (held(item)) {
     if (cancel) {
       await browser.downloads.cancel(lease.id)
       const stopped = await live(lease)
       if (
-        stopped &&
-        ((stopped.paused && stopped.canResume) ||
-          stopped.state !== 'interrupted' ||
-          stopped.error !== 'USER_CANCELED')
+        (retainLease && !stopped) ||
+        (stopped &&
+          ((stopped.paused && stopped.canResume) ||
+            stopped.state !== 'interrupted' ||
+            stopped.error !== 'USER_CANCELED'))
       )
         throw new Error('native cancellation unconfirmed')
     } else {
@@ -79,19 +117,61 @@ async function release(lease: Lease, store: Store, cancel: boolean) {
         await new Promise((resolve) => setTimeout(resolve, 40))
       }
     }
-  } else if (cancel && item && item.state !== 'interrupted') {
+  } else if (
+    cancel &&
+    (retainLease || (item && item.state !== 'interrupted'))
+  ) {
     throw new Error('original download no longer held')
   }
-  await store.remove(PREFIX + lease.id)
+  if (!retainLease) await store.remove(PREFIX + lease.id)
 }
 
-async function recover(store: Store, deps: NativeDeps) {
+async function recover(
+  store: Store,
+  deps: NativeDeps,
+  retry?: ReadonlySet<number>
+) {
   for (const [key, value] of Object.entries(await store.get(null))) {
     if (!key.startsWith(PREFIX)) continue
     const parsed = leaseSchema.safeParse(value)
     if (!parsed.success || key !== PREFIX + parsed.data.id) continue
     const lease = parsed.data
+    if (retry && (!lease.handoff || retry.has(lease.id))) continue
     try {
+      if (lease.handoff) {
+        const settlement = await reconcileHandoff(
+          lease.handoff,
+          deps.handoffPeer?.(lease.endpointId, lease.revision),
+          async () => {
+            const item = await live(lease)
+            return (
+              !item ||
+              (item.state === 'interrupted' &&
+                item.error === 'USER_CANCELED' &&
+                !held(item))
+            )
+          }
+        )
+        if (settlement === 'unknown') {
+          deps.report('unknown')
+          continue
+        }
+        if (settlement === 'browser') {
+          const original = await live(lease)
+          if (
+            lease.handoff.phase === 'stopping' &&
+            original?.state === 'interrupted' &&
+            !original.canResume
+          ) {
+            deps.report('cleanup')
+            await store.remove(key)
+          } else await release(lease, store, false)
+        } else {
+          if (settlement === 'stopped') deps.report('cleanup')
+          await store.remove(key)
+        }
+        continue
+      }
       const item = await live(lease)
       if (!item || item.state === 'complete' || !item.paused) {
         await store.remove(key)
@@ -132,12 +212,28 @@ export function registerNativeConfirmation(deps: NativeDeps) {
     recover(browser.storage.local, deps),
     recover(browser.storage.session, deps),
   ])
+  const active = new Set<number>()
+  let recovery = ready
+  deps.onHandoffReady?.(() => {
+    recovery = recovery
+      .catch(() => [])
+      .then(() =>
+        Promise.all([
+          recover(browser.storage.local, deps, active),
+          recover(browser.storage.session, deps, active),
+        ])
+      )
+    void recovery.catch(() => deps.report('unknown'))
+  })
   void ready.catch(() => deps.report('unknown'))
   browser.downloads.onCreated.addListener((item) => {
     if (!isEligibleDownload(item, deps.selfExtensionId)) return
     const window = deps.popup?.captureWindow()
-    void ready
+    if (active.has(item.id)) return
+    active.add(item.id)
+    void recovery
       .then(() => handle(item, window, deps))
+      .finally(() => active.delete(item.id))
       .catch(() => deps.report('cleanup'))
   })
 }
@@ -149,7 +245,9 @@ async function handle(
 ) {
   const cfg = await deps.getConfig()
   if (!cfg.enabled || cfg.downloadMode !== 'confirm') return
-  const source = deps.replaySource(item)
+  const source = deps.replaySource.waitForResponse
+    ? await deps.replaySource.waitForResponse(item)
+    : deps.replaySource(item)
   if (!source) return
   await confirmInterceptedDownload(
     {
@@ -203,7 +301,21 @@ async function holdForDecision(
   }
   const store = item.incognito ? browser.storage.session : browser.storage.local
   const save = () => store.set({ [PREFIX + item.id]: { ...lease } })
-  const before = await live(lease)
+  let before = await live(lease)
+  if (getBuildBrowser() === 'firefox') {
+    // Firefox implements pause by interrupting the transfer. Before the
+    // first bytes arrive it may have no partial data to retain or resume.
+    const deadline = Date.now() + 1500
+    while (
+      before?.state === 'in_progress' &&
+      !before.paused &&
+      !(before.bytesReceived > 0)
+    ) {
+      if (Date.now() >= deadline) return
+      await new Promise((r) => setTimeout(r, 40))
+      before = await live(lease)
+    }
+  }
   if (before?.state !== 'in_progress' || before.paused) return
   const current = async () => {
     const next = await deps.getConfig()
@@ -237,8 +349,7 @@ async function holdForDecision(
     await browser.downloads.pause(item.id)
     const assertPaused = async () => {
       const now = await live(lease)
-      if (!now?.paused || now.state === 'complete')
-        throw new Error('original download no longer paused')
+      if (!held(now)) throw new Error('original download no longer paused')
     }
     await assertPaused()
     await current()
@@ -260,6 +371,26 @@ async function holdForDecision(
             lease.phase = 'submitting'
             lease.operationId = id
             await save()
+            const peer = deps.handoffPeer?.(lease.endpointId, lease.revision)
+            if (peer?.acceptingNew) {
+              const result = await submitPausedHandoff({
+                peer,
+                target,
+                options,
+                check: beforeSend,
+                save: async (record) => {
+                  lease.handoff = record
+                  await save()
+                },
+                stop: () => release(lease, store, true, true),
+              })
+              try {
+                await store.remove(PREFIX + item.id)
+              } catch {
+                deps.report('cleanup')
+              }
+              return result
+            }
             const accepted = await base.submit(options, id)
             lease.phase = 'accepted'
             // The peer already owns this task. Cleanup cannot turn it into a retry.
@@ -274,6 +405,17 @@ async function holdForDecision(
             if (error instanceof DownloadOutcomeUnknownError) {
               deps.report('unknown')
               throw new DownloadOutcomeUnknownError()
+            }
+            if (error instanceof FencedHandoffError && error.stopAttempted) {
+              const original = await live(lease)
+              if (
+                !original ||
+                (original.state === 'interrupted' && !original.canResume)
+              ) {
+                await store.remove(PREFIX + item.id)
+                deps.report('cleanup')
+                throw error
+              }
             }
             lease.phase = 'editing'
             await finish(false)
