@@ -4,7 +4,6 @@ import {
 } from '@/background/capture/contentDisposition'
 import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import { isSensitiveDomain } from '@/background/capture/sensitiveDomains'
-import type { ConfirmationResult } from '@/background/DownloadConfirmationService'
 import { beforeDeadline } from '@/background/download-errors'
 import {
   HandoffEndpointChangedError,
@@ -22,19 +21,12 @@ import {
   type TakeoverTarget,
 } from '@/shared/takeover'
 
-export interface WebRequestEarlyConfirmDeps {
-  confirmRequest: (
-    target: TakeoverTarget,
-    windowId: number | undefined,
-    guard: HandoffGuard
-  ) => Promise<ConfirmationResult>
-}
-
 const EARLY_KEY = 'motrix.earlyTakeover'
 const CONFIG_KEY = 'motrix.takeoverConfig'
 export const EARLY_PREFLIGHT_MS = 1500
 
 interface EarlyRequestDetails {
+  requestId: string
   url: string
   method: string
   statusCode: number
@@ -107,8 +99,7 @@ interface Prepared {
 /** The response has already been cancelled before this function runs. */
 async function submitCancelled(
   prepared: Prepared,
-  deps: ChromiumInterceptionDeps,
-  confirmation: WebRequestEarlyConfirmDeps
+  deps: ChromiumInterceptionDeps
 ): Promise<void> {
   const { target, cfg, guard, windowId } = prepared
   // Cache even a rejected attempt. Neither runHandoff's fallback nor an outer
@@ -123,13 +114,6 @@ async function submitCancelled(
   let owned = false
   try {
     guard.assertCurrent()
-    if (cfg.downloadMode === 'confirm') {
-      const result = await confirmation.confirmRequest(target, windowId, guard)
-      if (result.action === 'unavailable' || result.action === 'unsupported')
-        await fallbackToBrowser()
-      // accepted/browser are owned by confirmation actions; cancel is final.
-      return
-    }
     const result = await runHandoff(
       target,
       makeOps({
@@ -187,8 +171,7 @@ async function submitCancelled(
  * strictly one-use URLs cannot be made replayable by this API.
  */
 export function registerWebRequestEarlyTakeover(
-  deps: ChromiumInterceptionDeps,
-  confirmation: WebRequestEarlyConfirmDeps
+  deps: ChromiumInterceptionDeps
 ): void {
   let earlyEnabled = true
   let generation = 0
@@ -223,7 +206,7 @@ export function registerWebRequestEarlyTakeover(
     if (!earlyEnabled) return null
     const captured = generation
     const cfg = await deps.getConfig()
-    if (!cfg.enabled) return null
+    if (!cfg.enabled || cfg.downloadMode === 'confirm') return null
     const guard = await deps.captureGuard()
     if (!guard) return null
     const tab =
@@ -234,28 +217,35 @@ export function registerWebRequestEarlyTakeover(
     const referrer = details.originUrl ?? details.documentUrl ?? tab?.url
     // This interception path is Firefox-only: header values are raw bytes.
     const suggested = contentDispositionFilename(details.responseHeaders, true)
-    const target = normalizeTarget({
+    const replay = deps.replaySource({
       url: details.url,
+      requestId: details.requestId,
+      referrer,
+    })
+    if (!replay) return null
+    const target = normalizeTarget({
+      url: replay.url,
       ...(referrer ? { referrer } : {}),
       ...(suggested ? { suggestedFilename: suggested } : {}),
       mime: header(details, 'content-type'),
       sizeBytes: Number.isFinite(length) && length > 0 ? length : null,
       origin: 'auto',
     })
-    if (decideTakeover(cfg, target) !== 'motrix') return null
-    if (cfg.downloadMode !== 'confirm') {
-      if (isSensitiveDomain(hostOf(target.url))) return null
-      if (
-        deps.manager.getState() !== 'connected' &&
-        (!(await deps.isPaired()) || !(await deps.gate.shouldAutoConnect()))
-      )
-        return null
-    }
+    if (
+      decideTakeover(cfg, target) !== 'motrix' ||
+      isSensitiveDomain(hostOf(target.url))
+    )
+      return null
+    if (
+      deps.manager.getState() !== 'connected' &&
+      (!(await deps.isPaired()) || !(await deps.gate.shouldAutoConnect()))
+    )
+      return null
     const current: HandoffGuard = {
       ...guard,
       assertCurrent: () => {
         guard.assertCurrent()
-        if (!earlyEnabled || captured !== generation)
+        if (!earlyEnabled || captured !== generation || !replay.allowed())
           throw new HandoffEndpointChangedError()
       },
     }
@@ -282,7 +272,7 @@ export function registerWebRequestEarlyTakeover(
       // Return cancellation before opening the form or starting a fallback.
       // Late preflight completion after a timeout has no side effects.
       setTimeout(() => {
-        void submitCancelled(prepared, deps, confirmation)
+        void submitCancelled(prepared, deps)
       }, 0)
       return { cancel: true }
     } catch {

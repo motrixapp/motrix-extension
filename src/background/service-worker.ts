@@ -20,10 +20,7 @@ import { ConnectionGate } from '@/background/ConnectionGate'
 import type { ConnectionState } from '@/background/ConnectionManager'
 import { ConnectionManager } from '@/background/ConnectionManager'
 import { MediaCredentialStore } from '@/background/capture/MediaCredentialStore'
-import {
-  createConfirmedDownloadActions,
-  requestConfirmedDownload,
-} from '@/background/confirmedDownload'
+import { createConfirmedDownloadActions } from '@/background/confirmedDownload'
 import { createContextMenuDownloadRunner } from '@/background/contextMenu/download'
 import {
   registerContextMenu,
@@ -37,6 +34,9 @@ import { EndpointConfigStore } from '@/background/EndpointConfigStore'
 import { HandoffEndpointTracker } from '@/background/handoff/guard'
 import { registerChromiumInterception } from '@/background/interception/chromium'
 import { registerFirefoxInterception } from '@/background/interception/firefox'
+import { registerNativeConfirmation } from '@/background/interception/nativeConfirmation'
+import { registerReleaseClicks } from '@/background/interception/releaseClick'
+import { observeReplaySources } from '@/background/interception/replaySource'
 import { registerWebRequestEarlyTakeover } from '@/background/interception/webRequestEarly'
 import { makeLocaleChangeHandler } from '@/background/localeSync'
 import { initLogLevel, log } from '@/background/log'
@@ -60,6 +60,7 @@ import { createNotify } from '@/background/notify'
 import { PairingEndpointService } from '@/background/PairingEndpointService'
 import { createPairingCodeSource } from '@/background/pairing-code-source'
 import { PairNudge } from '@/background/pairNudge'
+import { startDownloadProtection } from '@/background/policy/downloadProtection'
 import { createPopupDownloadHandlers } from '@/background/popupDownloads'
 import { clearRemoteBackendPoliciesForAuthority } from '@/background/RemoteBackendPolicyStore'
 import { SafariNotificationTransport } from '@/background/SafariNotificationTransport'
@@ -83,9 +84,10 @@ import {
   CONTROL_PANEL_ACTIVITY_EVENT,
   type ControlPanelActivityEvent,
 } from '@/shared/controlPanelEvents'
-import { initI18n } from '@/shared/i18n'
+import { i18n, initI18n } from '@/shared/i18n'
 import { newDownloadOperationId } from '@/shared/integration'
 import { shouldExcludeHost } from '@/shared/media'
+import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
 import { SAFARI_EXTENSION_ID } from '@/shared/safariNative'
 
 // Build-time constant injected by vite (see vite.config.ts `define`).
@@ -127,6 +129,8 @@ const takeoverConfigStore = new TakeoverConfigStore()
 const autoPopup = createAutoPopup(takeoverConfigStore)
 const downloadConfirmation = createDownloadConfirmation(
   async (target, binding) => {
+    // Older live-response drafts did not record a browser download ID.
+    if (target.origin === 'auto' && !target.nativeDownloadCancelled) return null
     await endpointLifecycleReady
     const guard = await handoffEndpoints.capture(target.origin)
     if (
@@ -832,12 +836,14 @@ void initI18n().then(() => {
 })
 void initLogLevel()
 
+const protectedDownload =
+  __BROWSER__ === 'safari' ? () => true : startDownloadProtection()
+const replaySource =
+  __BROWSER__ === 'safari'
+    ? () => null
+    : observeReplaySources(protectedDownload)
 const interceptionDeps = {
-  confirm: (
-    target: import('@/shared/takeover').TakeoverTarget,
-    windowId: number | undefined,
-    guard: import('@/background/handoff/guard').HandoffGuard
-  ) => requestConfirmedDownload(confirmedDownloadDeps, target, windowId, guard),
+  replaySource,
   popup: autoPopup,
   captureGuard: () => handoffEndpoints.capture('auto'),
   getConfig: async () => {
@@ -851,26 +857,71 @@ const interceptionDeps = {
   notify,
   selfExtensionId: extensionId,
 }
+if (__BROWSER__ === 'chromium' || __BROWSER__ === 'firefox') {
+  registerReleaseClicks({
+    ...interceptionDeps,
+    protected: protectedDownload,
+    available: () =>
+      manager.getState() === 'connected' && supportsAutoOpenPopup(),
+    confirmation: downloadConfirmation,
+    actions: (target, guard, beforeSend) =>
+      createConfirmedDownloadActions(
+        confirmedDownloadDeps,
+        target,
+        guard,
+        beforeSend
+      ),
+    report: (outcome) =>
+      notify({
+        title: i18n.t(
+          outcome === 'unknown'
+            ? 'notify.submitUnknownTitle'
+            : 'notify.browserFallbackTitle'
+        ),
+        message: i18n.t(
+          outcome === 'browser'
+            ? 'notify.browserFallbackUnknownBody'
+            : outcome === 'unknown'
+              ? 'notify.submitUnknownBody'
+              : 'notify.browserFallbackBody'
+        ),
+        severity: 'reminder',
+      }),
+  })
+  registerNativeConfirmation({
+    ...interceptionDeps,
+    confirmation: downloadConfirmation,
+    actions: (target, guard, beforeSend) =>
+      createConfirmedDownloadActions(
+        confirmedDownloadDeps,
+        target,
+        guard,
+        beforeSend
+      ),
+    operations: (endpoint, revision) => submissions.list(endpoint, revision),
+    report: (outcome) =>
+      notify({
+        title: i18n.t(
+          outcome === 'resumed'
+            ? 'notify.browserFallbackTitle'
+            : outcome === 'unknown'
+              ? 'notify.submitUnknownTitle'
+              : 'notify.taskDetailsBody'
+        ),
+        message: i18n.t(
+          outcome === 'resumed'
+            ? 'notify.browserFallbackBody'
+            : outcome === 'unknown'
+              ? 'notify.submitUnknownBody'
+              : 'notify.browserFallbackUnknownBody'
+        ),
+        severity: 'reminder',
+      }),
+  })
+}
 if (__BROWSER__ === 'firefox') {
   registerFirefoxInterception(interceptionDeps)
-  registerWebRequestEarlyTakeover(interceptionDeps, {
-    confirmRequest: (
-      target: import('@/shared/takeover').TakeoverTarget,
-      windowId: number | undefined,
-      guard: import('@/background/handoff/guard').HandoffGuard
-    ) =>
-      downloadConfirmation.request(
-        target,
-        windowId,
-        createConfirmedDownloadActions(confirmedDownloadDeps, target, guard),
-        guard.endpointId
-          ? {
-              endpointId: guard.endpointId,
-              endpointRevision: guard.endpointRevision ?? 0,
-            }
-          : undefined
-      ),
-  })
+  registerWebRequestEarlyTakeover(interceptionDeps)
 } else if (__BROWSER__ === 'chromium') {
   registerChromiumInterception(interceptionDeps)
 }

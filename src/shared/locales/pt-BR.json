@@ -167,7 +167,9 @@
       "consentCancel": "Cancelar",
       "consentConfirm": "Ativar",
       "consentDialogLabel": "Enviar downloads ao Motrix?",
-      "denylistLabel": "Lista de exclusão (um host por linha — sempre fica no navegador)",
+      "denylistInvalid": "Digite um domínio ou link HTTP(S) por linha.",
+      "releaseClick": "Perguntar antes de solicitar instaladores em motrix.app",
+      "denylistLabel": "Lista de proteção pessoal (um domínio por linha, incluindo subdomínios)",
       "enableAria": "Ativar captura de downloads",
       "enableLabel": "Enviar downloads compatíveis ao Motrix",
       "loading": "Carregando configurações de captura…",
@@ -522,6 +524,7 @@
       "browserHint": "Os downloads pelo navegador usam as configurações de nome de arquivo e solicitação do próprio navegador.",
       "unavailable": "Não foi possível abrir a confirmação. Conclua o formulário aberto e tente novamente. Nenhum download foi iniciado.",
       "close": "Fechar",
+      "pausedDescription": "O download do navegador está pausado enquanto você escolhe.",
       "interceptedDescription": "O navegador já iniciou este download. O Motrix solicitará o link novamente, o que pode falhar com links de uso único. O download original continua e pode gerar um arquivo duplicado.",
       "earlyInterceptedDescription": "A solicitação original do navegador foi cancelada. Continuar com o Motrix ou o navegador solicita o link novamente; links de uso único podem falhar.",
       "keepBrowser": "Manter download do navegador"

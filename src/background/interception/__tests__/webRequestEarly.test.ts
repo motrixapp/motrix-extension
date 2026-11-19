@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import type { ConfirmationResult } from '@/background/DownloadConfirmationService'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
 import { extensionBrowser as browser } from '@/shared/browser'
 import { TAKEOVER_DEFAULT, type TakeoverConfig } from '@/shared/takeover'
@@ -15,15 +14,6 @@ let cfg: TakeoverConfig
 let stored: Record<string, unknown>
 let download: ReturnType<typeof vi.fn>
 let submit: ReturnType<typeof vi.fn>
-let confirm: ReturnType<
-  typeof vi.fn<
-    (
-      target: unknown,
-      windowId: unknown,
-      guard: unknown
-    ) => Promise<ConfirmationResult>
-  >
->
 let deps: ChromiumInterceptionDeps
 
 beforeEach(() => {
@@ -33,7 +23,6 @@ beforeEach(() => {
   stored = {}
   download = vi.fn(async () => 1)
   submit = vi.fn(async () => ({ taskId: 'task' }))
-  confirm = vi.fn(async () => ({ action: 'cancel' }))
   Object.assign(browser, {
     downloads: { download },
     tabs: {
@@ -53,6 +42,10 @@ beforeEach(() => {
     change = fn
   })
   deps = {
+    replaySource: (i: { url: string; finalUrl?: string }) => ({
+      url: i.finalUrl || i.url,
+      allowed: () => true,
+    }),
     captureGuard: async () => ({ origin: 'auto', assertCurrent() {} }),
     getConfig: async () => cfg,
     manager: {
@@ -87,7 +80,7 @@ const register = async () => {
   const { registerWebRequestEarlyTakeover } = await import(
     '@/background/interception/webRequestEarly'
   )
-  registerWebRequestEarlyTakeover(deps, { confirmRequest: confirm })
+  registerWebRequestEarlyTakeover(deps)
 }
 const deliver = async () => {
   await vi.advanceTimersByTimeAsync(1)
@@ -223,36 +216,14 @@ it.each(['classified', 'unclassified'])(
     expect(download).not.toHaveBeenCalled()
   }
 )
-it.each([
-  'accepted',
-  'browser',
-  'cancel',
-  'unavailable',
-  'unsupported',
-] as const)(
-  'cancels before confirmation and handles %s once',
-  async (action) => {
-    cfg.downloadMode = 'confirm'
-    confirm.mockResolvedValue(
-      action === 'accepted' ? { action, taskId: 'task' } : { action }
-    )
-    await register()
-    expect(await listener(request())).toEqual({ cancel: true })
-    expect(confirm).not.toHaveBeenCalled()
-    await deliver()
-    expect(confirm).toHaveBeenCalledWith(
-      expect.objectContaining({
-        origin: 'auto',
-        nativeDownloadCancelled: true,
-      }),
-      1,
-      expect.anything()
-    )
-    expect(download).toHaveBeenCalledTimes(
-      ['unavailable', 'unsupported'].includes(action) ? 1 : 0
-    )
-  }
-)
+it('leaves confirmation to the native download controller without cancelling the response', async () => {
+  cfg.downloadMode = 'confirm'
+  await register()
+  expect(await listener(request())).toEqual({})
+  await deliver()
+  expect(submit).not.toHaveBeenCalled()
+  expect(download).not.toHaveBeenCalled()
+})
 it('leaves a response intact when preflight times out; late results never submit', async () => {
   let resolve!: (cfg: TakeoverConfig) => void
   deps.getConfig = () =>
@@ -327,9 +298,8 @@ it.each([
     '报告.zip',
   ],
 ])(
-  'preserves the response filename in confirmation: %s',
+  'preserves the response filename in direct submission: %s',
   async (disposition, filename) => {
-    cfg.downloadMode = 'confirm'
     await register()
     expect(
       await listener(
@@ -343,11 +313,8 @@ it.each([
       )
     ).toEqual({ cancel: true })
     await deliver()
-    expect(confirm.mock.calls[0]?.[0]).toMatchObject({
+    expect(submit.mock.calls[0]?.[0].meta).toMatchObject({
       suggestedFilename: filename,
-      filenameFromUrl: false,
-      origin: 'auto',
-      nativeDownloadCancelled: true,
     })
   }
 )

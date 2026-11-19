@@ -167,7 +167,9 @@
       "consentCancel": "Anuluj",
       "consentConfirm": "Włącz",
       "consentDialogLabel": "Wysyłać pobieranie do Motrix?",
-      "denylistLabel": "Lista wykluczeń (jeden host na wiersz — zawsze obsługiwany przez przeglądarkę)",
+      "denylistInvalid": "Wpisz domenę lub łącze HTTP(S) w każdym wierszu.",
+      "releaseClick": "Pytaj przed pobraniem instalatora z motrix.app",
+      "denylistLabel": "Osobista lista ochrony (jedna domena w wierszu, wraz z subdomenami)",
       "enableAria": "Włącz przejmowanie",
       "enableLabel": "Wysyłaj obsługiwane pobieranie do Motrix",
       "loading": "Wczytywanie ustawień przejmowania…",
@@ -522,6 +524,7 @@
       "browserHint": "Pobieranie w przeglądarce używa jej własnej nazwy pliku i ustawień żądania.",
       "unavailable": "Nie można otworzyć potwierdzenia. Dokończ otwarty formularz pobierania i spróbuj ponownie. Nie rozpoczęto pobierania.",
       "close": "Zamknij",
+      "pausedDescription": "Pobieranie w przeglądarce zostało wstrzymane do czasu wyboru.",
       "interceptedDescription": "Przeglądarka rozpoczęła już pobieranie. Motrix ponownie zażąda linku, co może się nie udać w przypadku linków jednorazowych. Pierwotne pobieranie będzie kontynuowane i może utworzyć duplikat.",
       "earlyInterceptedDescription": "Pierwotne żądanie przeglądarki zostało anulowane. Kontynuowanie w Motrix lub przeglądarce ponowi żądanie; linki jednorazowe mogą nie zadziałać.",
       "keepBrowser": "Zachowaj pobieranie w przeglądarce"

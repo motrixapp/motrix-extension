@@ -167,7 +167,9 @@
       "consentCancel": "Hủy",
       "consentConfirm": "Bật",
       "consentDialogLabel": "Gửi lượt tải xuống tới Motrix?",
-      "denylistLabel": "Danh sách loại trừ (mỗi dòng một máy chủ — luôn để trình duyệt xử lý)",
+      "denylistInvalid": "Nhập một tên miền hoặc liên kết HTTP(S) trên mỗi dòng.",
+      "releaseClick": "Hỏi trước khi yêu cầu bộ cài từ motrix.app",
+      "denylistLabel": "Danh sách bảo vệ cá nhân (mỗi dòng một tên miền, gồm cả tên miền phụ)",
       "enableAria": "Bật tiếp quản",
       "enableLabel": "Gửi các lượt tải xuống phù hợp tới Motrix",
       "loading": "Đang tải cài đặt tiếp quản…",
@@ -522,6 +524,7 @@
       "browserHint": "Tải bằng trình duyệt sẽ dùng cài đặt tên tệp và yêu cầu của chính trình duyệt.",
       "unavailable": "Không mở được xác nhận. Hoàn tất biểu mẫu đang mở rồi thử lại. Chưa bắt đầu tải xuống.",
       "close": "Đóng",
+      "pausedDescription": "Trình duyệt tạm dừng tải xuống để chờ bạn chọn.",
       "interceptedDescription": "Trình duyệt đã bắt đầu tải xuống. Motrix sẽ yêu cầu lại liên kết, điều này có thể thất bại với liên kết dùng một lần. Lượt tải ban đầu vẫn tiếp tục và có thể tạo tệp trùng lặp.",
       "earlyInterceptedDescription": "Yêu cầu ban đầu của trình duyệt đã bị hủy. Tiếp tục bằng Motrix hoặc trình duyệt sẽ yêu cầu lại liên kết; liên kết dùng một lần có thể không hoạt động.",
       "keepBrowser": "Giữ lượt tải của trình duyệt"

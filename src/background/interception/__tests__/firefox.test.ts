@@ -53,6 +53,10 @@ async function handleFirefoxDownloadSafely(
   downloads.current = { ...item, state: 'in_progress', paused: false }
   const operation = handleFirefoxDownload(item, {
     ...deps,
+    replaySource: (i: { url: string; finalUrl?: string }) => ({
+      url: i.finalUrl || i.url,
+      allowed: () => true,
+    }),
     selfExtensionId: deps.selfExtensionId ?? 'test-extension-id',
   })
   await vi.advanceTimersByTimeAsync(3500)
@@ -172,37 +176,6 @@ describe('handleFirefoxDownloadSafely', () => {
     )
     expect(probeTarget).not.toHaveBeenCalled()
     expect(downloads.cancel).not.toHaveBeenCalled()
-    expect(runHandoff).not.toHaveBeenCalled()
-  })
-
-  it('opens confirmation without probing, cancelling, or replaying the browser response', async () => {
-    const confirm = vi.fn(async () => {})
-    await handleFirefoxDownloadSafely(
-      {
-        id: 7,
-        url: 'https://example.com/once.zip',
-        totalBytes: 1024,
-      } as Browser.downloads.DownloadItem,
-      {
-        getConfig: async () => ({
-          enabled: true,
-          downloadMode: 'confirm',
-          defaultAction: 'motrix',
-          rules: [],
-        }),
-        captureGuard: async () => ({ origin: 'auto', assertCurrent: vi.fn() }),
-        popup: { captureWindow: async () => 4 },
-        confirm,
-      } as unknown as ChromiumInterceptionDeps
-    )
-    expect(confirm).toHaveBeenCalledWith(
-      expect.objectContaining({ origin: 'auto' }),
-      4,
-      expect.anything()
-    )
-    expect(probeTarget).not.toHaveBeenCalled()
-    expect(downloads.cancel).not.toHaveBeenCalled()
-    expect(downloads.erase).not.toHaveBeenCalled()
     expect(runHandoff).not.toHaveBeenCalled()
   })
 

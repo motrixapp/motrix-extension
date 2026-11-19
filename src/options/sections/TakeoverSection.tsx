@@ -217,17 +217,51 @@ export function TakeoverSection({
               />
               <FormField
                 control={form.control}
-                name="denylist"
+                name="releaseClick"
                 render={({ field }) => (
-                  <Field orientation="vertical">
+                  <Field orientation="horizontal">
+                    <FieldContent>
+                      <FieldLabel htmlFor="release-click">
+                        {t('options.takeover.releaseClick')}
+                      </FieldLabel>
+                    </FieldContent>
+                    <Switch
+                      id="release-click"
+                      checked={field.value === true}
+                      onCheckedChange={field.onChange}
+                    />
+                  </Field>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="denylist"
+                render={({ field, fieldState }) => (
+                  <Field
+                    orientation="vertical"
+                    data-invalid={fieldState.invalid}
+                  >
                     <FieldLabel htmlFor="download-denylist">
                       {t('options.takeover.denylistLabel')}
                     </FieldLabel>
                     <Textarea
                       id="download-denylist"
                       className="min-h-20"
+                      dir="ltr"
+                      spellCheck={false}
+                      aria-invalid={fieldState.invalid}
+                      aria-describedby={
+                        fieldState.invalid
+                          ? 'download-denylist-error'
+                          : undefined
+                      }
                       {...field}
                     />
+                    {fieldState.invalid && (
+                      <FieldError id="download-denylist-error">
+                        {t('options.takeover.denylistInvalid')}
+                      </FieldError>
+                    )}
                   </Field>
                 )}
               />

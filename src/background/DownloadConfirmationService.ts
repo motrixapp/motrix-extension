@@ -43,6 +43,7 @@ interface ConfirmationIO {
 
 export interface ConfirmationActions {
   submit(options: TaskOptions, operationId: string): Promise<{ taskId: string }>
+  cancel?: () => Promise<void>
   browser?: (() => Promise<void>) | undefined
 }
 
@@ -77,6 +78,7 @@ const savedConfirmationSchema = z.object({
       sizeBytes: z.number().nullable(),
       siteHint: z.string(),
       origin: z.enum(['auto', 'context-menu']),
+      pausedDownloadId: z.number().int().nonnegative().optional(),
       nativeDownloadCancelled: z.boolean().optional(),
     }),
     options: taskOptionsDraftSchema,
@@ -201,7 +203,16 @@ export class DownloadConfirmationService {
     if (!pending || pending.draft.id !== id) return false
     if (!input || typeof input !== 'object' || !('action' in input))
       return false
-    if (input.action === 'cancel') {
+    if (
+      input.action === 'cancel' &&
+      pending.actions.cancel &&
+      pending.draft.phase === 'editing'
+    ) {
+      const cancel = pending.actions.cancel
+      this.perform(pending, () => cancel().then(() => ({ action: 'cancel' })))
+      return true
+    }
+    if (input.action === 'cancel' || input.action === 'dismiss') {
       // Dismissing a submitted task never cancels or replays its network request.
       pending.settle({ action: 'cancel' })
       return true
@@ -263,9 +274,21 @@ export class DownloadConfirmationService {
     void (async () => {
       try {
         await this.persist()
+        if (
+          pending.actions.cancel &&
+          this.pending.get(pending.draft.windowId) !== pending
+        )
+          return
         pending.settle(await action())
       } catch (error) {
         if (this.pending.get(pending.draft.windowId) !== pending) return
+        if (
+          pending.actions.cancel &&
+          !(error instanceof DownloadOutcomeUnknownError)
+        ) {
+          pending.settle({ action: 'unavailable' })
+          return
+        }
         const unknown = error instanceof DownloadOutcomeUnknownError
         const reason = (error as Error)?.message
         pending.draft.phase = unknown ? 'unknown' : 'failed'
@@ -304,6 +327,18 @@ export class DownloadConfirmationService {
     if (this.restoring) this.closedWindows.add(windowId)
     this.pending.get(windowId)?.settle({ action: 'cancel' })
   }
+  dismissPausedDownloads(id?: number): void {
+    for (const pending of this.pending.values()) {
+      const held = pending.draft.target.pausedDownloadId
+      if (
+        ((held !== undefined && (id === undefined || held === id)) ||
+          (id === undefined && !!pending.draft.target.releaseClickId)) &&
+        pending.draft.phase === 'editing'
+      )
+        pending.settle({ action: 'unavailable' })
+    }
+  }
+
   cancelAll(): void {
     this.generation += 1
     for (const windowId of this.pending.keys()) this.close(windowId)
@@ -313,7 +348,7 @@ export class DownloadConfirmationService {
     const storage = this.io.storage
     if (!storage) return Promise.resolve()
     const records = [...this.pending.values()]
-      .filter((p) => p.binding)
+      .filter((p) => p.binding && p.draft.target.pausedDownloadId === undefined)
       .map((p) => ({
         draft: structuredClone(p.draft),
         binding: p.binding,
@@ -341,6 +376,8 @@ export class DownloadConfirmationService {
         const parsed = savedConfirmationSchema.safeParse(value)
         if (!parsed.success) continue
         const { draft, binding, operationId, submittedOptions } = parsed.data
+        // Native holds are reconciled independently against the browser and submit ledger.
+        if (draft.target.pausedDownloadId !== undefined) continue
         if (draft.expiresAt <= Date.now() || this.pending.has(draft.windowId))
           continue
         const actions = await recover(draft.target, binding).catch(() => null)

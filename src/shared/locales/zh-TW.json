@@ -167,7 +167,9 @@
       "consentCancel": "取消",
       "consentConfirm": "啟用",
       "consentDialogLabel": "要將下載傳送至 Motrix 嗎？",
-      "denylistLabel": "排除清單（每行一個主機名稱，一律交由瀏覽器處理）",
+      "denylistInvalid": "請在每行輸入一個網域或 HTTP(S) 連結。",
+      "releaseClick": "在請求 motrix.app 安裝檔前詢問",
+      "denylistLabel": "個人保護清單（每行一個網域，包含子網域）",
       "enableAria": "啟用下載接管",
       "enableLabel": "將符合條件的下載傳送至 Motrix",
       "loading": "載入接管設定…",
@@ -522,6 +524,7 @@
       "browserHint": "選擇瀏覽器下載將使用瀏覽器自身的檔案名稱和請求設定。",
       "unavailable": "無法開啟確認表單。請先處理已開啟的下載表單，再重試。尚未發起下載。",
       "close": "關閉",
+      "pausedDescription": "瀏覽器下載已暫停，等待你選擇下載方式。",
       "interceptedDescription": "瀏覽器已開始下載。Motrix 會重新請求連結，一次性連結可能失敗。原下載將繼續，可能產生重複檔案。",
       "earlyInterceptedDescription": "原瀏覽器請求已取消。選擇 Motrix 或瀏覽器下載都會重新請求連結，一次性連結可能失效。",
       "keepBrowser": "保留瀏覽器下載"

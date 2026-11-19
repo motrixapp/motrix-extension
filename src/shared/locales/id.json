@@ -167,7 +167,9 @@
       "consentCancel": "Batal",
       "consentConfirm": "Aktifkan",
       "consentDialogLabel": "Kirim unduhan ke Motrix?",
-      "denylistLabel": "Daftar pengecualian (satu host per baris — selalu ditangani browser)",
+      "denylistInvalid": "Masukkan satu domain atau tautan HTTP(S) per baris.",
+      "releaseClick": "Tanyakan sebelum meminta penginstal dari motrix.app",
+      "denylistLabel": "Daftar perlindungan pribadi (satu domain per baris, termasuk subdomain)",
       "enableAria": "Aktifkan pengambilalihan",
       "enableLabel": "Kirim unduhan yang memenuhi syarat ke Motrix",
       "loading": "Memuat setelan pengambilalihan…",
@@ -522,6 +524,7 @@
       "browserHint": "Unduhan browser menggunakan pengaturan nama file dan permintaan milik browser.",
       "unavailable": "Tidak dapat membuka konfirmasi. Selesaikan formulir yang terbuka, lalu coba lagi. Unduhan belum dimulai.",
       "close": "Tutup",
+      "pausedDescription": "Unduhan browser dijeda sampai Anda memilih.",
       "interceptedDescription": "Browser sudah memulai unduhan ini. Motrix akan meminta tautan lagi, yang mungkin gagal untuk tautan sekali pakai. Unduhan asli tetap berjalan dan dapat menghasilkan file duplikat.",
       "earlyInterceptedDescription": "Permintaan awal browser dibatalkan. Melanjutkan dengan Motrix atau browser akan meminta tautan lagi; tautan sekali pakai mungkin gagal.",
       "keepBrowser": "Pertahankan unduhan browser"

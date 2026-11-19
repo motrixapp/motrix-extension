@@ -167,7 +167,9 @@
       "consentCancel": "Cancel",
       "consentConfirm": "Enable",
       "consentDialogLabel": "Send downloads to Motrix?",
-      "denylistLabel": "Denylist (one host per line — always left to the browser)",
+      "denylistInvalid": "Enter a domain or an HTTP(S) link on each line.",
+      "releaseClick": "Ask before requesting installers on motrix.app",
+      "denylistLabel": "Personal protection list · one domain per line, including its subdomains",
       "enableAria": "Enable takeover",
       "enableLabel": "Send eligible downloads to Motrix",
       "loading": "Loading takeover settings…",
@@ -522,6 +524,7 @@
       "browserHint": "Browser downloads use the browser’s own filename and request settings.",
       "unavailable": "Could not open confirmation. Finish any open download form, then try again. No download was started.",
       "close": "Close",
+      "pausedDescription": "The browser download is paused while you choose.",
       "interceptedDescription": "The browser has already started this download. Motrix will request the link again, which may fail for one-use links. The original download continues and may produce a duplicate.",
       "earlyInterceptedDescription": "The original browser request was cancelled. Continuing with Motrix or the browser requests the link again; one-use links may fail.",
       "keepBrowser": "Keep browser download"

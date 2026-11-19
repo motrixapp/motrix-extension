@@ -19,4 +19,4 @@ export type ConfirmationDecision =
   | { action: 'submit'; options: TaskOptions }
   | { action: 'edit'; options: TaskOptions }
   | { action: 'browser' }
-  | { action: 'cancel' }
+  | { action: 'cancel' | 'dismiss' }
