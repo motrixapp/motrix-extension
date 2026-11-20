@@ -1,12 +1,9 @@
 import { resolve } from 'node:path'
 import { defineConfig } from 'vitest/config'
-import {
-  buildVariantPlugin,
-  localHandoffSdkPlugin,
-} from '#build-variant-plugin'
+import { buildVariantPlugin } from '#build-variant-plugin'
 
 export default defineConfig({
-  plugins: [buildVariantPlugin(false), localHandoffSdkPlugin()],
+  plugins: [buildVariantPlugin(false)],
   resolve: {
     alias: { '@': resolve(import.meta.dirname, 'src') },
   },

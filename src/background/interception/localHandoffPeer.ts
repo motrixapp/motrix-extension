@@ -1,4 +1,13 @@
-import type { DownloadSubmitParams } from '@motrix/mdxp'
+import {
+  canonicalDownloadHandoffPayload,
+  DownloadHandoffAbortResultSchema,
+  DownloadHandoffCapabilitySchema,
+  DownloadHandoffCommitResultSchema,
+  DownloadHandoffPrepareResultSchema,
+  DownloadHandoffStatusResultSchema,
+  type DownloadSubmitParams,
+  Methods,
+} from '@motrix/mdxp'
 import type { ConnectionManager } from '@/background/ConnectionManager'
 import type {
   HandoffState,
@@ -6,37 +15,21 @@ import type {
 } from '@/background/interception/pausedHandoff'
 
 type Command = 'Prepare' | 'Status' | 'Abort' | 'Commit'
-type Reply = HandoffState & { instanceId: string; operationId: string }
-export type CandidateSdk = {
-  DownloadHandoffCapabilitySchema: {
-    safeParse(
-      value: unknown
-    ):
-      | { success: true; data: { instanceId: string; acceptingNew: boolean } }
-      | { success: false }
-  }
-  canonicalDownloadHandoffPayload(value: unknown): string
-  Methods: {
-    [K in Command as `DownloadHandoff${K}`]: `download/handoff.${Lowercase<K>}`
-  }
-} & {
-  [K in Command as `DownloadHandoff${K}ResultSchema`]: {
-    parse(value: unknown): Reply
-  }
+const results = {
+  Prepare: DownloadHandoffPrepareResultSchema,
+  Status: DownloadHandoffStatusResultSchema,
+  Abort: DownloadHandoffAbortResultSchema,
+  Commit: DownloadHandoffCommitResultSchema,
 }
-
-export function candidateHandoffPeer(
+export function localHandoffPeer(
   manager: ConnectionManager,
-  sdk: CandidateSdk,
   build: (
     ...args: Parameters<NativeHandoffPeer['freeze']>
   ) => Promise<DownloadSubmitParams>
 ): NativeHandoffPeer | undefined {
   const channel = manager.getLocalHandoffChannel()
   if (!channel) return
-  const cap = sdk.DownloadHandoffCapabilitySchema.safeParse(
-    channel.advertisement
-  )
+  const cap = DownloadHandoffCapabilitySchema.safeParse(channel.advertisement)
   if (!cap.success) return
   const { instanceId, acceptingNew } = cap.data
   const bindingId = channel.bindingId
@@ -51,7 +44,7 @@ export function candidateHandoffPeer(
         active = manager.getLocalHandoffChannel()
       }
     }
-    const live = sdk.DownloadHandoffCapabilitySchema.safeParse(
+    const live = DownloadHandoffCapabilitySchema.safeParse(
       active?.advertisement
     )
     if (
@@ -61,8 +54,8 @@ export function candidateHandoffPeer(
       live.data.instanceId !== instanceId
     )
       throw new Error('Handoff session changed')
-    const result = sdk[`DownloadHandoff${name}ResultSchema`].parse(
-      await active.request(sdk.Methods[`DownloadHandoff${name}`], {
+    const result = results[name].parse(
+      await active.request(Methods[`DownloadHandoff${name}`], {
         instanceId,
         operationId: id,
         ...params,
@@ -79,7 +72,7 @@ export function candidateHandoffPeer(
     freeze: async (target, options) => {
       const download = await build(target, options)
       const bytes = new TextEncoder().encode(
-        sdk.canonicalDownloadHandoffPayload(download)
+        canonicalDownloadHandoffPayload(download)
       )
       const hash = Array.from(
         new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
