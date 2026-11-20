@@ -10,17 +10,6 @@ export function createTakeoverOrigin() {
   const server = createServer((request, response) => {
     const url = new URL(request.url, 'http://localhost')
     const name = url.pathname.split('/').at(-1)
-    if (url.pathname.startsWith('/seen/')) {
-      response.end(String(requests.get(name)?.length ?? 0))
-      return
-    }
-    if (url.pathname.startsWith('/start/click-')) {
-      response.writeHead(200, { 'Content-Type': 'text/html' })
-      response.end(
-        `<a href="/download/${name}" data-dl-file="${name}" data-dl-bytes="1048576">Download</a>`
-      )
-      return
-    }
     if (url.pathname.startsWith('/start/')) {
       response.writeHead(200, { 'Content-Type': 'text/html' })
       if (url.searchParams.has('click')) {
@@ -54,8 +43,7 @@ export function createTakeoverOrigin() {
       name === 'confirm' ||
       name?.startsWith('early-protected') ||
       name?.startsWith('early-confirm-') ||
-      name?.startsWith('paired-') ||
-      name?.startsWith('click-')
+      name?.startsWith('paired-')
         ? 1024 * 1024
         : ['small', 'early-small'].includes(name)
           ? 2 * 1024 * 1024

@@ -12,6 +12,7 @@ import {
   pickDownloadUrl,
 } from '@/background/interception/eligibility'
 import { createHold } from '@/background/interception/holdController'
+import type { ReplayLookup } from '@/background/interception/replaySource'
 import { describeUrlForLog, log } from '@/background/log'
 import type { PairNudge } from '@/background/pairNudge'
 import { decideTakeover } from '@/background/policy/decideTakeover'
@@ -20,9 +21,7 @@ import type { Notify } from '@/shared/notifications'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 export interface ChromiumInterceptionDeps {
-  replaySource: (
-    item: import('@/background/interception/replaySource').ReplayItem
-  ) => import('@/background/interception/replaySource').ReplaySource | null
+  replaySource: ReplayLookup
   popup?: AutoOpenPopupService
   captureGuard: () => Promise<HandoffGuard | null>
   getConfig: () => Promise<TakeoverConfig>
@@ -114,7 +113,7 @@ async function handleHeld(
     let sizeBytes: number | null =
       typeof item.totalBytes === 'number' && item.totalBytes > 0
         ? item.totalBytes
-        : null
+        : (replay.size ?? null)
     // The probe rehearses Motrix's own GET. Its Content-Type is the only
     // evidence we get that the browser's download was not a plain GET (see
     // replayFidelity), and its length feeds minSizeMB rules. Run it at most

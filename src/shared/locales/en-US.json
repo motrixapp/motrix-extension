@@ -163,12 +163,16 @@
       "urlRequired": "WebSocket URL is required"
     },
     "takeover": {
+      "importDomains": "Import cloud-drive domains",
+      "importHint": "Domains apply to the site and its subdomains. Review the list, confirm, then choose Apply to save.",
+      "importNew": "To add",
+      "importCovered": "Already covered",
+      "confirmImport": "Confirm import",
       "consentBody": "Motrix receives the site's login cookies to download files. Sensitive sites stay in the browser.",
       "consentCancel": "Cancel",
       "consentConfirm": "Enable",
       "consentDialogLabel": "Send downloads to Motrix?",
       "denylistInvalid": "Enter a domain or an HTTP(S) link on each line.",
-      "releaseClick": "Ask before requesting installers on motrix.app",
       "denylistLabel": "Personal protection list · one domain per line, including its subdomains",
       "enableAria": "Enable takeover",
       "enableLabel": "Send eligible downloads to Motrix",

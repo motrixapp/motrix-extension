@@ -163,12 +163,16 @@
       "urlRequired": "Cần nhập URL WebSocket"
     },
     "takeover": {
+      "importDomains": "Nhập tên miền lưu trữ đám mây",
+      "importHint": "Mỗi tên miền bao gồm cả tên miền phụ. Kiểm tra danh sách, xác nhận rồi chọn Áp dụng để lưu.",
+      "importNew": "Sẽ thêm",
+      "importCovered": "Đã bao gồm",
+      "confirmImport": "Xác nhận nhập",
       "consentBody": "Motrix nhận cookie đăng nhập của trang để tải tệp. Tải xuống từ trang nhạy cảm vẫn do trình duyệt xử lý.",
       "consentCancel": "Hủy",
       "consentConfirm": "Bật",
       "consentDialogLabel": "Gửi lượt tải xuống tới Motrix?",
       "denylistInvalid": "Nhập một tên miền hoặc liên kết HTTP(S) trên mỗi dòng.",
-      "releaseClick": "Hỏi trước khi yêu cầu bộ cài từ motrix.app",
       "denylistLabel": "Danh sách bảo vệ cá nhân (mỗi dòng một tên miền, gồm cả tên miền phụ)",
       "enableAria": "Bật tiếp quản",
       "enableLabel": "Gửi các lượt tải xuống phù hợp tới Motrix",

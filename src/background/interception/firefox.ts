@@ -75,7 +75,9 @@ async function handle(
     return
   }
   if (cfg.downloadMode === 'confirm') return
-  const replay = deps.replaySource(item)
+  const replay = deps.replaySource.waitForResponse
+    ? await deps.replaySource.waitForResponse(item)
+    : deps.replaySource(item)
   if (!replay) return
   const guard = await deps.captureGuard()
   if (!guard) return

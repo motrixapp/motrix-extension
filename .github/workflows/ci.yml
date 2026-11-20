@@ -39,6 +39,26 @@ jobs:
       - run: pnpm run build:safari
       - run: pnpm run build:webstore
 
+  edge-takeover:
+    name: Edge ordinary downloads and protection
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@fbda4c85fc2e1e08721cd8763afea8f48d60f024 # v3.0.0
+        with:
+          runtime: node@24.18.0
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Exercise installed Microsoft Edge
+        run: |
+          export CHROME_BINARY="$(command -v microsoft-edge)"
+          "$CHROME_BINARY" --version
+          pnpm run test:chromium-confirmation
+
   firefox-takeover:
     name: Firefox takeover (${{ matrix.firefox }})
     runs-on: ubuntu-24.04
@@ -84,16 +104,18 @@ jobs:
     # Preserve the required status context while including browser regressions.
     name: Extension checks
     if: always()
-    needs: [check, firefox-takeover]
+    needs: [check, firefox-takeover, edge-takeover]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
       - name: Require all acceptance dependencies to succeed
         env:
           CHECK_RESULT: ${{ needs.check.result }}
+          EDGE_RESULT: ${{ needs.edge-takeover.result }}
           FIREFOX_RESULT: ${{ needs.firefox-takeover.result }}
         run: |
           test "$CHECK_RESULT" = success
+          test "$EDGE_RESULT" = success
           test "$FIREFOX_RESULT" = success
 
   safari-native-core:

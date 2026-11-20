@@ -8,7 +8,6 @@ export interface TakeoverRule {
 }
 
 export interface TakeoverConfig {
-  releaseClick?: boolean
   downloadMode: DownloadMode
   /** Applies to every accepted submission, independently of automatic takeover. */
   openTaskPanelAfterSubmit: boolean
@@ -34,9 +33,8 @@ export interface TakeoverTarget {
   mime: string
   sizeBytes: number | null
   siteHint: string
-  /** Early interception cancelled the response; browser choice must replay it. */
-  releaseClickId?: string
   pausedDownloadId?: number | undefined
+  /** Early interception cancelled the response; browser choice must replay it. */
   nativeDownloadCancelled?: boolean | undefined
   origin: 'auto' | 'context-menu'
 }

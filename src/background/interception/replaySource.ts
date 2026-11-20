@@ -1,10 +1,10 @@
 import { contentDispositionFilename } from '@/background/capture/contentDisposition'
-import { extensionBrowser as browser } from '@/shared/browser'
+import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import { getBuildBrowser } from '@/shared/browserKind'
-import { publicRelease } from '@/shared/releaseClick'
 
 type Protected = (role: 'source' | 'resource', url?: string) => boolean
 export interface ReplayItem {
+  id?: number | undefined
   requestId?: string | undefined
   url: string
   finalUrl?: string | undefined
@@ -20,10 +20,20 @@ export interface ReplaySource {
   allowed: () => boolean
 }
 
-export function observeReplaySources(
-  protectedUrl: Protected,
-  trusted = publicRelease
-) {
+export type ReplayLookup = ((item: ReplayItem) => ReplaySource | null) & {
+  waitForResponse?: (item: ReplayItem) => Promise<ReplaySource | null>
+}
+
+// A URL-only DownloadItem cannot disambiguate an evicted request. Remember
+// its hash bucket briefly; collisions leave those downloads with the browser.
+function bucket(url: string) {
+  let hash = 0
+  for (let i = 0; i < url.length; i++)
+    hash = (Math.imul(hash, 31) + url.charCodeAt(i)) | 0
+  return hash & 2047
+}
+
+export function observeReplaySources(protectedUrl: Protected) {
   type Record = {
     tabId: number
     initial: string
@@ -32,73 +42,96 @@ export function observeReplaySources(
     time: number
     response?: ReplaySource
     blocked: boolean
+    hops: string[]
+    downloadId?: number
   }
   const waiting = new Map<string, Set<() => void>>()
   const candidates = new Map<string, Record>()
-  const redirected = new Map<string, number>()
-  let ambiguousUntil = 0
-  const filter = { urls: ['http://*/*', 'https://*/*'] }
-  const prune = () => {
-    const cutoff = Date.now() - 30_000
-    for (const [id, r] of candidates) if (r.time < cutoff) candidates.delete(id)
-    for (const [id, t] of redirected) if (t < cutoff) redirected.delete(id)
+  const evictedUntil = new Float64Array(2048)
+  const lifetime = 30_000
+  // Use network evidence for the request that became a download. Exclude page
+  // subresources from the bounded cache so busy sites cannot crowd out downloads.
+  const filter: Browser.webRequest.RequestFilter = {
+    urls: ['http://*/*', 'https://*/*'],
+    types: ['main_frame', 'sub_frame', 'other', 'object'],
   }
-  browser.webRequest.onBeforeRequest.addListener((d) => {
-    if (!trusted(d.url) || candidates.has(d.requestId)) return
+  const prune = () => {
+    const cutoff = Date.now() - lifetime
+    for (const [id, r] of candidates) {
+      if (r.time && r.time < cutoff) candidates.delete(id)
+    }
+  }
+  function remember(id: string, record: Record) {
     prune()
     if (candidates.size >= 256) {
-      ambiguousUntil = Date.now() + 30_000
-      return
+      const oldest = candidates.entries().next().value
+      if (oldest) {
+        candidates.delete(oldest[0])
+        evictedUntil[bucket(oldest[1].initial)] = Date.now() + lifetime
+      }
     }
-    const unsuitable =
-      redirected.has(d.requestId) ||
-      d.method !== 'GET' ||
-      !['main_frame', 'sub_frame', 'other'].includes(d.type)
+    candidates.set(id, record)
+  }
+  browser.webRequest.onBeforeRequest.addListener((d) => {
+    if (candidates.has(d.requestId)) return
     const context = d as typeof d & { documentUrl?: string; originUrl?: string }
     const source = context.documentUrl ?? context.originUrl ?? d.initiator
-    candidates.set(d.requestId, {
+    remember(d.requestId, {
       tabId: d.tabId,
       initial: d.url,
       final: d.url,
-      time: Date.now(),
+      time: 0,
       source,
+      hops: [d.url],
       blocked:
-        unsuitable ||
-        d.tabId < 0 ||
-        !!source?.startsWith('chrome-extension://') ||
-        !!source?.startsWith('moz-extension://') ||
-        protectedUrl('source', source) ||
-        protectedUrl('resource', d.url),
+        d.method !== 'GET' ||
+        (d.tabId < 0 && !source?.match(/^https?:\/\//i)) ||
+        !!source?.match(/^(chrome|moz|safari-web)-extension:/i),
     })
   }, filter)
   browser.webRequest.onBeforeRedirect.addListener((d) => {
     const r = candidates.get(d.requestId)
     if (r) {
       r.final = d.redirectUrl
-      r.blocked ||= protectedUrl('resource', d.redirectUrl)
-    } else if (trusted(d.redirectUrl)) {
-      prune()
-      if (redirected.size >= 256) {
-        ambiguousUntil = Date.now() + 30_000
-        return
-      }
-      redirected.set(d.requestId, Date.now())
+      r.hops.push(d.redirectUrl)
+    } else {
+      // Joining a redirect mid-flight cannot establish its original method or source.
+      remember(d.requestId, {
+        tabId: d.tabId,
+        initial: d.url,
+        final: d.redirectUrl,
+        time: 0,
+        hops: [d.url, d.redirectUrl],
+        blocked: true,
+      })
     }
   }, filter)
+  const completed = ({ requestId }: { requestId: string }) => {
+    const r = candidates.get(requestId)
+    if (r) r.time = Date.now()
+  }
+  browser.webRequest.onCompleted.addListener(completed, filter)
+  browser.webRequest.onErrorOccurred.addListener(completed, filter)
   browser.webRequest.onHeadersReceived.addListener(
     (d) => {
       const r = candidates.get(d.requestId)
-      if (!r || r.final !== d.url || d.statusCode !== 200 || d.method !== 'GET')
+      if (!r) {
+        // An evicted export can finish much later than the cache window.
+        // Its DownloadItem must not borrow evidence from a newer same-URL GET.
+        evictedUntil[bucket(d.url)] = Date.now() + lifetime
+        return
+      }
+      if (r.final !== d.url || d.statusCode !== 200 || d.method !== 'GET')
         return
       const header = (name: string) =>
         d.responseHeaders?.find((h) => h.name.toLowerCase() === name)?.value
       const size = Number(header('content-length'))
+      r.time = Date.now()
       r.response = {
         allowed: () =>
           !protectedUrl('source', r.source) &&
-          !protectedUrl('resource', r.initial) &&
-          !protectedUrl('resource', r.final),
-        tabId: r.tabId,
+          r.hops.every((url) => !protectedUrl('resource', url)),
+        ...(r.tabId >= 0 ? { tabId: r.tabId } : {}),
         url: r.initial,
         source: r.source,
         filename: contentDispositionFilename(
@@ -115,15 +148,22 @@ export function observeReplaySources(
   )
   const lookup = (item: ReplayItem): ReplaySource | null => {
     prune()
-    if (Date.now() < ambiguousUntil) return null
+    if (
+      !item.requestId &&
+      [item.url, item.finalUrl].some(
+        (url) => url && (evictedUntil[bucket(url)] ?? 0) > Date.now()
+      )
+    )
+      return null
     // A signed landing URL opened independently must not inherit a previous
     // navigation's replay permission. Firefox response events have a request ID;
-    // DownloadItem events may claim only the original public URL.
+    // DownloadItem events must match the original URL of the observed request.
     const matches = item.requestId
       ? [candidates.get(item.requestId)].filter((r) => r?.final === item.url)
       : [...candidates.values()].filter(
           (r) =>
             r.initial === item.url &&
+            (r.downloadId === undefined || r.downloadId === item.id) &&
             (!item.finalUrl || r.final === item.finalUrl)
         )
     const [r] = matches
@@ -132,12 +172,11 @@ export function observeReplaySources(
       !r?.response ||
       r.blocked ||
       protectedUrl('source', item.referrer) ||
-      protectedUrl('source', r.source) ||
-      protectedUrl('resource', r.initial) ||
-      protectedUrl('resource', r.final)
+      !r.response.allowed()
     )
       return null
     // Keep live protection updates effective even after the request cache expires.
+    if (item.id !== undefined) r.downloadId = item.id
     const response = r.response
     return {
       ...response,
@@ -154,7 +193,9 @@ export function observeReplaySources(
     if (immediate) return immediate
     const matching = [...candidates].filter(
       ([, r]) =>
-        r.initial === item.url && (!item.finalUrl || r.final === item.finalUrl)
+        r.initial === item.url &&
+        (r.downloadId === undefined || r.downloadId === item.id) &&
+        (!item.finalUrl || r.final === item.finalUrl)
     )
     const entry = matching[0]
     if (

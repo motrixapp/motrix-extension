@@ -64,8 +64,7 @@ export function createDownloadConfirmation(
     views.delete(port)
     if (id === undefined || [...views.values()].includes(id)) return
     const target = service.get(id)?.target
-    if (target?.pausedDownloadId !== undefined || target?.releaseClickId)
-      service.close(id)
+    if (target?.pausedDownloadId !== undefined) service.close(id)
   }
   function publishToView(
     port: Browser.runtime.Port,

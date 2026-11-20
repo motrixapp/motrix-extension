@@ -163,12 +163,16 @@
       "urlRequired": "عنوان WebSocket مطلوب"
     },
     "takeover": {
+      "importDomains": "استيراد نطاقات التخزين السحابي",
+      "importHint": "يشمل كل نطاق نطاقاته الفرعية. راجع القائمة وأكّد الاستيراد ثم اختر تطبيق للحفظ.",
+      "importNew": "ستُضاف",
+      "importCovered": "مشمولة بالفعل",
+      "confirmImport": "تأكيد الاستيراد",
       "consentBody": "يتلقى Motrix ملفات تعريف ارتباط تسجيل الدخول الخاصة بالموقع لتنزيل الملفات. تبقى المواقع الحساسة في المتصفح.",
       "consentCancel": "إلغاء",
       "consentConfirm": "تفعيل",
       "consentDialogLabel": "إرسال التنزيلات إلى Motrix؟",
       "denylistInvalid": "أدخل نطاقًا أو رابط HTTP(S) في كل سطر.",
-      "releaseClick": "السؤال قبل طلب ملفات التثبيت من motrix.app",
       "denylistLabel": "قائمة الحماية الشخصية (نطاق واحد في كل سطر يشمل نطاقاته الفرعية)",
       "enableAria": "تفعيل تولّي التنزيلات",
       "enableLabel": "إرسال التنزيلات المؤهلة إلى Motrix",

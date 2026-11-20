@@ -66,18 +66,6 @@ export default defineManifest((env) => {
     options_ui: { page: 'options.html', open_in_tab: true },
     content_scripts: [
       ...genericSnifferScripts,
-      ...(!safari
-        ? [
-            {
-              matches: [
-                'https://motrix.app/download*',
-                'https://motrix.app/zh/download*',
-              ],
-              js: ['src/content/release-click-entry.ts'],
-              run_at: 'document_start' as const,
-            },
-          ]
-        : []),
       ...(includeYouTube
         ? [
             {

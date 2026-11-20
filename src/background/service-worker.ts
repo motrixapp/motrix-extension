@@ -39,7 +39,6 @@ import { registerChromiumInterception } from '@/background/interception/chromium
 import { registerFirefoxInterception } from '@/background/interception/firefox'
 import { localHandoffPeer } from '@/background/interception/localHandoffPeer'
 import { registerNativeConfirmation } from '@/background/interception/nativeConfirmation'
-import { registerReleaseClicks } from '@/background/interception/releaseClick'
 import { observeReplaySources } from '@/background/interception/replaySource'
 import { registerWebRequestEarlyTakeover } from '@/background/interception/webRequestEarly'
 import { makeLocaleChangeHandler } from '@/background/localeSync'
@@ -91,7 +90,6 @@ import {
 import { i18n, initI18n } from '@/shared/i18n'
 import { newDownloadOperationId } from '@/shared/integration'
 import { shouldExcludeHost } from '@/shared/media'
-import { supportsAutoOpenPopup } from '@/shared/platformCapabilities'
 import { SAFARI_EXTENSION_ID } from '@/shared/safariNative'
 
 // Build-time constant injected by vite (see vite.config.ts `define`).
@@ -862,36 +860,6 @@ const interceptionDeps = {
   selfExtensionId: extensionId,
 }
 if (__BROWSER__ === 'chromium' || __BROWSER__ === 'firefox') {
-  registerReleaseClicks({
-    ...interceptionDeps,
-    protected: protectedDownload,
-    available: () =>
-      manager.getState() === 'connected' && supportsAutoOpenPopup(),
-    confirmation: downloadConfirmation,
-    actions: (target, guard, beforeSend) =>
-      createConfirmedDownloadActions(
-        confirmedDownloadDeps,
-        target,
-        guard,
-        beforeSend
-      ),
-    report: (outcome) =>
-      notify({
-        title: i18n.t(
-          outcome === 'unknown'
-            ? 'notify.submitUnknownTitle'
-            : 'notify.browserFallbackTitle'
-        ),
-        message: i18n.t(
-          outcome === 'browser'
-            ? 'notify.browserFallbackUnknownBody'
-            : outcome === 'unknown'
-              ? 'notify.submitUnknownBody'
-              : 'notify.browserFallbackBody'
-        ),
-        severity: 'reminder',
-      }),
-  })
   registerNativeConfirmation({
     onHandoffReady: (listener) =>
       manager.onStateChange((state) => {

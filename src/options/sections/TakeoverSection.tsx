@@ -25,6 +25,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useTakeoverPairing } from '@/components/useTakeoverPairing'
 import { SettingSection } from '@/options/components/SettingSection'
+import { CloudDriveImport } from '@/options/sections/CloudDriveImport'
 import type { TakeoverFormValues } from '@/options/tabs/schemas'
 import { useTakeoverAvailability } from '@/options/useTakeoverAvailability'
 import {
@@ -217,24 +218,6 @@ export function TakeoverSection({
               />
               <FormField
                 control={form.control}
-                name="releaseClick"
-                render={({ field }) => (
-                  <Field orientation="horizontal">
-                    <FieldContent>
-                      <FieldLabel htmlFor="release-click">
-                        {t('options.takeover.releaseClick')}
-                      </FieldLabel>
-                    </FieldContent>
-                    <Switch
-                      id="release-click"
-                      checked={field.value === true}
-                      onCheckedChange={field.onChange}
-                    />
-                  </Field>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="denylist"
                 render={({ field, fieldState }) => (
                   <Field
@@ -256,6 +239,10 @@ export function TakeoverSection({
                           : undefined
                       }
                       {...field}
+                    />
+                    <CloudDriveImport
+                      value={field.value}
+                      onChange={field.onChange}
                     />
                     {fieldState.invalid && (
                       <FieldError id="download-denylist-error">

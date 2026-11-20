@@ -230,10 +230,7 @@ window.beginPairedHandoff = (port, baseUrl) => {
           })
       })
   })
-  const replaySource = observeReplaySources(
-    () => false,
-    (url) => url === `${origin}/download/${caseName}`
-  )
+  const replaySource = observeReplaySources(() => false)
   registerNativeConfirmation({
     selfExtensionId: browser.runtime.id,
     getConfig: async () => ({

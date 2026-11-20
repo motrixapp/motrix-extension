@@ -272,25 +272,62 @@ it('adds, edits and removes personal protection domains without persisting share
   await waitFor(() => expect(savedTakeover?.rules).toEqual([]))
 })
 
-it('keeps the site release-click pilot opt-in and allows disabling it again', async () => {
-  const user = userEvent.setup({ pointerEventsCheck: 0 })
-  const first = render(<DownloadTab />)
-  const toggle = await screen.findByRole('switch', {
-    name: /installers on motrix.app/i,
-  })
-  expect(toggle.getAttribute('aria-checked')).toBe('false')
-  await user.click(toggle)
-  await user.click(screen.getByRole('button', { name: /apply/i }))
-  await waitFor(() => expect(savedTakeover?.releaseClick).toBe(true))
-  first.unmount()
+it('does not offer a site-specific download prompt', async () => {
   render(<DownloadTab />)
-  const persisted = await screen.findByRole('switch', {
-    name: /installers on motrix.app/i,
-  })
-  await waitFor(() =>
-    expect(persisted.getAttribute('aria-checked')).toBe('true')
-  )
-  await user.click(persisted)
+  await screen.findByRole('button', { name: /apply/i })
+  expect(screen.queryByRole('switch', { name: /motrix.app/i })).toBeNull()
+})
+
+it('previews exclusions, deduplicates normalized and inherited domains, and only persists on Apply', async () => {
+  const user = userEvent.setup({ pointerEventsCheck: 0 })
+  const view = render(<DownloadTab />)
+  const field = (await screen.findByRole('textbox', {
+    name: /personal protection list/i,
+  })) as HTMLTextAreaElement
+  expect(field.value).toBe('')
+  const draft =
+    'https://PAN.BAIDU.COM/share?token=test\nPAN.BAIDU.COM.\n*.123pan.com\ncustom.example'
+  fireEvent.change(field, { target: { value: draft } })
+  const button = () =>
+    screen.getByRole('button', { name: 'Import cloud-drive domains' })
+  await user.click(button())
+  expect(screen.getByRole('alertdialog').textContent).toContain('pan.baidu.com')
+  await user.click(screen.getByRole('button', { name: 'Cancel' }))
+  expect(field.value).toBe(draft)
+  await user.click(button())
+  await user.click(screen.getByRole('button', { name: 'Confirm import' }))
+  expect(
+    field.value.split('\n').filter((d) => d === 'pan.baidu.com')
+  ).toHaveLength(1)
+  expect(field.value.split('\n')).toContain('drive.google.com')
+  expect(field.value.split('\n')).not.toContain('www.123pan.com')
+  expect(savedTakeover).toBeNull()
+  await user.click(button())
+  expect(
+    screen
+      .getByRole('button', { name: 'Confirm import' })
+      .hasAttribute('disabled')
+  ).toBe(true)
+  await user.click(screen.getByRole('button', { name: 'Cancel' }))
   await user.click(screen.getByRole('button', { name: /apply/i }))
-  await waitFor(() => expect(savedTakeover?.releaseClick).toBe(false))
+  const domains = savedTakeover?.rules.flatMap(
+    (rule) => rule.match.domains ?? []
+  )
+  expect(domains).toContain('custom.example')
+  expect(domains?.filter((domain) => domain === 'pan.baidu.com')).toHaveLength(
+    1
+  )
+  fireEvent.change(field, { target: { value: 'custom.example' } })
+  await user.click(screen.getByRole('button', { name: /apply/i }))
+  view.unmount()
+  render(<DownloadTab />)
+  await waitFor(() =>
+    expect(
+      (
+        screen.getByRole('textbox', {
+          name: /personal protection list/i,
+        }) as HTMLTextAreaElement
+      ).value
+    ).toBe('custom.example')
+  )
 })

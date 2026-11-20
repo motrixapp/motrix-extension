@@ -13,12 +13,6 @@ import {
   pairedMode,
   runPairedBrowser,
 } from './fixtures/paired-browser-driver.mjs'
-import {
-  buildClickScript,
-  clickCases,
-  clickScript,
-  verifyClickResult,
-} from './fixtures/release-click-browser.mjs'
 import { createTakeoverOrigin } from './fixtures/takeover-origin.mjs'
 
 const root = resolve(import.meta.dirname, '..')
@@ -60,12 +54,10 @@ try {
         },
       },
     })
-  await buildClickScript(root, ext)
   await writeFile(
     join(ext, 'manifest.json'),
     JSON.stringify({
       manifest_version: 3,
-      content_scripts: [clickScript],
       name: 'Motrix confirmation integration',
       version: '1',
       permissions: ['downloads', 'cookies', 'storage', 'tabs', 'webRequest'],
@@ -133,7 +125,7 @@ try {
   for (const name of pairedMode
     ? []
     : [
-        ...clickCases,
+        'known',
         'early-confirm-accept',
         'early-confirm-cancel',
         'early-confirm-browser',
@@ -150,21 +142,8 @@ try {
     })
     const tab = await opened
     const link = tab.getByRole('link', { name: 'Download' })
-    if (name.startsWith('click-')) {
-      await link.focus()
-      await tab.waitForSelector('html[data-fixture-ready]')
-    }
-    await link.click({ modifiers: name === 'click-bypass' ? ['Alt'] : [] })
+    await link.click()
     const r = await run
-    if (name.startsWith('click-')) {
-      verifyClickResult(name, {
-        ...r,
-        requests: requests.get(name) ?? [],
-        mdxp: simulator.snapshot(name),
-      })
-      console.log(ctx.browser().version(), name, 'PASS')
-      continue
-    }
     assert.ok(
       !r.observations.some((o) => o.outcome === 'cleanup'),
       JSON.stringify(r.observations)
@@ -175,6 +154,17 @@ try {
           (o) => o.event === 'confirmation-settled' && o.action === 'browser'
         )
       )
+    if (name === 'known') {
+      assert.equal(r.confirmations, 0, name)
+      assert.equal(simulator.snapshot(name).taskCount, 1, name)
+      assert.equal(simulator.snapshot(name).submissions.length, 1, name)
+      assert.ok(
+        requests.get(name)?.some((r) => r.method === 'GET'),
+        name
+      )
+      console.log(ctx.browser().version(), name, 'direct handoff')
+      continue
+    }
     assert.deepEqual(requests.get(name), [{ method: 'GET', range: null }], name)
     if (name === 'early-confirm-accept')
       assert.ok(

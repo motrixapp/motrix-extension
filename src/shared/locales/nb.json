@@ -163,12 +163,16 @@
       "urlRequired": "WebSocket-adresse må fylles ut"
     },
     "takeover": {
+      "importDomains": "Importer domener for skylagring",
+      "importHint": "Hvert domene omfatter underdomenene sine. Se over listen, bekreft og velg Bruk for å lagre.",
+      "importNew": "Legges til",
+      "importCovered": "Allerede dekket",
+      "confirmImport": "Bekreft import",
       "consentBody": "Motrix mottar nettstedets innloggingskapsler for å laste ned filer. Sensitive nettsteder håndteres av nettleseren.",
       "consentCancel": "Avbryt",
       "consentConfirm": "Aktiver",
       "consentDialogLabel": "Sende nedlastinger til Motrix?",
       "denylistInvalid": "Skriv inn ett domene eller én HTTP(S)-lenke per linje.",
-      "releaseClick": "Spør før installasjonsfiler hentes fra motrix.app",
       "denylistLabel": "Personlig beskyttelsesliste (ett domene per linje, inkludert underdomener)",
       "enableAria": "Aktiver overtakelse",
       "enableLabel": "Send egnede nedlastinger til Motrix",

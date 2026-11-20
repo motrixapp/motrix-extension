@@ -14,10 +14,7 @@ import {
   reconcileHandoff,
   submitPausedHandoff,
 } from '@/background/interception/pausedHandoff'
-import type {
-  ReplayItem,
-  ReplaySource,
-} from '@/background/interception/replaySource'
+import type { ReplaySource } from '@/background/interception/replaySource'
 import { decideTakeover } from '@/background/policy/decideTakeover'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import { getBuildBrowser } from '@/shared/browserKind'
@@ -47,16 +44,13 @@ type Lease = z.infer<typeof leaseSchema>
 type Store = Pick<typeof browser.storage.local, 'get' | 'set' | 'remove'>
 type NativeDeps = Pick<
   ChromiumInterceptionDeps,
-  'popup' | 'getConfig' | 'captureGuard' | 'selfExtensionId'
+  'popup' | 'getConfig' | 'captureGuard' | 'selfExtensionId' | 'replaySource'
 > & {
   onHandoffReady?: (listener: () => void) => void
   handoffPeer?: (
     endpointId: string,
     revision: number
   ) => NativeHandoffPeer | undefined
-  replaySource: ((item: ReplayItem) => ReplaySource | null) & {
-    waitForResponse?: (item: ReplayItem) => Promise<ReplaySource | null>
-  }
   confirmation: Pick<
     DownloadConfirmationService,
     'request' | 'dismissPausedDownloads'
@@ -201,11 +195,7 @@ export function registerNativeConfirmation(deps: NativeDeps) {
       deps.confirmation.dismissPausedDownloads(delta.id)
   })
   browser.storage.onChanged.addListener((changes, area) => {
-    if (
-      area === 'local' &&
-      (changes['motrix.takeoverConfig'] ||
-        changes['motrix.downloadProtection.v1'])
-    )
+    if (area === 'local' && changes['motrix.takeoverConfig'])
       deps.confirmation.dismissPausedDownloads()
   })
   const ready = Promise.all([

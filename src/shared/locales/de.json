@@ -163,12 +163,16 @@
       "urlRequired": "Eine WebSocket-URL ist erforderlich"
     },
     "takeover": {
+      "importDomains": "Cloudspeicher-Domains importieren",
+      "importHint": "Jede Domain schließt ihre Subdomains ein. Liste prüfen, Import bestätigen und mit „Anwenden“ speichern.",
+      "importNew": "Hinzufügen",
+      "importCovered": "Bereits abgedeckt",
+      "confirmImport": "Import bestätigen",
       "consentBody": "Motrix erhält die Anmelde-Cookies der Website, um Dateien herunterzuladen. Downloads von sensiblen Websites verbleiben im Browser.",
       "consentCancel": "Abbrechen",
       "consentConfirm": "Aktivieren",
       "consentDialogLabel": "Downloads an Motrix senden?",
       "denylistInvalid": "Gib pro Zeile eine Domain oder einen HTTP(S)-Link ein.",
-      "releaseClick": "Vor dem Abruf von Installationsdateien auf motrix.app fragen",
       "denylistLabel": "Persönliche Schutzliste (eine Domain pro Zeile, einschließlich Subdomains)",
       "enableAria": "Download-Übernahme aktivieren",
       "enableLabel": "Geeignete Downloads an Motrix senden",

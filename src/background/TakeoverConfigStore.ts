@@ -38,7 +38,6 @@ export function parseTakeoverConfig(v: unknown): TakeoverConfig {
         ? c.openTaskPanelAfterSubmit
         : c.autoOpenPopup === true,
     enabled: c.enabled,
-    ...(c.releaseClick === true ? { releaseClick: true } : {}),
     consentAckVersion: c.consentAckVersion,
     defaultAction: c.defaultAction,
     unknownSizeAction: c.unknownSizeAction === 'motrix' ? 'motrix' : 'chrome',
@@ -94,7 +93,6 @@ export class TakeoverConfigStore {
               ? settings.downloadMode
               : current.downloadMode,
           enabled: settings.enabled,
-          releaseClick: settings.releaseClick ?? current.releaseClick ?? false,
           consentAckVersion: settings.consentAckVersion,
           defaultAction: settings.defaultAction,
           unknownSizeAction:
