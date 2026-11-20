@@ -6,6 +6,7 @@ import { publicRelease } from '@/shared/releaseClick'
 const stable =
   'https://github.com/agalwood/Motrix/releases/download/v2.4.3/Motrix-2.4.3.dmg'
 const signed = 'https://release-assets.githubusercontent.com/file?token=one-use'
+const ordinary = 'https://example.com/downloads/application.zip'
 function setup() {
   const before = { addListener: vi.fn() },
     redirect = { addListener: vi.fn() },
@@ -19,12 +20,17 @@ function setup() {
   })
   const protectedUrl = vi.fn(() => false)
   const lookup = observeReplaySources(protectedUrl)
-  const request = (id: string, url: string, method = 'GET') =>
+  const request = (
+    id: string,
+    url: string,
+    method = 'GET',
+    type = 'main_frame'
+  ) =>
     before.addListener.mock.calls[0]?.[0]({
       requestId: id,
       url,
       method,
-      type: 'main_frame',
+      type,
       tabId: 4,
     })
   const hop = (id: string, url: string, redirectUrl: string) =>
@@ -71,4 +77,46 @@ it('waits for late headers only for the already observed public request', async 
   const evidence = s.lookup.waitForResponse({ url: stable })
   s.response('late', stable)
   expect((await evidence)?.url).toBe(stable)
+})
+
+it('recognizes an ordinary direct download while respecting protected sites', () => {
+  const s = setup()
+  s.request('ordinary', ordinary)
+  s.response('ordinary', ordinary)
+  const source = s.lookup({ url: ordinary })
+  expect(source?.url).toBe(ordinary)
+  s.protectedUrl.mockReturnValue(true)
+  expect(source?.allowed()).toBe(false)
+  expect(s.lookup({ url: ordinary })).toBeNull()
+})
+
+it('leaves direct tokenized links and protected redirect targets in the browser', () => {
+  const s = setup()
+  const tokenized = `${ordinary}?token=one-use`
+  s.request('tokenized', tokenized)
+  s.response('tokenized', tokenized)
+  expect(s.lookup({ url: tokenized })).toBeNull()
+
+  s.request('redirect', ordinary)
+  s.protectedUrl.mockImplementation(
+    (_role, url) => !!url?.includes('blocked.example')
+  )
+  const blocked = 'https://blocked.example/file.zip'
+  s.hop('redirect', ordinary, blocked)
+  s.response('redirect', blocked)
+  expect(s.lookup({ url: ordinary, finalUrl: blocked })).toBeNull()
+})
+
+it('does not let background page assets saturate the download candidate cache', () => {
+  const s = setup()
+  for (let i = 0; i < 300; i++)
+    s.request(
+      `asset-${i}`,
+      `https://example.com/assets/${i}.js`,
+      'GET',
+      'script'
+    )
+  s.request('download', ordinary)
+  s.response('download', ordinary)
+  expect(s.lookup({ url: ordinary })?.url).toBe(ordinary)
 })
