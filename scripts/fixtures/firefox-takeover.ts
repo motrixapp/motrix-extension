@@ -6,6 +6,7 @@ import {
   Methods,
 } from '@motrix/mdxp/browser'
 import { createElement } from 'react'
+import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 import { createConfirmedDownloadActions } from '@/background/confirmedDownload'
 import { DownloadConfirmationService } from '@/background/DownloadConfirmationService'
@@ -171,13 +172,18 @@ const service = new DownloadConfirmationService({
     const host = document.body.appendChild(document.createElement('div'))
     const root = createRoot(host)
     try {
-      root.render(
-        createElement(DownloadConfirmationForm, {
-          draft,
-          onDismiss: () => service.close(windowId),
-          onDecide: (decision) => service.decide(windowId, draft.id, decision),
-        })
-      )
+      // The runner tab is in the background during the native download. Mount
+      // before driving the button so throttled timers cannot miss the commit.
+      flushSync(() => {
+        root.render(
+          createElement(DownloadConfirmationForm, {
+            draft,
+            onDismiss: () => service.close(windowId),
+            onDecide: (decision) =>
+              service.decide(windowId, draft.id, decision),
+          })
+        )
+      })
       const label = i18n.t(
         action === 'browser'
           ? 'popup.confirmDownload.keepBrowser'
