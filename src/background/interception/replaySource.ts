@@ -20,9 +20,24 @@ export interface ReplaySource {
   allowed: () => boolean
 }
 
+// Admit ordinary direct file links without treating tokenized URLs as safe to
+// replay. Redirected requests are still tied to their original request ID.
+function ordinaryFile(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return (
+      (parsed.protocol === 'https:' || parsed.protocol === 'http:') &&
+      !parsed.username && !parsed.password && !parsed.search && !parsed.hash &&
+      /\.[a-z0-9]{1,10}$/i.test(parsed.pathname)
+    )
+  } catch {
+    return false
+  }
+}
+
 export function observeReplaySources(
   protectedUrl: Protected,
-  trusted = publicRelease
+  trusted = (url: string) => publicRelease(url) || ordinaryFile(url)
 ) {
   type Record = {
     tabId: number

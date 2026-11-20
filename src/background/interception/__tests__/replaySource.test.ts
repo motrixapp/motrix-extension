@@ -6,6 +6,7 @@ import { publicRelease } from '@/shared/releaseClick'
 const stable =
   'https://github.com/agalwood/Motrix/releases/download/v2.4.3/Motrix-2.4.3.dmg'
 const signed = 'https://release-assets.githubusercontent.com/file?token=one-use'
+const ordinary = 'https://example.com/downloads/application.zip'
 function setup() {
   const before = { addListener: vi.fn() },
     redirect = { addListener: vi.fn() },
@@ -71,4 +72,15 @@ it('waits for late headers only for the already observed public request', async 
   const evidence = s.lookup.waitForResponse({ url: stable })
   s.response('late', stable)
   expect((await evidence)?.url).toBe(stable)
+})
+
+it('recognizes an ordinary direct download while respecting protected sites', () => {
+  const s = setup()
+  s.request('ordinary', ordinary)
+  s.response('ordinary', ordinary)
+  const source = s.lookup({ url: ordinary })
+  expect(source?.url).toBe(ordinary)
+  s.protectedUrl.mockReturnValue(true)
+  expect(source?.allowed()).toBe(false)
+  expect(s.lookup({ url: ordinary })).toBeNull()
 })
