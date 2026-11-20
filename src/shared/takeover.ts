@@ -8,6 +8,7 @@ export interface TakeoverRule {
 }
 
 export interface TakeoverConfig {
+  releaseClick?: boolean
   downloadMode: DownloadMode
   /** Applies to every accepted submission, independently of automatic takeover. */
   openTaskPanelAfterSubmit: boolean
@@ -34,6 +35,8 @@ export interface TakeoverTarget {
   sizeBytes: number | null
   siteHint: string
   /** Early interception cancelled the response; browser choice must replay it. */
+  releaseClickId?: string
+  pausedDownloadId?: number | undefined
   nativeDownloadCancelled?: boolean | undefined
   origin: 'auto' | 'context-menu'
 }
@@ -74,8 +77,8 @@ export function hostOf(url: string): string {
 
 /** Suffix match: host === entry or host ends with `.entry` (leading dots on entry ignored). */
 export function hostSuffixMatch(host: string, entry: string): boolean {
-  const h = host.toLowerCase()
-  const e = entry.replace(/^\.+/, '').toLowerCase()
+  const h = host.toLowerCase().replace(/\.$/, '')
+  const e = entry.replace(/^\.+|\.$/g, '').toLowerCase()
   if (e.length === 0) return false
   return h === e || h.endsWith(`.${e}`)
 }

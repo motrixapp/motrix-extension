@@ -4,11 +4,7 @@ import { isFaithfulReplay } from '@/background/capture/replayFidelity'
 import { makeOps } from '@/background/handoff/makeOps'
 import { runHandoff } from '@/background/handoff/runHandoff'
 import type { ChromiumInterceptionDeps } from '@/background/interception/chromium'
-import { confirmInterceptedDownload } from '@/background/interception/confirmDownload'
-import {
-  isEligibleDownload,
-  pickDownloadUrl,
-} from '@/background/interception/eligibility'
+import { isEligibleDownload } from '@/background/interception/eligibility'
 import {
   firefoxDownloadSize,
   readActiveFirefoxDownload,
@@ -78,22 +74,12 @@ async function handle(
     log.debug('[takeover] Firefox automatic takeover disabled')
     return
   }
+  if (cfg.downloadMode === 'confirm') return
+  const replay = deps.replaySource(item)
+  if (!replay) return
   const guard = await deps.captureGuard()
-  if (guard === null) {
-    log.debug('[takeover] Firefox automatic takeover unavailable for backend')
-    return
-  }
-  if (cfg.downloadMode === 'confirm') {
-    if (!deps.confirm) return
-    const current = await waitForFirefoxMetadata(item.id)
-    if (!current) return
-    guard.assertCurrent()
-    cfg = await deps.getConfig()
-    if (!cfg.enabled || cfg.downloadMode !== 'confirm') return
-    await confirmInterceptedDownload(current, cfg, popupWindow, deps, guard)
-    return
-  }
-  const url = pickDownloadUrl(item)
+  if (!guard) return
+  const url = replay.url
 
   // Probe at most once within the same 3 s window as native metadata reads.
   // Its failure must not discard the size Firefox learned in the meantime.
@@ -122,7 +108,7 @@ async function handle(
 
   const makeTarget = (current: Browser.downloads.DownloadItem) =>
     normalizeTarget({
-      url: pickDownloadUrl(current),
+      url,
       ...(current.referrer ? { referrer: current.referrer } : {}),
       ...(current.filename ? { suggestedFilename: current.filename } : {}),
       ...(current.mime ? { mime: current.mime } : {}),
@@ -162,6 +148,7 @@ async function handle(
   logDecision()
   if (
     cfg.downloadMode === 'confirm' ||
+    !replay.allowed() ||
     decideTakeover(cfg, target) !== 'motrix' ||
     !isEligibleDownload(current, deps.selfExtensionId)
   )
@@ -196,6 +183,7 @@ async function handle(
       guard.assertCurrent()
       if (
         !active ||
+        !replay.allowed() ||
         config.downloadMode === 'confirm' ||
         decideTakeover(config, makeTarget(active)) !== 'motrix'
       )

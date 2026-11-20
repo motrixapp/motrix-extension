@@ -225,3 +225,72 @@ describe('DownloadTab', () => {
     ).toBeNull()
   })
 })
+
+it('adds, edits and removes personal protection domains without persisting share tokens', async () => {
+  const user = userEvent.setup()
+  const first = render(<DownloadTab />)
+  const field = await screen.findByRole('textbox', {
+    name: /personal protection list/i,
+  })
+  fireEvent.change(field, {
+    target: {
+      value:
+        'https://Drive.Example/share/file?secret=test\nDRIVE.EXAMPLE\n*.cdn.example',
+    },
+  })
+  await user.click(screen.getByRole('button', { name: /apply/i }))
+  await waitFor(() =>
+    expect(savedTakeover?.rules.map((r) => r.match.domains)).toEqual([
+      ['drive.example'],
+      ['cdn.example'],
+    ])
+  )
+  first.unmount()
+  render(<DownloadTab />)
+  const edit = await screen.findByRole('textbox', {
+    name: /personal protection list/i,
+  })
+  await waitFor(() =>
+    expect((edit as HTMLTextAreaElement).value).toBe(
+      'drive.example\ncdn.example'
+    )
+  )
+  fireEvent.change(edit, {
+    target: { value: 'https://user:password@private.example' },
+  })
+  await user.click(screen.getByRole('button', { name: /apply/i }))
+  expect(edit.getAttribute('aria-invalid')).toBe('true')
+  fireEvent.change(edit, { target: { value: 'mirror.example' } })
+  await user.click(screen.getByRole('button', { name: /apply/i }))
+  await waitFor(() =>
+    expect(savedTakeover?.rules.map((r) => r.match.domains)).toEqual([
+      ['mirror.example'],
+    ])
+  )
+  fireEvent.change(edit, { target: { value: '' } })
+  await user.click(screen.getByRole('button', { name: /apply/i }))
+  await waitFor(() => expect(savedTakeover?.rules).toEqual([]))
+})
+
+it('keeps the site release-click pilot opt-in and allows disabling it again', async () => {
+  const user = userEvent.setup({ pointerEventsCheck: 0 })
+  const first = render(<DownloadTab />)
+  const toggle = await screen.findByRole('switch', {
+    name: /installers on motrix.app/i,
+  })
+  expect(toggle.getAttribute('aria-checked')).toBe('false')
+  await user.click(toggle)
+  await user.click(screen.getByRole('button', { name: /apply/i }))
+  await waitFor(() => expect(savedTakeover?.releaseClick).toBe(true))
+  first.unmount()
+  render(<DownloadTab />)
+  const persisted = await screen.findByRole('switch', {
+    name: /installers on motrix.app/i,
+  })
+  await waitFor(() =>
+    expect(persisted.getAttribute('aria-checked')).toBe('true')
+  )
+  await user.click(persisted)
+  await user.click(screen.getByRole('button', { name: /apply/i }))
+  await waitFor(() => expect(savedTakeover?.releaseClick).toBe(false))
+})

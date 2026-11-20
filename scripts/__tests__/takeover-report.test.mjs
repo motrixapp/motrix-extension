@@ -18,7 +18,44 @@ function completeReport() {
     cases: FIREFOX_CASES.map((name) => ({
       name,
       status: 'passed',
-      result: { name, requests: [{ method: 'GET' }], mdxp: { taskCount: 0 } },
+      result: name.startsWith('click-')
+        ? {
+            name,
+            confirmations: Number(name !== 'click-bypass'),
+            nativeCount: Number(
+              !['click-accept', 'click-unknown', 'click-cancel'].includes(name)
+            ),
+            observations: [
+              { event: 'before-decision', requests: 0, nativeCount: 0 },
+              { event: 'form-click', clicked: true },
+              { event: 'click-report', outcome: 'unknown' },
+            ],
+            requests: [
+              'click-accept',
+              'click-unknown',
+              'click-cancel',
+            ].includes(name)
+              ? []
+              : [{ method: 'GET', range: null }],
+            native: ['click-accept', 'click-unknown', 'click-cancel'].includes(
+              name
+            )
+              ? []
+              : [{ state: 'complete' }],
+            mdxp: {
+              taskCount: Number(
+                ['click-accept', 'click-unknown'].includes(name)
+              ),
+              submissions: [
+                'click-accept',
+                'click-unknown',
+                'click-rejected',
+              ].includes(name)
+                ? [{}]
+                : [],
+            },
+          }
+        : { name, requests: [{ method: 'GET' }], mdxp: { taskCount: 0 } },
     })),
   }
 }
@@ -65,7 +102,7 @@ test('rejects a mislabeled backend and absent network evidence', () => {
       report.backend = 'real-motrix'
     },
     (report) => {
-      report.cases[0].result.requests = []
+      report.cases.find((c) => c.name === 'known').result.requests = []
     },
     (report) => {
       delete report.cases[0].result.mdxp

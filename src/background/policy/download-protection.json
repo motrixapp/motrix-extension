@@ -1,0 +1,424 @@
+{
+  "schemaVersion": 1,
+  "revision": 2,
+  "rules": [
+    {
+      "host": "pan.baidu.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "pan.baidu.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "drive.google.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "drive.google.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "onedrive.live.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "onedrive.live.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "www.alipan.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "www.alipan.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "pan.quark.cn",
+      "matchOn": "source"
+    },
+    {
+      "host": "pan.quark.cn",
+      "matchOn": "resource"
+    },
+    {
+      "host": "lanzou.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzou.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoub.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoub.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoue.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoue.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouf.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouf.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouh.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouh.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoui.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoui.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouj.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouj.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoul.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoul.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoum.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoum.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouo.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouo.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoup.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoup.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouq.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouq.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzous.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzous.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzout.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzout.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouu.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouu.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouv.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouv.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouw.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouw.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoux.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzoux.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouy.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzouy.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzov.com",
+      "matchOn": "source",
+      "includeSubdomains": true
+    },
+    {
+      "host": "lanzov.com",
+      "matchOn": "resource",
+      "includeSubdomains": true
+    },
+    {
+      "host": "pc.woozooo.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "up.woozooo.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "www.ilanzou.com",
+      "matchOn": "source",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "www.ilanzou.com",
+      "matchOn": "resource",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "down-load.lanrar.com",
+      "matchOn": "resource",
+      "pathPrefix": "/file"
+    },
+    {
+      "host": "123pan.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "123pan.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "www.123pan.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "www.123pan.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "yun.123pan.cn",
+      "matchOn": "source"
+    },
+    {
+      "host": "yun.123pan.cn",
+      "matchOn": "resource"
+    },
+    {
+      "host": "www.123684.com",
+      "matchOn": "source",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "www.123684.com",
+      "matchOn": "resource",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "123865.com",
+      "matchOn": "source",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "123865.com",
+      "matchOn": "resource",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "www.123865.com",
+      "matchOn": "source",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "www.123865.com",
+      "matchOn": "resource",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "123912.com",
+      "matchOn": "source",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "123912.com",
+      "matchOn": "resource",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "www.123912.com",
+      "matchOn": "source",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "www.123912.com",
+      "matchOn": "resource",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "vip.123pan.cn",
+      "matchOn": "resource"
+    },
+    {
+      "host": "115.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "115.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "www.115.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "www.115.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "share.115.com",
+      "matchOn": "source"
+    },
+    {
+      "host": "share.115.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "anxia.com",
+      "matchOn": "source",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "anxia.com",
+      "matchOn": "resource",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "115cdn.com",
+      "matchOn": "source",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "115cdn.com",
+      "matchOn": "resource",
+      "pathPrefix": "/s"
+    },
+    {
+      "host": "cdnfhnfile.115.com",
+      "matchOn": "resource"
+    },
+    {
+      "host": "cloud.189.cn",
+      "matchOn": "source"
+    },
+    {
+      "host": "cloud.189.cn",
+      "matchOn": "resource"
+    },
+    {
+      "host": "h5.cloud.189.cn",
+      "matchOn": "source"
+    },
+    {
+      "host": "download.cloud.189.cn",
+      "matchOn": "resource"
+    },
+    {
+      "host": "1drv.ms",
+      "matchOn": "source"
+    },
+    {
+      "host": "1drv.ms",
+      "matchOn": "resource"
+    },
+    {
+      "host": "drive.usercontent.google.com",
+      "matchOn": "resource",
+      "pathPrefix": "/download"
+    }
+  ]
+}

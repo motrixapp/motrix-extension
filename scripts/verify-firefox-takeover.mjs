@@ -11,6 +11,17 @@ import { build } from 'vite'
 import { waitForFirefoxFixture } from './fixtures/firefox-readiness.mjs'
 import { createMdxpSimulator } from './fixtures/mdxp-simulator.mjs'
 import {
+  buildPairedFixture,
+  pairedMode,
+  runPairedBrowser,
+} from './fixtures/paired-browser-driver.mjs'
+import {
+  buildClickScript,
+  clickScript,
+  verifyClickResult,
+} from './fixtures/release-click-browser.mjs'
+import { createTakeoverOrigin } from './fixtures/takeover-origin.mjs'
+import {
   FIREFOX_CASES,
   verifyTakeoverReport,
 } from './verify-takeover-report.mjs'
@@ -23,12 +34,17 @@ const appLog = (directory) => join(directory, 'launch-services.log')
 const root = resolve(import.meta.dirname, '..')
 const reportDirectory = resolve(
   process.env.TAKEOVER_REPORT_DIR ??
-    join(root, '.cache/firefox-takeover-report')
+    join(
+      root,
+      pairedMode
+        ? '.cache/paired-handoff/firefox-runtime'
+        : '.cache/firefox-takeover-report'
+    )
 )
 const report = {
   schemaVersion: 1,
-  suite: 'firefox-browser-integration',
-  backend: 'mdxp-simulator',
+  suite: pairedMode ? 'paired-download-handoff' : 'firefox-browser-integration',
+  backend: pairedMode ? 'MBP1 WebSocket + SQLite + aria2' : 'mdxp-simulator',
   revision: process.env.GITHUB_SHA ?? null,
   status: 'running',
   startedAt: new Date().toISOString(),
@@ -44,92 +60,16 @@ const saveReport = () =>
   )
 await saveReport()
 const temporary = await mkdtemp(
-  join(process.env.TAKEOVER_TEMP_ROOT ?? tmpdir(), 'firefox-takeover-')
+  join(resolve(process.env.TAKEOVER_TEMP_ROOT ?? tmpdir()), 'firefox-takeover-')
 )
 const extension = join(temporary, 'extension')
 const profile = join(temporary, 'profile')
 const uuid = 'bd2a973c-7f7b-468e-bd3d-03f8bc59336f'
-const requests = new Map()
-const unicodeFilenames = new Map([
-  ['early-default', 'résumé 日本語 😀.zip'],
-  ['early-direct', '中文 extended.zip'],
-  ['early-confirm-accept', 'aaa123中文.zip'],
-])
-const transfers = new Set()
+const { requests, unicodeFilenames, transfers, server } = createTakeoverOrigin()
 let firefox
 let socket
 let sequence = 0
 const pending = new Map()
-const server = createServer((request, response) => {
-  const url = new URL(request.url, 'http://localhost')
-  const name = url.pathname.split('/').at(-1)
-  if (url.pathname.startsWith('/start/')) {
-    response.writeHead(200, { 'Content-Type': 'text/html' })
-    response.end(`<script>location.href='/download/${name}'</script>`)
-    return
-  }
-  if (!url.pathname.startsWith('/download/')) {
-    response.writeHead(404).end()
-    return
-  }
-  const list = requests.get(name) ?? []
-  list.push({ method: request.method, range: request.headers.range ?? null })
-  requests.set(name, list)
-  const size = ['small', 'early-small'].includes(name)
-    ? 2 * 1024 * 1024
-    : 8 * 1024 * 1024
-  // The browser's original response works, while HEAD fails and ranged GET
-  // is forbidden. Size discovery must come from Firefox's live metadata.
-  if (request.method === 'HEAD') {
-    if (name === 'probe-only') {
-      response
-        .writeHead(200, {
-          'Content-Type': 'application/zip',
-          'Content-Length': size,
-        })
-        .end()
-      return
-    }
-    request.socket.destroy()
-    return
-  }
-  if (request.headers.range) {
-    response.writeHead(403).end()
-    return
-  }
-  response.writeHead(200, {
-    ...(name === 'early-no-type'
-      ? {}
-      : {
-          'Content-Type':
-            name === 'early-pdf' ? 'application/pdf' : 'application/zip',
-        }),
-    // Model raw UTF-8 in a legacy filename, the suspected input in #2388.
-    // Node serializes HTTP header strings as Latin-1 bytes.
-    'Content-Disposition':
-      name === 'early-direct'
-        ? `attachment; filename=backup.zip; filename*=UTF-8'zh'${encodeURIComponent(unicodeFilenames.get(name))}`
-        : `${name === 'early-pdf' ? 'inline' : 'attachment'}; filename="${Buffer.from(unicodeFilenames.get(name) ?? `${name}.zip`).toString('latin1')}"`,
-    ...(!name.startsWith('unknown-') && name !== 'probe-only'
-      ? { 'Content-Length': size }
-      : {}),
-  })
-  // Flush via a buffer write to preserve header bytes. flushHeaders() can
-  // UTF-8-encode the Latin-1 byte string again, creating artificial mojibake.
-  response.write(Buffer.alloc(0))
-  let sent = 0
-  const timer = setInterval(() => {
-    const count = Math.min(64 * 1024, size - sent)
-    response.write(Buffer.alloc(count))
-    sent += count
-    if (sent >= size) response.end()
-  }, 100)
-  transfers.add(timer)
-  response.on('close', () => {
-    clearInterval(timer)
-    transfers.delete(timer)
-  })
-})
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 const simulator = createMdxpSimulator(server)
 const command = (method, params) =>
@@ -154,26 +94,34 @@ const command = (method, params) =>
 try {
   await mkdir(extension)
   await mkdir(profile)
-  await build({
-    configFile: false,
-    root,
-    logLevel: 'error',
-    resolve: { alias: { '@': join(root, 'src') } },
-    build: {
-      outDir: extension,
-      emptyOutDir: false,
-      lib: {
-        entry: join(root, 'scripts/fixtures/firefox-takeover.ts'),
-        formats: ['iife'],
-        name: 'fixture',
-        fileName: () => 'fixture.js',
+  if (pairedMode) await buildPairedFixture(root, extension, 'firefox')
+  else
+    await build({
+      configFile: false,
+      root,
+      define: {
+        'process.env.NODE_ENV': JSON.stringify('production'),
+        __BROWSER__: JSON.stringify('firefox'),
       },
-    },
-  })
+      logLevel: 'error',
+      resolve: { alias: { '@': join(root, 'src') } },
+      build: {
+        outDir: extension,
+        emptyOutDir: false,
+        lib: {
+          entry: join(root, 'scripts/fixtures/firefox-takeover.ts'),
+          formats: ['iife'],
+          name: 'fixture',
+          fileName: () => 'fixture.js',
+        },
+      },
+    })
+  await buildClickScript(root, extension)
   await writeFile(
     join(extension, 'manifest.json'),
     JSON.stringify({
       manifest_version: 3,
+      content_scripts: [clickScript],
       name: 'Motrix Firefox takeover regression fixture',
       version: '1.0',
       permissions: [
@@ -200,7 +148,7 @@ try {
   )
   await writeFile(
     join(extension, 'runner.html'),
-    '<script src="fixture.js"></script>'
+    '<!doctype html><meta charset="utf-8"><script src="fixture.js"></script>'
   )
   await writeFile(
     join(extension, 'bootstrap.js'),
@@ -306,20 +254,27 @@ try {
     const archive = zipSync(
       Object.fromEntries(
         await Promise.all(
-          ['manifest.json', 'runner.html', 'fixture.js', 'bootstrap.js'].map(
-            async (name) => [
-              name,
-              new Uint8Array(await readFile(join(extension, name))),
-            ]
-          )
+          [
+            'manifest.json',
+            'runner.html',
+            'fixture.js',
+            'bootstrap.js',
+            'release-click.js',
+          ].map(async (name) => [
+            name,
+            new Uint8Array(await readFile(join(extension, name))),
+          ])
         )
       )
     )
     report.extensionSha256 = createHash('sha256').update(archive).digest('hex')
+    // Firefox 143 content processes need the archive when they load a new tab.
+    const archivePath = resolve(profile, 'takeover-fixture.xpi')
+    await writeFile(archivePath, archive)
     await command('webExtension.install', {
       extensionData: {
-        type: 'base64',
-        value: Buffer.from(archive).toString('base64'),
+        type: 'archivePath',
+        path: archivePath,
       },
     })
   } catch (error) {
@@ -328,40 +283,148 @@ try {
   }
   const context = await waitForFirefoxFixture(
     command,
-    `moz-extension://${uuid}/runner.html`
+    `moz-extension://${uuid}/runner.html`,
+    pairedMode
+      ? { expression: 'typeof beginPairedHandoff==="function"' }
+      : undefined
   )
-  const receiverResponse = await command('script.evaluate', {
-    expression: `checkFetchReceiver(${JSON.stringify(baseUrl)}).then(JSON.stringify)`,
-    target: { context },
-    awaitPromise: true,
-    resultOwnership: 'none',
-  })
-  assert.equal(
-    receiverResponse.type,
-    'success',
-    JSON.stringify(receiverResponse)
-  )
-  const receiver = JSON.parse(receiverResponse.result.value)
-  console.log(JSON.stringify({ fetchReceiver: receiver }))
-  assert.match(receiver.unboundError, /Window|Illegal invocation|incompatible/)
-  assert.equal(receiver.boundStatus, 404)
-  report.fetchReceiver = 'passed'
-  for (const name of FIREFOX_CASES) {
+  if (pairedMode) {
+    async function evaluate(expression) {
+      const result = await command('script.evaluate', {
+        expression: `(async()=>JSON.stringify(await (${expression})))()`,
+        target: { context },
+        awaitPromise: true,
+        resultOwnership: 'none',
+      })
+      if (result.type !== 'success')
+        throw Error(result.exceptionDetails?.text ?? 'Firefox fixture error')
+      return result.result.value ? JSON.parse(result.result.value) : undefined
+    }
+    const paired = await runPairedBrowser({
+      browser: 'firefox',
+      browserVersion: report.browserVersion,
+      origin: baseUrl,
+      requests,
+      evaluate,
+      clickDownload: async (name) => {
+        let target
+        const end = Date.now() + 5000
+        while (!target && Date.now() < end) {
+          const tree = await command('browsingContext.getTree', {})
+          target = tree.contexts.find((t) =>
+            t.url.startsWith(`${baseUrl}/start/${name}`)
+          )?.context
+          if (!target) await delay(30)
+        }
+        assert.ok(target, name)
+        await command('script.evaluate', {
+          expression: "document.querySelector('a').focus()",
+          target: { context: target },
+          awaitPromise: false,
+          resultOwnership: 'none',
+        })
+        await command('input.performActions', {
+          context: target,
+          actions: [
+            {
+              type: 'key',
+              id: 'keyboard',
+              actions: [
+                { type: 'keyDown', value: '\uE007' },
+                { type: 'keyUp', value: '\uE007' },
+              ],
+            },
+          ],
+        })
+      },
+      enterCode: async (code) => {
+        await evaluate(
+          `(async()=>{const end=Date.now()+5000;while(!document.querySelector('#pair-code')&&Date.now()<end)await new Promise(r=>setTimeout(r,20));const input=document.querySelector('#pair-code');input.value=${JSON.stringify(code)};input.form.requestSubmit();return true})()`
+        )
+      },
+    })
+    Object.assign(report, paired, { suite: 'paired-download-handoff' })
+  } else {
+    const receiverResponse = await command('script.evaluate', {
+      expression: `checkFetchReceiver(${JSON.stringify(baseUrl)}).then(JSON.stringify)`,
+      target: { context },
+      awaitPromise: true,
+      resultOwnership: 'none',
+    })
+    assert.equal(
+      receiverResponse.type,
+      'success',
+      JSON.stringify(receiverResponse)
+    )
+    const receiver = JSON.parse(receiverResponse.result.value)
+    console.log(JSON.stringify({ fetchReceiver: receiver }))
+    assert.match(
+      receiver.unboundError,
+      /Window|Illegal invocation|incompatible/
+    )
+    assert.equal(receiver.boundStatus, 404)
+    report.fetchReceiver = 'passed'
+  }
+  for (const name of pairedMode ? [] : FIREFOX_CASES) {
     activeCase = { name, status: 'running' }
     report.cases.push(activeCase)
     await saveReport()
-    const response = await command('script.evaluate', {
+    const running = command('script.evaluate', {
       expression: `runCase(${JSON.stringify({ baseUrl, name })}).then(JSON.stringify)`,
       target: { context },
       awaitPromise: true,
       resultOwnership: 'none',
     })
+    // A failed UI assertion can close the session before we await this command.
+    void running.catch(() => {})
+    if (name.startsWith('click-')) {
+      let tab
+      const until = Date.now() + 4000
+      while (!tab && Date.now() < until) {
+        const tree = await command('browsingContext.getTree', {})
+        tab = tree.contexts.find((t) =>
+          t.url.startsWith(`${baseUrl}/start/${name}`)
+        )?.context
+        if (!tab) await delay(30)
+      }
+      assert.ok(tab, name)
+      const ready = await command('script.evaluate', {
+        target: { context: tab },
+        awaitPromise: true,
+        expression: `(async()=>{document.querySelector('a').focus();const until=Date.now()+3000;while(!document.documentElement.dataset.fixtureReady && Date.now()<until)await new Promise(r=>setTimeout(r,20));return !!document.documentElement.dataset.fixtureReady})()`,
+      })
+      assert.equal(ready.result?.value, true, name)
+      const keys = (type, value) => ({ type, value })
+      const alt = '\uE00A'
+      await command('input.performActions', {
+        context: tab,
+        actions: [
+          {
+            type: 'key',
+            id: 'keyboard',
+            actions: [
+              ...(name === 'click-bypass' ? [keys('keyDown', alt)] : []),
+              keys('keyDown', '\uE007'),
+              keys('keyUp', '\uE007'),
+              ...(name === 'click-bypass' ? [keys('keyUp', alt)] : []),
+            ],
+          },
+        ],
+      })
+    }
+    const response = await running
     assert.equal(response.type, 'success', JSON.stringify(response))
     const result = JSON.parse(response.result.value)
     result.requests = requests.get(name) ?? []
     result.mdxp = simulator.snapshot(name)
     activeCase.result = result
     console.log(JSON.stringify(result))
+    if (name.startsWith('click-')) {
+      verifyClickResult(name, result)
+      activeCase.status = 'passed'
+      await saveReport()
+      continue
+    }
     const expectedTasks = [
       'known',
       'probe-only',
@@ -385,7 +448,11 @@ try {
     assert.equal(
       result.mdxp.submissions.length,
       expectedTasks ||
-        ['early-failed', 'early-disconnect-before'].includes(name)
+        [
+          'early-failed',
+          'early-confirm-rejected',
+          'early-disconnect-before',
+        ].includes(name)
         ? 1
         : 0,
       `${name}: peer submission count`
@@ -406,6 +473,13 @@ try {
       }
     }
     if (name.startsWith('early-')) {
+      if (name.startsWith('early-protected'))
+        assert.equal(result.confirmations, 0, name)
+      if (name === 'early-confirm-accept')
+        assert.ok(
+          result.observations.some((o) => o.event === 'quiet-hold' && o.stable),
+          name
+        )
       const accepted = [
         'early-default',
         'early-direct',
@@ -418,9 +492,17 @@ try {
         'early-kill',
       ].includes(name)
       assert.equal(result.submits, accepted ? 1 : 0, `${name}: submits`)
-      const replay = ['early-confirm-browser', 'early-failed'].includes(name)
+      const replay = name === 'early-failed'
       const native =
-        replay || ['early-small', 'early-excluded', 'early-off'].includes(name)
+        replay ||
+        name.startsWith('early-confirm-') ||
+        [
+          'early-protected',
+          'early-protected-direct',
+          'early-small',
+          'early-excluded',
+          'early-off',
+        ].includes(name)
       assert.equal(
         result.nativeCount,
         name === 'early-kill' ? 1 : native ? 1 : 0,
@@ -435,12 +517,57 @@ try {
       }
       if (name.startsWith('early-confirm-')) {
         assert.equal(result.confirmations, 1)
+        if (name !== 'early-confirm-unavailable')
+          assert.ok(
+            result.observations.some(
+              (o) => o.event === 'form-click' && o.clicked
+            ),
+            name
+          )
+        if (name !== 'early-confirm-unavailable')
+          assert.ok(
+            result.observations.some(
+              (o) =>
+                o.event === 'confirmation-hold' &&
+                o.nativeCount === 1 &&
+                o.paused === true
+            ),
+            `${name}: browser streamed while confirming`
+          )
+      }
+      if (
+        name.startsWith('early-confirm-') ||
+        name.startsWith('early-protected')
+      ) {
         assert.ok(
-          result.observations.some(
-            (o) => o.event === 'confirmation-hold' && o.nativeCount === 0
-          ),
-          `${name}: browser streamed while confirming`
+          !result.observations.some((o) => o.outcome === 'cleanup'),
+          JSON.stringify(result.observations)
         )
+        if (name === 'early-confirm-browser')
+          assert.ok(
+            result.observations.some(
+              (o) =>
+                o.event === 'confirmation-settled' && o.action === 'browser'
+            )
+          )
+        const stopped = [
+          'early-confirm-accept',
+          'early-confirm-cancel',
+        ].includes(name)
+        assert.equal(
+          result.native[0]?.state,
+          stopped ? 'interrupted' : 'complete',
+          name
+        )
+        if (!stopped)
+          assert.equal(
+            createHash('sha256')
+              .update(await readFile(result.native[0].filename))
+              .digest('hex'),
+            createHash('sha256')
+              .update(Buffer.alloc(1024 * 1024))
+              .digest('hex')
+          )
       }
       activeCase.status = 'passed'
       await saveReport()
@@ -455,18 +582,14 @@ try {
       ['known', 'probe-only', 'unknown-motrix'].includes(name) ? 1 : 0,
       `${name}: submits`
     )
-    assert.equal(
-      result.confirmations,
-      name === 'confirm' ? 1 : 0,
-      `${name}: confirmations`
-    )
+    assert.equal(result.confirmations, 0, `${name}: confirmations`)
     if (name === 'confirm') {
       assert.deepEqual(
         result.requests.map((x) => x.method),
         ['GET'],
         'confirmation must not probe a one-use URL'
       )
-      assert.equal(result.native[0].state, 'in_progress')
+      assert.equal(result.native[0].state, 'complete')
     }
     if (name === 'small')
       assert.ok(
@@ -493,12 +616,14 @@ try {
     activeCase.status = 'passed'
     await saveReport()
   }
-  report.status = 'passed'
-  verifyTakeoverReport(report, {
-    revision: process.env.GITHUB_SHA,
-    browser: process.env.EXPECTED_FIREFOX_VERSION,
-  })
-  console.log('Firefox native takeover regression: PASS')
+  if (!pairedMode) {
+    report.status = 'passed'
+    verifyTakeoverReport(report, {
+      revision: process.env.GITHUB_SHA,
+      browser: process.env.EXPECTED_FIREFOX_VERSION,
+    })
+    console.log('Firefox native takeover regression: PASS')
+  }
 } catch (error) {
   report.status = 'failed'
   report.error = error.stack ?? String(error)

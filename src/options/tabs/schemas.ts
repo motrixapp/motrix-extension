@@ -1,15 +1,32 @@
 import { z } from 'zod'
+import { personalDomain } from '@/options/takeoverForm'
 import { parseRemoteEndpoint } from '@/shared/endpoint'
 import { SUPPORTED_LOCALES } from '@/shared/supportedLocales'
 
 export const takeoverFormSchema = z.object({
   downloadMode: z.enum(['confirm', 'direct']),
   enabled: z.boolean(),
+  releaseClick: z.boolean().optional(),
   unknownSizeAction: z.enum(['chrome', 'motrix']),
   thresholdMB: z.string().refine((s) => s.trim() === '' || Number(s) >= 0, {
     message: 'options.takeover.thresholdInvalid',
   }),
-  denylist: z.string(),
+  denylist: z.string().transform((text, ctx) => {
+    const domains = new Set<string>()
+    for (const line of text.split('\n')) {
+      if (!line.trim()) continue
+      const domain = personalDomain(line)
+      if (!domain) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'options.takeover.denylistInvalid',
+        })
+        return z.NEVER
+      }
+      domains.add(domain)
+    }
+    return [...domains].join('\n')
+  }),
 })
 export type TakeoverFormValues = z.infer<typeof takeoverFormSchema>
 

@@ -9,7 +9,7 @@ import {
   type TakeoverSettings,
 } from '@/shared/takeover'
 
-const STORAGE_KEY = 'motrix.takeoverConfig'
+export const TAKEOVER_CONFIG_KEY = 'motrix.takeoverConfig'
 const enqueue = createOperationQueue()
 
 function isRule(v: unknown): v is TakeoverRule {
@@ -23,33 +23,32 @@ function isRule(v: unknown): v is TakeoverRule {
   )
 }
 
+export function parseTakeoverConfig(v: unknown): TakeoverConfig {
+  if (!v || typeof v !== 'object') return TAKEOVER_DEFAULT
+  const c = v as Partial<TakeoverConfig> & { autoOpenPopup?: unknown }
+  if (typeof c.enabled !== 'boolean' || typeof c.consentAckVersion !== 'number')
+    return TAKEOVER_DEFAULT
+  if (c.defaultAction !== 'motrix' && c.defaultAction !== 'chrome')
+    return TAKEOVER_DEFAULT
+  if (!Array.isArray(c.rules) || !c.rules.every(isRule)) return TAKEOVER_DEFAULT
+  return {
+    downloadMode: c.downloadMode === 'confirm' ? 'confirm' : 'direct',
+    openTaskPanelAfterSubmit:
+      typeof c.openTaskPanelAfterSubmit === 'boolean'
+        ? c.openTaskPanelAfterSubmit
+        : c.autoOpenPopup === true,
+    enabled: c.enabled,
+    ...(c.releaseClick === true ? { releaseClick: true } : {}),
+    consentAckVersion: c.consentAckVersion,
+    defaultAction: c.defaultAction,
+    unknownSizeAction: c.unknownSizeAction === 'motrix' ? 'motrix' : 'chrome',
+    rules: c.rules,
+  }
+}
 export class TakeoverConfigStore {
   async get(): Promise<TakeoverConfig> {
-    const obj = await browser.storage.local.get(STORAGE_KEY)
-    const v = (obj as Record<string, unknown>)[STORAGE_KEY]
-    if (!v || typeof v !== 'object') return TAKEOVER_DEFAULT
-    const c = v as Partial<TakeoverConfig> & { autoOpenPopup?: unknown }
-    if (
-      typeof c.enabled !== 'boolean' ||
-      typeof c.consentAckVersion !== 'number'
-    )
-      return TAKEOVER_DEFAULT
-    if (c.defaultAction !== 'motrix' && c.defaultAction !== 'chrome')
-      return TAKEOVER_DEFAULT
-    if (!Array.isArray(c.rules) || !c.rules.every(isRule))
-      return TAKEOVER_DEFAULT
-    return {
-      downloadMode: c.downloadMode === 'confirm' ? 'confirm' : 'direct',
-      openTaskPanelAfterSubmit:
-        typeof c.openTaskPanelAfterSubmit === 'boolean'
-          ? c.openTaskPanelAfterSubmit
-          : c.autoOpenPopup === true,
-      enabled: c.enabled,
-      consentAckVersion: c.consentAckVersion,
-      defaultAction: c.defaultAction,
-      unknownSizeAction: c.unknownSizeAction === 'motrix' ? 'motrix' : 'chrome',
-      rules: c.rules,
-    }
+    const saved = await browser.storage.local.get(TAKEOVER_CONFIG_KEY)
+    return parseTakeoverConfig(saved[TAKEOVER_CONFIG_KEY])
   }
 
   async patchEnabled(
@@ -72,20 +71,22 @@ export class TakeoverConfigStore {
             ? current.consentAckVersion
             : Math.max(current.consentAckVersion, consentAckVersion),
       }
-      await browser.storage.local.set({ [STORAGE_KEY]: next })
+      await browser.storage.local.set({ [TAKEOVER_CONFIG_KEY]: next })
       return next
     })
   }
 
   async set(config: TakeoverConfig): Promise<void> {
-    await enqueue(() => browser.storage.local.set({ [STORAGE_KEY]: config }))
+    await enqueue(() =>
+      browser.storage.local.set({ [TAKEOVER_CONFIG_KEY]: config })
+    )
   }
 
   async patchTakeoverSettings(settings: TakeoverSettings): Promise<void> {
     await enqueue(async () => {
       const current = await this.get()
       await browser.storage.local.set({
-        [STORAGE_KEY]: {
+        [TAKEOVER_CONFIG_KEY]: {
           ...current,
           downloadMode:
             settings.downloadMode === 'confirm' ||
@@ -93,6 +94,7 @@ export class TakeoverConfigStore {
               ? settings.downloadMode
               : current.downloadMode,
           enabled: settings.enabled,
+          releaseClick: settings.releaseClick ?? current.releaseClick ?? false,
           consentAckVersion: settings.consentAckVersion,
           defaultAction: settings.defaultAction,
           unknownSizeAction:
@@ -111,7 +113,7 @@ export class TakeoverConfigStore {
         throw new Error('invalid task panel setting')
       const current = await this.get()
       const next = { ...current, openTaskPanelAfterSubmit }
-      await browser.storage.local.set({ [STORAGE_KEY]: next })
+      await browser.storage.local.set({ [TAKEOVER_CONFIG_KEY]: next })
       return next
     })
   }
@@ -121,7 +123,7 @@ export class TakeoverConfigStore {
       if (downloadMode !== 'confirm' && downloadMode !== 'direct')
         throw new Error('invalid download mode')
       const next = { ...(await this.get()), downloadMode }
-      await browser.storage.local.set({ [STORAGE_KEY]: next })
+      await browser.storage.local.set({ [TAKEOVER_CONFIG_KEY]: next })
       return next
     })
   }
@@ -132,7 +134,7 @@ export class TakeoverConfigStore {
   ): Promise<TakeoverConfig> {
     return enqueue(async () => {
       const next = withSiteExcluded(await this.get(), domain, excluded)
-      await browser.storage.local.set({ [STORAGE_KEY]: next })
+      await browser.storage.local.set({ [TAKEOVER_CONFIG_KEY]: next })
       return next
     })
   }

@@ -60,10 +60,21 @@ export function DownloadConfirmationDialog() {
   }, [])
   if (!draft) return null
   return (
-    <ConfirmationForm
+    <DownloadConfirmationForm
       key={draft.id}
       draft={draft}
-      onDismiss={() => setDraft(null)}
+      onDismiss={() => {
+        if (
+          draft.target.pausedDownloadId !== undefined ||
+          draft.target.releaseClickId
+        ) {
+          portRef.current?.postMessage({
+            id: draft.id,
+            decision: { action: 'dismiss' },
+          })
+        }
+        setDraft(null)
+      }}
       onDecide={(decision) => {
         try {
           portRef.current?.postMessage({ id: draft.id, decision })
@@ -75,7 +86,7 @@ export function DownloadConfirmationDialog() {
   )
 }
 
-function ConfirmationForm({
+export function DownloadConfirmationForm({
   draft,
   onDecide,
   onDismiss,
@@ -104,7 +115,9 @@ function ConfirmationForm({
   const sending = submittedDraft === draft || draft.phase === 'submitting'
   const disabled = sending || draft.phase === 'unknown' || remaining <= 0
   const browserDownloadContinues =
-    draft.target.origin === 'auto' && !draft.target.nativeDownloadCancelled
+    draft.target.origin === 'auto' &&
+    !draft.target.nativeDownloadCancelled &&
+    !draft.target.releaseClickId
   const browserAllowed =
     !isMagnetUrl(draft.target.url) &&
     (draft.target.origin === 'auto' || supportsBrowserDownload())
@@ -134,11 +147,14 @@ function ConfirmationForm({
             <DialogTitle>{t('options.downloadMode.confirm')}</DialogTitle>
             <DialogDescription className="text-xs/5">
               {t(
-                draft.target.origin === 'auto'
-                  ? draft.target.nativeDownloadCancelled
-                    ? 'popup.confirmDownload.earlyInterceptedDescription'
-                    : 'popup.confirmDownload.interceptedDescription'
-                  : 'popup.confirmDownload.description'
+                draft.target.pausedDownloadId !== undefined
+                  ? 'popup.confirmDownload.pausedDescription'
+                  : draft.target.origin === 'auto' &&
+                      !draft.target.releaseClickId
+                    ? draft.target.nativeDownloadCancelled
+                      ? 'popup.confirmDownload.earlyInterceptedDescription'
+                      : 'popup.confirmDownload.interceptedDescription'
+                    : 'popup.confirmDownload.description'
               )}
             </DialogDescription>
           </DialogHeader>
@@ -178,18 +194,25 @@ function ConfirmationForm({
               {t(confirmationErrorKey(draft.error))}
             </p>
           )}
-          {browserAllowed && !browserDownloadContinues && (
-            <p
-              id="confirmation-browser-hint"
-              className="shrink-0 text-xs text-muted-foreground"
-            >
-              {t('popup.confirmDownload.browserHint')}
-            </p>
-          )}
+          {browserAllowed &&
+            !browserDownloadContinues &&
+            !draft.target.releaseClickId && (
+              <p
+                id="confirmation-browser-hint"
+                className="shrink-0 text-xs text-muted-foreground"
+              >
+                {t('popup.confirmDownload.browserHint')}
+              </p>
+            )}
           <p className="shrink-0 text-xs text-muted-foreground">
             {sending
               ? t('popup.quickAdd.submitting')
-              : t('popup.confirmDownload.expires', { seconds: remaining })}
+              : draft.target.pausedDownloadId !== undefined ||
+                  draft.target.releaseClickId
+                ? t('popup.pairing.expiresIn', {
+                    time: `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`,
+                  })
+                : t('popup.confirmDownload.expires', { seconds: remaining })}
           </p>
           <DialogFooter className="shrink-0 flex-wrap">
             <Button
@@ -211,7 +234,7 @@ function ConfirmationForm({
                 size="sm"
                 disabled={disabled}
                 aria-describedby={
-                  browserDownloadContinues
+                  browserDownloadContinues || draft.target.releaseClickId
                     ? undefined
                     : 'confirmation-browser-hint'
                 }

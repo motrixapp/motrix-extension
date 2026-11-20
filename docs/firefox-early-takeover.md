@@ -14,11 +14,13 @@ configuration store. Startup waits for the initial read within the preflight
 budget; a newer storage event must not be overwritten by that read. Settings and
 endpoint changes fence pending delivery.
 
-Automatic downloads keep `origin: 'auto'` for policy, pairing, and submission
-semantics. `nativeDownloadCancelled: true` records the separate fact that early
-interception already cancelled the response. This flag survives confirmation
-session recovery and makes the explicit browser action start a new download.
-Ordinary native confirmations continue to preserve their existing response.
+The blocking listener only claims direct mode requests with a verified public
+replay source. Confirmation mode passes the response through to the DownloadItem
+controller. This controller pauses an eligible original ID, resumes it on browser
+choice or pre-submit dismissal, and cancels it on explicit cancel or acceptance.
+Firefox can resume via a Range request. Cloud-drive and unclassified URLs continue
+without pausing, probing or submitting. Old drafts from an already-cancelled
+response still carry their explicit browser replay marker.
 
 ## Ownership after cancellation
 
@@ -28,10 +30,6 @@ Ordinary native confirmations continue to preserve their existing response.
 | Direct unknown | Motrix may own it; do not replay |
 | Direct browser | Handoff already replayed; do not replay again |
 | Direct skipped/failed | Attempt browser replay once |
-| Confirm accepted | Confirmation submission owns it |
-| Confirm browser | Confirmation browser action replays once |
-| Confirm cancel/expiry | No replacement download |
-| Confirmation unavailable/unsupported | Discard any early draft; attempt browser replay once |
 
 Browser fallback caches its attempt, including rejection. Requests without a tab
 and extension-initiated requests are excluded from early interception. The native
@@ -47,14 +45,14 @@ media, POST, and other request types stay on the existing path.
 - `src/background/interception/__tests__/webRequestEarly.test.ts` covers actual
   policy and handoff code, startup/live switches, cancellation before delivery,
   browser fallback ownership, unknown outcomes, and repeated URLs.
-- Confirmation tests cover replay only on browser choice, failed-popup draft
-  cleanup, and cancelled-response ownership across background restart.
+- Confirmation tests cover explicit cancellation, resume of the original ID, and
+  recovery of editing, submitted and accepted download leases after a restart.
 - `node scripts/verify-firefox-takeover.mjs` registers **both** production Firefox
   adapters with real webRequest/download APIs and a local HTTP server. It checks
-  native download counts, GET counts, a quiet confirmation interval, explicit
-  browser replay, failed/unknown submission, missing Content-Type, defaults,
-  exclusions, size rules, PDF, and the kill switch. Motrix and confirmation UI
-  interaction are simulated; the production confirmation service/actions run.
+  native download counts, GET and Range requests, a quiet confirmation interval, explicit
+  browser resume, failed/unknown submission, missing Content-Type, defaults,
+  exclusions, size rules, PDF, and the kill switch. Motrix is simulated. The driver clicks the production confirmation form in the
+  fixture page and exercises the production confirmation service and actions.
 - Existing CI executes that script on Firefox 143.0 and latest.
 
 A strictly one-use URL cannot be replayed reliably by Motrix or by a browser

@@ -23,15 +23,21 @@ function isDomainExclusion(rule: TakeoverRule): boolean {
   )
 }
 
+/** Plain domain exclusions apply to both the source page and resource hosts. */
+export function siteExclusionDomains(config: TakeoverConfig): string[] {
+  return config.rules
+    .filter(isDomainExclusion)
+    .flatMap((rule) => rule.match.domains ?? [])
+    .filter((host): host is string => typeof host === 'string')
+}
+
 /** Prefer a parent exclusion so the quick switch never silently removes a
  * rule that also protects other subdomains. */
 export function excludedSiteDomain(
   config: TakeoverConfig,
   domain: string
 ): string | null {
-  const matches = config.rules
-    .filter(isDomainExclusion)
-    .flatMap((rule) => rule.match.domains ?? [])
+  const matches = siteExclusionDomains(config)
     .map((entry) => entry.replace(/^\.+/, '').toLowerCase())
     .filter((entry) => hostSuffixMatch(domain, entry))
   return matches.find((entry) => entry !== domain) ?? matches[0] ?? null

@@ -7,13 +7,19 @@
 | 层级 | 当前覆盖 | 未覆盖 |
 | --- | --- | --- |
 | 协议契约 | 使用锁文件中的 MDXP schema 校验 initialize 和 submit；真实 WebSocket；同 key 重连去重、不同 key 独立、参数冲突和断线故障 | 模拟器不是生产服务端，账本是内存模型，没有实现新 prepare commit 协议 |
-| Firefox 浏览器集成 | 真实 Firefox，生产拦截模块、确认服务和确认动作、WebSocketClient、MDXP 连接；本地 HTTP 请求记录；22 个场景 | 入口是 fixture 页面；按钮决定由驱动发出，没有加载完整 popup；ConnectionManager、MBP1、原生宿主不在该路径内 |
+| Firefox 浏览器集成 | 真实 Firefox，生产拦截模块、确认服务和确认动作、WebSocketClient、MDXP 连接；本地 HTTP 请求记录；33 个场景 | 入口是 fixture 页面；驱动点击生产确认表单按钮，没有加载完整工具栏 popup；ConnectionManager、MBP1、原生宿主不在该路径内 |
 | 传输集成 | 现有 transport E2E 覆盖 ConnectionManager 与模拟桥接服务，随全量 Vitest 运行 | 不代替真实浏览器 UI 场景 |
 | 完整扩展 UI E2E | 后续接入，后端仍使用 MDXP 模拟器 | 尚未落地，不应作为本轮通过项 |
 
 Firefox 场景包括旧入口元数据、未知大小策略、默认启用、自动接管、附件缺少 MIME、确认接受／浏览器／取消、明确拒绝、提交接受后断线、创建前断线、无效回复、延迟回复、大小规则、站点排除、总开关、早期接管开关和内联 PDF。
 
-这组测试锁定当前候选实现，不把旧行为当成未来设计：当前提前取消路径在选择浏览器和明确失败时会重新 GET。迁移至挂起方案时，必须将这两项预期改为继续原请求，并保留取消前／后的独立断言，不能仅为了使测试变绿修改请求计数。
+这组测试锁定当前候选实现，不把旧行为当成未来设计：新的确认路径恢复原下载 ID，Firefox 可能续发 Range 请求；严格单次下载保持原连接。直接模式已有的提前取消路径在明确失败时仍可能重新 GET，应保留取消前／后的独立断言，不能仅为了使测试变绿修改请求计数。
+
+### Chromium 确认回归
+
+运行 `pnpm exec playwright-core install chromium` 后执行 `pnpm test:chromium-confirmation`；也可用 `CHROME_BINARY` 指向允许加载测试扩展的 Chrome for Testing。使用独立 profile、真实浏览器下载 API、生产确认表单和本机 MDXP 模拟器。浏览器确认、取消及明确拒绝分别核对原下载 ID、终态和服务端任务数。受保护或未知的单次源拒绝第二次请求，并校验首份浏览器文件的 SHA-256。Firefox 恢复原下载 ID 时允许续发 Range，检查最终摘要。两端均在已开始的原生下载确认用例中停留 12.5 秒、核对暂停期间字节计数。另有七个官网点击用例：选 Motrix、选浏览器、取消、Alt 放行、明确拒绝、表单打不开和接受后丢回执。表单出现时独立查询测试源的文件请求数量，应为零。
+
+更新随扩展打包的离线名单可运行 `pnpm sync:download-protection ../motrix-website/public/rules/download-protection/v1.json`。运行时使用官网固定地址和 ETag，新增规则以官网仓库的 JSON 为准。
 
 ## 执行与证据
 
@@ -81,3 +87,20 @@ PR #45 已于 2026-10-02 合并为 `0c119e6`。本次优化从该提交单独建
 本次交付是故障处理和验收基础。浏览器保留原请求、prepare/commit/status/abort
 协议及服务端持久账本、完整 UI 和 Chromium E2E 仍在后续范围，不能将本次通过
 理解为整个事务交接方案已经完成。确认继续由扩展负责。
+
+
+## 本地真实配对及暂停交接
+
+在候选 MDXP 工作目录完成构建后，从扩展仓库运行。Chrome 需支持加载临时扩展（如 Chrome for Testing）；macOS 上的 Firefox 可用 `FIREFOX_APP=/Applications/Firefox.app` 指定。
+
+```sh
+export MOTRIX_HOST_DIR=../Motrix
+pnpm test:chromium-confirmation --paired-handoff
+pnpm test:firefox-takeover --paired-handoff
+```
+
+这两个入口启动独立的本机 MBP1 监听器、SQLite 数据库和 aria2。浏览器从空 profile 开始，通过宿主的操作员提示输入本次生成的配对码，在加密 WebSocket 的 initialize 响应中取得账本实例和接管能力。验收驱动使用生产确认表单；配对码只在隔离测试驱动内传递。已配对客户端的 prepare／commit／status／abort 全部经过真实网络调度及认证会话。
+
+每个浏览器验证五种选择或故障：选 Motrix、选浏览器、取消、prepare 明确拒绝、commit 写库后实际断开 WebSocket。检查同一原生下载 ID 的暂停与终态、配对次数、重连后的任务 ID、账本状态、引擎请求和文件摘要。拒绝后 abort 建立终止记录，浏览器恢复原项；已确认停止后丢回执则重连原实例查询 status。Firefox 恢复原 ID 时可发送 Range。逐项证据默认写入 `.cache/paired-handoff/`，可用 `PAIRED_REPORT_DIR` 指定其他本地目录。
+
+Chrome、Edge 和 Firefox 的正式构建直接使用锁文件中的 MDXP SDK。扩展只向已配对并声明支持交接的本机桌面端发起新交接；旧宿主继续使用既有提交方式。远端 Server 的 WSS、账户与凭据转发策略另行验收。

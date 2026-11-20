@@ -7,7 +7,6 @@ import { isFaithfulReplay } from '@/background/capture/replayFidelity'
 import type { HandoffGuard } from '@/background/handoff/guard'
 import { makeOps } from '@/background/handoff/makeOps'
 import { type HandoffResult, runHandoff } from '@/background/handoff/runHandoff'
-import { confirmInterceptedDownload } from '@/background/interception/confirmDownload'
 import {
   isEligibleDownload,
   pickDownloadUrl,
@@ -18,15 +17,13 @@ import type { PairNudge } from '@/background/pairNudge'
 import { decideTakeover } from '@/background/policy/decideTakeover'
 import { extensionBrowser as browser, nativeBrowser } from '@/shared/browser'
 import type { Notify } from '@/shared/notifications'
-import type { TakeoverConfig, TakeoverTarget } from '@/shared/takeover'
+import type { TakeoverConfig } from '@/shared/takeover'
 
 export interface ChromiumInterceptionDeps {
+  replaySource: (
+    item: import('@/background/interception/replaySource').ReplayItem
+  ) => import('@/background/interception/replaySource').ReplaySource | null
   popup?: AutoOpenPopupService
-  confirm?: (
-    target: TakeoverTarget,
-    windowId: number | undefined,
-    guard: HandoffGuard
-  ) => Promise<void>
   captureGuard: () => Promise<HandoffGuard | null>
   getConfig: () => Promise<TakeoverConfig>
   manager: ConnectionManager
@@ -107,12 +104,10 @@ async function handleHeld(
   try {
     const cfg = await deps.getConfig()
     if (!cfg.enabled) return
-    if (cfg.downloadMode === 'confirm') {
-      // Never hold filename determination while waiting for a human.
-      hold.release()
-      await confirmInterceptedDownload(item, cfg, popupWindow, deps)
-      return
-    }
+    if (cfg.downloadMode === 'confirm') return
+    const replay = deps.replaySource(item)
+    if (!replay) return
+    url = replay.url
     const guard = await deps.captureGuard()
     if (guard === null) return
 
@@ -186,7 +181,16 @@ async function handleHeld(
       isPaired: deps.isPaired,
       gate: deps.gate,
       nudge: deps.nudge,
-      cancelNative: () => hold.cancelNative(),
+      cancelNative: async () => {
+        const current = await deps.getConfig()
+        if (
+          !replay.allowed() ||
+          current.downloadMode === 'confirm' ||
+          decideTakeover(current, target) !== 'motrix'
+        )
+          throw new Error('takeover changed')
+        return hold.cancelNative()
+      },
       fallbackToBrowser: async () => {
         await browser.downloads.download({ url })
       },
