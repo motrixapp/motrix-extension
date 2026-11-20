@@ -25,7 +25,6 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useTakeoverPairing } from '@/components/useTakeoverPairing'
 import { SettingSection } from '@/options/components/SettingSection'
-import { CloudDriveImport } from '@/options/sections/CloudDriveImport'
 import type { TakeoverFormValues } from '@/options/tabs/schemas'
 import { useTakeoverAvailability } from '@/options/useTakeoverAvailability'
 import {
@@ -239,10 +238,6 @@ export function TakeoverSection({
                           : undefined
                       }
                       {...field}
-                    />
-                    <CloudDriveImport
-                      value={field.value}
-                      onChange={field.onChange}
                     />
                     {fieldState.invalid && (
                       <FieldError id="download-denylist-error">

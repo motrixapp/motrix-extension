@@ -163,17 +163,12 @@
       "urlRequired": "请输入 WebSocket 地址"
     },
     "takeover": {
-      "importDomains": "导入常见网盘域名",
-      "importHint": "每项匹配该域名及其子域。确认导入后可继续编辑，点击“应用”保存。",
-      "importNew": "待添加",
-      "importCovered": "已覆盖，跳过",
-      "confirmImport": "确认导入",
       "consentBody": "Motrix 会收到网站的登录 Cookie，用于下载文件。敏感网站仍由浏览器下载。",
       "consentCancel": "取消",
       "consentConfirm": "开启",
       "consentDialogLabel": "让 Motrix 接管下载？",
       "denylistInvalid": "每行请输入一个域名或 HTTP(S) 链接。",
-      "denylistLabel": "个人保护名单（每行一个域名，包含其子域名）",
+      "denylistLabel": "排除接管域名（每行一个，包含子域名）",
       "enableAria": "启用接管",
       "enableLabel": "将符合条件的下载发送到 Motrix",
       "loading": "加载接管设置…",

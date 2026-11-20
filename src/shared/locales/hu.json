@@ -163,17 +163,12 @@
       "urlRequired": "A WebSocket URL kötelező"
     },
     "takeover": {
-      "importDomains": "Felhőtárhelyek tartományainak importálása",
-      "importHint": "A tartományok az altartományaikra is érvényesek. Ellenőrizze a listát, erősítse meg, majd mentse az Alkalmaz gombbal.",
-      "importNew": "Hozzáadandó",
-      "importCovered": "Már szerepel",
-      "confirmImport": "Importálás megerősítése",
       "consentBody": "A Motrix megkapja a webhely bejelentkezési sütijeit a fájlletöltéshez. Az érzékeny webhelyeket a böngésző kezeli.",
       "consentCancel": "Mégse",
       "consentConfirm": "Engedélyezés",
       "consentDialogLabel": "Elküldöd a letöltéseket a Motrixnak?",
       "denylistInvalid": "Soronként egy tartományt vagy HTTP(S)-hivatkozást adjon meg.",
-      "denylistLabel": "Saját védelmi lista (soronként egy tartomány, az altartományokkal együtt)",
+      "denylistLabel": "Kizárási lista (soronként egy gépnév – mindig a böngésző kezeli)",
       "enableAria": "Átvétel engedélyezése",
       "enableLabel": "Megfelelő letöltések küldése a Motrixnak",
       "loading": "Átvételi beállítások betöltése…",

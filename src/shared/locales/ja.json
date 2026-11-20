@@ -163,17 +163,12 @@
       "urlRequired": "WebSocket URL は必須です"
     },
     "takeover": {
-      "importDomains": "クラウドストレージのドメインをインポート",
-      "importHint": "各ドメインにはサブドメインも含まれます。一覧を確認してインポートし、「適用」で保存してください。",
-      "importNew": "追加するドメイン",
-      "importCovered": "対象に含まれるドメイン",
-      "confirmImport": "インポートを確定",
       "consentBody": "ファイルをダウンロードするため、サイトのログイン Cookie が Motrix に渡されます。機密性の高いサイトのダウンロードはブラウザーで処理します。",
       "consentCancel": "キャンセル",
       "consentConfirm": "有効にする",
       "consentDialogLabel": "ダウンロードを Motrix に送信しますか？",
       "denylistInvalid": "各行にドメインまたは HTTP(S) リンクを入力してください。",
-      "denylistLabel": "個人用保護リスト（1 行に 1 ドメイン、サブドメインを含む）",
+      "denylistLabel": "除外リスト（1 行に 1 ホスト — 常にブラウザーで処理）",
       "enableAria": "ダウンロードの引き継ぎを有効にする",
       "enableLabel": "対象のダウンロードを Motrix に送信",
       "loading": "引き継ぎ設定を読み込み中…",

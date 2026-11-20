@@ -163,17 +163,12 @@
       "urlRequired": "Adres WebSocket jest wymagany"
     },
     "takeover": {
-      "importDomains": "Importuj domeny dysków w chmurze",
-      "importHint": "Każda domena obejmuje też subdomeny. Sprawdź listę, potwierdź i wybierz Zastosuj, aby zapisać.",
-      "importNew": "Do dodania",
-      "importCovered": "Już uwzględnione",
-      "confirmImport": "Potwierdź import",
       "consentBody": "Motrix otrzymuje ciasteczka logowania witryny, aby pobierać pliki. Witryny wrażliwe pozostają w przeglądarce.",
       "consentCancel": "Anuluj",
       "consentConfirm": "Włącz",
       "consentDialogLabel": "Wysyłać pobieranie do Motrix?",
       "denylistInvalid": "Wpisz domenę lub łącze HTTP(S) w każdym wierszu.",
-      "denylistLabel": "Osobista lista ochrony (jedna domena w wierszu, wraz z subdomenami)",
+      "denylistLabel": "Lista wykluczeń (jeden host na wiersz — zawsze obsługiwany przez przeglądarkę)",
       "enableAria": "Włącz przejmowanie",
       "enableLabel": "Wysyłaj obsługiwane pobieranie do Motrix",
       "loading": "Wczytywanie ustawień przejmowania…",

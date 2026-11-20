@@ -17,9 +17,9 @@ Firefox 场景包括旧入口元数据、未知大小策略、默认启用、自
 
 ### Chromium 确认回归
 
-运行 `pnpm exec playwright-core install chromium` 后执行 `pnpm test:chromium-confirmation`；也可用 `CHROME_BINARY` 指向允许加载测试扩展的 Chrome for Testing。使用独立 profile、真实浏览器下载 API、生产确认表单和本机 MDXP 模拟器。浏览器确认、取消及明确拒绝分别核对原下载 ID、终态和服务端任务数。受保护或未知的单次源拒绝第二次请求，并校验首份浏览器文件的 SHA-256。Firefox 恢复原下载 ID 时允许续发 Range，检查最终摘要。两端均在已开始的原生下载确认用例中停留 12.5 秒、核对暂停期间字节计数。另有七个官网点击用例：选 Motrix、选浏览器、取消、Alt 放行、明确拒绝、表单打不开和接受后丢回执。表单出现时独立查询测试源的文件请求数量，应为零。
+运行 `pnpm exec playwright-core install chromium` 后执行 `pnpm test:chromium-confirmation`；也可用 `CHROME_BINARY` 指向允许加载测试扩展的 Chrome for Testing。使用独立 profile、真实浏览器下载 API、生产确认表单和本机 MDXP 模拟器。浏览器确认、取消及明确拒绝分别核对原下载 ID、终态和服务端任务数。受保护或未知的单次源拒绝第二次请求，并校验首份浏览器文件的 SHA-256。Firefox 恢复原下载 ID 时允许续发 Range，检查最终摘要。两端均在已开始的原生下载确认用例中停留 12.5 秒、核对暂停期间字节计数。
 
-更新随扩展打包的离线名单可运行 `pnpm sync:download-protection ../motrix-website/public/rules/download-protection/v1.json`。运行时使用官网固定地址和 ETag，新增规则以官网仓库的 JSON 为准。
+排除接管用例从已保存的用户域名配置读取规则。
 
 ## 执行与证据
 

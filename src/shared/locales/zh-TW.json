@@ -163,17 +163,12 @@
       "urlRequired": "請輸入 WebSocket 網址"
     },
     "takeover": {
-      "importDomains": "匯入常見雲端硬碟網域",
-      "importHint": "每項包含該網域及其子網域。確認匯入後可繼續編輯，按「套用」儲存。",
-      "importNew": "待新增",
-      "importCovered": "已涵蓋，略過",
-      "confirmImport": "確認匯入",
       "consentBody": "Motrix 會接收網站的登入 Cookie 以下載檔案。敏感網站的下載仍由瀏覽器處理。",
       "consentCancel": "取消",
       "consentConfirm": "啟用",
       "consentDialogLabel": "要將下載傳送至 Motrix 嗎？",
       "denylistInvalid": "請在每行輸入一個網域或 HTTP(S) 連結。",
-      "denylistLabel": "個人保護清單（每行一個網域，包含子網域）",
+      "denylistLabel": "排除接管的網域（每行一個，包含子網域）",
       "enableAria": "啟用下載接管",
       "enableLabel": "將符合條件的下載傳送至 Motrix",
       "loading": "載入接管設定…",
