@@ -27,7 +27,10 @@ function ordinaryFile(url: string): boolean {
     const parsed = new URL(url)
     return (
       (parsed.protocol === 'https:' || parsed.protocol === 'http:') &&
-      !parsed.username && !parsed.password && !parsed.search && !parsed.hash &&
+      !parsed.username &&
+      !parsed.password &&
+      !parsed.search &&
+      !parsed.hash &&
       /\.[a-z0-9]{1,10}$/i.test(parsed.pathname)
     )
   } catch {
