@@ -20,12 +20,17 @@ function setup() {
   })
   const protectedUrl = vi.fn(() => false)
   const lookup = observeReplaySources(protectedUrl)
-  const request = (id: string, url: string, method = 'GET') =>
+  const request = (
+    id: string,
+    url: string,
+    method = 'GET',
+    type = 'main_frame'
+  ) =>
     before.addListener.mock.calls[0]?.[0]({
       requestId: id,
       url,
       method,
-      type: 'main_frame',
+      type,
       tabId: 4,
     })
   const hop = (id: string, url: string, redirectUrl: string) =>
@@ -83,4 +88,35 @@ it('recognizes an ordinary direct download while respecting protected sites', ()
   s.protectedUrl.mockReturnValue(true)
   expect(source?.allowed()).toBe(false)
   expect(s.lookup({ url: ordinary })).toBeNull()
+})
+
+it('leaves direct tokenized links and protected redirect targets in the browser', () => {
+  const s = setup()
+  const tokenized = `${ordinary}?token=one-use`
+  s.request('tokenized', tokenized)
+  s.response('tokenized', tokenized)
+  expect(s.lookup({ url: tokenized })).toBeNull()
+
+  s.request('redirect', ordinary)
+  s.protectedUrl.mockImplementation(
+    (_role, url) => !!url?.includes('blocked.example')
+  )
+  const blocked = 'https://blocked.example/file.zip'
+  s.hop('redirect', ordinary, blocked)
+  s.response('redirect', blocked)
+  expect(s.lookup({ url: ordinary, finalUrl: blocked })).toBeNull()
+})
+
+it('does not let background page assets saturate the download candidate cache', () => {
+  const s = setup()
+  for (let i = 0; i < 300; i++)
+    s.request(
+      `asset-${i}`,
+      `https://example.com/assets/${i}.js`,
+      'GET',
+      'script'
+    )
+  s.request('download', ordinary)
+  s.response('download', ordinary)
+  expect(s.lookup({ url: ordinary })?.url).toBe(ordinary)
 })

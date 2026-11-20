@@ -2,12 +2,15 @@ import { expect, it, vi } from 'vitest'
 import type { ConfirmationActions } from '@/background/DownloadConfirmationService'
 import { DownloadOutcomeUnknownError } from '@/background/download-errors'
 import { registerNativeConfirmation } from '@/background/interception/nativeConfirmation'
+import { observeReplaySources } from '@/background/interception/replaySource'
 import { extensionBrowser as browser } from '@/shared/browser'
 import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 
 function setup(
   fault: 'unknown' | 'rejected' | 'cleanup' | 'ok',
-  saved: Record<string, unknown> = {}
+  saved: Record<string, unknown> = {},
+  realReplay = false,
+  protectedUrl = false
 ) {
   const item = {
     id: 42,
@@ -45,12 +48,39 @@ function setup(
   }
   Object.assign(browser, {
     downloads,
+    tabs: { get: vi.fn(async () => ({ windowId: 1 })) },
     storage: {
       onChanged: { addListener: vi.fn() },
       local,
       session: { ...local, get: async () => ({}) },
     },
   })
+  const before = { addListener: vi.fn() }
+  const redirect = { addListener: vi.fn() }
+  const headers = { addListener: vi.fn() }
+  Object.assign(browser, {
+    webRequest: {
+      onBeforeRequest: before,
+      onBeforeRedirect: redirect,
+      onHeadersReceived: headers,
+    },
+  })
+  const replay = observeReplaySources(() => protectedUrl)
+  if (realReplay) {
+    before.addListener.mock.calls[0]![0]({
+      requestId: 'real',
+      url: item.url,
+      method: 'GET',
+      type: 'main_frame',
+      tabId: 1,
+    })
+    headers.addListener.mock.calls[0]![0]({
+      requestId: 'real',
+      url: item.url,
+      method: 'GET',
+      statusCode: 200,
+    })
+  }
   const report = vi.fn()
   const submit = vi.fn(async () => {
     if (fault === 'unknown') throw new DownloadOutcomeUnknownError()
@@ -78,7 +108,9 @@ function setup(
       assertCurrent() {},
     }),
     popup: { captureWindow: async () => 1 } as never,
-    replaySource: () => ({ url: item.url, allowed: () => true }),
+    replaySource: realReplay
+      ? replay
+      : () => ({ url: item.url, allowed: () => true }),
     actions: () => ({ submit }),
     confirmation: { request, dismissPausedDownloads: vi.fn() },
     operations: async () => [],
@@ -93,6 +125,19 @@ function setup(
     submit,
   }
 }
+it('passes a tracked ordinary download through the confirmation adapter', async () => {
+  const f = setup('ok', {}, true)
+  f.create()
+  await vi.waitFor(() => expect(f.submit).toHaveBeenCalledOnce())
+})
+
+it('does not pause or submit a protected download', async () => {
+  const f = setup('ok', {}, true, true)
+  f.create()
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(f.downloads.pause).not.toHaveBeenCalled()
+  expect(f.submit).not.toHaveBeenCalled()
+})
 it.each(['unknown', 'rejected', 'cleanup'] as const)(
   'preserves ownership after %s',
   async (fault) => {

@@ -62,16 +62,16 @@ export function observeReplaySources(
     for (const [id, t] of redirected) if (t < cutoff) redirected.delete(id)
   }
   browser.webRequest.onBeforeRequest.addListener((d) => {
+    // Images, scripts and other page assets cannot be a navigation/download
+    // candidate here. Do not let them exhaust the bounded download cache.
+    if (!['main_frame', 'sub_frame', 'other'].includes(d.type)) return
     if (!trusted(d.url) || candidates.has(d.requestId)) return
     prune()
     if (candidates.size >= 256) {
       ambiguousUntil = Date.now() + 30_000
       return
     }
-    const unsuitable =
-      redirected.has(d.requestId) ||
-      d.method !== 'GET' ||
-      !['main_frame', 'sub_frame', 'other'].includes(d.type)
+    const unsuitable = redirected.has(d.requestId) || d.method !== 'GET'
     const context = d as typeof d & { documentUrl?: string; originUrl?: string }
     const source = context.documentUrl ?? context.originUrl ?? d.initiator
     candidates.set(d.requestId, {

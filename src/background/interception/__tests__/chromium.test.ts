@@ -7,7 +7,9 @@ import {
   HOLD_DEADLINE_MS,
   registerChromiumInterception,
 } from '@/background/interception/chromium'
+import { observeReplaySources } from '@/background/interception/replaySource'
 import { formToConfig } from '@/options/takeoverForm'
+import { extensionBrowser as browser } from '@/shared/browser'
 import type { TakeoverConfig } from '@/shared/takeover'
 
 vi.mock('@/background/handoff/runHandoff', () => ({
@@ -130,6 +132,38 @@ function register(cfg: TakeoverConfig): ChromiumInterceptionDeps {
 }
 
 describe('registerChromiumInterception', () => {
+  it('hands a tracked ordinary direct download to the handoff path', async () => {
+    const before = { addListener: vi.fn() }
+    const redirect = { addListener: vi.fn() }
+    const headers = { addListener: vi.fn() }
+    Object.assign(browser, {
+      webRequest: {
+        onBeforeRequest: before,
+        onBeforeRedirect: redirect,
+        onHeadersReceived: headers,
+      },
+    })
+    const replay = observeReplaySources(() => false)
+    before.addListener.mock.calls[0]![0]({
+      requestId: 'direct',
+      url: 'https://files.example/a.bin',
+      method: 'GET',
+      type: 'main_frame',
+      tabId: 1,
+    })
+    headers.addListener.mock.calls[0]![0]({
+      requestId: 'direct',
+      url: 'https://files.example/a.bin',
+      method: 'GET',
+      statusCode: 200,
+    })
+    const deps = makeDeps(enabledConfig())
+    deps.replaySource = replay
+    registerChromiumInterception(deps)
+    listener?.(item(), vi.fn())
+    await vi.waitFor(() => expect(mockedRunHandoff).toHaveBeenCalledOnce())
+  })
+
   it('preserves an already-requested one-use download in confirmation mode without a probe', async () => {
     register(enabledConfig({ downloadMode: 'confirm' }))
     const suggest = vi.fn()
