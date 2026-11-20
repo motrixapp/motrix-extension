@@ -163,17 +163,12 @@
       "urlRequired": "URL WebSocket wajib diisi"
     },
     "takeover": {
-      "importDomains": "Impor domain penyimpanan awan",
-      "importHint": "Setiap domain mencakup subdomainnya. Tinjau daftar, konfirmasi, lalu pilih Terapkan untuk menyimpan.",
-      "importNew": "Akan ditambahkan",
-      "importCovered": "Sudah tercakup",
-      "confirmImport": "Konfirmasi impor",
       "consentBody": "Motrix menerima cookie login situs untuk mengunduh file. Unduhan dari situs sensitif tetap di browser.",
       "consentCancel": "Batal",
       "consentConfirm": "Aktifkan",
       "consentDialogLabel": "Kirim unduhan ke Motrix?",
       "denylistInvalid": "Masukkan satu domain atau tautan HTTP(S) per baris.",
-      "denylistLabel": "Daftar perlindungan pribadi (satu domain per baris, termasuk subdomain)",
+      "denylistLabel": "Daftar pengecualian (satu host per baris — selalu ditangani browser)",
       "enableAria": "Aktifkan pengambilalihan",
       "enableLabel": "Kirim unduhan yang memenuhi syarat ke Motrix",
       "loading": "Memuat setelan pengambilalihan…",

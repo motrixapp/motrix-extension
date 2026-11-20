@@ -163,17 +163,12 @@
       "urlRequired": "Adresa URL WebSocket este obligatorie"
     },
     "takeover": {
-      "importDomains": "Importă domenii de stocare în cloud",
-      "importHint": "Fiecare domeniu include subdomeniile sale. Verifică lista, confirmă și apasă Aplică pentru salvare.",
-      "importNew": "De adăugat",
-      "importCovered": "Deja incluse",
-      "confirmImport": "Confirmă importul",
       "consentBody": "Motrix primește cookie-urile de autentificare ale site-ului pentru a descărca fișiere. Site-urile sensibile rămân în browser.",
       "consentCancel": "Anulează",
       "consentConfirm": "Activează",
       "consentDialogLabel": "Trimiți descărcările către Motrix?",
       "denylistInvalid": "Introdu un domeniu sau un link HTTP(S) pe fiecare linie.",
-      "denylistLabel": "Listă personală de protecție (un domeniu pe linie, inclusiv subdomeniile)",
+      "denylistLabel": "Listă de excluderi (o gazdă pe linie — gestionată întotdeauna de browser)",
       "enableAria": "Activează preluarea",
       "enableLabel": "Trimite descărcările eligibile către Motrix",
       "loading": "Se încarcă setările de preluare…",

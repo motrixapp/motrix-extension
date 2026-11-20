@@ -163,17 +163,12 @@
       "urlRequired": "WebSocket-URL is verplicht"
     },
     "takeover": {
-      "importDomains": "Cloudopslagdomeinen importeren",
-      "importHint": "Elk domein omvat ook de subdomeinen. Controleer de lijst, bevestig en kies Toepassen om op te slaan.",
-      "importNew": "Toe te voegen",
-      "importCovered": "Al gedekt",
-      "confirmImport": "Import bevestigen",
       "consentBody": "Motrix ontvangt de inlogcookies van de website om bestanden te downloaden. Gevoelige websites blijven in de browser.",
       "consentCancel": "Annuleren",
       "consentConfirm": "Inschakelen",
       "consentDialogLabel": "Downloads naar Motrix verzenden?",
       "denylistInvalid": "Voer per regel één domein of HTTP(S)-link in.",
-      "denylistLabel": "Persoonlijke beschermingslijst (één domein per regel, inclusief subdomeinen)",
+      "denylistLabel": "Uitzonderingslijst (één host per regel – altijd door de browser afgehandeld)",
       "enableAria": "Overname inschakelen",
       "enableLabel": "Geschikte downloads naar Motrix verzenden",
       "loading": "Instellingen voor downloadovername laden…",

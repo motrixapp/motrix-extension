@@ -163,17 +163,12 @@
       "urlRequired": "WebSocket URL’si gerekli"
     },
     "takeover": {
-      "importDomains": "Bulut depolama alan adlarını içe aktar",
-      "importHint": "Her alan adı alt alan adlarını da kapsar. Listeyi inceleyip onaylayın ve kaydetmek için Uygula’yı seçin.",
-      "importNew": "Eklenecekler",
-      "importCovered": "Zaten kapsananlar",
-      "confirmImport": "İçe aktarmayı onayla",
       "consentBody": "Motrix, dosyaları indirmek için sitenin oturum çerezlerini alır. Hassas sitelerin indirmeleri tarayıcıda kalır.",
       "consentCancel": "İptal",
       "consentConfirm": "Etkinleştir",
       "consentDialogLabel": "İndirmeler Motrix’e gönderilsin mi?",
       "denylistInvalid": "Her satıra bir alan adı veya HTTP(S) bağlantısı girin.",
-      "denylistLabel": "Kişisel koruma listesi (her satıra alt alan adları dahil bir alan adı)",
+      "denylistLabel": "Dışlama listesi (her satıra bir ana makine — daima tarayıcıya bırakılır)",
       "enableAria": "Devralmayı etkinleştir",
       "enableLabel": "Uygun indirmeleri Motrix’e gönder",
       "loading": "Devralma ayarları yükleniyor…",

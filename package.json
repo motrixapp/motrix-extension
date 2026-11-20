@@ -1,6 +1,6 @@
 {
   "name": "@motrix/extension",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "private": true,
   "description": "Official Motrix browser extension for Chrome, Microsoft Edge, and Firefox (Manifest V3)",
   "type": "module",
@@ -35,7 +35,6 @@
     "format": "biome format --write .",
     "check:browser-api": "tsc --noEmit -p tsconfig.browser-api.json",
     "check:browser-fixtures": "tsc --noEmit -p tsconfig.browser-fixtures.json",
-    "sync:download-protection": "node scripts/sync-download-protection.mjs",
     "test:chromium-confirmation": "node scripts/verify-chromium-confirmation.mjs",
     "test:firefox-takeover": "node scripts/verify-firefox-takeover.mjs"
   },

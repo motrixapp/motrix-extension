@@ -147,7 +147,7 @@ When **Takeover** is on, eligible browser downloads are sent automatically to th
 The settings let you define:
 
 - a minimum file size, below which the browser keeps the download;
-- a personal protection list. In Settings → Downloads, add or edit one domain per line and select Apply. Pasting an HTTP(S) share link saves only its hostname. A domain covers its subdomains, including page and download hosts. The bundled cloud-drive domains are optional. Select **Import cloud-drive domains** to preview additions and covered domains. Confirm to edit the list, then choose **Apply** to save it. Installation and upgrades never add or restore these exclusions automatically.
+- domains excluded from download takeover. Enter one domain per line in Settings → Downloads, then choose Apply. Pasting a share link saves its hostname. Rules include subdomains and apply to the source page, download URL and redirect chain.
 
 Takeover is off by default and asks for confirmation the first time it is enabled. There is a concrete reason: to keep authenticated downloads working, the extension may read cookies for the target domain and send them with the task to Motrix. A built-in sensitive-host list excludes some banking, government, and medical sites. If Motrix cannot accept an ordinary HTTP(S) download, the extension tries to return it to the browser. Magnet links have no equivalent browser download to fall back to.
 

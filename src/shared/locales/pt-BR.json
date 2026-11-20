@@ -163,17 +163,12 @@
       "urlRequired": "A URL WebSocket é obrigatória"
     },
     "takeover": {
-      "importDomains": "Importar domínios de armazenamento em nuvem",
-      "importHint": "Cada domínio inclui seus subdomínios. Revise a lista, confirme e selecione Aplicar para salvar.",
-      "importNew": "A adicionar",
-      "importCovered": "Já incluídos",
-      "confirmImport": "Confirmar importação",
       "consentBody": "O Motrix recebe os cookies de login do site para baixar arquivos. Downloads de sites sensíveis permanecem no navegador.",
       "consentCancel": "Cancelar",
       "consentConfirm": "Ativar",
       "consentDialogLabel": "Enviar downloads ao Motrix?",
       "denylistInvalid": "Digite um domínio ou link HTTP(S) por linha.",
-      "denylistLabel": "Lista de proteção pessoal (um domínio por linha, incluindo subdomínios)",
+      "denylistLabel": "Lista de exclusão (um host por linha — sempre fica no navegador)",
       "enableAria": "Ativar captura de downloads",
       "enableLabel": "Enviar downloads compatíveis ao Motrix",
       "loading": "Carregando configurações de captura…",
