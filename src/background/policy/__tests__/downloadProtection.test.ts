@@ -33,53 +33,7 @@ it('matches the role, DNS label and path segment', () => {
     isProtectedDownload(list, 'resource', 'https://drive.example/share/file')
   ).toBe(false)
 })
-it('uses the cached ETag, updates only from valid snapshots, and matches locally', async () => {
-  const rule = { host: 'drive.example', matchOn: 'source' }
-  const list = { schemaVersion: 1, revision: 2, rules: [rule] }
-  const get = vi.fn(async () => ({
-      'motrix.downloadProtection.v1': { etag: '"old"', list },
-    })),
-    set = vi.fn(async () => {})
-  const addListener = vi.fn()
-  Object.assign(browser, {
-    storage: { ...browser.storage, local: { get, set } },
-    alarms: { get: vi.fn(async () => ({})), onAlarm: { addListener } },
-  })
-  const fetch = vi
-    .fn()
-    .mockResolvedValueOnce(
-      Response.json(
-        { ...list, revision: 3, rules: [{ ...rule, host: 'new.example' }] },
-        { headers: { etag: '"new"' } }
-      )
-    )
-    .mockResolvedValueOnce(Response.json({ ...list, schemaVersion: 2 }))
-  vi.stubGlobal('fetch', fetch)
-  const protectedUrl = startDownloadProtection()
-  await vi.waitFor(() =>
-    expect(protectedUrl('source', 'https://unlisted.example/')).toBe(false)
-  )
-  expect(protectedUrl('source', 'https://drive.example/file')).toBe(true)
-  expect(fetch).not.toHaveBeenCalled()
-  const refresh = addListener.mock.calls[0]?.[0]
-  refresh({ name: 'motrix.downloadProtection.v1' })
-  await vi.waitFor(() =>
-    expect(protectedUrl('source', 'https://new.example')).toBe(true)
-  )
-  expect(fetch).toHaveBeenCalledWith(
-    'https://motrix.app/rules/download-protection/v1.json',
-    expect.objectContaining({
-      credentials: 'omit',
-      headers: { 'If-None-Match': '"old"' },
-    })
-  )
-  refresh({ name: 'motrix.downloadProtection.v1' })
-  await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(2))
-  expect(set).toHaveBeenCalledTimes(1)
-  expect(protectedUrl('source', 'https://new.example')).toBe(true)
-})
-
-it('combines live personal edits with the official list, including during cold start', async () => {
+it('uses only saved exclusions, including edits made during cold start', async () => {
   const change = vi.fn()
   let resolve!: (value: Record<string, unknown>) => void
   const config = (domain: string) => ({
@@ -100,7 +54,7 @@ it('combines live personal edits with the official list, including during cold s
           }),
       },
     },
-    alarms: { get: async () => ({}), onAlarm: { addListener: vi.fn() } },
+    alarms: { clear: vi.fn(async () => true) },
   })
   const protects = startDownloadProtection()
   const changed = change.mock.calls[0]?.[0]
@@ -116,7 +70,7 @@ it('combines live personal edits with the official list, including during cold s
   expect(protects('resource', 'https://cdn.example/file')).toBe(true)
   changed({ [key]: {} }, 'local')
   expect(protects('resource', 'https://cdn.example/file')).toBe(false)
-  expect(protects('source', 'https://www.123684.com/s/fixture')).toBe(true)
+  expect(protects('source', 'https://www.123684.com/s/fixture')).toBe(false)
 })
 
 it('applies the published snapshot to share pages and download nodes at domain and path boundaries', async () => {

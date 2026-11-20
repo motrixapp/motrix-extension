@@ -163,12 +163,16 @@
       "urlRequired": "L'URL de WebSocket és obligatori"
     },
     "takeover": {
+      "importDomains": "Importa dominis de serveis de núvol",
+      "importHint": "Cada domini inclou els seus subdominis. Revisa la llista, confirma i prem Aplica per desar-la.",
+      "importNew": "Per afegir",
+      "importCovered": "Ja inclosos",
+      "confirmImport": "Confirma la importació",
       "consentBody": "Motrix rep les galetes d'inici de sessió del lloc per baixar fitxers. Els llocs sensibles es deixen al navegador.",
       "consentCancel": "Cancel·la",
       "consentConfirm": "Activa",
       "consentDialogLabel": "Vols enviar les baixades a Motrix?",
       "denylistInvalid": "Introduïu un domini o un enllaç HTTP(S) per línia.",
-      "releaseClick": "Pregunta abans de sol·licitar instal·ladors a motrix.app",
       "denylistLabel": "Llista de protecció personal (un domini per línia, inclosos els subdominis)",
       "enableAria": "Activa la gestió de baixades",
       "enableLabel": "Envia les baixades compatibles a Motrix",

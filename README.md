@@ -118,9 +118,7 @@ Closing the popup preserves the draft and edits for the remainder of its two-min
 
 For manually sent links, connection or submission failures keep the form and its edits without automatically falling back to the browser. An unknown submission result, including recovery of an interrupted submission, blocks resubmission. The confirmation popup stays bound to its original window and selected backend.
 
-With automatic takeover and confirmation enabled, Settings → Downloads offers **Ask before requesting installers on motrix.app**. While connected, an eligible installer on the English or Chinese download page can open the form before the file request. Alt-click an armed link to use the browser once. Site protection and size rules still apply.
-
-Right-clicking a link lets you choose Motrix before it requests the file. Automatic takeover is limited to recognized public Motrix release URLs on dl.motrix.app and GitHub. Protected cloud-drive links and downloads whose replay behavior is unknown stay with the browser. In confirmation mode the extension pauses the original browser item. Choosing the browser, closing the form before submitting, or a definite rejection resumes that item. Cancel stops it. After Motrix accepts the task the extension cancels the browser item. If the reply is lost, check Motrix tasks before resuming it yourself.
+Right-clicking a link lets you choose Motrix before it requests the file. Ordinary HTTP(S) GET downloads follow your takeover, size and site rules. Downloads from excluded pages, hosts or redirect chains and downloads without reliable request evidence stay with the browser. In confirmation mode the extension pauses the original browser item. Choosing the browser, closing the form before submitting, or a definite rejection resumes that item. Cancel stops it. After Motrix accepts the task the extension cancels the browser item. If the reply is lost, check Motrix tasks before resuming it yourself.
 
 ### Create a task manually
 
@@ -149,7 +147,7 @@ When **Takeover** is on, eligible browser downloads are sent automatically to th
 The settings let you define:
 
 - a minimum file size, below which the browser keeps the download;
-- a personal protection list. In Settings → Downloads, add or edit one domain per line and select Apply. Pasting an HTTP(S) share link saves only its hostname. A domain covers its subdomains, including page and download hosts. Remove a line to remove your rule; website list updates keep personal settings.
+- a personal protection list. In Settings → Downloads, add or edit one domain per line and select Apply. Pasting an HTTP(S) share link saves only its hostname. A domain covers its subdomains, including page and download hosts. The bundled cloud-drive domains are optional. Select **Import cloud-drive domains** to preview additions and covered domains. Confirm to edit the list, then choose **Apply** to save it. Installation and upgrades never add or restore these exclusions automatically.
 
 Takeover is off by default and asks for confirmation the first time it is enabled. There is a concrete reason: to keep authenticated downloads working, the extension may read cookies for the target domain and send them with the task to Motrix. A built-in sensitive-host list excludes some banking, government, and medical sites. If Motrix cannot accept an ordinary HTTP(S) download, the extension tries to return it to the browser. Magnet links have no equivalent browser download to fall back to.
 

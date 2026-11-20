@@ -80,11 +80,7 @@ export function createMdxpSimulator(server) {
         operationId: input.idempotencyKey,
         suggestedFilename: input.meta.suggestedFilename,
       })
-      if (
-        name === 'early-failed' ||
-        name === 'early-confirm-rejected' ||
-        name === 'click-rejected'
-      )
+      if (name === 'early-failed' || name === 'early-confirm-rejected')
         return reject(-32602, 'Injected pre-dispatch rejection')
       if (name === 'early-disconnect-before') return socket.terminate()
       let task = state.tasks.get(key)
@@ -93,8 +89,7 @@ export function createMdxpSimulator(server) {
       if (!task) {
         task = { taskId: `sim-${state.tasks.size + 1}`, digest }
         state.tasks.set(key, task)
-        if (name === 'early-unknown' || name === 'click-unknown')
-          return socket.terminate()
+        if (name === 'early-unknown') return socket.terminate()
       }
       if (name === 'early-invalid-result') return reply({ taskId: null })
       if (name === 'early-delayed') {

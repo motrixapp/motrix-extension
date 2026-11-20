@@ -64,10 +64,7 @@ export function DownloadConfirmationDialog() {
       key={draft.id}
       draft={draft}
       onDismiss={() => {
-        if (
-          draft.target.pausedDownloadId !== undefined ||
-          draft.target.releaseClickId
-        ) {
+        if (draft.target.pausedDownloadId !== undefined) {
           portRef.current?.postMessage({
             id: draft.id,
             decision: { action: 'dismiss' },
@@ -115,9 +112,7 @@ export function DownloadConfirmationForm({
   const sending = submittedDraft === draft || draft.phase === 'submitting'
   const disabled = sending || draft.phase === 'unknown' || remaining <= 0
   const browserDownloadContinues =
-    draft.target.origin === 'auto' &&
-    !draft.target.nativeDownloadCancelled &&
-    !draft.target.releaseClickId
+    draft.target.origin === 'auto' && !draft.target.nativeDownloadCancelled
   const browserAllowed =
     !isMagnetUrl(draft.target.url) &&
     (draft.target.origin === 'auto' || supportsBrowserDownload())
@@ -149,8 +144,7 @@ export function DownloadConfirmationForm({
               {t(
                 draft.target.pausedDownloadId !== undefined
                   ? 'popup.confirmDownload.pausedDescription'
-                  : draft.target.origin === 'auto' &&
-                      !draft.target.releaseClickId
+                  : draft.target.origin === 'auto'
                     ? draft.target.nativeDownloadCancelled
                       ? 'popup.confirmDownload.earlyInterceptedDescription'
                       : 'popup.confirmDownload.interceptedDescription'
@@ -194,21 +188,18 @@ export function DownloadConfirmationForm({
               {t(confirmationErrorKey(draft.error))}
             </p>
           )}
-          {browserAllowed &&
-            !browserDownloadContinues &&
-            !draft.target.releaseClickId && (
-              <p
-                id="confirmation-browser-hint"
-                className="shrink-0 text-xs text-muted-foreground"
-              >
-                {t('popup.confirmDownload.browserHint')}
-              </p>
-            )}
+          {browserAllowed && !browserDownloadContinues && (
+            <p
+              id="confirmation-browser-hint"
+              className="shrink-0 text-xs text-muted-foreground"
+            >
+              {t('popup.confirmDownload.browserHint')}
+            </p>
+          )}
           <p className="shrink-0 text-xs text-muted-foreground">
             {sending
               ? t('popup.quickAdd.submitting')
-              : draft.target.pausedDownloadId !== undefined ||
-                  draft.target.releaseClickId
+              : draft.target.pausedDownloadId !== undefined
                 ? t('popup.pairing.expiresIn', {
                     time: `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}`,
                   })
@@ -234,7 +225,7 @@ export function DownloadConfirmationForm({
                 size="sm"
                 disabled={disabled}
                 aria-describedby={
-                  browserDownloadContinues || draft.target.releaseClickId
+                  browserDownloadContinues
                     ? undefined
                     : 'confirmation-browser-hint'
                 }

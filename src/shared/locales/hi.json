@@ -163,12 +163,16 @@
       "urlRequired": "WebSocket URL ज़रूरी है"
     },
     "takeover": {
+      "importDomains": "क्लाउड स्टोरेज डोमेन आयात करें",
+      "importHint": "हर डोमेन में उसके सबडोमेन भी शामिल हैं। सूची जाँचें, पुष्टि करें और सहेजने के लिए लागू करें चुनें।",
+      "importNew": "जोड़े जाएँगे",
+      "importCovered": "पहले से शामिल",
+      "confirmImport": "आयात की पुष्टि करें",
       "consentBody": "फ़ाइलें डाउनलोड करने के लिए Motrix को साइट की लॉगिन कुकीज़ मिलती हैं। संवेदनशील साइटों के डाउनलोड ब्राउज़र में ही रहते हैं।",
       "consentCancel": "रद्द करें",
       "consentConfirm": "चालू करें",
       "consentDialogLabel": "डाउनलोड Motrix को भेजें?",
       "denylistInvalid": "हर पंक्ति में एक डोमेन या HTTP(S) लिंक दर्ज करें।",
-      "releaseClick": "motrix.app से इंस्टॉलर मँगाने से पहले पूछें",
       "denylistLabel": "निजी सुरक्षा सूची (हर पंक्ति में एक डोमेन, उपडोमेन सहित)",
       "enableAria": "डाउनलोड टेकओवर चालू करें",
       "enableLabel": "उपयुक्त डाउनलोड Motrix को भेजें",

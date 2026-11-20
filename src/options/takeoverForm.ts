@@ -29,7 +29,6 @@ export function personalDomain(input: string): string | null {
 }
 
 export interface TakeoverForm {
-  releaseClick?: boolean | undefined
   downloadMode: DownloadMode
   enabled: boolean
   thresholdMB: string // '' = none
@@ -51,7 +50,6 @@ export function configToForm(config: TakeoverSettings): TakeoverForm {
   return {
     downloadMode: config.downloadMode ?? 'direct',
     enabled: config.enabled,
-    ...(config.releaseClick ? { releaseClick: true } : {}),
     thresholdMB: typeof threshold === 'number' ? String(threshold) : '',
     unknownSizeAction: config.unknownSizeAction ?? 'chrome',
     denylist: denylist.join('\n'),
@@ -85,9 +83,6 @@ export function formToConfig(
   return {
     downloadMode: form.downloadMode ?? 'direct',
     enabled: form.enabled,
-    ...(form.releaseClick === undefined
-      ? {}
-      : { releaseClick: form.releaseClick }),
     consentAckVersion,
     defaultAction: 'motrix',
     unknownSizeAction: form.unknownSizeAction,

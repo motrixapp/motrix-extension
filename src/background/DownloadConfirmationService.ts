@@ -331,8 +331,8 @@ export class DownloadConfirmationService {
     for (const pending of this.pending.values()) {
       const held = pending.draft.target.pausedDownloadId
       if (
-        ((held !== undefined && (id === undefined || held === id)) ||
-          (id === undefined && !!pending.draft.target.releaseClickId)) &&
+        held !== undefined &&
+        (id === undefined || held === id) &&
         pending.draft.phase === 'editing'
       )
         pending.settle({ action: 'unavailable' })

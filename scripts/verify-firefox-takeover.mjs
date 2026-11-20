@@ -15,11 +15,6 @@ import {
   pairedMode,
   runPairedBrowser,
 } from './fixtures/paired-browser-driver.mjs'
-import {
-  buildClickScript,
-  clickScript,
-  verifyClickResult,
-} from './fixtures/release-click-browser.mjs'
 import { createTakeoverOrigin } from './fixtures/takeover-origin.mjs'
 import {
   FIREFOX_CASES,
@@ -116,12 +111,10 @@ try {
         },
       },
     })
-  await buildClickScript(root, extension)
   await writeFile(
     join(extension, 'manifest.json'),
     JSON.stringify({
       manifest_version: 3,
-      content_scripts: [clickScript],
       name: 'Motrix Firefox takeover regression fixture',
       version: '1.0',
       permissions: [
@@ -254,16 +247,12 @@ try {
     const archive = zipSync(
       Object.fromEntries(
         await Promise.all(
-          [
-            'manifest.json',
-            'runner.html',
-            'fixture.js',
-            'bootstrap.js',
-            'release-click.js',
-          ].map(async (name) => [
-            name,
-            new Uint8Array(await readFile(join(extension, name))),
-          ])
+          ['manifest.json', 'runner.html', 'fixture.js', 'bootstrap.js'].map(
+            async (name) => [
+              name,
+              new Uint8Array(await readFile(join(extension, name))),
+            ]
+          )
         )
       )
     )
@@ -369,62 +358,18 @@ try {
     activeCase = { name, status: 'running' }
     report.cases.push(activeCase)
     await saveReport()
-    const running = command('script.evaluate', {
+    const response = await command('script.evaluate', {
       expression: `runCase(${JSON.stringify({ baseUrl, name })}).then(JSON.stringify)`,
       target: { context },
       awaitPromise: true,
       resultOwnership: 'none',
     })
-    // A failed UI assertion can close the session before we await this command.
-    void running.catch(() => {})
-    if (name.startsWith('click-')) {
-      let tab
-      const until = Date.now() + 4000
-      while (!tab && Date.now() < until) {
-        const tree = await command('browsingContext.getTree', {})
-        tab = tree.contexts.find((t) =>
-          t.url.startsWith(`${baseUrl}/start/${name}`)
-        )?.context
-        if (!tab) await delay(30)
-      }
-      assert.ok(tab, name)
-      const ready = await command('script.evaluate', {
-        target: { context: tab },
-        awaitPromise: true,
-        expression: `(async()=>{document.querySelector('a').focus();const until=Date.now()+3000;while(!document.documentElement.dataset.fixtureReady && Date.now()<until)await new Promise(r=>setTimeout(r,20));return !!document.documentElement.dataset.fixtureReady})()`,
-      })
-      assert.equal(ready.result?.value, true, name)
-      const keys = (type, value) => ({ type, value })
-      const alt = '\uE00A'
-      await command('input.performActions', {
-        context: tab,
-        actions: [
-          {
-            type: 'key',
-            id: 'keyboard',
-            actions: [
-              ...(name === 'click-bypass' ? [keys('keyDown', alt)] : []),
-              keys('keyDown', '\uE007'),
-              keys('keyUp', '\uE007'),
-              ...(name === 'click-bypass' ? [keys('keyUp', alt)] : []),
-            ],
-          },
-        ],
-      })
-    }
-    const response = await running
     assert.equal(response.type, 'success', JSON.stringify(response))
     const result = JSON.parse(response.result.value)
     result.requests = requests.get(name) ?? []
     result.mdxp = simulator.snapshot(name)
     activeCase.result = result
     console.log(JSON.stringify(result))
-    if (name.startsWith('click-')) {
-      verifyClickResult(name, result)
-      activeCase.status = 'passed'
-      await saveReport()
-      continue
-    }
     const expectedTasks = [
       'known',
       'probe-only',

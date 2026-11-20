@@ -340,7 +340,7 @@ it('releases a pending draft when its window closes', async () => {
   await expect(pending).resolves.toEqual({ action: 'cancel' })
 })
 
-it.each([{ pausedDownloadId: 17 }, { releaseClickId: 'release' }])(
+it.each([{ pausedDownloadId: 17 }])(
   'closes a browser-owned confirmation only after the last popup detaches (%o)',
   async (marker) => {
     const service = createDownloadConfirmation()

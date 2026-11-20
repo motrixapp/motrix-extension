@@ -3,11 +3,11 @@ import type { DownloadSubmitParams } from '@motrix/mdxp'
 import { createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { buildSubmitParams } from '@/background/capture/buildSubmitParams'
+import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import { DownloadConfirmationService } from '@/background/DownloadConfirmationService'
-import { registerReleaseClicks } from '@/background/interception/releaseClick'
 import { DownloadConfirmationForm } from '@/popup/DownloadConfirmationDialog'
+import { extensionBrowser as browser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
-import { TAKEOVER_DEFAULT } from '@/shared/takeover'
 import { applyTaskOptions } from '@/shared/taskOptions'
 
 declare global {
@@ -42,36 +42,32 @@ Object.assign(window, {
         )
       },
     })
-    registerReleaseClicks(
-      {
-        getConfig: async () => ({
-          ...TAKEOVER_DEFAULT,
-          enabled: true,
-          releaseClick: true,
-          downloadMode: 'confirm',
-        }),
-        captureGuard: async () => ({
-          origin: 'auto',
-          endpointId: 'local-candidate',
-          assertCurrent() {},
-        }),
-        available: () => true,
-        protected: () => false,
-        confirmation,
-        actions: (target, _guard, beforeSend) => ({
-          submit: async (options) => {
-            await beforeSend()
-            return window.submitLocalCandidate(
+    browser.runtime.onMessage.addListener((message, sender) => {
+      const url = new URL('/download/click-live', origin).href
+      if (
+        sender.id !== browser.runtime.id ||
+        sender.url !== new URL('/start/click-live', origin).href ||
+        sender.tab?.windowId === undefined ||
+        message?.kind !== 'fixture.confirm' ||
+        message.url !== url
+      )
+        return
+      const target = normalizeTarget({
+        url,
+        referrer: sender.url,
+        origin: 'context-menu',
+      })
+      void confirmation.request(
+        target,
+        sender.tab.windowId,
+        {
+          submit: async (options) =>
+            window.submitLocalCandidate(
               applyTaskOptions(buildSubmitParams(target, [], {}), options)
-            )
-          },
-        }),
-        report: (outcome) => {
-          document.body.dataset.outcome = outcome
+            ),
         },
-      },
-      (url) => url === `${origin}/start/click-live`,
-      (url) => url === `${origin}/download/click-live`
-    )
+        { endpointId: 'local-candidate', endpointRevision: 0 }
+      )
+    })
   },
 })
