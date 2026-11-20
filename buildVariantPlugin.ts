@@ -131,17 +131,3 @@ export function buildOutputHygienePlugin(outputDir: string): Plugin {
     },
   }
 }
-
-export function localHandoffSdkPlugin(checkout?: string): Plugin {
-  const name = 'virtual:local-handoff-sdk'
-  return {
-    name: 'motrix-local-handoff-sdk',
-    resolveId: (id) => (id === name ? `\0${name}` : null),
-    load(id) {
-      if (id !== `\0${name}`) return null
-      return checkout
-        ? `import * as sdk from ${JSON.stringify(resolve(checkout, 'dist/browser.js'))};export default sdk`
-        : 'export default null'
-    },
-  }
-}

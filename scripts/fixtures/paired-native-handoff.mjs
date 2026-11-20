@@ -1,14 +1,11 @@
-// Built only by local paired acceptance. This SDK resolves to a local candidate
-// checkout; shipping bundles keep their published dependency and legacy path.
-
-import * as sdk from 'virtual:paired-handoff-sdk'
+import * as sdk from '@motrix/mdxp'
 import { Methods as installedMethods } from '@motrix/mdxp/browser'
 import { createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ConnectionManager } from '@/background/ConnectionManager'
 import { buildSubmitParams } from '@/background/capture/buildSubmitParams'
 import { DownloadConfirmationService } from '@/background/DownloadConfirmationService'
-import { candidateHandoffPeer } from '@/background/interception/candidatePeer'
+import { localHandoffPeer } from '@/background/interception/localHandoffPeer'
 import { registerNativeConfirmation } from '@/background/interception/nativeConfirmation'
 import { observeReplaySources } from '@/background/interception/replaySource'
 import { DiscoveryService } from '@/background/mbp1/discovery-service'
@@ -30,11 +27,8 @@ let manager,
   connected,
   stage
 function peer() {
-  const candidate = candidateHandoffPeer(
-    manager,
-    sdk,
-    async (target, options) =>
-      applyTaskOptions(buildSubmitParams(target, [], {}), options)
+  const candidate = localHandoffPeer(manager, async (target, options) =>
+    applyTaskOptions(buildSubmitParams(target, [], {}), options)
   )
   if (!candidate) return
   const observe = async (method) => {

@@ -892,7 +892,7 @@ export class ConnectionManager {
 
   private localHandoffPrincipal: string | undefined
   private localHandoffAdvertisement: unknown
-  /** Only an authenticated local session can carry the candidate handoff. */
+  /** Only an authenticated local session can carry a download handoff. */
   getLocalHandoffChannel() {
     const conn = this.currentConn
     const generation = this.generation

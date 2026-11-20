@@ -7,7 +7,6 @@ import {
   buildOutputHygienePlugin,
   buildVariantPlugin,
   cspSafeZodPlugin,
-  localHandoffSdkPlugin,
   safariManifestPlugin,
 } from '#build-variant-plugin'
 import manifest from '#manifest-config'
@@ -27,11 +26,6 @@ export default defineConfig(({ command, mode }) => {
   )
   return {
     plugins: [
-      localHandoffSdkPlugin(
-        !webStore && ['chromium', 'firefox'].includes(mode)
-          ? process.env.MOTRIX_LOCAL_HANDOFF_SDK
-          : undefined
-      ),
       buildVariantPlugin(excludeYouTube),
       cspSafeZodPlugin(),
       react(),

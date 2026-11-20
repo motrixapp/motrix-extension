@@ -8,11 +8,8 @@ import { build } from 'vite'
 
 export const pairedMode = process.argv.includes('--paired-handoff')
 export async function buildPairedFixture(root, outDir, browser) {
-  if (!process.env.MOTRIX_HANDOFF_SDK || !process.env.MOTRIX_HOST_DIR)
-    throw new Error(
-      'Set MOTRIX_HANDOFF_SDK and MOTRIX_HOST_DIR to the local candidate checkouts'
-    )
-  const sdk = path.resolve(process.env.MOTRIX_HANDOFF_SDK, 'dist/browser.js')
+  if (!process.env.MOTRIX_HOST_DIR)
+    throw new Error('Set MOTRIX_HOST_DIR to the Motrix checkout')
   await build({
     root,
     configFile: false,
@@ -23,7 +20,7 @@ export async function buildPairedFixture(root, outDir, browser) {
       'process.env.NODE_ENV': JSON.stringify('production'),
     },
     resolve: {
-      alias: { '@': path.join(root, 'src'), 'virtual:paired-handoff-sdk': sdk },
+      alias: { '@': path.join(root, 'src') },
     },
     build: {
       outDir,
@@ -54,7 +51,6 @@ export async function runPairedBrowser({
     env: {
       ...process.env,
       MOTRIX_FIXTURE_ORIGIN: origin,
-      MOTRIX_HANDOFF_SDK: path.resolve(process.env.MOTRIX_HANDOFF_SDK),
     },
   })
   const exited = once(child, 'exit')
@@ -95,7 +91,12 @@ export async function runPairedBrowser({
     backend: 'MBP1 WebSocket + SQLite + aria2',
     extensionRevision: revision(process.cwd()),
     hostRevision: revision(repo),
-    sdkRevision: revision(path.resolve(process.env.MOTRIX_HANDOFF_SDK)),
+    sdkVersion: JSON.parse(
+      await readFile(
+        new URL('../package.json', import.meta.resolve('@motrix/mdxp')),
+        'utf8'
+      )
+    ).version,
     status: 'running',
     cases: [],
   }
