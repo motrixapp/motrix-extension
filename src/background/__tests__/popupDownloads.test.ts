@@ -7,7 +7,9 @@ import { MediaStore } from '@/background/MediaStore'
 import { createPopupDownloadHandlers } from '@/background/popupDownloads'
 import type { Browser } from '@/shared/browser'
 import { newDownloadOperationId } from '@/shared/integration'
-import { mediaStorageKey } from '@/shared/media'
+import { type DetectedMedia, mediaStorageKey } from '@/shared/media'
+import { MEDIA_SUBMIT_ERROR } from '@/shared/messages'
+import { TAKEOVER_DEFAULT, type TakeoverConfig } from '@/shared/takeover'
 
 const sender = {
   id: 'extension-id',
@@ -28,9 +30,10 @@ function deferred() {
   return { promise, resolve }
 }
 
-async function fixture() {
+async function fixture(mediaItem: DetectedMedia = media) {
   const ready = deferred()
   let online = false
+  const dispatched = vi.fn()
   const manager = {
     ensureReady: vi.fn(async () => {
       await ready.promise
@@ -56,6 +59,7 @@ async function fixture() {
       ) => {
         await options.onSubmitting?.()
         options.assertCurrent?.()
+        dispatched()
         return { taskId: 'task-1' }
       }
     ),
@@ -71,19 +75,23 @@ async function fixture() {
     }),
   })
   const mediaStore = new MediaStore()
-  await mediaStore.add(4, [media])
+  await mediaStore.add(4, [mediaItem])
   const mediaCredentialStore = new MediaCredentialStore()
   const observation = vi.spyOn(mediaCredentialStore, 'get')
   const getActiveTabs = vi.fn(async () => [
-    { id: 4, url: media.pageUrl, title: 'Watch' } as Browser.tabs.Tab,
+    { id: 4, url: mediaItem.pageUrl, title: 'Watch' } as Browser.tabs.Tab,
   ])
   const cookieApi = { getAll: vi.fn(async () => []) }
+  const getTakeoverConfig = vi.fn(
+    async (): Promise<TakeoverConfig> => TAKEOVER_DEFAULT
+  )
   const handlers = createPopupDownloadHandlers({
     manager,
     submissions,
     mediaStore,
     mediaCredentialStore,
     getActiveTabs,
+    getTakeoverConfig,
     cookieApi,
     extensionId: sender.id,
     extensionBaseUrl: 'chrome-extension://extension-id/',
@@ -91,7 +99,16 @@ async function fixture() {
     userAgent: 'test-browser',
     webStore: false,
   })
-  return { handlers, ready, manager, getActiveTabs, cookieApi, observation }
+  return {
+    handlers,
+    ready,
+    manager,
+    getActiveTabs,
+    getTakeoverConfig,
+    cookieApi,
+    observation,
+    dispatched,
+  }
 }
 beforeEach(() => {
   vi.stubGlobal('crypto', webcrypto)
@@ -108,6 +125,148 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('production popup download handlers', () => {
+  const exclusion = (domain: string): TakeoverConfig => ({
+    ...TAKEOVER_DEFAULT,
+    enabled: false,
+    rules: [{ id: 'excluded', action: 'chrome', match: { domains: [domain] } }],
+  })
+
+  it.each(['www.youtube.com', 'cdn.example'])(
+    'rejects a blocked page or media host before waking Motrix: %s',
+    async (domain) => {
+      const f = await fixture()
+      f.getTakeoverConfig.mockResolvedValue(exclusion(domain))
+      await expect(
+        f.handlers.submitMedia(
+          {
+            idempotencyKey: newDownloadOperationId(),
+            mediaKey: mediaStorageKey(media),
+          },
+          sender
+        )
+      ).rejects.toThrow(MEDIA_SUBMIT_ERROR.siteExcluded)
+      expect(f.manager.ensureReady).not.toHaveBeenCalled()
+      expect(f.observation).not.toHaveBeenCalled()
+      expect(f.dispatched).not.toHaveBeenCalled()
+    }
+  )
+
+  it('rejects an excluded secondary audio source', async () => {
+    const item = {
+      ...media,
+      kind: 'mux' as const,
+      audioUrl: 'https://audio.example/a.m4a',
+    }
+    const f = await fixture(item)
+    f.getTakeoverConfig.mockResolvedValue(exclusion('audio.example'))
+    await expect(
+      f.handlers.submitMedia(
+        {
+          idempotencyKey: newDownloadOperationId(),
+          mediaKey: mediaStorageKey(item),
+        },
+        sender
+      )
+    ).rejects.toThrow(MEDIA_SUBMIT_ERROR.siteExcluded)
+    expect(f.manager.ensureReady).not.toHaveBeenCalled()
+  })
+
+  it('rejects a blocked page-resolve before waking Motrix or reading cookies', async () => {
+    const f = await fixture()
+    f.getTakeoverConfig.mockResolvedValue(exclusion('youtube.com'))
+    await expect(
+      f.handlers.resolvePageDownload(
+        {
+          idempotencyKey: newDownloadOperationId(),
+        },
+        sender
+      )
+    ).rejects.toThrow(MEDIA_SUBMIT_ERROR.siteExcluded)
+    expect(f.manager.ensureReady).not.toHaveBeenCalled()
+    expect(f.cookieApi.getAll).not.toHaveBeenCalled()
+  })
+
+  it.each(['media', 'page'] as const)(
+    'rechecks exclusions after waiting for readiness before reading credentials: %s',
+    async (source) => {
+      const f = await fixture()
+      const operation =
+        source === 'media'
+          ? f.handlers.submitMedia(
+              {
+                idempotencyKey: newDownloadOperationId(),
+                mediaKey: mediaStorageKey(media),
+              },
+              sender
+            )
+          : f.handlers.resolvePageDownload(
+              { idempotencyKey: newDownloadOperationId() },
+              sender
+            )
+      const rejected = expect(operation).rejects.toThrow(
+        MEDIA_SUBMIT_ERROR.siteExcluded
+      )
+      await vi.waitFor(() =>
+        expect(f.manager.ensureReady).toHaveBeenCalledOnce()
+      )
+      f.getTakeoverConfig.mockResolvedValue(exclusion('youtube.com'))
+      f.ready.resolve()
+      await rejected
+      expect(f.observation).not.toHaveBeenCalled()
+      expect(f.cookieApi.getAll).not.toHaveBeenCalled()
+      expect(f.dispatched).not.toHaveBeenCalled()
+    }
+  )
+
+  it('rechecks an exclusion immediately before dispatch', async () => {
+    const f = await fixture()
+    let reads = 0
+    f.getActiveTabs.mockImplementation(async () => {
+      reads += 1
+      if (reads === 2)
+        f.getTakeoverConfig.mockResolvedValue(exclusion('youtube.com'))
+      return [{ id: 4, url: media.pageUrl, title: 'Watch' } as Browser.tabs.Tab]
+    })
+    const operation = f.handlers.submitMedia(
+      {
+        idempotencyKey: newDownloadOperationId(),
+        mediaKey: mediaStorageKey(media),
+      },
+      sender
+    )
+    const rejected = expect(operation).rejects.toThrow(
+      MEDIA_SUBMIT_ERROR.siteExcluded
+    )
+    await vi.waitFor(() => expect(f.manager.ensureReady).toHaveBeenCalledOnce())
+    f.ready.resolve()
+    await rejected
+    expect(f.manager.submitDownload).toHaveBeenCalledOnce()
+    expect(f.dispatched).not.toHaveBeenCalled()
+  })
+
+  it('rechecks after the submission record is persisted', async () => {
+    const f = await fixture()
+    f.getTakeoverConfig
+      .mockResolvedValueOnce(TAKEOVER_DEFAULT)
+      .mockResolvedValueOnce(TAKEOVER_DEFAULT)
+      .mockResolvedValueOnce(TAKEOVER_DEFAULT)
+      .mockResolvedValue(exclusion('youtube.com'))
+    const operation = f.handlers.submitMedia(
+      {
+        idempotencyKey: newDownloadOperationId(),
+        mediaKey: mediaStorageKey(media),
+      },
+      sender
+    )
+    const rejected = expect(operation).rejects.toThrow(
+      MEDIA_SUBMIT_ERROR.siteExcluded
+    )
+    await vi.waitFor(() => expect(f.manager.ensureReady).toHaveBeenCalledOnce())
+    f.ready.resolve()
+    await rejected
+    expect(f.manager.submitDownload).toHaveBeenCalledOnce()
+    expect(f.dispatched).not.toHaveBeenCalled()
+  })
   it('waits for readiness before reading HLS capabilities and credentials', async () => {
     const f = await fixture()
     const operation = f.handlers.submitMedia(

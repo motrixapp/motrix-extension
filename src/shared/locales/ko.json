@@ -368,6 +368,7 @@
       "sent": "전송됨",
       "sending": "전송 중",
       "submitFailed": "리소스를 전송하지 못했습니다. 다시 시도하세요.",
+      "siteExcluded": "이 사이트 또는 미디어 소스는 제외되어 있습니다. Motrix로 보내려면 설정에서 제외를 해제하세요.",
       "title": "리소스 감지",
       "unavailableDescription": "페이지를 바꾸거나 나중에 다시 시도하세요.",
       "unavailableTitle": "이 페이지를 검색할 수 없습니다",

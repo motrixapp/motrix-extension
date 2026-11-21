@@ -95,6 +95,7 @@ export class DownloadSubmissionService {
       resourceKey: string
       directory?: DirectorySelection | undefined
       pairIfNeeded?: boolean | undefined
+      validateBeforeSubmit?: (() => Promise<void>) | undefined
     },
     prepare: (context: DownloadPreparation) => Promise<DownloadSubmitParams>
   ): Promise<DownloadSubmitResult> {
@@ -176,7 +177,8 @@ export class DownloadSubmissionService {
       { assertCurrent, deadlineAt },
       prepare,
       input.pairIfNeeded === true,
-      input.directory
+      input.directory,
+      input.validateBeforeSubmit
     )
     this.flights.set(record.id, operation)
     try {
@@ -196,7 +198,8 @@ export class DownloadSubmissionService {
     context: DownloadPreparation,
     prepare: (context: DownloadPreparation) => Promise<DownloadSubmitParams>,
     pairIfNeeded: boolean,
-    directory?: DirectorySelection
+    directory?: DirectorySelection,
+    validateBeforeSubmit?: () => Promise<void>
   ): Promise<DownloadSubmitResult> {
     try {
       await this.persist()
@@ -225,9 +228,13 @@ export class DownloadSubmissionService {
           assertCurrent: context.assertCurrent,
           directoryInstanceId: directory?.instanceId,
           onSubmitting: async () => {
+            await validateBeforeSubmit?.()
+            context.assertCurrent()
             record.state = 'submitting'
             record.updatedAt = this.now()
             await this.persist()
+            await validateBeforeSubmit?.()
+            context.assertCurrent()
           },
         }
       )

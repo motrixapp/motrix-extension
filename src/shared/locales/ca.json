@@ -368,6 +368,7 @@
       "sent": "Enviat",
       "sending": "Enviant",
       "submitFailed": "No s'ha pogut enviar el recurs. Torna-ho a provar.",
+      "siteExcluded": "Aquest lloc o font multimèdia està exclòs. Elimina l’exclusió a la configuració per enviar-lo a Motrix.",
       "title": "Detector de recursos",
       "unavailableDescription": "Canvia de pàgina o torna-ho a provar més tard.",
       "unavailableTitle": "No es pot explorar la pàgina",

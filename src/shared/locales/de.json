@@ -368,6 +368,7 @@
       "sent": "Gesendet",
       "sending": "Wird gesendet",
       "submitFailed": "Die Ressource konnte nicht gesendet werden. Bitte erneut versuchen.",
+      "siteExcluded": "Diese Website oder Medienquelle ist ausgeschlossen. Entferne die Ausnahme in den Einstellungen, um an Motrix zu senden.",
       "title": "Ressourcen erkennen",
       "unavailableDescription": "Wechseln Sie die Seite oder versuchen Sie es später erneut.",
       "unavailableTitle": "Die Seite kann nicht gescannt werden",

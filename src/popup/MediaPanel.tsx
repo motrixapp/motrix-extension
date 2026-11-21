@@ -388,6 +388,7 @@ function ResourceRow({
   media,
   supported,
   canSubmit,
+  siteExcluded,
   pairIfNeeded,
   previewEnabled,
   selected,
@@ -400,6 +401,7 @@ function ResourceRow({
   media: DetectedMedia
   supported: boolean
   canSubmit: boolean
+  siteExcluded: boolean
   pairIfNeeded: boolean
   previewEnabled: boolean
   selected: boolean
@@ -417,13 +419,17 @@ function ResourceRow({
   const host = mediaHost(media)
   const metadata = readableMediaMetadata(media)
   const unsupportedReason = t('popup.sniffer.unsupportedReason')
-  const disabledReason = !canSubmit
-    ? t('popup.integration.pairingUnavailable')
-    : !supported
-      ? unsupportedReason
-      : null
+  const disabledReason = siteExcluded
+    ? t('popup.sniffer.siteExcluded')
+    : !canSubmit
+      ? t('popup.integration.pairingUnavailable')
+      : !supported
+        ? unsupportedReason
+        : null
   const disabledHint =
-    canSubmit && !supported ? t('popup.sniffer.refreshCapabilitiesHint') : null
+    !siteExcluded && canSubmit && !supported
+      ? t('popup.sniffer.refreshCapabilitiesHint')
+      : null
   const actionLabel = disabledReason
     ? t('popup.sniffer.unsupportedResource', {
         name,
@@ -454,7 +460,7 @@ function ResourceRow({
         state === 'sent' &&
           'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
       )}
-      disabled={!supported || !canSubmit || state !== 'idle'}
+      disabled={siteExcluded || !supported || !canSubmit || state !== 'idle'}
       focusableWhenDisabled={!!disabledReason}
       title={disabledReason ? undefined : host}
       aria-label={actionLabel}
@@ -548,11 +554,13 @@ function ResourceRow({
 function ResolvablePageAction({
   site,
   canSubmit,
+  siteExcluded,
   pairIfNeeded,
   onResolve,
 }: {
   site: 'bilibili' | 'youtube'
   canSubmit: boolean
+  siteExcluded: boolean
   pairIfNeeded: boolean
   onResolve: () => Promise<{ taskId: string }>
 }): React.ReactElement {
@@ -561,7 +569,11 @@ function ResolvablePageAction({
   const [submitting, setSubmitting] = useState(false)
   const [taskId, setTaskId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const discanSubmitReason = t('popup.integration.pairingUnavailable')
+  const disabledReason = siteExcluded
+    ? t('popup.sniffer.siteExcluded')
+    : !canSubmit
+      ? t('popup.integration.pairingUnavailable')
+      : null
 
   const submit = async (): Promise<void> => {
     setSubmitting(true)
@@ -583,9 +595,9 @@ function ResolvablePageAction({
         type="button"
         size="xs"
         variant="secondary"
-        disabled={!canSubmit || submitting || taskId !== null}
-        title={!canSubmit ? discanSubmitReason : undefined}
-        aria-describedby={!canSubmit ? disabledDescriptionId : undefined}
+        disabled={disabledReason !== null || submitting || taskId !== null}
+        title={disabledReason ?? undefined}
+        aria-describedby={disabledReason ? disabledDescriptionId : undefined}
         onClick={() => void submit()}
       >
         {submitting ? (
@@ -616,9 +628,9 @@ function ResolvablePageAction({
           </span>
         )}
       </span>
-      {!canSubmit && (
+      {disabledReason && (
         <span id={disabledDescriptionId} className="sr-only">
-          {discanSubmitReason}
+          {disabledReason}
         </span>
       )}
     </div>
@@ -630,6 +642,7 @@ interface MediaPanelProps {
   connected?: boolean
   pairing?: PairingState
   submissionKey?: string
+  siteExcluded?: boolean
   onMediaCountChange?: (count: number) => void
 }
 
@@ -638,6 +651,7 @@ export const MediaPanel = memo(function MediaPanel({
   connected = true,
   pairing = 'stored',
   submissionKey = 'default',
+  siteExcluded = false,
   onMediaCountChange,
 }: MediaPanelProps): React.ReactElement {
   const { t } = useTranslation()
@@ -779,7 +793,7 @@ export const MediaPanel = memo(function MediaPanel({
 
   const submitOne = useCallback(
     async (item: DetectedMedia): Promise<boolean> => {
-      if (!canAttemptSend) return false
+      if (siteExcluded || !canAttemptSend) return false
       if (connected && !selectionKinds.includes(item.kind)) return false
       const key = mediaStorageKey(item)
       if (inFlight.current.has(key)) return false
@@ -814,12 +828,13 @@ export const MediaPanel = memo(function MediaPanel({
         }
       }
     },
-    [canAttemptSend, connected, download, selectionKinds, t]
+    [siteExcluded, canAttemptSend, connected, download, selectionKinds, t]
   )
 
   const submitSelected = async (): Promise<void> => {
     if (
       batchSubmitting ||
+      siteExcluded ||
       !canAttemptSend ||
       selectedUnsupported ||
       selectedMedia.length === 0
@@ -885,11 +900,13 @@ export const MediaPanel = memo(function MediaPanel({
         {scanning ? <Spinner /> : <RefreshCw aria-hidden="true" />}
       </Button>
     )
-  const batchDisabledReason = !canAttemptSend
-    ? t('popup.integration.pairingUnavailable')
-    : selectedUnsupported
-      ? t('popup.sniffer.unsupportedSelectionReason')
-      : null
+  const batchDisabledReason = siteExcluded
+    ? t('popup.sniffer.siteExcluded')
+    : !canAttemptSend
+      ? t('popup.integration.pairingUnavailable')
+      : selectedUnsupported
+        ? t('popup.sniffer.unsupportedSelectionReason')
+        : null
   const batchDescriptionId = useId()
   const footerCount =
     filter === 'image' && activeImageFilterCount > 0
@@ -912,11 +929,20 @@ export const MediaPanel = memo(function MediaPanel({
         data-testid="media-panel-card"
         className="flex flex-col"
       >
+        {siteExcluded && (
+          <p
+            role="status"
+            className="border-b border-border px-3 py-2 text-xs text-muted-foreground [overflow-wrap:anywhere]"
+          >
+            {t('popup.sniffer.siteExcluded')}
+          </p>
+        )}
         {backendSupported && resolvableSite && (
           <ResolvablePageAction
             key={submissionKey}
             site={resolvableSite}
             canSubmit={canAttemptSend}
+            siteExcluded={siteExcluded}
             pairIfNeeded={pairing === 'none'}
             onResolve={resolvePageDownload}
           />
@@ -964,6 +990,7 @@ export const MediaPanel = memo(function MediaPanel({
                         !connected || selectionKinds.includes(item.kind)
                       }
                       canSubmit={canAttemptSend}
+                      siteExcluded={siteExcluded}
                       pairIfNeeded={pairing === 'none'}
                       previewEnabled={active}
                       selected={selected.has(mediaStorageKey(item))}

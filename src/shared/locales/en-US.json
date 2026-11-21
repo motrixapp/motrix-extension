@@ -368,6 +368,7 @@
       "sent": "Sent",
       "sending": "Sending",
       "submitFailed": "Couldn’t send the resource. Try again.",
+      "siteExcluded": "This site or media source is excluded. Remove the exclusion in settings to send it to Motrix.",
       "title": "Sniffer",
       "unavailableDescription": "Switch pages or try again later.",
       "unavailableTitle": "Page can’t be scanned",
