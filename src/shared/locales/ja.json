@@ -368,6 +368,7 @@
       "sent": "送信済み",
       "sending": "送信中",
       "submitFailed": "リソースを送信できませんでした。再試行してください。",
+      "siteExcluded": "このサイトまたはメディアの配信元は除外されています。Motrix に送信するには、設定で除外を解除してください。",
       "title": "リソース検出",
       "unavailableDescription": "ページを変えるか、後で再試行してください。",
       "unavailableTitle": "このページはスキャンできません",

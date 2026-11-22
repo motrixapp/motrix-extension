@@ -368,6 +368,7 @@
       "sent": "Enviado",
       "sending": "Enviando",
       "submitFailed": "No se pudo enviar el recurso. Reinténtalo.",
+      "siteExcluded": "Este sitio o fuente multimedia está excluido. Elimina la exclusión en ajustes para enviarlo a Motrix.",
       "title": "Detectar recursos",
       "unavailableDescription": "Cambia de página o inténtalo más tarde.",
       "unavailableTitle": "No se puede analizar la página",

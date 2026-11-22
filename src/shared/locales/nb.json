@@ -368,6 +368,7 @@
       "sent": "Sendt",
       "sending": "Sender",
       "submitFailed": "Kunne ikke sende ressursen. Prøv igjen.",
+      "siteExcluded": "Dette nettstedet eller denne mediekilden er unntatt. Fjern unntaket i innstillingene for å sende til Motrix.",
       "title": "Ressurssøk",
       "unavailableDescription": "Bytt side eller prøv igjen senere.",
       "unavailableTitle": "Siden kan ikke gjennomsøkes",
