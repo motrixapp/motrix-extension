@@ -15,7 +15,10 @@ import {
   pairedMode,
   runPairedBrowser,
 } from './fixtures/paired-browser-driver.mjs'
-import { createTakeoverOrigin } from './fixtures/takeover-origin.mjs'
+import {
+  createTakeoverOrigin,
+  preservedDownloadRequestCounts,
+} from './fixtures/takeover-origin.mjs'
 import {
   FIREFOX_CASES,
   verifyTakeoverReport,
@@ -376,6 +379,7 @@ try {
       'unknown-motrix',
       'early-default',
       'early-direct',
+      'early-public-redirect',
       'early-no-type',
       'early-confirm-accept',
       'early-unknown',
@@ -418,7 +422,8 @@ try {
       }
     }
     if (name.startsWith('early-')) {
-      if (name.startsWith('early-protected'))
+      const preservedRequests = preservedDownloadRequestCounts[name]
+      if (preservedRequests || name.startsWith('early-protected'))
         assert.equal(result.confirmations, 0, name)
       if (name === 'early-confirm-accept')
         assert.ok(
@@ -428,6 +433,7 @@ try {
       const accepted = [
         'early-default',
         'early-direct',
+        'early-public-redirect',
         'early-no-type',
         'early-confirm-accept',
         'early-unknown',
@@ -440,6 +446,7 @@ try {
       const replay = name === 'early-failed'
       const native =
         replay ||
+        preservedRequests ||
         name.startsWith('early-confirm-') ||
         [
           'early-protected',
@@ -456,10 +463,13 @@ try {
       if (name !== 'early-kill') {
         assert.equal(
           result.requests.filter((r) => r.method === 'GET' && !r.range).length,
-          replay ? 2 : 1,
+          preservedRequests ??
+            (replay || name === 'early-public-redirect' ? 2 : 1),
           `${name}: GET requests`
         )
       }
+      if (preservedRequests)
+        assert.equal(result.requests.length, preservedRequests, name)
       if (name.startsWith('early-confirm-')) {
         assert.equal(result.confirmations, 1)
         if (name !== 'early-confirm-unavailable')
@@ -481,6 +491,7 @@ try {
           )
       }
       if (
+        preservedRequests ||
         name.startsWith('early-confirm-') ||
         name.startsWith('early-protected')
       ) {

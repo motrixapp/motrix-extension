@@ -141,7 +141,7 @@ async function handle(
   logDecision()
   if (decideTakeover(cfg, target) !== 'motrix') return
 
-  const { contentType } = await runProbe()
+  const { contentType, replayRejected } = await runProbe()
   const current = await readActiveFirefoxDownload(item.id)
   if (!current) return
   item = current
@@ -156,6 +156,7 @@ async function handle(
   )
     return
   if (
+    replayRejected ||
     !isFaithfulReplay({
       itemMime: item.mime ?? '',
       suggestedFilename: target.suggestedFilename,
@@ -166,7 +167,9 @@ async function handle(
     // lets the browser finish the file it actually negotiated.
     log.debug(
       '[takeover] declined: GET replay would not be faithful; contentType=',
-      contentType
+      contentType,
+      'replayRejected=',
+      replayRejected
     )
     return
   }

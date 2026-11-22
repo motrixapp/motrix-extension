@@ -1,10 +1,10 @@
-import {
-  parseTakeoverConfig,
-  TAKEOVER_CONFIG_KEY,
-} from '@/background/TakeoverConfigStore'
 import { extensionBrowser as browser } from '@/shared/browser'
 import { siteDomain, siteExclusionDomains } from '@/shared/siteExclusion'
-import { hostSuffixMatch } from '@/shared/takeover'
+import {
+  hostSuffixMatch,
+  parseTakeoverConfig,
+  TAKEOVER_CONFIG_KEY,
+} from '@/shared/takeover'
 
 export function startDownloadProtection() {
   let domains: string[] | undefined

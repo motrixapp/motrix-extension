@@ -3,47 +3,14 @@ import { extensionBrowser as browser } from '@/shared/browser'
 import { withSiteExcluded } from '@/shared/siteExclusion'
 import {
   type DownloadMode,
-  TAKEOVER_DEFAULT,
+  parseTakeoverConfig,
+  TAKEOVER_CONFIG_KEY,
   type TakeoverConfig,
-  type TakeoverRule,
   type TakeoverSettings,
 } from '@/shared/takeover'
 
-export const TAKEOVER_CONFIG_KEY = 'motrix.takeoverConfig'
 const enqueue = createOperationQueue()
 
-function isRule(v: unknown): v is TakeoverRule {
-  if (!v || typeof v !== 'object') return false
-  const r = v as Record<string, unknown>
-  return (
-    typeof r.id === 'string' &&
-    typeof r.match === 'object' &&
-    r.match !== null &&
-    (r.action === 'motrix' || r.action === 'chrome' || r.action === 'ask')
-  )
-}
-
-export function parseTakeoverConfig(v: unknown): TakeoverConfig {
-  if (!v || typeof v !== 'object') return TAKEOVER_DEFAULT
-  const c = v as Partial<TakeoverConfig> & { autoOpenPopup?: unknown }
-  if (typeof c.enabled !== 'boolean' || typeof c.consentAckVersion !== 'number')
-    return TAKEOVER_DEFAULT
-  if (c.defaultAction !== 'motrix' && c.defaultAction !== 'chrome')
-    return TAKEOVER_DEFAULT
-  if (!Array.isArray(c.rules) || !c.rules.every(isRule)) return TAKEOVER_DEFAULT
-  return {
-    downloadMode: c.downloadMode === 'confirm' ? 'confirm' : 'direct',
-    openTaskPanelAfterSubmit:
-      typeof c.openTaskPanelAfterSubmit === 'boolean'
-        ? c.openTaskPanelAfterSubmit
-        : c.autoOpenPopup === true,
-    enabled: c.enabled,
-    consentAckVersion: c.consentAckVersion,
-    defaultAction: c.defaultAction,
-    unknownSizeAction: c.unknownSizeAction === 'motrix' ? 'motrix' : 'chrome',
-    rules: c.rules,
-  }
-}
 export class TakeoverConfigStore {
   async get(): Promise<TakeoverConfig> {
     const saved = await browser.storage.local.get(TAKEOVER_CONFIG_KEY)

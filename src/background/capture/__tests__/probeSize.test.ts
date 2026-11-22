@@ -105,6 +105,20 @@ describe('probeTarget size', () => {
 })
 
 describe('probeTarget', () => {
+  it.each([401, 404, 407, 410])(
+    'reports an independently rejected repeat GET (%i)',
+    async (status) => {
+      const fetchImpl = vi
+        .fn()
+        .mockResolvedValueOnce(res(false, {}, 405))
+        .mockResolvedValueOnce(res(false, {}, status))
+      const result = await probeTarget('https://h/file.zip', {
+        fetch: fetchImpl,
+      })
+      expect(result.replayRejected).toBe(true)
+    }
+  )
+
   it('calls native Window fetch with the global receiver for both requests', async () => {
     const receivers: unknown[] = []
     const fetchImpl = vi.fn(function (this: unknown) {

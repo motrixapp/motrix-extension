@@ -22,13 +22,12 @@ import { observeReplaySources } from '@/background/interception/replaySource'
 import { registerWebRequestEarlyTakeover } from '@/background/interception/webRequestEarly'
 import { log } from '@/background/log'
 import { startDownloadProtection } from '@/background/policy/downloadProtection'
-import { TAKEOVER_CONFIG_KEY } from '@/background/TakeoverConfigStore'
 import { WebSocketClient } from '@/background/WebSocketClient'
 import { DownloadConfirmationForm } from '@/popup/DownloadConfirmationDialog'
 import { extensionBrowser as browser, nativeBrowser } from '@/shared/browser'
 import { i18n } from '@/shared/i18n'
 import { DOWNLOAD_ERROR } from '@/shared/integration'
-import { TAKEOVER_DEFAULT } from '@/shared/takeover'
+import { TAKEOVER_CONFIG_KEY, TAKEOVER_DEFAULT } from '@/shared/takeover'
 
 // Exercise the production adapter with Firefox's real downloads/cookies APIs.
 // The backend is a loopback MDXP peer; MBP1 and desktop startup are out of scope.
@@ -68,7 +67,13 @@ console.debug = (...args: unknown[]) => {
   debug(...args)
 }
 browser.downloads.onCreated.addListener((item) => {
-  if (!item.url.endsWith(`/download/${caseName}`)) return
+  const url = new URL(item.url)
+  if (
+    url.pathname !== `/download/${caseName}` &&
+    url.pathname !== `/file/${caseName}` &&
+    !(caseName === 'early-native-blob' && url.protocol === 'blob:')
+  )
+    return
   nativeId = item.id
   nativeIds.push(item.id)
   observations.push({
@@ -327,8 +332,9 @@ Object.assign(window, {
       ...TAKEOVER_DEFAULT,
       enabled: input.name !== 'early-off',
       downloadMode:
-        ['confirm', 'early-protected'].includes(input.name) ||
-        input.name.startsWith('early-confirm-')
+        ['confirm', 'early-protected', 'early-document-confirm'].includes(
+          input.name
+        ) || input.name.startsWith('early-confirm-')
           ? 'confirm'
           : 'direct',
       unknownSizeAction: input.name === 'unknown-motrix' ? 'motrix' : 'chrome',
@@ -374,6 +380,8 @@ Object.assign(window, {
         observations.push({ event: 'confirmation-timeout' })
     }
     if (
+      input.name.startsWith('early-document-') ||
+      input.name.startsWith('early-native-') ||
       [
         'confirm',
         'early-protected',

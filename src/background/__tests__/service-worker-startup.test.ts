@@ -74,6 +74,7 @@ beforeEach(() => {
       ...originalBrowser.webRequest,
       onBeforeRequest: event(),
       onBeforeRedirect: event(),
+      onSendHeaders: event(),
       onCompleted: event(),
       onErrorOccurred: event(),
 

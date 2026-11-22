@@ -12,6 +12,8 @@ export interface ProbeResult {
   sizeBytes: number | null
   /** Raw Content-Type header of the probed response, or null when unknown. */
   contentType: string | null
+  /** A repeat GET requires authentication or says the resource is gone. */
+  replayRejected?: true
 }
 
 function parseLen(value: string | null): number | null {
@@ -88,7 +90,13 @@ export async function probeTarget(
       signal: AbortSignal.timeout(remaining),
     })
     try {
-      if (!ranged.ok) return finish(null, `range-http-${ranged.status}`)
+      if (!ranged.ok) {
+        const result = finish(null, `range-http-${ranged.status}`)
+        // A server may reject Range with 403 or 416 even when a full GET works.
+        if ([401, 404, 407, 410].includes(ranged.status))
+          result.replayRejected = true
+        return result
+      }
       contentType = ranged.headers.get('content-type') ?? contentType
       // A 206 Content-Length describes just the requested slice. A server
       // that ignores Range returns 200, whose Content-Length is the full size.

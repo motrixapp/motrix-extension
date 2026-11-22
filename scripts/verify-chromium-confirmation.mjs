@@ -13,7 +13,10 @@ import {
   pairedMode,
   runPairedBrowser,
 } from './fixtures/paired-browser-driver.mjs'
-import { createTakeoverOrigin } from './fixtures/takeover-origin.mjs'
+import {
+  createTakeoverOrigin,
+  preservedDownloadRequestCounts,
+} from './fixtures/takeover-origin.mjs'
 
 const root = resolve(import.meta.dirname, '..')
 const temp = await mkdtemp(
@@ -126,6 +129,7 @@ try {
     ? []
     : [
         'known',
+        'early-public-redirect',
         'early-confirm-accept',
         'early-confirm-cancel',
         'early-confirm-browser',
@@ -133,6 +137,7 @@ try {
         'early-confirm-unavailable',
         'early-protected',
         'early-protected-direct',
+        ...Object.keys(preservedDownloadRequestCounts),
         'confirm',
       ]) {
     const opened = ctx.waitForEvent('page')
@@ -154,18 +159,26 @@ try {
           (o) => o.event === 'confirmation-settled' && o.action === 'browser'
         )
       )
-    if (name === 'known') {
+    if (name === 'known' || name === 'early-public-redirect') {
       assert.equal(r.confirmations, 0, name)
       assert.equal(simulator.snapshot(name).taskCount, 1, name)
       assert.equal(simulator.snapshot(name).submissions.length, 1, name)
-      assert.ok(
-        requests.get(name)?.some((r) => r.method === 'GET'),
-        name
+      assert.equal(
+        requests.get(name)?.filter((r) => r.method === 'GET' && !r.range)
+          .length,
+        name === 'known' ? 1 : 2,
+        `${name}: original navigation requests`
       )
       console.log(ctx.browser().version(), name, 'direct handoff')
       continue
     }
-    assert.deepEqual(requests.get(name), [{ method: 'GET', range: null }], name)
+    const preservedRequests = preservedDownloadRequestCounts[name]
+    const get = { method: 'GET', range: null }
+    assert.deepEqual(
+      requests.get(name),
+      Array.from({ length: preservedRequests ?? 1 }, () => get),
+      name
+    )
     if (name === 'early-confirm-accept')
       assert.ok(
         r.observations.some((o) => o.event === 'quiet-hold' && o.stable),
@@ -189,7 +202,11 @@ try {
       assert.equal(held?.paused, true, name)
       assert.equal(held?.id, item.id, name)
     }
-    if (name.startsWith('early-protected') || name === 'confirm')
+    if (
+      preservedRequests ||
+      name.startsWith('early-protected') ||
+      name === 'confirm'
+    )
       assert.equal(r.confirmations, 0, name)
     assert.equal(
       item.state,
