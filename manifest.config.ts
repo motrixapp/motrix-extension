@@ -66,6 +66,16 @@ export default defineManifest((env) => {
     options_ui: { page: 'options.html', open_in_tab: true },
     content_scripts: [
       ...genericSnifferScripts,
+      ...(!safari
+        ? [
+            {
+              matches: ['https://www.asklink.com/*'],
+              js: ['src/content/asklink-download-entry.ts'],
+              run_at: 'document_start' as const,
+              world: 'ISOLATED' as const,
+            },
+          ]
+        : []),
       ...(includeYouTube
         ? [
             {

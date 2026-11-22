@@ -13,7 +13,7 @@
 const HTML_TYPES = ['text/html', 'application/xhtml+xml']
 const HTML_EXTENSIONS = ['.html', '.htm', '.xhtml']
 
-function isHtmlType(value: string): boolean {
+export function isHtmlType(value: string): boolean {
   const essence = value.split(';')[0]?.trim().toLowerCase() ?? ''
   return HTML_TYPES.includes(essence)
 }

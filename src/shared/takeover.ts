@@ -61,6 +61,41 @@ export const TAKEOVER_DEFAULT: TakeoverConfig = {
   rules: [],
 }
 
+export const TAKEOVER_CONFIG_KEY = 'motrix.takeoverConfig'
+
+function isRule(v: unknown): v is TakeoverRule {
+  if (!v || typeof v !== 'object') return false
+  const r = v as Record<string, unknown>
+  return (
+    typeof r.id === 'string' &&
+    typeof r.match === 'object' &&
+    r.match !== null &&
+    (r.action === 'motrix' || r.action === 'chrome' || r.action === 'ask')
+  )
+}
+
+export function parseTakeoverConfig(v: unknown): TakeoverConfig {
+  if (!v || typeof v !== 'object') return TAKEOVER_DEFAULT
+  const c = v as Partial<TakeoverConfig> & { autoOpenPopup?: unknown }
+  if (typeof c.enabled !== 'boolean' || typeof c.consentAckVersion !== 'number')
+    return TAKEOVER_DEFAULT
+  if (c.defaultAction !== 'motrix' && c.defaultAction !== 'chrome')
+    return TAKEOVER_DEFAULT
+  if (!Array.isArray(c.rules) || !c.rules.every(isRule)) return TAKEOVER_DEFAULT
+  return {
+    downloadMode: c.downloadMode === 'confirm' ? 'confirm' : 'direct',
+    openTaskPanelAfterSubmit:
+      typeof c.openTaskPanelAfterSubmit === 'boolean'
+        ? c.openTaskPanelAfterSubmit
+        : c.autoOpenPopup === true,
+    enabled: c.enabled,
+    consentAckVersion: c.consentAckVersion,
+    defaultAction: c.defaultAction,
+    unknownSizeAction: c.unknownSizeAction === 'motrix' ? 'motrix' : 'chrome',
+    rules: c.rules,
+  }
+}
+
 export const CONSENT_VERSION = 1
 export const MIB = 1024 * 1024
 export const QUALITY_SENTINEL = 'file'

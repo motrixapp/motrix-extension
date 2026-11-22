@@ -156,19 +156,21 @@ async function handleHeld(
       deps.manager.getState()
     )
     if (decision !== 'motrix') return // finally releases the native download
-    const { contentType } = await runProbe()
+    const { contentType, replayRejected } = await runProbe()
     if (
+      replayRejected ||
       !isFaithfulReplay({
         itemMime: item.mime ?? '',
         suggestedFilename: target.suggestedFilename,
         probedContentType: contentType,
       })
     ) {
-      // Replaying this URL would fetch a different resource than the browser
-      // is downloading (a form-POST download, typically). Leave it native.
+      // The repeat request did not yield the browser's original file.
       log.debug(
         '[takeover] declined: GET replay would not be faithful; contentType=',
-        contentType
+        contentType,
+        'replayRejected=',
+        replayRejected
       )
       return
     }

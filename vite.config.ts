@@ -30,7 +30,13 @@ export default defineConfig(({ command, mode }) => {
       cspSafeZodPlugin(),
       react(),
       tailwindcss(),
-      crx({ manifest, browser: firefox ? 'firefox' : 'chrome' }),
+      crx({
+        manifest,
+        browser: firefox ? 'firefox' : 'chrome',
+        contentScripts: {
+          standaloneFiles: ['src/content/asklink-download-entry.ts'],
+        },
+      }),
       ...(safari ? [safariManifestPlugin()] : []),
       buildOutputHygienePlugin(outputDir),
     ],

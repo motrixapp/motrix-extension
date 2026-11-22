@@ -37,7 +37,7 @@ adapter also ignores its own extension's DownloadItems. There is no URL-based
 TTL: two user downloads of the same URL are separate operations.
 
 PDF and other inline responses are left alone unless explicitly attachments.
-Only GET 2xx main-frame, sub-frame attachment, or binary object responses qualify;
+Only GET 200 main-frame, sub-frame attachment, or binary object responses qualify;
 media, POST, and other request types stay on the existing path.
 
 ## Validation
@@ -51,12 +51,16 @@ media, POST, and other request types stay on the existing path.
   adapters with real webRequest/download APIs and a local HTTP server. It checks
   native download counts, GET and Range requests, a quiet confirmation interval, explicit
   browser resume, failed/unknown submission, missing Content-Type, defaults,
-  exclusions, size rules, PDF, and the kill switch. Motrix is simulated. The driver clicks the production confirmation form in the
+  exclusions, size rules, PDF, browser-owned downloads, and the kill switch.
+  Motrix is simulated. The driver clicks the production confirmation form in the
   fixture page and exercises the production confirmation service and actions.
 - Existing CI executes that script on Firefox 143.0 and latest.
 
-A strictly one-use URL cannot be replayed reliably by Motrix or by a browser
-fallback after cancellation. This API cannot transfer an already-open browser
-response to Motrix. Sites requiring that behavior must remain browser-owned via
-site exclusion or the early kill switch; tests passing do not remove this
-protocol limitation.
+Both browser families preserve the original download when the entry URL itself
+contains a credential, it previously served an HTML page in the same tab, or the
+request needs browser authentication or cookies outside the entry URL's scope.
+A public entry URL can still be handed off when it redirects to a newly signed
+CDN URL. Downloads served from a page-created Blob stay with the browser.
+
+Handoff and browser fallback open a new request to the entry URL. Use a site
+exclusion for sources that enforce single use without a detectable signal.

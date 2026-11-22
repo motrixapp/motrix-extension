@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
+import { preservedDownloadRequestCounts } from './fixtures/takeover-origin.mjs'
 
 export const FIREFOX_CASES = Object.freeze([
   'known',
@@ -11,12 +12,14 @@ export const FIREFOX_CASES = Object.freeze([
   'unknown-motrix',
   'early-default',
   'early-direct',
+  'early-public-redirect',
   'early-no-type',
   'early-confirm-accept',
   'early-confirm-rejected',
   'early-confirm-unavailable',
   'early-protected',
   'early-protected-direct',
+  ...Object.keys(preservedDownloadRequestCounts),
   'early-confirm-browser',
   'early-confirm-cancel',
   'early-failed',

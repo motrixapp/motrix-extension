@@ -331,6 +331,8 @@ export function verifyBuild(variant) {
   verifyDynamicCodeAbsence(files, outputPath)
 
   const expectedIifeScripts = [...GENERIC_IIFE_SCRIPTS]
+  if (variant !== 'safari')
+    expectedIifeScripts.push('src/content/asklink-download-entry.js')
   if (variant === 'chromium') expectedIifeScripts.push(YOUTUBE_IIFE_SCRIPT)
   const referencedFiles = new Set(references.keys())
   for (const scriptPath of expectedIifeScripts) {
