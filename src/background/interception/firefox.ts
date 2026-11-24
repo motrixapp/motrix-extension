@@ -87,36 +87,54 @@ async function handle(
   // Its failure must not discard the size Firefox learned in the meantime.
   let probe: ProbeResult | null = null
   let probePromise: Promise<ProbeResult> | undefined
-  const runProbe = async (): Promise<ProbeResult> => {
-    probePromise ??= probeTarget(url, { fetch: globalThis.fetch }).then(
-      (result) => {
+  const runProbe = async (needSize: boolean): Promise<ProbeResult> => {
+    probePromise ??= probeTarget(url, {
+      fetch: globalThis.fetch,
+      needSize,
+    })
+      .then((result) => {
         probe = result
         return result
-      }
-    )
+      })
+      .catch(() => {
+        const empty: ProbeResult = { sizeBytes: null, contentType: null }
+        probe = empty
+        return empty
+      })
     return probePromise
   }
-  if (firefoxDownloadSize(item) === null) void runProbe()
+  const initialKnownSize = firefoxDownloadSize(item) ?? replay.size ?? null
+  if (initialKnownSize === null) void runProbe(true)
   const observed = await waitForFirefoxMetadata(
     item.id,
-    () => probe?.sizeBytes ?? null
+    () => probe?.sizeBytes ?? replay.size ?? null
   )
   if (!observed) return
-  if (probePromise && firefoxDownloadSize(observed) === null) await probePromise
+  if (
+    probePromise &&
+    (firefoxDownloadSize(observed) ?? replay.size ?? null) === null
+  )
+    await probePromise
   const latest = await readActiveFirefoxDownload(item.id)
   if (!latest) return
   cfg = await deps.getConfig()
   if (!cfg.enabled || cfg.downloadMode === 'confirm') return
 
-  const makeTarget = (current: Browser.downloads.DownloadItem) =>
-    normalizeTarget({
+  const makeTarget = (current: Browser.downloads.DownloadItem) => {
+    const referrer = replay.referer || current.referrer || replay.source
+    const filename = current.filename || replay.filename
+    const mime = current.mime || replay.mime
+    return normalizeTarget({
       url,
-      ...(current.referrer ? { referrer: current.referrer } : {}),
-      ...(current.filename ? { suggestedFilename: current.filename } : {}),
-      ...(current.mime ? { mime: current.mime } : {}),
-      sizeBytes: firefoxDownloadSize(current) ?? probe?.sizeBytes ?? null,
+      ...(referrer ? { referrer } : {}),
+      ...(replay.omitReferer ? { omitReferer: true } : {}),
+      ...(filename ? { suggestedFilename: filename } : {}),
+      ...(mime ? { mime } : {}),
+      sizeBytes:
+        firefoxDownloadSize(current) ?? replay.size ?? probe?.sizeBytes ?? null,
       origin: 'auto',
     })
+  }
   let target = makeTarget(latest)
   const logDecision = () =>
     log.debug(
@@ -131,9 +149,11 @@ async function handle(
       'sizeSource=',
       firefoxDownloadSize(item) !== null
         ? 'browser'
-        : probe?.sizeBytes != null
-          ? 'probe'
-          : 'unknown',
+        : replay.size !== undefined
+          ? 'response'
+          : probe?.sizeBytes != null
+            ? 'probe'
+            : 'unknown',
       'url=',
       describeUrlForLog(target.url)
     )
@@ -141,7 +161,9 @@ async function handle(
   logDecision()
   if (decideTakeover(cfg, target) !== 'motrix') return
 
-  const { contentType, replayRejected } = await runProbe()
+  const { contentType, replayRejected } = await runProbe(
+    target.sizeBytes === null
+  )
   const current = await readActiveFirefoxDownload(item.id)
   if (!current) return
   item = current
@@ -158,7 +180,7 @@ async function handle(
   if (
     replayRejected ||
     !isFaithfulReplay({
-      itemMime: item.mime ?? '',
+      itemMime: item.mime || replay.mime || '',
       suggestedFilename: target.suggestedFilename,
       probedContentType: contentType,
     })

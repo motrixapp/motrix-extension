@@ -80,6 +80,7 @@ const savedConfirmationSchema = z.object({
       origin: z.enum(['auto', 'context-menu']),
       pausedDownloadId: z.number().int().nonnegative().optional(),
       nativeDownloadCancelled: z.boolean().optional(),
+      omitReferer: z.boolean().optional(),
     }),
     options: taskOptionsDraftSchema,
     phase: z.enum(['editing', 'submitting', 'failed', 'unknown']),
@@ -133,7 +134,10 @@ export class DownloadConfirmationService {
       return Promise.resolve({ action: 'unavailable' })
     const options = defaultTaskOptions(this.io.userAgent())
     options.filename = target.filenameFromUrl ? '' : target.suggestedFilename
-    options.referer = /^https?:\/\//i.test(target.pageUrl) ? target.pageUrl : ''
+    options.referer =
+      !target.omitReferer && /^https?:\/\//i.test(target.pageUrl)
+        ? target.pageUrl
+        : ''
     options.useBrowserCookies = true
     const draft: DownloadConfirmation = {
       id: crypto.randomUUID(),

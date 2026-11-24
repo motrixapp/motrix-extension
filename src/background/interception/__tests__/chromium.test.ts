@@ -368,6 +368,90 @@ describe('registerChromiumInterception', () => {
     await vi.waitFor(() => expect(mockedRunHandoff).toHaveBeenCalledTimes(1))
   })
 
+  it('forwards captured Referer and skips ranged fallback when size is already known', async () => {
+    const deps = makeDeps(enabledConfig())
+    deps.replaySource = () => ({
+      url: 'https://cdn.pan.example/file.zip?X-Amz-Signature=abc',
+      referer: 'https://pan.example/s/share123',
+      filename: 'archive.zip',
+      mime: 'application/zip',
+      allowed: () => true,
+    })
+    registerChromiumInterception(deps)
+    listener?.(
+      item({
+        url: 'https://pan.example/api/download',
+        finalUrl: 'https://cdn.pan.example/file.zip?X-Amz-Signature=abc',
+        referrer: '',
+        filename: '',
+        mime: '',
+        totalBytes: 4096,
+      }),
+      vi.fn()
+    )
+    await vi.waitFor(() =>
+      expect(mockedRunHandoff).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://cdn.pan.example/file.zip?X-Amz-Signature=abc',
+          pageUrl: 'https://pan.example/s/share123',
+          suggestedFilename: 'archive.zip',
+        }),
+        expect.anything()
+      )
+    )
+    expect(probeTarget).toHaveBeenCalledWith(
+      'https://cdn.pan.example/file.zip?X-Amz-Signature=abc',
+      expect.objectContaining({ needSize: false })
+    )
+  })
+
+  it('preserves source pageUrl for policy while marking omitReferer when browser suppressed Referer', async () => {
+    const deps = makeDeps(enabledConfig())
+    deps.replaySource = () => ({
+      url: 'https://cdn.thirdparty.example/file.zip',
+      source: 'https://pan.example/private-secret-link',
+      omitReferer: true,
+      allowed: () => true,
+    })
+    registerChromiumInterception(deps)
+    listener?.(
+      item({
+        url: 'https://pan.example/api/download',
+        finalUrl: 'https://cdn.thirdparty.example/file.zip',
+        referrer: 'https://pan.example/private-secret-link',
+        totalBytes: 4096,
+      }),
+      vi.fn()
+    )
+    await vi.waitFor(() =>
+      expect(mockedRunHandoff).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://cdn.thirdparty.example/file.zip',
+          pageUrl: 'https://pan.example/private-secret-link',
+          omitReferer: true,
+        }),
+        expect.anything()
+      )
+    )
+  })
+
+  it('leaves a strictly one-use download intact when probe reports replayRejected', async () => {
+    vi.mocked(probeTarget).mockResolvedValueOnce({
+      sizeBytes: null,
+      contentType: null,
+      replayRejected: true,
+    })
+    register(enabledConfig())
+    const suggest = vi.fn()
+    listener?.(
+      item({ url: 'https://files.example/once.zip?download_token=abc' }),
+      suggest
+    )
+    await vi.waitFor(() => expect(suggest).toHaveBeenCalledTimes(1))
+    expect(mockedRunHandoff).not.toHaveBeenCalled()
+    expect(downloads.cancel).not.toHaveBeenCalled()
+  })
+
   it('commit path: handoff cancels via ops → cancel+erase, suggest never called', async () => {
     mockedRunHandoff.mockImplementationOnce(async (_t, ops: HandoffOps) => {
       await ops.cancelNative()

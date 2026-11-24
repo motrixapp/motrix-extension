@@ -849,7 +849,10 @@ const interceptionDeps = {
   popup: autoPopup,
   captureGuard: () => handoffEndpoints.capture('auto'),
   getConfig: async () => {
-    await endpointLifecycleReady
+    await Promise.all([
+      endpointLifecycleReady,
+      'ready' in protectedDownload ? protectedDownload.ready : undefined,
+    ])
     return takeoverConfigStore.get()
   },
   manager,

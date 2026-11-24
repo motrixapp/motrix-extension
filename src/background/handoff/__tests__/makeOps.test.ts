@@ -78,4 +78,24 @@ describe('handoff submission origin', () => {
     )
     expect(cancelNative).not.toHaveBeenCalled()
   })
+
+  it('omits Referer header when target.omitReferer is true while preserving default Referer otherwise', () => {
+    const { ops } = fixture('auto')
+    const base = {
+      origin: 'auto' as const,
+      url: 'https://cdn.example/file.zip',
+      pageUrl: 'https://pan.example/private-link',
+      pageTitle: 'file.zip',
+      suggestedFilename: 'file.zip',
+      mime: 'application/zip',
+      sizeBytes: 1024,
+      siteHint: 'pan.example',
+    }
+    expect(ops.buildHeaders(base)).toMatchObject({
+      Referer: 'https://pan.example/private-link',
+    })
+    const omitted = ops.buildHeaders({ ...base, omitReferer: true })
+    expect(omitted).not.toHaveProperty('Referer')
+    expect(omitted).toHaveProperty('User-Agent')
+  })
 })

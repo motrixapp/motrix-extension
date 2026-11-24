@@ -365,7 +365,10 @@ Object.assign(window, {
       await new Promise((resolve) => setTimeout(resolve, 50))
     if (input.name.startsWith('early-'))
       await new Promise((resolve) => setTimeout(resolve, 500))
-    if (input.name.startsWith('early-confirm-')) {
+    if (
+      input.name.startsWith('early-confirm-') ||
+      input.name === 'early-document-confirm'
+    ) {
       // Persisting the decision and creating a native download are asynchronous.
       // Wait for the actual outcome instead of attributing late events to the next case.
       const confirmationDeadline =
@@ -380,8 +383,8 @@ Object.assign(window, {
         observations.push({ event: 'confirmation-timeout' })
     }
     if (
-      input.name.startsWith('early-document-') ||
-      input.name.startsWith('early-native-') ||
+      input.name === 'early-native-signed' ||
+      input.name === 'early-native-blob' ||
       [
         'confirm',
         'early-protected',

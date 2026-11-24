@@ -79,6 +79,14 @@ export function createMdxpSimulator(server) {
       state.submissions.push({
         operationId: input.idempotencyKey,
         suggestedFilename: input.meta.suggestedFilename,
+        url:
+          input.selection.kind === 'direct'
+            ? input.selection.primary.url
+            : undefined,
+        cookieNames:
+          input.selection.kind === 'direct'
+            ? input.selection.primary.cookies.map((c) => c.name)
+            : [],
       })
       if (name === 'early-failed' || name === 'early-confirm-rejected')
         return reject(-32602, 'Injected pre-dispatch rejection')

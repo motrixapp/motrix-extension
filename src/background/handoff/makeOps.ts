@@ -158,7 +158,7 @@ export function makeOps(deps: OpsDeps): HandoffOps {
       return mapCookies(raw)
     },
     buildHeaders: (t) => ({
-      Referer: t.pageUrl,
+      ...(t.omitReferer ? {} : { Referer: t.pageUrl }),
       'User-Agent': navigator.userAgent,
     }),
     submit: async (params) => {

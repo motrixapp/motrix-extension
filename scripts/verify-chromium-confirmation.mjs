@@ -130,13 +130,18 @@ try {
     : [
         'known',
         'early-public-redirect',
+        'early-cloud-presigned',
+        'early-native-cookie-redirect',
+        'early-document-direct',
         'early-confirm-accept',
+        'early-document-confirm',
         'early-confirm-cancel',
         'early-confirm-browser',
         'early-confirm-rejected',
         'early-confirm-unavailable',
         'early-protected',
         'early-protected-direct',
+        'early-native-signed',
         ...Object.keys(preservedDownloadRequestCounts),
         'confirm',
       ]) {
@@ -159,32 +164,79 @@ try {
           (o) => o.event === 'confirmation-settled' && o.action === 'browser'
         )
       )
-    if (name === 'known' || name === 'early-public-redirect') {
+    if (
+      [
+        'known',
+        'early-public-redirect',
+        'early-cloud-presigned',
+        'early-native-cookie-redirect',
+        'early-document-direct',
+      ].includes(name)
+    ) {
       assert.equal(r.confirmations, 0, name)
-      assert.equal(simulator.snapshot(name).taskCount, 1, name)
-      assert.equal(simulator.snapshot(name).submissions.length, 1, name)
-      assert.equal(
-        requests.get(name)?.filter((r) => r.method === 'GET' && !r.range)
-          .length,
-        name === 'known' ? 1 : 2,
-        `${name}: original navigation requests`
+      const snap = simulator.snapshot(name)
+      assert.equal(snap.taskCount, 1, name)
+      assert.equal(snap.submissions.length, 1, name)
+      assert.deepEqual(
+        r.native,
+        [],
+        `${name}: cancelled history must be erased`
       )
+      if (name === 'early-native-cookie-redirect') {
+        assert.match(
+          snap.submissions[0]?.url ?? '',
+          /\/file\/early-native-cookie-redirect$/
+        )
+        assert.ok(snap.submissions[0]?.cookieNames.includes('fixture'), name)
+      }
+      if (name === 'early-document-direct') {
+        assert.match(
+          snap.submissions[0]?.url ?? '',
+          /\/file\/early-document-direct$/
+        )
+      }
+      if (name === 'early-cloud-presigned') {
+        assert.match(snap.submissions[0]?.url ?? '', /X-Amz-Signature=fixture/)
+      }
+      if (name === 'known' || name === 'early-public-redirect')
+        assert.equal(
+          requests.get(name)?.filter((r) => r.method === 'GET' && !r.range)
+            .length,
+          name === 'known' ? 1 : 2,
+          `${name}: original navigation requests`
+        )
       console.log(ctx.browser().version(), name, 'direct handoff')
       continue
     }
     const preservedRequests = preservedDownloadRequestCounts[name]
     const get = { method: 'GET', range: null }
-    assert.deepEqual(
-      requests.get(name),
-      Array.from({ length: preservedRequests ?? 1 }, () => get),
-      name
-    )
+    if (name === 'early-native-signed') {
+      assert.equal(
+        requests.get(name)?.filter((req) => req.method === 'GET' && !req.range)
+          .length,
+        1,
+        `${name}: original GET preserved`
+      )
+    } else {
+      assert.deepEqual(
+        requests.get(name),
+        Array.from(
+          {
+            length:
+              name === 'early-document-confirm' ? 3 : (preservedRequests ?? 1),
+          },
+          () => get
+        ),
+        name
+      )
+    }
     if (name === 'early-confirm-accept')
       assert.ok(
         r.observations.some((o) => o.event === 'quiet-hold' && o.stable),
         name
       )
-    const accepted = name === 'early-confirm-accept'
+    const accepted =
+      name === 'early-confirm-accept' || name === 'early-document-confirm'
     assert.equal(simulator.snapshot(name).taskCount, Number(accepted), name)
     assert.equal(
       simulator.snapshot(name).submissions.length,
@@ -194,7 +246,10 @@ try {
     assert.equal(r.nativeCount, 1, name)
     const [item] = r.native
     const held = r.observations.find((o) => o.event === 'confirmation-hold')
-    if (name.startsWith('early-confirm-') && !name.endsWith('unavailable')) {
+    if (
+      (name.startsWith('early-confirm-') && !name.endsWith('unavailable')) ||
+      name === 'early-document-confirm'
+    ) {
       assert.ok(
         r.observations.some((o) => o.event === 'form-click' && o.clicked),
         name
@@ -204,6 +259,7 @@ try {
     }
     if (
       preservedRequests ||
+      name === 'early-native-signed' ||
       name.startsWith('early-protected') ||
       name === 'confirm'
     )

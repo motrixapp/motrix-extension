@@ -380,6 +380,10 @@ try {
       'early-default',
       'early-direct',
       'early-public-redirect',
+      'early-cloud-presigned',
+      'early-native-cookie-redirect',
+      'early-document-direct',
+      'early-document-confirm',
       'early-no-type',
       'early-confirm-accept',
       'early-unknown',
@@ -423,7 +427,18 @@ try {
     }
     if (name.startsWith('early-')) {
       const preservedRequests = preservedDownloadRequestCounts[name]
-      if (preservedRequests || name.startsWith('early-protected'))
+      const nativeDirectHandoff = [
+        'early-cloud-presigned',
+        'early-native-cookie-redirect',
+        'early-document-direct',
+      ].includes(name)
+      const confirmFlow =
+        name.startsWith('early-confirm-') || name === 'early-document-confirm'
+      if (
+        preservedRequests ||
+        name === 'early-native-signed' ||
+        name.startsWith('early-protected')
+      )
         assert.equal(result.confirmations, 0, name)
       if (name === 'early-confirm-accept')
         assert.ok(
@@ -434,6 +449,10 @@ try {
         'early-default',
         'early-direct',
         'early-public-redirect',
+        'early-cloud-presigned',
+        'early-native-cookie-redirect',
+        'early-document-direct',
+        'early-document-confirm',
         'early-no-type',
         'early-confirm-accept',
         'early-unknown',
@@ -443,11 +462,23 @@ try {
         'early-kill',
       ].includes(name)
       assert.equal(result.submits, accepted ? 1 : 0, `${name}: submits`)
+      if (name === 'early-native-cookie-redirect') {
+        assert.match(
+          result.mdxp.submissions[0]?.url ?? '',
+          /\/file\/early-native-cookie-redirect$/
+        )
+        assert.ok(
+          result.mdxp.submissions[0]?.cookieNames.includes('fixture'),
+          name
+        )
+      }
       const replay = name === 'early-failed'
       const native =
         replay ||
         preservedRequests ||
-        name.startsWith('early-confirm-') ||
+        nativeDirectHandoff ||
+        name === 'early-native-signed' ||
+        confirmFlow ||
         [
           'early-protected',
           'early-protected-direct',
@@ -460,17 +491,30 @@ try {
         name === 'early-kill' ? 1 : native ? 1 : 0,
         `${name}: native downloads`
       )
-      if (name !== 'early-kill') {
+      if (nativeDirectHandoff) {
+        assert.deepEqual(
+          result.native,
+          [],
+          `${name}: cancelled history must be erased`
+        )
+      }
+      if (
+        name !== 'early-kill' &&
+        !nativeDirectHandoff &&
+        name !== 'early-native-signed'
+      ) {
         assert.equal(
           result.requests.filter((r) => r.method === 'GET' && !r.range).length,
-          preservedRequests ??
-            (replay || name === 'early-public-redirect' ? 2 : 1),
+          name === 'early-document-confirm'
+            ? 3
+            : (preservedRequests ??
+                (replay || name === 'early-public-redirect' ? 2 : 1)),
           `${name}: GET requests`
         )
       }
       if (preservedRequests)
         assert.equal(result.requests.length, preservedRequests, name)
-      if (name.startsWith('early-confirm-')) {
+      if (confirmFlow) {
         assert.equal(result.confirmations, 1)
         if (name !== 'early-confirm-unavailable')
           assert.ok(
@@ -492,7 +536,8 @@ try {
       }
       if (
         preservedRequests ||
-        name.startsWith('early-confirm-') ||
+        name === 'early-native-signed' ||
+        confirmFlow ||
         name.startsWith('early-protected')
       ) {
         assert.ok(
@@ -508,6 +553,7 @@ try {
           )
         const stopped = [
           'early-confirm-accept',
+          'early-document-confirm',
           'early-confirm-cancel',
         ].includes(name)
         assert.equal(
