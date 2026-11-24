@@ -49,6 +49,7 @@ export function normalizeTarget(raw: RawTarget): TakeoverTarget {
     mime: raw.mime ?? '',
     sizeBytes,
     siteHint: hostOf(pageUrl),
+    ...(raw.omitReferer ? { omitReferer: true } : {}),
     origin: raw.origin,
   }
 }

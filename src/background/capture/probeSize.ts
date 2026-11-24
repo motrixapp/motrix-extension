@@ -5,6 +5,8 @@ export interface ProbeDeps {
   /** Budget for the whole probe, HEAD and fallback together. */
   timeoutMs?: number
   now?: () => number
+  /** When false, a 2xx HEAD with Content-Type is sufficient without a ranged GET fallback. */
+  needSize?: boolean
 }
 
 export interface ProbeResult {
@@ -70,6 +72,10 @@ export async function probeTarget(
       if (len !== null) {
         headOutcome = 'length'
         return finish(len, 'head-length')
+      }
+      if (deps.needSize === false && contentType !== null) {
+        headOutcome = 'type'
+        return finish(null, 'head-type')
       }
     } else {
       headOutcome = `http-${head.status}`

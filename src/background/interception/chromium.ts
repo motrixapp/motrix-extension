@@ -104,7 +104,9 @@ async function handleHeld(
     const cfg = await deps.getConfig()
     if (!cfg.enabled) return
     if (cfg.downloadMode === 'confirm') return
-    const replay = deps.replaySource(item)
+    const replay = deps.replaySource.waitForResponse
+      ? await deps.replaySource.waitForResponse(item)
+      : deps.replaySource(item)
     if (!replay) return
     url = replay.url
     const guard = await deps.captureGuard()
@@ -114,28 +116,30 @@ async function handleHeld(
       typeof item.totalBytes === 'number' && item.totalBytes > 0
         ? item.totalBytes
         : (replay.size ?? null)
-    // The probe rehearses Motrix's own GET. Its Content-Type is the only
-    // evidence we get that the browser's download was not a plain GET (see
-    // replayFidelity), and its length feeds minSizeMB rules. Run it at most
-    // once; apply unknownSizeAction only if the probe also cannot find a size.
+    // The probe rehearses Motrix's own GET. Its Content-Type verifies that the
+    // browser download is replayable as GET (see replayFidelity), and its
+    // length feeds minSizeMB rules. Run it at most once; skip the ranged GET
+    // fallback when HEAD already confirmed Content-Type and size is known.
     let probe: ProbeResult | null = null
-    const runProbe = async (): Promise<ProbeResult> => {
-      probe ??= await probeTarget(url, { fetch: globalThis.fetch })
+    const runProbe = async (needSize: boolean): Promise<ProbeResult> => {
+      probe ??= await probeTarget(url, { fetch: globalThis.fetch, needSize })
       return probe
     }
     if (sizeBytes === null) {
-      sizeBytes = (await runProbe()).sizeBytes
+      sizeBytes = (await runProbe(true)).sizeBytes
     }
 
+    const referrer = replay.referer || item.referrer || replay.source
+    const filename = item.filename || replay.filename
+    const mime = item.mime || replay.mime
     const target = normalizeTarget({
       url,
-      ...(typeof item.referrer === 'string' && item.referrer.length > 0
-        ? { referrer: item.referrer }
+      ...(typeof referrer === 'string' && referrer.length > 0
+        ? { referrer }
         : {}),
-      ...(typeof item.filename === 'string'
-        ? { suggestedFilename: item.filename }
-        : {}),
-      ...(typeof item.mime === 'string' ? { mime: item.mime } : {}),
+      ...(replay.omitReferer ? { omitReferer: true } : {}),
+      ...(typeof filename === 'string' ? { suggestedFilename: filename } : {}),
+      ...(typeof mime === 'string' ? { mime } : {}),
       sizeBytes,
       origin: 'auto',
     })
@@ -145,7 +149,7 @@ async function handleHeld(
       '[takeover] onDeterminingFilename(held) url=',
       describeUrlForLog(url),
       'mime=',
-      item.mime,
+      mime,
       'totalBytes=',
       item.totalBytes,
       'sizeBytes=',
@@ -156,11 +160,11 @@ async function handleHeld(
       deps.manager.getState()
     )
     if (decision !== 'motrix') return // finally releases the native download
-    const { contentType, replayRejected } = await runProbe()
+    const { contentType, replayRejected } = await runProbe(false)
     if (
       replayRejected ||
       !isFaithfulReplay({
-        itemMime: item.mime ?? '',
+        itemMime: mime ?? '',
         suggestedFilename: target.suggestedFilename,
         probedContentType: contentType,
       })

@@ -205,6 +205,7 @@ export function registerWebRequestEarlyTakeover(
     await ready
     if (!earlyEnabled) return null
     const captured = generation
+    if (deps.replaySource.ready) await deps.replaySource.ready
     const cfg = await deps.getConfig()
     if (!cfg.enabled || cfg.downloadMode === 'confirm') return null
     const guard = await deps.captureGuard()
@@ -222,10 +223,12 @@ export function registerWebRequestEarlyTakeover(
       requestId: details.requestId,
       referrer,
     })
-    if (!replay) return null
+    if (!replay || replay.earlySafe === false) return null
+    const effectiveReferrer = replay.referer ?? referrer
     const target = normalizeTarget({
       url: replay.url,
-      ...(referrer ? { referrer } : {}),
+      ...(effectiveReferrer ? { referrer: effectiveReferrer } : {}),
+      ...(replay.omitReferer ? { omitReferer: true } : {}),
       ...(suggested ? { suggestedFilename: suggested } : {}),
       mime: header(details, 'content-type'),
       sizeBytes: Number.isFinite(length) && length > 0 ? length : null,

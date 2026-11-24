@@ -1,10 +1,6 @@
 import { createServer } from 'node:http'
 
 export const preservedDownloadRequestCounts = {
-  'early-document-direct': 3,
-  'early-document-confirm': 3,
-  'early-native-signed': 1,
-  'early-native-cookie-redirect': 2,
   'early-native-blob': 1,
 }
 
@@ -23,11 +19,18 @@ export function createTakeoverOrigin() {
     const cookieRedirect = name === 'early-native-cookie-redirect'
     const publicRedirect = name === 'early-public-redirect'
     const signed = name === 'early-native-signed'
+    const cloudPresigned = name === 'early-cloud-presigned'
     const file =
       (documentReload || cookieRedirect || publicRedirect) &&
       url.pathname.startsWith('/file/')
     if (url.pathname.startsWith('/start/')) {
-      const href = `/download/${name}${signed ? '?download_token=fixture' : ''}`
+      const href = `/download/${name}${
+        signed
+          ? '?download_token=fixture'
+          : cloudPresigned
+            ? '?X-Amz-Signature=fixture&token=cloud'
+            : ''
+      }`
       response.writeHead(200, {
         'Content-Type': 'text/html',
         ...(cookieRedirect
@@ -115,6 +118,13 @@ export function createTakeoverOrigin() {
     const size =
       name === 'confirm' ||
       Object.hasOwn(preservedDownloadRequestCounts, name) ||
+      [
+        'early-document-direct',
+        'early-document-confirm',
+        'early-native-signed',
+        'early-native-cookie-redirect',
+        'early-cloud-presigned',
+      ].includes(name) ||
       name?.startsWith('early-protected') ||
       name?.startsWith('early-confirm-') ||
       name?.startsWith('paired-')
@@ -138,7 +148,9 @@ export function createTakeoverOrigin() {
       return
     }
     const resume =
-      (name?.startsWith('early-confirm-') || name?.startsWith('paired-')) &&
+      (name?.startsWith('early-confirm-') ||
+        name === 'early-document-confirm' ||
+        name?.startsWith('paired-')) &&
       /^bytes=(\d+)-$/.exec(request.headers.range ?? '')
     const offset = resume ? Number(resume[1]) : 0
     if (request.headers.range && (!resume || offset >= size)) {
@@ -146,7 +158,9 @@ export function createTakeoverOrigin() {
       return
     }
     response.writeHead(resume ? 206 : 200, {
-      ...(name?.startsWith('early-confirm-') || name?.startsWith('paired-')
+      ...(name?.startsWith('early-confirm-') ||
+      name === 'early-document-confirm' ||
+      name?.startsWith('paired-')
         ? { 'Accept-Ranges': 'bytes', ETag: '"fixture-file"' }
         : {}),
       ...(resume

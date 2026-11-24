@@ -45,3 +45,21 @@ it('uses only saved exclusions, including edits made during cold start', async (
   expect(protects('resource', 'https://cdn.example/file')).toBe(false)
   expect(protects('source', 'https://www.123684.com/s/fixture')).toBe(false)
 })
+
+it('resolves ready even when reading saved exclusions fails so downloads are not permanently blocked', async () => {
+  Object.assign(browser, {
+    storage: {
+      ...browser.storage,
+      onChanged: { addListener: vi.fn() },
+      local: {
+        get: vi.fn(async () => {
+          throw new Error('storage unavailable')
+        }),
+      },
+    },
+    alarms: { clear: vi.fn(async () => true) },
+  })
+  const protects = startDownloadProtection()
+  await protects.ready
+  expect(protects('resource', 'https://pan.example/file.zip')).toBe(false)
+})

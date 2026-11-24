@@ -36,6 +36,8 @@ export interface TakeoverTarget {
   pausedDownloadId?: number | undefined
   /** Early interception cancelled the response; browser choice must replay it. */
   nativeDownloadCancelled?: boolean | undefined
+  /** Observed browser request explicitly omitted Referer (e.g. no-referrer policy). */
+  omitReferer?: boolean | undefined
   origin: 'auto' | 'context-menu'
 }
 
@@ -44,6 +46,7 @@ export interface RawTarget {
   url: string
   finalUrl?: string
   referrer?: string
+  omitReferer?: boolean | undefined
   tabTitle?: string
   suggestedFilename?: string
   mime?: string

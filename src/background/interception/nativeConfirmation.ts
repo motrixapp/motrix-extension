@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { normalizeTarget } from '@/background/capture/normalizeTarget'
 import type {
   ConfirmationActions,
   DownloadConfirmationService,
@@ -19,7 +20,12 @@ import { decideTakeover } from '@/background/policy/decideTakeover'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import { getBuildBrowser } from '@/shared/browserKind'
 import type { DownloadOperation } from '@/shared/integration'
-import type { TakeoverTarget } from '@/shared/takeover'
+import {
+  parseTakeoverConfig,
+  TAKEOVER_CONFIG_KEY,
+  type TakeoverConfig,
+  type TakeoverTarget,
+} from '@/shared/takeover'
 
 const PREFIX = 'motrix.pausedDownload.'
 const leaseSchema = z.object({
@@ -190,13 +196,26 @@ async function recover(
 }
 
 export function registerNativeConfirmation(deps: NativeDeps) {
+  let cachedConfig: TakeoverConfig | undefined
+  void Promise.resolve(browser.storage.local.get(TAKEOVER_CONFIG_KEY))
+    .then((saved) => {
+      if (cachedConfig === undefined && TAKEOVER_CONFIG_KEY in saved)
+        cachedConfig = parseTakeoverConfig(saved[TAKEOVER_CONFIG_KEY])
+    })
+    .catch(() => {})
   browser.downloads.onChanged.addListener((delta) => {
-    if (delta.paused?.current === false || delta.state?.current === 'complete')
+    if (
+      delta.paused?.current === false ||
+      delta.state?.current === 'complete' ||
+      delta.error?.current === 'USER_CANCELED'
+    )
       deps.confirmation.dismissPausedDownloads(delta.id)
   })
   browser.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && changes['motrix.takeoverConfig'])
+    if (area === 'local' && TAKEOVER_CONFIG_KEY in changes) {
+      cachedConfig = parseTakeoverConfig(changes[TAKEOVER_CONFIG_KEY]?.newValue)
       deps.confirmation.dismissPausedDownloads()
+    }
   })
   const ready = Promise.all([
     recover(browser.storage.local, deps),
@@ -221,57 +240,114 @@ export function registerNativeConfirmation(deps: NativeDeps) {
     const window = deps.popup?.captureWindow()
     if (active.has(item.id)) return
     active.add(item.id)
-    void recovery
-      .then(() => handle(item, window, deps))
+    // On Chromium, freeze qualifying confirm-mode downloads immediately before
+    // async recovery/IPC finishes so fast transfers cannot complete ahead of the
+    // confirmation dialog. Only pre-pause when cached policy already says motrix.
+    const prePause = maybePrePauseChromium(item, cachedConfig, deps)
+    void handle(item, window, prePause, recovery, deps)
       .finally(() => active.delete(item.id))
       .catch(() => deps.report('cleanup'))
   })
 }
 
+function maybePrePauseChromium(
+  item: Browser.downloads.DownloadItem,
+  cachedConfig: TakeoverConfig | undefined,
+  deps: NativeDeps
+): Promise<boolean> {
+  if (
+    getBuildBrowser() !== 'chromium' ||
+    item.state !== 'in_progress' ||
+    item.paused ||
+    !cachedConfig?.enabled ||
+    cachedConfig.downloadMode !== 'confirm'
+  )
+    return Promise.resolve(false)
+  const source = deps.replaySource(item)
+  if (!source || source.fallback || !source.allowed())
+    return Promise.resolve(false)
+  const sizeBytes =
+    item.totalBytes > 0 ? item.totalBytes : (source.size ?? null)
+  const referrer = source.referer || item.referrer || source.source
+  const filename = item.filename || source.filename
+  const mime = item.mime || source.mime
+  const preliminary = normalizeTarget({
+    url: source.url,
+    ...(referrer ? { referrer } : {}),
+    ...(source.omitReferer ? { omitReferer: true } : {}),
+    ...(filename ? { suggestedFilename: filename } : {}),
+    ...(mime ? { mime } : {}),
+    sizeBytes,
+    origin: 'auto',
+  })
+  if (decideTakeover(cachedConfig, preliminary) !== 'motrix')
+    return Promise.resolve(false)
+  return Promise.resolve(browser.downloads.pause(item.id))
+    .then(() => true)
+    .catch(() => false)
+}
+
 async function handle(
   item: Browser.downloads.DownloadItem,
   window: Promise<number | null> | undefined,
+  prePause: Promise<boolean>,
+  recovery: Promise<unknown>,
   deps: NativeDeps
 ) {
-  const cfg = await deps.getConfig()
-  if (!cfg.enabled || cfg.downloadMode !== 'confirm') return
-  const source = deps.replaySource.waitForResponse
-    ? await deps.replaySource.waitForResponse(item)
-    : deps.replaySource(item)
-  if (!source) return
-  await confirmInterceptedDownload(
-    {
-      url: source.url,
-      referrer: item.referrer || source.source || '',
-      filename: item.filename || source.filename || '',
-      mime: item.mime || source.mime || '',
-      totalBytes: item.totalBytes > 0 ? item.totalBytes : (source.size ?? -1),
-    },
-    cfg,
-    source.tabId === undefined
-      ? window
-      : source.tabId >= 0
+  let handedToHold = false
+  try {
+    await recovery
+    const cfg = await deps.getConfig()
+    const prePaused = await prePause
+    if (!cfg.enabled || cfg.downloadMode !== 'confirm') return
+    const source = deps.replaySource.waitForResponse
+      ? await deps.replaySource.waitForResponse(item)
+      : deps.replaySource(item)
+    if (!source) return
+    const effectiveReferrer =
+      source.referer || item.referrer || source.source || ''
+    await confirmInterceptedDownload(
+      {
+        url: source.url,
+        referrer: effectiveReferrer,
+        ...(source.omitReferer ? { omitReferer: true } : {}),
+        filename: item.filename || source.filename || '',
+        mime: item.mime || source.mime || '',
+        totalBytes: item.totalBytes > 0 ? item.totalBytes : (source.size ?? -1),
+      },
+      cfg,
+      source.tabId !== undefined && source.tabId >= 0
         ? browser.tabs
             .get(source.tabId)
             .then((tab) => tab.windowId)
-            .catch(() => null)
-        : Promise.resolve(null),
-    {
-      captureGuard: deps.captureGuard,
-      confirm: async (target, windowId, guard) => {
-        if (windowId !== undefined && guard.endpointId)
-          await holdForDecision(
-            item,
-            { ...target, pausedDownloadId: item.id },
-            windowId,
-            guard,
-            guard.endpointId,
-            source,
-            deps
-          )
-      },
+            .catch(() => window ?? null)
+        : window,
+      {
+        captureGuard: deps.captureGuard,
+        confirm: async (target, windowId, guard) => {
+          if (windowId !== undefined && guard.endpointId) {
+            await holdForDecision(
+              item,
+              { ...target, pausedDownloadId: item.id },
+              windowId,
+              guard,
+              guard.endpointId,
+              source,
+              prePaused,
+              () => {
+                handedToHold = true
+              },
+              deps
+            )
+          }
+        },
+      }
+    )
+  } finally {
+    if (!handedToHold && (await prePause)) {
+      await browser.downloads.resume(item.id).catch(() => {})
     }
-  )
+  }
 }
 async function holdForDecision(
   item: Browser.downloads.DownloadItem,
@@ -280,6 +356,8 @@ async function holdForDecision(
   guard: HandoffGuard,
   endpointId: string,
   source: ReplaySource,
+  prePaused: boolean,
+  onTakeOver: () => void,
   deps: NativeDeps
 ) {
   const lease: Lease = {
@@ -292,10 +370,11 @@ async function holdForDecision(
   const store = item.incognito ? browser.storage.session : browser.storage.local
   const save = () => store.set({ [PREFIX + item.id]: { ...lease } })
   let before = await live(lease)
-  if (getBuildBrowser() === 'firefox') {
+  let alreadyPaused = prePaused && Boolean(held(before))
+  if (!alreadyPaused && getBuildBrowser() === 'firefox') {
     // Firefox implements pause by interrupting the transfer. Before the
     // first bytes arrive it may have no partial data to retain or resume.
-    const deadline = Date.now() + 1500
+    const deadline = Date.now() + 4000
     while (
       before?.state === 'in_progress' &&
       !before.paused &&
@@ -306,7 +385,8 @@ async function holdForDecision(
       before = await live(lease)
     }
   }
-  if (before?.state !== 'in_progress' || before.paused) return
+  if (!alreadyPaused && (before?.state !== 'in_progress' || before.paused))
+    return
   const current = async () => {
     const next = await deps.getConfig()
     guard.assertCurrent()
@@ -317,8 +397,6 @@ async function holdForDecision(
     )
       throw new Error('download policy changed')
   }
-  await current()
-  await save()
   let actionStarted = false
   const finish = async (cancel: boolean) => {
     actionStarted = true
@@ -329,14 +407,24 @@ async function holdForDecision(
       throw error
     }
   }
+  onTakeOver()
   try {
-    const active = await live(lease)
-    if (active?.state !== 'in_progress' || active.paused) {
-      actionStarted = true
-      await store.remove(PREFIX + lease.id)
-      return
+    await current()
+    await save()
+    if (!alreadyPaused) {
+      const active = await live(lease)
+      if (prePaused && held(active)) {
+        // Our own prePause became visible while saving the lease.
+        alreadyPaused = true
+      } else if (active?.state !== 'in_progress' || active.paused) {
+        actionStarted = true
+        await store.remove(PREFIX + lease.id)
+        return
+      } else {
+        await browser.downloads.pause(item.id)
+        alreadyPaused = true
+      }
     }
-    await browser.downloads.pause(item.id)
     const assertPaused = async () => {
       const now = await live(lease)
       if (!held(now)) throw new Error('original download no longer paused')

@@ -237,4 +237,17 @@ describe('probeTarget', () => {
       })
     ).toEqual({ sizeBytes: null, contentType: null })
   })
+
+  it('skips the ranged GET fallback when needSize is false and HEAD confirms Content-Type', async () => {
+    const fetchImpl = vi.fn(async () =>
+      res(true, { 'content-type': 'application/octet-stream' })
+    )
+    expect(
+      await probeTarget('https://h/f', {
+        fetch: fetchImpl as unknown as typeof fetch,
+        needSize: false,
+      })
+    ).toEqual({ sizeBytes: null, contentType: 'application/octet-stream' })
+    expect(fetchImpl).toHaveBeenCalledOnce()
+  })
 })

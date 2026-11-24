@@ -14,6 +14,7 @@ export async function confirmInterceptedDownload(
     finalUrl?: string
     totalBytes?: number
     referrer?: string
+    omitReferer?: boolean | undefined
     filename?: string
     mime?: string
   },
@@ -32,6 +33,7 @@ export async function confirmInterceptedDownload(
   const target = normalizeTarget({
     url: pickDownloadUrl(item),
     ...(item.referrer ? { referrer: item.referrer } : {}),
+    ...(item.omitReferer ? { omitReferer: true } : {}),
     ...(item.filename ? { suggestedFilename: item.filename } : {}),
     ...(item.mime ? { mime: item.mime } : {}),
     sizeBytes:

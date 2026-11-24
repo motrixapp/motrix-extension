@@ -343,3 +343,21 @@ it('submits a decoded raw UTF-8 filename in direct takeover mode', async () => {
     expect.anything()
   )
 })
+
+it('defers non-early-safe downloads to the native adapter instead of cancelling before probing', async () => {
+  deps.replaySource = (i) => ({
+    url: i.url,
+    earlySafe: false,
+    allowed: () => true,
+  })
+  await register()
+  expect(
+    await listener(
+      request({
+        url: 'https://cdn.example/file.zip?X-Amz-Signature=abc',
+      })
+    )
+  ).toEqual({})
+  await deliver()
+  expect(submit).not.toHaveBeenCalled()
+})
