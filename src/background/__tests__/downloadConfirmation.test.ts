@@ -24,6 +24,7 @@ beforeEach(() => {
   Object.assign(browser, {
     windows: {
       get: vi.fn(async (id) => ({ id, focused: true, type: 'normal' })),
+      update: vi.fn(async (id) => ({ id, focused: true, type: 'normal' })),
       onRemoved: {
         addListener: vi.fn((callback) => {
           removed = callback
@@ -253,18 +254,25 @@ it.each([
     expect(actions.browser).not.toHaveBeenCalled()
   }
 )
-it('rejects an unfocused source window instead of selecting the new focused window', async () => {
+it('focuses an unfocused source window instead of selecting the new focused window', async () => {
   vi.mocked(browser.windows.get).mockResolvedValue({
     id: 4,
     focused: false,
     type: 'normal',
   } as never)
   const service = createDownloadConfirmation()
-  await expect(service.request(target, 4, actions)).resolves.toEqual({
-    action: 'unavailable',
-  })
+  void service.request(target, 4, actions)
+  await vi.waitFor(() =>
+    expect(browser.action.openPopup).toHaveBeenCalledWith({ windowId: 4 })
+  )
   expect(browser.windows.get).toHaveBeenCalledWith(4)
-  expect(browser.action.openPopup).not.toHaveBeenCalled()
+  expect(browser.windows.update).toHaveBeenCalledWith(4, { focused: true })
+  expect(
+    vi.mocked(browser.windows.update).mock.invocationCallOrder[0]
+  ).toBeLessThan(
+    vi.mocked(browser.action.openPopup).mock.invocationCallOrder[0]!
+  )
+  service.cancelAll()
 })
 it('does not open a cancelled draft after the window lookup finishes', async () => {
   let resolve!: (value: unknown) => void

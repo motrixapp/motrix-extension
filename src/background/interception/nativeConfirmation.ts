@@ -16,6 +16,7 @@ import {
   submitPausedHandoff,
 } from '@/background/interception/pausedHandoff'
 import type { ReplaySource } from '@/background/interception/replaySource'
+import { log } from '@/background/log'
 import { decideTakeover } from '@/background/policy/decideTakeover'
 import { type Browser, extensionBrowser as browser } from '@/shared/browser'
 import { getBuildBrowser } from '@/shared/browserKind'
@@ -246,7 +247,10 @@ export function registerNativeConfirmation(deps: NativeDeps) {
     const prePause = maybePrePauseChromium(item, cachedConfig, deps)
     void handle(item, window, prePause, recovery, deps)
       .finally(() => active.delete(item.id))
-      .catch(() => deps.report('cleanup'))
+      .catch((error) => {
+        log.debug('[takeover] confirm-path aborted', error)
+        deps.report('cleanup')
+      })
   })
 }
 
@@ -303,7 +307,12 @@ async function handle(
     const source = deps.replaySource.waitForResponse
       ? await deps.replaySource.waitForResponse(item)
       : deps.replaySource(item)
-    if (!source) return
+    if (!source) {
+      log.debug(
+        '[takeover] confirm-path: no replayable request; browser keeps it'
+      )
+      return
+    }
     const effectiveReferrer =
       source.referer || item.referrer || source.source || ''
     await confirmInterceptedDownload(
@@ -325,7 +334,14 @@ async function handle(
       {
         captureGuard: deps.captureGuard,
         confirm: async (target, windowId, guard) => {
-          if (windowId !== undefined && guard.endpointId) {
+          if (windowId === undefined || !guard.endpointId) {
+            log.debug(
+              '[takeover] confirm-path: no window for the form; windowId=',
+              windowId,
+              'endpoint=',
+              guard.endpointId
+            )
+          } else {
             await holdForDecision(
               item,
               { ...target, pausedDownloadId: item.id },
@@ -380,13 +396,23 @@ async function holdForDecision(
       !before.paused &&
       !(before.bytesReceived > 0)
     ) {
-      if (Date.now() >= deadline) return
+      if (Date.now() >= deadline) {
+        log.debug('[takeover] confirm-path: no bytes before pause deadline')
+        return
+      }
       await new Promise((r) => setTimeout(r, 40))
       before = await live(lease)
     }
   }
-  if (!alreadyPaused && (before?.state !== 'in_progress' || before.paused))
+  if (!alreadyPaused && (before?.state !== 'in_progress' || before.paused)) {
+    log.debug(
+      '[takeover] confirm-path: download not holdable; state=',
+      before?.state,
+      'paused=',
+      before?.paused
+    )
     return
+  }
   const current = async () => {
     const next = await deps.getConfig()
     guard.assertCurrent()
@@ -436,7 +462,7 @@ async function holdForDecision(
       await assertPaused()
     }
     const base = deps.actions(target, guard, beforeSend)
-    await deps.confirmation.request(
+    const outcome = await deps.confirmation.request(
       target,
       windowId,
       {
@@ -504,6 +530,7 @@ async function holdForDecision(
       },
       { endpointId: lease.endpointId, endpointRevision: lease.revision }
     )
+    log.debug('[takeover] confirm-path form result=', outcome.action)
   } finally {
     if (!actionStarted && lease.phase === 'editing') await finish(false)
   }
