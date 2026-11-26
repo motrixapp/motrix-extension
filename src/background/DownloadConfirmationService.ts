@@ -1,5 +1,6 @@
 import { DownloadOutcomeUnknownError } from '@/background/download-errors'
 import { HandoffEndpointChangedError } from '@/background/handoff/guard'
+import { log } from '@/background/log'
 import {
   CONFIRMATION_TIMEOUT_MS,
   type DownloadConfirmation,
@@ -130,8 +131,15 @@ export class DownloadConfirmationService {
       !Number.isInteger(windowId) ||
       windowId < 0 ||
       this.pending.has(windowId)
-    )
+    ) {
+      log.debug(
+        '[takeover] confirmation unavailable; windowId=',
+        windowId,
+        'formAlreadyOpen=',
+        windowId !== undefined && this.pending.has(windowId)
+      )
       return Promise.resolve({ action: 'unavailable' })
+    }
     const options = defaultTaskOptions(this.io.userAgent())
     options.filename = target.filenameFromUrl ? '' : target.suggestedFilename
     options.referer =
@@ -173,7 +181,8 @@ export class DownloadConfirmationService {
           windowId,
           () => this.pending.get(windowId) === pending && !pending.presented
         )
-        .catch(() => {
+        .catch((error) => {
+          log.debug('[takeover] confirmation popup failed to open', error)
           // Delivery to a popup owns the draft even if opening later fails or
           // the view disconnects. Never trigger fallback behind an active form.
           if (

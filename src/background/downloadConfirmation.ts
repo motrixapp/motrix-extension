@@ -25,8 +25,16 @@ export function createDownloadConfirmation(
         'confirmation window'
       )
       if (!needsPresentation()) return
-      if (!window.focused || window.type !== 'normal')
+      if (window.type !== 'normal')
         throw new Error('confirmation window unavailable')
+      // Chromium refuses openPopup for an inactive window. The user just
+      // started this download there, so bring that window forward first.
+      if (!window.focused)
+        await rpcDeadline(
+          browser.windows.update(windowId, { focused: true }),
+          500,
+          'confirmation window focus'
+        )
       if ([...views.values()].includes(windowId)) return
       await rpcDeadline(
         browser.action.openPopup({ windowId }),

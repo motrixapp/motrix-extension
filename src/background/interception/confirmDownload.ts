@@ -53,7 +53,12 @@ export async function confirmInterceptedDownload(
   )
   if (decision !== 'motrix') return
   const guard = capturedGuard ?? (await deps.captureGuard())
-  if (!guard) return
+  if (!guard) {
+    log.debug(
+      '[takeover] confirm-path: automatic takeover unavailable for backend'
+    )
+    return
+  }
   const windowId = await capturedWindow
   guard.assertCurrent()
   await deps.confirm(target, windowId ?? undefined, guard)
